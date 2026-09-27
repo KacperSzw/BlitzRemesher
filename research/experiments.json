@@ -1,0 +1,85 @@
+{
+  "description": "Three research rounds on the frozen eight-asset development pilot, followed by a 120-asset smoke scenario. Screen size 32 to 16 pixels; search 6+2 and audit 12+4 cameras, with 2x/4x sampling refined to 8x. These are not the default quality preset. Profiles, chain modes, level counts, work budgets and corpus selections are separate scenarios. Detailed hypotheses and limitations are in EXPERIMENTS.md.",
+  "runs": [
+    {
+      "label": "Round 1 / QEM",
+      "path": "research/runs/round1-qem"
+    },
+    {
+      "label": "Round 1 / regularized",
+      "path": "research/runs/round1-regularized"
+    },
+    {
+      "label": "Round 1 / curvature",
+      "path": "research/runs/round1-visual"
+    },
+    {
+      "label": "Baseline / meshoptimizer",
+      "path": "research/runs/baseline-meshopt"
+    },
+    {
+      "label": "Baseline / Fast Quadric",
+      "path": "research/runs/baseline-fastquadric"
+    },
+    {
+      "label": "Baseline / CGAL LT",
+      "path": "research/runs/baseline-cgal-lt"
+    },
+    {
+      "label": "Baseline / CGAL QEM",
+      "path": "research/runs/baseline-cgal-qem"
+    },
+    {
+      "label": "Baseline / CGAL probabilistic",
+      "path": "research/runs/baseline-cgal-probabilistic"
+    },
+    {
+      "label": "Round 2 / coupled direct",
+      "path": "research/runs/round2-coupled"
+    },
+    {
+      "label": "Round 2 / coupled hybrid",
+      "path": "research/runs/round2-hybrid"
+    },
+    {
+      "label": "Round 2 / conservative progressive",
+      "path": "research/runs/round2-progressive"
+    },
+    {
+      "label": "Round 2 / vertex reuse",
+      "path": "research/runs/round2-reuse"
+    },
+    {
+      "label": "Normals / conservative",
+      "path": "research/runs/profile-conservative-normals"
+    },
+    {
+      "label": "Normals / coupled",
+      "path": "research/runs/profile-normals"
+    },
+    {
+      "label": "Attributes / coupled",
+      "path": "research/runs/profile-attributes"
+    },
+    {
+      "label": "Schedule / 6 levels",
+      "path": "research/runs/schedule-six"
+    },
+    {
+      "label": "Schedule / 12 levels",
+      "path": "research/runs/schedule-twelve"
+    },
+    {
+      "label": "Round 3 / scalar repeat",
+      "path": "research/runs/round3-scalar"
+    },
+    {
+      "label": "Round 3 / AVX2 dispatch",
+      "path": "research/runs/round3-dispatch"
+    },
+    {
+      "label": "Full corpus / small-camera smoke",
+      "path": "research/runs/corpus-smoke"
+    }
+  ]
+}

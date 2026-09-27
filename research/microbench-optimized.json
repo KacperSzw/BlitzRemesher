@@ -1,0 +1,19 @@
+{
+  "backend": "avx2",
+  "compiler": "Clang 21.1.8",
+  "dispatch": {
+    "checksum": 32.310988842807014,
+    "max_ms": 27.087478,
+    "median_ms": 21.993511,
+    "min_ms": 21.232597
+  },
+  "fixture": "640px filled discs; coverage EDT",
+  "repetitions": 21,
+  "scalar": {
+    "checksum": 32.310988842807014,
+    "max_ms": 25.090819,
+    "median_ms": 23.779383,
+    "min_ms": 22.248616
+  },
+  "speedup": 1.0811999502944298
+}

@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.20)
+project(BlitzConsumer LANGUAGES C CXX)
+find_package(BlitzRemesher CONFIG REQUIRED)
+add_executable(consumer ../c_smoke.c)
+target_link_libraries(consumer PRIVATE Blitz::remesher)
+add_executable(cpp-consumer main.cpp)
+target_link_libraries(cpp-consumer PRIVATE Blitz::remesher)

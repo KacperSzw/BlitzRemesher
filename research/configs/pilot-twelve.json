@@ -1,0 +1,27 @@
+{
+  "levels": 12,
+  "base_pixels": 32,
+  "last_pixels": 16,
+  "profile": "coverage",
+  "chain": "direct",
+  "output": "rebuild",
+  "objective": "quadric",
+  "prune": false,
+  "candidate_budget": 8,
+  "beam_width": 2,
+  "search_views": {
+    "orthographic": 6,
+    "perspective": 2,
+    "seed": 2971082788
+  },
+  "audit_views": {
+    "orthographic": 12,
+    "perspective": 4,
+    "seed": 2971082790
+  },
+  "search_supersample": 2,
+  "audit_supersample": 4,
+  "max_supersample": 8,
+  "force_scalar": true,
+  "coupled_wedges": false
+}

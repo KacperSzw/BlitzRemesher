@@ -20,6 +20,7 @@ extern "C" {
 uint32_t blitz_abi_version(void){return BLITZ_ABI_VERSION;}
 blitz_status blitz_settings_init(blitz_settings* out,size_t n) {
     if(!out||n!=sizeof(blitz_settings))return BLITZ_INVALID_ARGUMENT;
+    try {
     blitz::Settings s;*out={};out->struct_size=sizeof(*out);out->abi_version=BLITZ_ABI_VERSION;
     out->levels=s.levels;out->output_mode=uint8_t(s.output);out->chain_mode=uint8_t(s.chain);out->profile=uint8_t(s.profile);
     out->objective=uint8_t(s.objective);out->beam_width=s.beam_width;out->candidate_budget=s.candidate_budget;
@@ -28,6 +29,8 @@ blitz_status blitz_settings_init(blitz_settings* out,size_t n) {
     out->audit_ortho=s.audit_views.orthographic;out->audit_perspective=s.audit_views.perspective;out->audit_seed=s.audit_views.rotation_seed;
     out->pixels_per_meter=s.pixels_per_meter;out->meters_per_unit=s.meters_per_unit;out->last_pixels=s.last_pixels;
     out->normal_weight=s.weights.normal;out->color_weight=s.weights.color;out->material_weight=s.weights.material;out->prune=s.prune;out->coupled_wedges=s.coupled_wedges;return BLITZ_OK;
+    }catch(const std::bad_alloc&){*out={};return BLITZ_OUT_OF_MEMORY;}
+     catch(...){*out={};return BLITZ_INTERNAL_ERROR;}
 }
 blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_result** out,char* error,size_t capacity) {
     if(out)*out=nullptr;message(error,capacity,"");

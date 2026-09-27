@@ -278,6 +278,7 @@ void save_chain(const Result& r,const fs::path& directory) {
     j["buffers"]=json::array({{{"uri","chain.bin"},{"byteLength",bytes.size()}}});
     std::ofstream bin(directory/"chain.bin",std::ios::binary);bin.write(reinterpret_cast<char*>(bytes.data()),bytes.size());if(!bin)fail("cannot write glTF buffer");
     std::ofstream(directory/"chain.gltf")<<j.dump(2)<<'\n';auto manifest=result_json(r);manifest["gltf"]="chain.gltf";
+    for(size_t i=0;i<r.lods.size();++i){manifest["lods"][i]["gltf_mesh"]=i;manifest["lods"][i]["gltf_node"]=i;}
     std::ofstream(directory/"lods.json")<<manifest.dump(2)<<'\n';
 }
 json settings_json(const Settings& s) {

@@ -146,7 +146,9 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         next=std::move(distinct);
         if(next.empty()) {result.status=Status::BudgetLimited;return result;}
         if(next.size()>s.beam_width)next.resize(s.beam_width);
-        if(std::none_of(next.begin(),next.end(),[&](auto& n){return same_lod(n->lod,source_path->lod);}))next.push_back(source_path);
+        auto retained_source=std::find_if(next.begin(),next.end(),[&](auto& n){return same_lod(n->lod,source_path->lod);});
+        if(retained_source==next.end())next.push_back(source_path);
+        else source_path=*retained_source; // Reuse the retained path instead of owning a duplicate source history.
         beam=std::move(next);
     }
     auto best=*std::min_element(beam.begin(),beam.end(),[](auto& a,auto& b){return a->triangles<b->triangles;});

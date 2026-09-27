@@ -11,6 +11,7 @@ int main() {
         Result r;r.source=m.view();r.reference_bounds=bounds(m.view());
         for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;r.lods.push_back(std::move(l));}
         save_chain(r,dir/"gltf");auto g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.indices.size()==3);CHECK(g.positions.size()==3);
+        nlohmann::json manifest;std::ifstream(dir/"gltf/lods.json")>>manifest;CHECK(manifest["lods"][2]["gltf_mesh"]==2);
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"][0]["primitives"][0]["attributes"]==j["meshes"][2]["primitives"][0]["attributes"]);
         j["nodes"][0]["scale"]={-1,2,3};std::ofstream(dir/"gltf/chain.gltf")<<j.dump();

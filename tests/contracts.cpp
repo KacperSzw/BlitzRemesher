@@ -68,6 +68,9 @@ int main() {
         CHECK(std::isinf(attributed_distance(a,b,e,1)));e.weights.normal=0;CHECK(attributed_distance(a,b,e,0)==0);
         e.profile=Profile::Attributes;e.weights.material=3;a.pixels[4].material=1;
         CHECK(std::isinf(attributed_distance(a,b,e,2)));e.weights.material=0;CHECK(attributed_distance(a,b,e,0)==0);
+        a.pixels[4].color={1,0,0,1};b.pixels[4].color={0,0,0,1};e.weights.color=4;
+        CHECK(attributed_distance(a,b,e,5)==4);CHECK(std::isinf(attributed_distance(a,b,e,3)));
+        e.weights.color=0;CHECK(attributed_distance(a,b,e,0)==0);
         e=EvalSettings{};e.screen_size=24;e.views={8,2,1};e.supersample=4;e.max_supersample=8;
         CHECK(evaluate(m.view(),m.view(),bounds(m.view()),e).passed);
         auto moved=m;for(auto& p:moved.positions)p.x+=2;CHECK(!evaluate(m.view(),moved.view(),bounds(m.view()),e).passed);

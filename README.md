@@ -44,6 +44,8 @@ interpreted as linear.
 Output contains chain.gltf, chain.bin and lods.json. The default glTF scene
 contains LOD0; other LOD meshes are identified in the manifest. Reuse mode
 shares original vertex accessors and writes new index accessors.
+For the CLI, original means the decoded mesh after import transforms;
+compressed or quantized source-file bytes are not preserved verbatim.
 The diagnostic exporter writes placeholder materials with stable material
 IDs and double-sided flags. It does not copy texture images or the original
 material graph. Engine integrations retain their own material payloads.
@@ -138,6 +140,8 @@ CGAL and Fast Quadric adapters support rebuild only.
 Read [the algorithm review](research/ALGORITHMS.md),
 [the scoring protocol](research/PROTOCOL.md), and
 [the accepted specification](docs/SPEC.md) before modifying research rules.
+Measured runs, including negative findings, are in
+[RESULTS.md](research/RESULTS.md) and [EXPERIMENTS.md](research/EXPERIMENTS.md).
 
 ## Validation
 
@@ -150,6 +154,8 @@ Tests cover the C ABI, strided immutable reuse, scheduling, direct/source
 gates, zero weights, empty raster behavior, brute-force Hausdorff reference,
 scalar/SIMD agreement, degenerate input, coupled wedges, cancellation and
 import/export transforms. The fuzzer instruments the actual reducer.
+See [the validation record](research/VALIDATION.md) for compiler, sanitizer,
+installed-package and corpus results, with their limits.
 
 The native library is MIT OR Apache-2.0. Optional CGAL benchmark source is
 GPL-3.0-or-later; downloaded assets and vendored dependencies have their own

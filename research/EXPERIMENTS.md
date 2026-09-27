@@ -68,7 +68,40 @@ identical checksums. These are shared-workstation medians, not a general
 an independent brute-force reference.
 
 Raw measurements: microbench-initial.json and microbench-optimized.json.
-End-to-end repeats and current run status are in RESULTS.md.
+
+End-to-end repeats preserved every pilot asset's position/index output hash
+and SCORE (55.6927). All available attribute hashes also agree. The scalar
+repeat took 93.42 seconds and AVX2 dispatch 92.96 seconds: about 0.5%, too
+small to establish a useful speedup on this shared workstation.
+
+| Native direct coverage run | Seconds | Process peak RSS (KiB) |
+|---|---:|---:|
+| Original QEM | 92.01 | 382,908 |
+| Packed storage, scalar | 93.42 | 420,464 |
+| Packed storage, AVX2 dispatch | 92.96 | 403,256 |
+| Shared source history, scalar | 93.30 | 375,244 |
+
+Packed temporary storage alone did not lower observed process peak memory.
+Inspecting chain ownership found duplicate retained source histories; the
+final change shares an already-retained identical source node. The repeat
+used 2.0% less peak RSS than the original, and 10.8% less than the preceding
+scalar repeat, with identical output hashes. Peak RSS includes evaluator,
+allocator and export storage; these single-run measurements do not isolate
+the reducer or establish statistical significance. No end-to-end speed
+improvement is claimed.
+
+## Full corpus smoke audit
+
+The frozen 120-asset corpus completed with zero failed assets and zero
+unchanged-chain fallbacks. The progressive coupled-coverage scenario scored
+90.7764 in 1,013.50 seconds, with 671,524 KiB process peak RSS. This used the
+small-camera 32→16 pixel scenario and two proposals per level, not the
+default quality audit. Held-out assets were included only in this final
+smoke audit; they were not used to choose parameters or algorithms.
+
+The eight-asset pilot and full-corpus smoke use different manifests and
+work budgets. Their scores must not be treated as an improvement comparison.
+The default 642+64-camera preset has not been benchmarked over the full corpus.
 
 ## Validation findings
 
@@ -81,7 +114,10 @@ End-to-end repeats and current run status are in RESULTS.md.
   research-only callback. The callback now owns its scratch path.
 - 681,605 sanitized fuzz executions passed after the first fix; an expanded
   run including coupled wedges and component pruning passed 596,246 inputs.
+  The final packed reducer passed another 515,929 inputs in 61 seconds.
   These are bounded fuzz campaigns, not proof of memory safety.
+
+Build, package and contract-test results are recorded in [VALIDATION.md](VALIDATION.md).
 
 Preliminary runs were recorded before the first Git commit. They retain
 binary/source hashes and complete per-asset rows; subsequent runs should

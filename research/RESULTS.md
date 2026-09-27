@@ -23,8 +23,9 @@ SCORE = 100 × (1 − category-balanced mean retained triangle ratio). Compare r
 | [Attributes / coupled](runs/profile-attributes/summary.json) | rebuild/attributes/hybrid, N=8, budget=8 | 8/8 | 5.76 | 55.63 | 3 | 0 |
 | [Schedule / 6 levels](runs/schedule-six/summary.json) | rebuild/coverage/hybrid, N=6, budget=8 | 8/8 | 91.43 | 49.30 | 0 | 0 |
 | [Schedule / 12 levels](runs/schedule-twelve/summary.json) | rebuild/coverage/hybrid, N=12, budget=8 | 8/8 | 94.39 | 101.32 | 0 | 0 |
-| Round 3 / scalar repeat | pending | no | — | — | — | — |
-| Round 3 / AVX2 dispatch | pending | no | — | — | — | — |
+| [Round 3 / scalar repeat](runs/round3-scalar/summary.json) | rebuild/coverage/direct, N=8, budget=8 | 8/8 | 55.69 | 93.42 | 0 | 0 |
+| [Round 3 / AVX2 dispatch](runs/round3-dispatch/summary.json) | rebuild/coverage/direct, N=8, budget=8 | 8/8 | 55.69 | 92.96 | 0 | 0 |
+| [Round 3 / shared source history](runs/round3-compact-history/summary.json) | rebuild/coverage/direct, N=8, budget=8 | 8/8 | 55.69 | 93.30 | 0 | 0 |
 | [Full corpus / small-camera smoke](runs/corpus-smoke/summary.json) | rebuild/coverage/progressive, N=8, budget=2 | 120/120 | 90.78 | 1013.50 | 0 | 0 |
 
 Timings are measured on a shared workstation and include the evaluator and export. External adapters additionally include process startup and PLY interchange. They are not isolated kernel timings. Each run retains raw rows, configuration, camera, input and binary hashes.

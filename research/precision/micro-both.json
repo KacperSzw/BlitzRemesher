@@ -1,0 +1,96 @@
+{
+  "candidate_bytes": 24,
+  "compiler": "Clang 21.1.8",
+  "distance_px": 1.0,
+  "full": {
+    "distance": {
+      "max_ms": 295.657083,
+      "median_ms": 271.665764,
+      "min_ms": 260.284024,
+      "samples_ms": [
+        271.665764,
+        278.452895,
+        264.090263,
+        284.956884,
+        260.284024,
+        295.657083,
+        262.302309
+      ]
+    },
+    "raster": {
+      "max_ms": 114.895818,
+      "median_ms": 110.270709,
+      "min_ms": 104.750263,
+      "samples_ms": [
+        104.750263,
+        114.895818,
+        112.722021,
+        114.476279,
+        107.179094,
+        110.270709,
+        104.854676
+      ]
+    }
+  },
+  "mesh_triangles": 18432,
+  "mesh_vertices": 9409,
+  "numerics": {
+    "nonfinite_costs": 0,
+    "nonfinite_solves": 0,
+    "position_fallbacks": 514,
+    "singular_solves": 0,
+    "solve_attempts": 143974
+  },
+  "output_fnv1a64": 5044858689265269171,
+  "output_triangles": 2048,
+  "packed": {
+    "distance": {
+      "max_ms": 201.933078,
+      "median_ms": 201.029531,
+      "min_ms": 197.286062,
+      "samples_ms": [
+        201.029531,
+        198.673742,
+        201.38295,
+        201.224153,
+        198.32372,
+        197.286062,
+        201.933078
+      ]
+    },
+    "raster": {
+      "max_ms": 11.755903,
+      "median_ms": 11.29218,
+      "min_ms": 11.071175,
+      "samples_ms": [
+        11.29218,
+        11.559693,
+        11.29054,
+        11.755903,
+        11.096072,
+        11.554762,
+        11.071175
+      ]
+    }
+  },
+  "purpose": "Controlled CPU kernel timings; procedural fixture, no visual SCORE",
+  "quadric_bytes": 40,
+  "reduction": {
+    "max_ms": 37.941750999999996,
+    "median_ms": 35.089844,
+    "min_ms": 33.671745,
+    "samples_ms": [
+      33.685771,
+      33.764397,
+      33.671745,
+      36.464082,
+      37.941750999999996,
+      35.089844,
+      36.818504
+    ]
+  },
+  "repetitions": 7,
+  "screen_pixels": 512,
+  "supersample": 4,
+  "warmups": 1
+}

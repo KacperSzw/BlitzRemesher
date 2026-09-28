@@ -13,16 +13,18 @@ struct Quadric {
     }
     double cost(Vec3 p) const {
         double x=p.x,y=p.y,z=p.z;
-        return std::max(0.0,a[0]*x*x+2*a[1]*x*y+2*a[2]*x*z+2*a[3]*x+a[4]*y*y+2*a[5]*y*z+2*a[6]*y+a[7]*z*z+2*a[8]*z+a[9]);
+        return std::max(0.0,a[0]*x*x+2.0*a[1]*x*y+2.0*a[2]*x*z+2.0*a[3]*x+a[4]*y*y+2.0*a[5]*y*z+2.0*a[6]*y+a[7]*z*z+2.0*a[8]*z+a[9]);
     }
-    bool solve(Vec3& p) const {
+    bool solve(Vec3& p,ReductionStats* stats) const {
+        if(stats)++stats->solve_attempts;
         double a00=a[0],a01=a[1],a02=a[2],a11=a[4],a12=a[5],a22=a[7];
         double c00=a11*a22-a12*a12,c01=a02*a12-a01*a22,c02=a01*a12-a02*a11;
         double c11=a00*a22-a02*a02,c12=a01*a02-a00*a12,c22=a00*a11-a01*a01;
         double det=a00*c00+a01*c01+a02*c02,scale=std::max({std::abs(a00),std::abs(a11),std::abs(a22)});
-        if(!(std::abs(det)>1e-12*scale*scale*scale))return false;
+        if(!std::isfinite(det)||!std::isfinite(scale)){if(stats)++stats->nonfinite_solves;return false;}
+        if(!(std::abs(det)>1e-12*scale*scale*scale)){if(stats)++stats->singular_solves;return false;}
         p={float(-(c00*a[3]+c01*a[6]+c02*a[8])/det),float(-(c01*a[3]+c11*a[6]+c12*a[8])/det),float(-(c02*a[3]+c12*a[6]+c22*a[8])/det)};
-        return finite(p);
+        if(!finite(p)){if(stats)++stats->nonfinite_solves;return false;}return true;
     }
 };
 static_assert(sizeof(Quadric)==80);
@@ -34,6 +36,7 @@ static_assert(sizeof(Candidate)==32);
 struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces;};
 constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8,LinkNeighbor=16,LinkOpposite=32;
 }
+ReductionStorage reduction_storage() {return {uint8_t(sizeof(Quadric)),uint8_t(sizeof(Candidate))};}
 static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* trace) {
     if(auto error=validate(source);!error.empty())throw std::invalid_argument(error);
     if(unsigned(settings.output)>1||unsigned(settings.objective)>3||!std::isfinite(settings.normal_weight)||settings.normal_weight<0
@@ -154,7 +157,8 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
             if(!(flags[u]&Boundary) && sum.cost(p[v])<cost) {std::swap(u,v);point=p[u];cost=sum.cost(point);}
             if(settings.output==OutputMode::Rebuild&&!((flags[u]|flags[v])&Boundary)) {
                 Vec3 x;
-                if(sum.solve(x)&&length(x-(p[u]+p[v])*.5)<=2*length(p[u]-p[v])&&sum.cost(x)<cost){point=x;cost=sum.cost(x);}
+                if(sum.solve(x,stats)&&length(x-(p[u]+p[v])*.5)<=2*length(p[u]-p[v])&&sum.cost(x)<cost){point=x;cost=sum.cost(x);}
+                else if(stats)++stats->position_fallbacks;
                 x=(p[u]+p[v])*.5;if(sum.cost(x)<cost){point=x;cost=sum.cost(x);}
             }
             if(!mesh.normals.empty()) {
@@ -162,6 +166,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 cost+=settings.normal_weight*bend*dot(p[u]-p[v],p[u]-p[v])*1e-3;
                 if(settings.objective==Objective::Visual)cost+=bend*bend*dot(p[u]-p[v],p[u]-p[v])*.05;
             }
+            if(stats&&!std::isfinite(cost))++stats->nonfinite_costs;
             candidates.push_back({cost,u,v,point});
         }
         if(stats){stats->last_candidates=uint32_t(candidates.size());if(pass==0)stats->first_locked_edges=stats->last_locked_edges;}
@@ -217,9 +222,14 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 double t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
                 if(!mesh.normals.empty())mesh.normals[u]=normalized(mesh.normals[u]*(1-t)+mesh.normals[v]*t);
                 if(!mesh.uv.empty()) {auto a=mesh.uv[u],z=mesh.uv[v];mesh.uv[u]={float(a.x*(1-t)+z.x*t),float(a.y*(1-t)+z.y*t)};}
-                for(auto stream:{&mesh.colors,&mesh.tangents}) if(!stream->empty()) {
-                    auto a=(*stream)[u],z=(*stream)[v];
-                    (*stream)[u]={float(a.x*(1-t)+z.x*t),float(a.y*(1-t)+z.y*t),float(a.z*(1-t)+z.z*t),a.w};
+                if(!mesh.colors.empty()) {
+                    auto a=mesh.colors[u],z=mesh.colors[v];
+                    auto channel=[&](uint8_t x,uint8_t y){return uint8_t(std::floor(x*(1-t)+y*t+.5));};
+                    mesh.colors[u]={channel(a.r,z.r),channel(a.g,z.g),channel(a.b,z.b),a.a};
+                }
+                if(!mesh.tangents.empty()) {
+                    auto a=mesh.tangents[u],z=mesh.tangents[v];
+                    mesh.tangents[u]={float(a.x*(1-t)+z.x*t),float(a.y*(1-t)+z.y*t),float(a.z*(1-t)+z.z*t),a.w};
                 }
             }
             p[u]=c.point;q[u]+=q[v];map[v]=u;remaining-=removed;++collapsed;

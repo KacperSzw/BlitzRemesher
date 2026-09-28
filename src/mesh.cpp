@@ -2,6 +2,13 @@
 #include <limits>
 #include <stdexcept>
 namespace blitz {
+ColorRGBA8 quantize_color(double r,double g,double b,double a) {
+    auto channel=[](double v) {
+        if(!std::isfinite(v)||v<0||v>1)throw std::invalid_argument("color channels must be finite and in [0,1]");
+        return uint8_t(std::floor(v*255+.5));
+    };
+    return {channel(r),channel(g),channel(b),channel(a)};
+}
 Bounds bounds(MeshView m) {
     if(!m.positions) return {};
     Vec3 lo=m.positions[0],hi=lo;
@@ -26,7 +33,7 @@ std::string validate(MeshView m) {
     for(size_t i=0;i<n;++i) {
         if(!finite(m.positions[i])||(m.normals&&!finite(m.normals[i]))) return "nonfinite position or normal";
         if(m.uv) {auto t=m.uv[i];if(!std::isfinite(t.x)||!std::isfinite(t.y))return "nonfinite UV";}
-        for(auto s:{m.colors,m.tangents}) if(s) {auto t=s[i];if(!std::isfinite(t.x)||!std::isfinite(t.y)||!std::isfinite(t.z)||!std::isfinite(t.w))return "nonfinite attribute";}
+        if(m.tangents) {auto t=m.tangents[i];if(!std::isfinite(t.x)||!std::isfinite(t.y)||!std::isfinite(t.z)||!std::isfinite(t.w))return "nonfinite attribute";}
     }
     auto b=bounds(m); if(!(b.radius>0)||!std::isfinite(b.radius)) return "zero or invalid source extent";
     return {};

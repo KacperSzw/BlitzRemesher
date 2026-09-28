@@ -1,4 +1,18 @@
-# Scoring protocol v1
+# Scoring protocol v2
+
+Version 2 fixes canonical vertex colors to linear RGBA8. Normalized float and
+unsigned-16 file colors are rounded to nearest (ties upward) at import;
+nonfinite/out-of-range colors fail import. Source streams supplied to the
+library are already RGBA8 and remain immutable. All variants and external
+baselines consume the same canonical inputs; record their attribute hashes.
+The SCORE formula and visual gates are unchanged. Historical v1 results are
+archived observations, not comparable baselines for v2. Rerun every baseline
+under v2 before a new comparison; unsupported capabilities remain failures.
+
+Precision comparisons record quadric/candidate record sizes, packed/full
+coverage mode, generation and stage timings, numeric rejection counters,
+process peak RSS, output hashes and final/last-three retained ratios. Repeat
+timings with identical workloads and disclose shared-workstation noise.
 
 For each complete asset chain:
 r_m=sum(T_i,i=1..N-1)/((N-1)*T_0).

@@ -1,0 +1,96 @@
+{
+  "backend": "scalar",
+  "baseline_reference": "CGAL 6.1.1 in flake.lock; exact executable identified by SHA-256",
+  "baseline_sha256": "1bdfbafa1d8fdeb1d2100a1f4245a609d18d9695c687bc2355d81039a41a53e0",
+  "binary_sha256": "bceb0b6e85708194fe2b402485a6f012df218e0c549cbeb1b1c0e506ce8165e3",
+  "build": {
+    "binary_sha256": "bceb0b6e85708194fe2b402485a6f012df218e0c549cbeb1b1c0e506ce8165e3",
+    "git_revision": "e5f151d057dedddee89b49f47a07229ac19b6107",
+    "source_tree_sha256": "e125d42d7d199d1cb90a8cda13ae098f69500ea8729ee97e5995cb5a2d57f9f4",
+    "tracked_diff_sha256": "ea534b3f5a8a74c5677577058ddb60abe9fac1b7dc6688dba02d445b7b011cc4"
+  },
+  "camera_sha256": "b9149c5ce5cfa42a25b234d3f218239937986513cdeb6413d97bdc3b7048071f",
+  "candidate_bytes": 32,
+  "compiler": "Clang 21.1.8",
+  "config": {
+    "attribute_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 32.0,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "direct",
+    "coupled_wedges": false,
+    "force_scalar": true,
+    "last_pixels": 16.0,
+    "levels": 8,
+    "max_lod0_delta_px": null,
+    "max_supersample": 8,
+    "meters_per_unit": 1.0,
+    "normal_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "objective": "quadric",
+    "output": "rebuild",
+    "pixels_per_meter": 512.0,
+    "profile": "coverage",
+    "prune": false,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0.0,
+        2.0
+      ],
+      [
+        1.0,
+        3.0
+      ]
+    ],
+    "weights": {
+      "color": 4.0,
+      "material": 4.0,
+      "normal": 5.729577951308232
+    }
+  },
+  "config_sha256": "b26b52b1a01fe6c0cbfcb4405185b1ec107a75863e628b8d3800443e85ca38b9",
+  "cpu": "model name\t: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "input_format": "linear-rgba8-v2",
+  "limit": 18446744073709551615,
+  "manifest_sha256": "4ae0b74dbe76d7b67453f67efec34c63a0cc0fe3c137ab30817cd52937578ae0",
+  "method": "cgal-qem",
+  "output_hash_scope": "output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data",
+  "packed_coverage": true,
+  "peak_rss_scope": "process high-water; KiB",
+  "protocol_sha256": "0de5d1904b4ccb3f1543eb848b89caf043c6154d3e3f72e8605253162e115aed",
+  "quadric_bytes": 80,
+  "run_sha256": "a3778be37d27e8fad7e241bb4075ff0d67e0ccea7dd227052108e5b41e9052b5",
+  "split": "development",
+  "stage_timing": true,
+  "threads": 1,
+  "version": 2
+}

@@ -1,4 +1,5 @@
 #include "blitz/remesher.hpp"
+#include "timing.hpp"
 #include <memory>
 #include <stdexcept>
 namespace blitz {
@@ -79,10 +80,11 @@ EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,boo
     e.weights.normal*=s.normal_importance.at(t);
     e.weights.color*=s.attribute_importance.at(t);e.weights.material*=s.attribute_importance.at(t);
     e.views=audit?s.audit_views:s.search_views;e.supersample=audit?s.audit_supersample:s.search_supersample;
-    e.max_supersample=s.max_supersample;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;return e;
+    e.max_supersample=s.max_supersample;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;e.performance=s.performance;return e;
 }
 }
 Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+    if(s.performance)*s.performance={};
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     Result result;result.source=source;result.reference_bounds=bounds(source);
     auto steps=schedule(result.reference_bounds,s);
@@ -145,7 +147,15 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;
                 rs.prune=s.prune&&r%2==0;
                 rs.coupled_wedges=s.coupled_wedges;
-                auto candidate=proposer?proposer(input,rs):reduce(input,rs);
+                ReductionStats stats;rs.statistics=s.performance?&stats:nullptr;
+                Lod candidate;
+                {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);
+                 candidate=proposer?proposer(input,rs):reduce(input,rs);}
+                if(s.performance) {
+                    s.performance->solve_attempts+=stats.solve_attempts;s.performance->singular_solves+=stats.singular_solves;
+                    s.performance->nonfinite_solves+=stats.nonfinite_solves;s.performance->position_fallbacks+=stats.position_fallbacks;
+                    s.performance->nonfinite_costs+=stats.nonfinite_costs;
+                }
                 ++proposals;++result.candidate_evaluations;
                 if(candidate.shared_vertices&&!slot.direct&&!parent->lod.shared_vertices) {
                     // A reducer borrows from its actual input. An owned previous

@@ -5,10 +5,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define BLITZ_ABI_VERSION 1u
+#define BLITZ_ABI_VERSION 2u
 typedef enum blitz_status { BLITZ_OK=0, BLITZ_INVALID_ARGUMENT=1, BLITZ_OUT_OF_MEMORY=2, BLITZ_INTERNAL_ERROR=3, BLITZ_CANCELLED=4, BLITZ_BUDGET_LIMITED=5 } blitz_status;
 typedef struct blitz_stream { const void* data; size_t count, stride; } blitz_stream;
-/* Float xyz, xyz, uv, rgba, xyzw streams. Indices are aligned uint32_t. */
+typedef struct blitz_color_rgba8 { uint8_t r,g,b,a; } blitz_color_rgba8;
+/* Float xyz positions/normals, float uv, linear RGBA8 colors, float xyzw tangents.
+   Colors have four bytes per element (0..255); absent alpha on import is 255.
+   Indices are aligned uint32_t. Version 1 float color streams are unsupported. */
 typedef struct blitz_mesh {
     uint32_t struct_size, abi_version;
     blitz_stream positions, normals, uv, colors, tangents;

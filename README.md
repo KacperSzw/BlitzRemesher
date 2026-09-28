@@ -39,7 +39,9 @@ glTF scene transforms, mirrored winding, strided/sparse accessors and
 multiple material primitives are handled. Alpha materials, animation,
 skinning, morph targets and compressed mesh extensions are rejected.
 Only the first UV and vertex-color sets are imported. RGB streams are
-interpreted as linear.
+interpreted as linear. Vertex colors are stored as four RGBA8 bytes (0..255
+per channel). Normalized float and 16-bit file colors are rounded on import;
+nonfinite or out-of-range channels are rejected. Missing alpha becomes 255.
 
 Output contains chain.gltf, chain.bin and lods.json. The default glTF scene
 contains LOD0; other LOD meshes are identified in the manifest. Reuse mode
@@ -85,7 +87,7 @@ The versioned [C API](include/blitz/blitz.h) exposes plain descriptors,
 explicit status/error buffers and an opaque result handle:
 
 1. Initialize blitz_settings with blitz_settings_init.
-2. Fill blitz_mesh with float streams and aligned uint32 indices.
+2. Fill blitz_mesh with float geometry streams, RGBA8 colors and aligned uint32 indices.
 3. Call blitz_generate.
 4. Read each LOD with blitz_result_lod.
 5. Call blitz_result_destroy exactly once.
@@ -186,3 +188,24 @@ licenses.
 Installed CMake consumers use find_package(BlitzRemesher CONFIG REQUIRED)
 and link Blitz::remesher. BUILD_SHARED_LIBS=ON builds shared libraries.
 The C++ package propagates its C++20 requirement to consumers.
+
+Version 0.2 uses C ABI 2 and shared-library compatibility version 2. C++ colors
+are `ColorRGBA8`; C colors are `blitz_color_rgba8`. Migrate old float colors
+before calling the library; descriptors carrying ABI 1 are rejected. Strided
+RGBA8 streams need only byte alignment and retain their original bytes in reuse.
+Rebuilt colors are rounded when stored; raster interpolation remains floating
+point. Exported glTF uses normalized unsigned-byte colors and PLY uses uchar RGBA.
+
+Production uses one precision configuration: float32 positions, normals, UVs
+and tangents, RGBA8 colors, double quadrics and double candidate costs.
+Coverage-only evaluation always uses packed masks; normal/attribute profiles
+and reference tests retain the full rasterizer. Experimental precision switches
+have been removed. Their results and restoration patch remain in the
+[research archive](research/precision/ARCHIVE.md).
+Optional C++ `PerformanceStats` accumulates stage times and numerical counters;
+`generate` resets it and `evaluate` adds to it. No instrumentation runs unless
+the caller supplies the borrowed pointer. The benchmark runner enables it,
+records the compiled storage configuration, and hashes canonical input attributes.
+Protocol v2 results must be compared with freshly rerun v2 baselines.
+Measured speed, memory, quality changes and the complete validation matrix are
+in [the precision report](research/precision/REPORT.md).

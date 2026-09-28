@@ -132,7 +132,9 @@ int benchmark_main(int argc,char** argv) {
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
     auto corpus=read(manifest);auto settings=settings_json(read(config));auto normalized=settings_json(settings);
-    json metadata={{"version",1},{"manifest_sha256",file_hash(manifest)},{"config",normalized},{"config_sha256",digest(normalized.dump())},
+    auto storage=reduction_storage();
+    json metadata={{"version",2},{"input_format","linear-rgba8-v2"},{"quadric_bytes",storage.quadric_bytes},{"candidate_bytes",storage.candidate_bytes},
+      {"packed_coverage",packed_coverage_enabled()},{"stage_timing",true},{"manifest_sha256",file_hash(manifest)},{"config",normalized},{"config_sha256",digest(normalized.dump())},
       {"protocol_sha256",file_hash("research/PROTOCOL.md")},{"compiler",__VERSION__},{"split",split},{"limit",limit},{"threads",1},
       {"backend",evaluator_backend(settings.force_scalar)},{"peak_rss_scope","process high-water; KiB"}};
     metadata["camera_sha256"]=digest(normalized["search_views"].dump()+normalized["audit_views"].dump());
@@ -151,6 +153,8 @@ int benchmark_main(int argc,char** argv) {
 #endif
     if(fs::exists(build_stamp))metadata["build"]=read(build_stamp);
     else if(build_stamp!="research/build.json")throw std::invalid_argument("explicit build stamp is missing");
+    if(metadata.contains("binary_sha256")&&metadata.contains("build")&&metadata["build"].contains("binary_sha256")
+       &&metadata["build"]["binary_sha256"]!=metadata["binary_sha256"])throw std::invalid_argument("build stamp belongs to a different executable");
     auto runhash=digest(metadata.dump());metadata["run_sha256"]=runhash;
     fs::create_directories(output/"rows");
     if(fs::exists(output/"metadata.json")&&read(output/"metadata.json")!=metadata)throw std::runtime_error("resume refused: input, settings, protocol or binary changed");
@@ -172,6 +176,8 @@ int benchmark_main(int argc,char** argv) {
             row["source_files"]=asset["files"];
             try {
                 auto mesh=load_mesh(asset.at("path").get<std::string>());settings.cancelled=[&]{return std::chrono::steady_clock::now()>=deadline;};
+                row["load_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
+                row["canonical_attributes_sha256"]=attribute_hash(mesh.view());
                 Proposer proposer;
                 if(method!="native") {
                     if(settings.profile!=Profile::Coverage)throw std::runtime_error("external adapters expose geometry-only coverage capabilities");
@@ -193,14 +199,27 @@ int benchmark_main(int argc,char** argv) {
                         return l;
                     };
                 }
-                auto result=generate(mesh.view(),settings,proposer);row["result"]=result_json(result);
+                PerformanceStats work;settings.performance=&work;
+                auto generation_begin=std::chrono::steady_clock::now();
+                auto result=generate(mesh.view(),settings,proposer);
+                row["generation_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-generation_begin).count();
+                row["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
+                row["numerics"]={{"solve_attempts",work.solve_attempts},{"singular_solves",work.singular_solves},{"nonfinite_solves",work.nonfinite_solves},
+                  {"position_fallbacks",work.position_fallbacks},{"nonfinite_costs",work.nonfinite_costs}};
+                row["result"]=result_json(result);
                 row["complete"]=result.status==Status::Complete;
                 double triangles=0;for(size_t i=1;i<result.lods.size();++i)triangles+=result.lods[i].data.indices.size()/3;
                 row["ratio"]=triangles/((result.lods.size()-1)*mesh.view().triangles());row["fallback"]=row["ratio"]==1;
+                row["final_ratio"]=double(result.lods.back().data.indices.size()/3)/mesh.view().triangles();
+                size_t tail_count=std::min<size_t>(3,result.lods.size()-1);double tail=0;
+                for(size_t i=result.lods.size()-tail_count;i<result.lods.size();++i)tail+=result.lods[i].data.indices.size()/3;
+                row["last_three_ratio"]=tail/(tail_count*mesh.view().triangles());
                 std::string output_hash;for(auto& l:result.lods){output_hash+=digest({reinterpret_cast<const std::byte*>(l.data.indices.data()),l.data.indices.size()*4});output_hash+=digest({reinterpret_cast<const std::byte*>(l.data.positions.data()),l.data.positions.size()*sizeof(Vec3)});}
                 row["output_sha256"]=digest(output_hash);
                 std::string attributes;for(auto& l:result.lods)attributes+=attribute_hash(l.view(result.source));row["attributes_sha256"]=digest(attributes);
+                auto export_begin=std::chrono::steady_clock::now();
                 if(result.status==Status::Complete)save_chain(result,output/"meshes"/id);
+                row["export_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-export_begin).count();
             }catch(const std::exception& e){row["failure"]=e.what();row["ratio"]=1;row["fallback"]=true;row["complete"]=std::chrono::steady_clock::now()<deadline;row["failed"]=true;}
             row["seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();row["peak_rss_kib"]=rss();write(path,row);
         }

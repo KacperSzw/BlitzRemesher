@@ -1,0 +1,71 @@
+{
+  "failures": [],
+  "full_packed_agreement": [],
+  "runs": {
+    "production-large-1": {
+      "assets": 2,
+      "complete": true,
+      "failed": 0,
+      "fallbacks": 0,
+      "final_ratio": 0.03430089331207958,
+      "generation_seconds": 37.313532406,
+      "last_three_ratio": 0.070836235467902,
+      "max_adjacent_error_px": 2.7071077811865476,
+      "max_changed_area": 0.3528816986855409,
+      "max_source_error_px": 2.9431757586863374,
+      "numerics": {
+        "nonfinite_costs": 0,
+        "nonfinite_solves": 0,
+        "position_fallbacks": 46207,
+        "singular_solves": 12418,
+        "solve_attempts": 2004376
+      },
+      "peak_rss_kib": 65760,
+      "repeat": 1,
+      "scenario": "large",
+      "score": 76.4099282051419,
+      "stage_seconds": {
+        "distance": 25.695742899000003,
+        "raster": 11.193402964,
+        "reduction": 0.419469232
+      },
+      "variant": "production",
+      "verified_gates": 32,
+      "wall_seconds": 37.318356462
+    },
+    "production-pilot-1": {
+      "assets": 8,
+      "complete": true,
+      "failed": 0,
+      "fallbacks": 0,
+      "final_ratio": 0.37105868932180414,
+      "generation_seconds": 73.42630081499999,
+      "last_three_ratio": 0.37243134252761356,
+      "max_adjacent_error_px": 1.9818626595847435,
+      "max_changed_area": 0.5953488372093023,
+      "max_source_error_px": 2.2071077811865476,
+      "numerics": {
+        "nonfinite_costs": 0,
+        "nonfinite_solves": 0,
+        "position_fallbacks": 117065,
+        "singular_solves": 34186,
+        "solve_attempts": 52736628
+      },
+      "peak_rss_kib": 305424,
+      "repeat": 1,
+      "scenario": "pilot",
+      "score": 62.41591640256985,
+      "stage_seconds": {
+        "distance": 4.99597699,
+        "raster": 32.16230533200001,
+        "reduction": 35.773923904
+      },
+      "variant": "production",
+      "verified_gates": 128,
+      "wall_seconds": 74.23055063800001
+    }
+  },
+  "source_tree_sha256": "6ced0b3311339a2d04c0130c660b67032fd8c0c676f051149404ef44ad8f89c3",
+  "timing_repetitions": {},
+  "variant_comparisons": []
+}

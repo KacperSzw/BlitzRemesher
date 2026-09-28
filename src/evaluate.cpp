@@ -1,4 +1,8 @@
 #include "blitz/evaluate.hpp"
+#include "coverage.hpp"
+#include "timing.hpp"
+#include <bit>
+#include <type_traits>
 #include <stdexcept>
 #include <numeric>
 #if defined(BLITZ_AVX2) && (defined(__x86_64__) || defined(_M_X64))
@@ -45,9 +49,13 @@ void edt_line(const float* f,float* out,int n,std::vector<int>& v,std::vector<do
         q=end;
     }
 }
-std::vector<float> distance_field(const Raster& r,bool scalar) {
-    size_t n=r.pixels.size();std::vector<float> a(n),b(n);
-    for(size_t i=0;i<n;++i)a[i]=r.pixels[i].covered?0.f:1e15f;
+bool covered(const Raster& r,size_t i) {return r.pixels[i].covered;}
+bool covered(const detail::CoverageRaster& r,size_t i) {return r.covered(i);}
+bool valid_shape(const Raster& r) {return r.pixels.size()==size_t(r.width)*r.height;}
+bool valid_shape(const detail::CoverageRaster& r) {return r.words.size()==(size_t(r.width)*r.height+63)/64;}
+template<class R> std::vector<float> distance_field(const R& r,bool scalar) {
+    size_t n=size_t(r.width)*r.height;std::vector<float> a(n),b(n);
+    for(size_t i=0;i<n;++i)a[i]=covered(r,i)?0.f:1e15f;
     size_t len=std::max(r.width,r.height);std::vector<int> v(len);std::vector<double> z(len+1);
     std::vector<float> f(len),d(len);
     for(uint32_t y=0;y<r.height;++y)edt_line(a.data()+size_t(y)*r.width,b.data()+size_t(y)*r.width,int(r.width),v,z,scalar);
@@ -112,19 +120,24 @@ std::vector<Camera> cameras(const Bounds& b,double screen,ViewSet set) {
     }
     return out;
 }
-Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
+template<class R> R rasterize_impl(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
+    constexpr bool packed=std::is_same_v<R,detail::CoverageRaster>;
     if(!ss||!std::isfinite(screen)||screen<=0||screen>16384)throw std::invalid_argument("invalid raster extent");
     uint32_t size=uint32_t(std::ceil(screen+8))*ss;
     if(uint64_t(size)*size>64000000)throw std::length_error("raster exceeds per-view memory budget");
-    Raster out{size,size,std::vector<Pixel>(size_t(size)*size)};
-    struct P {double x,y,z;Vec3 n;Vec4 col;};
+    R out;out.width=out.height=size;
+    if constexpr(packed)out.words.resize((size_t(size)*size+63)/64);
+    else out.pixels.resize(size_t(size)*size);
+    struct Position {double x,y,z;};
+    struct AttributedPosition {double x,y,z;Vec3 n;Vec4 col;};
+    using P=std::conditional_t<packed,Position,AttributedPosition>;
     std::vector<P> projected(m.positions.count);
     for(size_t i=0;i<m.positions.count;++i) {
         auto a=m.positions[i];double x=double(a.x)-b.center.x,y=double(a.y)-b.center.y,z0=double(a.z)-b.center.z;
         auto dp=[&](Vec3 axis){return x*axis.x+y*axis.y+z0*axis.z;};
         double z=c.distance-dp(c.forward),scale=c.perspective?c.focal/z:c.scale;
-        projected[i]={dp(c.right)*scale*ss+size*.5,dp(c.up)*scale*ss+size*.5,z,
-          m.normals?normalized(m.normals[i]):Vec3{},m.colors?m.colors[i]:Vec4{1,1,1,1}};
+        auto& p=projected[i];p.x=dp(c.right)*scale*ss+size*.5;p.y=dp(c.up)*scale*ss+size*.5;p.z=z;
+        if constexpr(!packed){p.n=m.normals?normalized(m.normals[i]):Vec3{};p.col=m.colors?linear_color(m.colors[i]):Vec4{1,1,1,1};}
     }
     for(size_t f=0;f<m.triangles();++f) {
         auto ia=m.indices[3*f],ib=m.indices[3*f+1],ic=m.indices[3*f+2];
@@ -136,7 +149,8 @@ Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_
         if(back&&!two)continue;
         auto delta=[&](uint32_t i){auto p=m.positions[i],p0=m.positions[ia];double scale=b.diameter();
             return Vec3{float((double(p.x)-p0.x)/scale),float((double(p.y)-p0.y)/scale),float((double(p.z)-p0.z)/scale)};};
-        Vec3 geometric=normalized(cross(delta(ib),delta(ic)));
+        Vec3 geometric{};
+        if constexpr(!packed)geometric=normalized(cross(delta(ib),delta(ic)));
         if(back){std::swap(d,e);area=-area;geometric=geometric*-1;}
         double minx=std::min({a.x,d.x,e.x}),maxx=std::max({a.x,d.x,e.x});
         double miny=std::min({a.y,d.y,e.y}),maxy=std::max({a.y,d.y,e.y});
@@ -150,7 +164,10 @@ Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_
         for(int y=y0;y<=y1;++y)for(int x=x0;x<=x1;++x) {
             double u=edge(d.x,d.y,e.x,e.y,x+.5,y+.5),v=edge(e.x,e.y,a.x,a.y,x+.5,y+.5),w=edge(a.x,a.y,d.x,d.y,x+.5,y+.5);
             if(u+r0<0||v+r1<0||w+r2<0)continue;
-            auto& pixel=out.pixels[size_t(y)*size+x];pixel.covered=1;
+            const size_t index=size_t(y)*size+x;
+            if constexpr(packed)out.words[index/64]|=uint64_t(1)<<(index%64);
+            else {
+            auto& pixel=out.pixels[index];pixel.covered=1;
             if(u<0||v<0||w<0)continue;
             u/=area;v/=area;w/=area;
             double depth;
@@ -163,22 +180,33 @@ Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_
             if(length(pixel.normal)<.5)pixel.normal=geometric;
             else if(back)pixel.normal=pixel.normal*-1;
             pixel.color={float(u*a.col.x+v*d.col.x+w*e.col.x),float(u*a.col.y+v*d.col.y+w*e.col.y),float(u*a.col.z+v*d.col.z+w*e.col.z),1};
+            }
         }
     }
     return out;
 }
-double coverage_distance(const Raster& a,const Raster& b,uint8_t ss,bool scalar) {
-    if(a.width!=b.width||a.height!=b.height||!ss||a.pixels.size()!=size_t(a.width)*a.height||b.pixels.size()!=a.pixels.size())throw std::invalid_argument("raster shapes differ");
+Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
+    return rasterize_impl<Raster>(m,b,c,screen,ss,force_two);
+}
+detail::CoverageRaster detail::rasterize_coverage(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
+    return rasterize_impl<CoverageRaster>(m,b,c,screen,ss,force_two);
+}
+template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss,bool scalar) {
+    if(a.width!=b.width||a.height!=b.height||!ss||!valid_shape(a)||!valid_shape(b))throw std::invalid_argument("raster shapes differ");
     bool ca=false,cb=false,same=true;
-    for(size_t i=0;i<a.pixels.size();++i){ca|=bool(a.pixels[i].covered);cb|=bool(b.pixels[i].covered);same&=a.pixels[i].covered==b.pixels[i].covered;}
+    if constexpr(std::is_same_v<R,detail::CoverageRaster>) {
+        for(size_t i=0;i<a.words.size();++i){ca|=a.words[i]!=0;cb|=b.words[i]!=0;same&=a.words[i]==b.words[i];}
+    } else for(size_t i=0;i<a.pixels.size();++i){ca|=covered(a,i);cb|=covered(b,i);same&=a.pixels[i].covered==b.pixels[i].covered;}
     if(same)return 0;if(ca!=cb)return inf;
     double maximum=0;
-    auto directed=[&](const Raster& from,const Raster& to) {
+    auto directed=[&](const R& from,const R& to) {
         auto field=distance_field(to,scalar);
-        for(size_t i=0;i<from.pixels.size();++i)if(from.pixels[i].covered)maximum=std::max(maximum,double(field[i]));
+        for(size_t i=0;i<field.size();++i)if(covered(from,i))maximum=std::max(maximum,double(field[i]));
     };
     directed(a,b);directed(b,a);return std::sqrt(maximum)/ss;
 }
+double coverage_distance(const Raster& a,const Raster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
+double detail::coverage_distance(const CoverageRaster& a,const CoverageRaster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
 double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s,double limit) {
     if(s.profile==Profile::Coverage || (s.weights.normal==0 && (s.profile!=Profile::Attributes||(s.weights.color==0&&s.weights.material==0))))return 0;
     if(a.width!=b.width||a.height!=b.height||!s.supersample||!std::isfinite(limit)||limit<0||a.pixels.size()!=size_t(a.width)*a.height||b.pixels.size()!=a.pixels.size())throw std::invalid_argument("invalid attributed raster settings");
@@ -210,6 +238,36 @@ double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s
     if(!std::isfinite(directed(a,b))||!std::isfinite(directed(b,a)))return inf;
     return std::sqrt(maximum);
 }
+template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
+    R a,c;
+    {
+        detail::ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
+        a=rasterize_impl<R>(reference,b,camera,s.screen_size,ss,s.force_two_sided);
+        c=rasterize_impl<R>(candidate,b,camera,s.screen_size,ss,s.force_two_sided);
+    }
+    detail::ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
+    current.supersample=ss;
+    current.coverage=coverage_distance_impl(a,c,ss,s.force_scalar);
+    current.coverage_upper=current.coverage+2*std::sqrt(2.0)/ss+1e-6;
+    if(c.clipped||a.clipped)current.coverage_upper=inf;
+    size_t changed=0,total=0;
+    if constexpr(std::is_same_v<R,detail::CoverageRaster>) {
+        for(size_t i=0;i<a.words.size();++i){changed+=std::popcount(a.words[i]^c.words[i]);total+=std::popcount(a.words[i]|c.words[i]);}
+        current.error=current.coverage_upper;
+    } else {
+        for(size_t i=0;i<a.pixels.size();++i) {
+            changed+=a.pixels[i].covered!=c.pixels[i].covered;
+            total+=a.pixels[i].covered||c.pixels[i].covered;
+            if(s.profile!=Profile::Coverage&&a.pixels[i].visible&&c.pixels[i].visible)
+                current.normal_degrees=std::max(current.normal_degrees,std::acos(std::clamp(dot(a.pixels[i].normal,c.pixels[i].normal),-1.0,1.0))*180/pi);
+        }
+        auto config=s;config.supersample=ss;
+        current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit));
+    }
+    current.changed_area=total?double(changed)/total:0;
+    current.passed=current.error<=s.limit;
+}
+bool packed_coverage_enabled() {return true;}
 Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
     Measurement result;result.supersample=s.supersample;
     if(!(s.screen_size>0)||!std::isfinite(s.screen_size)||!(b.radius>0)||!std::isfinite(b.radius)||!finite(b.center)||unsigned(s.profile)>2
@@ -224,25 +282,11 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
         if(s.cancelled&&s.cancelled()){result.complete=false;result.passed=false;return result;}
         Measurement current;current.worst_view=v;
         for(unsigned ss=s.supersample;;ss=std::min<unsigned>(s.max_supersample,ss*2)) {
-            Raster a,c;
-            try {a=rasterize(reference,b,views[v],s.screen_size,uint8_t(ss),s.force_two_sided);
-                 c=rasterize(candidate,b,views[v],s.screen_size,uint8_t(ss),s.force_two_sided);}
-            catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
-            current.supersample=uint8_t(ss);
-            current.coverage=coverage_distance(a,c,uint8_t(ss),s.force_scalar);
-            current.coverage_upper=current.coverage+2*std::sqrt(2.0)/ss+1e-6;
-            if(c.clipped||a.clipped)current.coverage_upper=inf;
-            size_t changed=0,total=0;
-            for(size_t i=0;i<a.pixels.size();++i) {
-                changed+=a.pixels[i].covered!=c.pixels[i].covered;
-                total+=a.pixels[i].covered||c.pixels[i].covered;
-                if(s.profile!=Profile::Coverage&&a.pixels[i].visible&&c.pixels[i].visible)
-                    current.normal_degrees=std::max(current.normal_degrees,std::acos(std::clamp(dot(a.pixels[i].normal,c.pixels[i].normal),-1.0,1.0))*180/pi);
+            try {
+                if(s.profile==Profile::Coverage)measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+                else measure_view<Raster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
             }
-            current.changed_area=total?double(changed)/total:0;
-            auto config=s;config.supersample=uint8_t(ss);
-            current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit));
-            current.passed=current.error<=s.limit;
+            catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
             // Refine only coverage uncertainty; sampled appearance failures remain explicit.
             if(current.passed||ss>=s.max_supersample||current.coverage-2*std::sqrt(2.0)/ss>s.limit
               ||!std::isfinite(current.error)||current.coverage_upper<=s.limit)break;

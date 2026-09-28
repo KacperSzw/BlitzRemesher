@@ -1,0 +1,96 @@
+{
+  "candidate_bytes": 32,
+  "compiler": "Clang 21.1.8",
+  "distance_px": 1.0,
+  "full": {
+    "distance": {
+      "max_ms": 297.165833,
+      "median_ms": 285.531992,
+      "min_ms": 282.032755,
+      "samples_ms": [
+        282.032755,
+        285.531992,
+        285.216667,
+        282.920728,
+        296.89696,
+        293.287844,
+        297.165833
+      ]
+    },
+    "raster": {
+      "max_ms": 121.502709,
+      "median_ms": 115.826393,
+      "min_ms": 110.429427,
+      "samples_ms": [
+        115.826393,
+        120.921421,
+        110.429427,
+        118.348537,
+        112.322377,
+        112.119528,
+        121.502709
+      ]
+    }
+  },
+  "mesh_triangles": 18432,
+  "mesh_vertices": 9409,
+  "numerics": {
+    "nonfinite_costs": 0,
+    "nonfinite_solves": 0,
+    "position_fallbacks": 0,
+    "singular_solves": 0,
+    "solve_attempts": 142554
+  },
+  "output_fnv1a64": 2967694258532617678,
+  "output_triangles": 2048,
+  "packed": {
+    "distance": {
+      "max_ms": 222.33475,
+      "median_ms": 219.19098,
+      "min_ms": 215.278963,
+      "samples_ms": [
+        215.278963,
+        216.509587,
+        220.537529,
+        219.36828,
+        222.33475,
+        219.19098,
+        217.306194
+      ]
+    },
+    "raster": {
+      "max_ms": 11.546506,
+      "median_ms": 11.047447,
+      "min_ms": 10.716749,
+      "samples_ms": [
+        11.047447,
+        11.546506,
+        10.716749,
+        11.317246,
+        10.847251,
+        11.145899,
+        10.968172
+      ]
+    }
+  },
+  "purpose": "Controlled CPU kernel timings; procedural fixture, no visual SCORE",
+  "quadric_bytes": 80,
+  "reduction": {
+    "max_ms": 36.512356,
+    "median_ms": 35.233826,
+    "min_ms": 34.688438,
+    "samples_ms": [
+      34.688438,
+      35.233826,
+      34.94536,
+      35.088307,
+      36.076941,
+      36.508863,
+      36.512356
+    ]
+  },
+  "repetitions": 7,
+  "screen_pixels": 512,
+  "supersample": 4,
+  "warmups": 1
+}

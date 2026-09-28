@@ -1,5 +1,53 @@
 # Validation record
 
+## Single production precision path
+
+The cleaned float32-geometry/RGBA8/double-reducer configuration passed 5/5
+release and 5/5 ASan+UBSan CTest targets, plus 4/4 GCC scalar and 4/4 shared
+targets. Installed C and C++ consumers built and executed successfully.
+Requests for removed precision variants fail explicitly. The restoration
+patch recovered the archived experimental source hash in an isolated copy.
+
+All ten replayed assets (eight-asset pilot and separate two-asset 512→16
+scenario) matched the frozen packed reference exactly: geometry, attributes,
+canonical inputs, complete audit/result records, retained ratios and numeric
+counters. Both scenarios had zero failures/fallbacks. No thresholds or SCORE
+denominators changed. See the [production report](precision/production/REPORT.md)
+and [UNORM16 negative findings](precision/unorm16/REPORT.md).
+
+## RGBA8 and precision work (protocol v2)
+
+All five Clang release configurations passed 5/5 CTest targets: full raster,
+packed coverage, float quadrics, float candidate costs, and both float options.
+The combined float configuration passed 5/5 ASan+UBSan targets. Its reducer
+fuzz campaign, including RGBA8 attributes, completed 402,990 executions in
+61 seconds with seed 2971082790 and a 4,096-byte input cap, without a sanitizer
+failure. The generated corpus and detailed logs are in `build/precision-*`.
+
+The GCC scalar configuration passed 4/4 targets. The shared-library
+configuration passed 4/4 targets, and separately installed C and C++ consumers
+built and executed successfully against ABI/compatibility version 2.
+
+New contracts cover all 256 channel values, rounding boundaries, invalid
+colors, normalized 16-bit/float imports, alpha preservation, byte PLY/glTF
+round trips, byte-aligned strided reuse and ABI 1 rejection. Coverage tests
+compare every mask sample with the full rasterizer across orthographic and
+perspective cameras, culling, clipping, degenerate geometry and supersampling;
+an independent brute-force distance calculation checks packed masks. Reducer
+tests cover planar/nearly planar surfaces, translated coordinate scales from
+1e-12 to 1e12, finite numerical diagnostics and immutable source colors.
+
+All 46 frozen v2 batches completed, covering 392 asset runs. All 74 paired
+full/packed asset-run comparisons produced identical source hashes, output
+hashes, attributes and complete measurement records, including all 20
+validation assets and every repeated timing scenario. The summary checked
+6,224 source/adjacent gate records, including LOD0 and repeated runs, against
+their retained thresholds. The three CGAL manifold failures remain explicit
+and in the original SCORE denominator. Native runs had no failed assets;
+normal/attribute pilots each retained their two unreduced fallbacks.
+See [the precision experiment plan](precision/PLAN.md) for the frozen scenarios
+and [the precision report](precision/REPORT.md) for final measurements.
+
 ## Round 4 additions
 
 The larger-screen/tail work passed 4/4 release CTest targets, 4/4

@@ -1,0 +1,190 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -6,9 +6,9 @@
+ option(BLITZ_SANITIZE "Address and undefined-behavior sanitizers" OFF)
+ option(BLITZ_FUZZ "Build libFuzzer targets (Clang)" OFF)
+ option(BLITZ_AVX2 "Enable runtime-dispatched AVX2 kernels" ON)
+-if(BLITZ_FLOAT_QUADRICS OR BLITZ_FLOAT_COSTS OR (DEFINED BLITZ_PACKED_COVERAGE AND NOT BLITZ_PACKED_COVERAGE))
+-  message(FATAL_ERROR "Experimental precision variants were removed. Production uses packed coverage and double quadrics/costs. See research/precision/ARCHIVE.md to restore the experiments.")
+-endif()
++option(BLITZ_PACKED_COVERAGE "Use exact packed masks for coverage-only evaluation" ON)
++option(BLITZ_FLOAT_QUADRICS "Research: store quadric coefficients in float" OFF)
++option(BLITZ_FLOAT_COSTS "Research: store candidate costs in float" OFF)
+ set(CMAKE_CXX_STANDARD 20)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+@@ -20,10 +20,11 @@
+ endif()
+ add_library(blitz_eval src/evaluate.cpp src/render_cost.cpp)
+ target_include_directories(blitz_eval PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+-target_compile_definitions(blitz_eval PRIVATE $<$<BOOL:${BLITZ_AVX2}>:BLITZ_AVX2>)
++target_compile_definitions(blitz_eval PRIVATE $<$<BOOL:${BLITZ_AVX2}>:BLITZ_AVX2> $<$<BOOL:${BLITZ_PACKED_COVERAGE}>:BLITZ_PACKED_COVERAGE>)
+ add_library(blitzremesher src/mesh.cpp src/simplify.cpp src/chain.cpp src/c_api.cpp)
+ target_include_directories(blitzremesher PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+ target_link_libraries(blitzremesher PUBLIC blitz_eval)
++target_compile_definitions(blitzremesher PRIVATE $<$<BOOL:${BLITZ_FLOAT_QUADRICS}>:BLITZ_FLOAT_QUADRICS> $<$<BOOL:${BLITZ_FLOAT_COSTS}>:BLITZ_FLOAT_COSTS>)
+ target_compile_features(blitzremesher PUBLIC cxx_std_20)
+ target_compile_features(blitz_eval PUBLIC cxx_std_20)
+ set_target_properties(blitzremesher blitz_eval PROPERTIES POSITION_INDEPENDENT_CODE ON WINDOWS_EXPORT_ALL_SYMBOLS ON)
+@@ -94,6 +95,7 @@
+ if(BLITZ_FUZZ)
+   add_executable(blitz-fuzz tests/fuzz.cpp src/mesh.cpp src/simplify.cpp)
+   target_include_directories(blitz-fuzz PRIVATE include)
++  target_compile_definitions(blitz-fuzz PRIVATE $<$<BOOL:${BLITZ_FLOAT_QUADRICS}>:BLITZ_FLOAT_QUADRICS> $<$<BOOL:${BLITZ_FLOAT_COSTS}>:BLITZ_FLOAT_COSTS>)
+   target_compile_options(blitz-fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+   target_link_options(blitz-fuzz PRIVATE -fsanitize=fuzzer,address,undefined)
+ endif()
+--- a/src/evaluate.cpp
++++ b/src/evaluate.cpp
+@@ -267,7 +267,13 @@
+     current.changed_area=total?double(changed)/total:0;
+     current.passed=current.error<=s.limit;
+ }
+-bool packed_coverage_enabled() {return true;}
++bool packed_coverage_enabled() {
++#if defined(BLITZ_PACKED_COVERAGE)
++    return true;
++#else
++    return false;
++#endif
++}
+ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
+     Measurement result;result.supersample=s.supersample;
+     if(!(s.screen_size>0)||!std::isfinite(s.screen_size)||!(b.radius>0)||!std::isfinite(b.radius)||!finite(b.center)||unsigned(s.profile)>2
+@@ -283,7 +289,7 @@
+         Measurement current;current.worst_view=v;
+         for(unsigned ss=s.supersample;;ss=std::min<unsigned>(s.max_supersample,ss*2)) {
+             try {
+-                if(s.profile==Profile::Coverage)measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
++                if(packed_coverage_enabled()&&s.profile==Profile::Coverage)measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+                 else measure_view<Raster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+             }
+             catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
+--- a/src/simplify.cpp
++++ b/src/simplify.cpp
+@@ -4,9 +4,11 @@
+ #include <stdexcept>
+ namespace blitz {
+ namespace {
+-struct Quadric {
+-    double a[10]{};
+-    Quadric& operator+=(const Quadric& b) {for(int i=0;i<10;++i)a[i]+=b.a[i];return *this;}
++template<class T> struct QuadricT {
++    T a[10]{};
++    QuadricT()=default;
++    template<class U> explicit QuadricT(const QuadricT<U>& b) {for(int i=0;i<10;++i)a[i]=T(b.a[i]);}
++    template<class U> QuadricT& operator+=(const QuadricT<U>& b) {for(int i=0;i<10;++i)a[i]+=b.a[i];return *this;}
+     void plane(double x,double y,double z,double w,double weight) {
+         double v[4]={x,y,z,w};int k=0;
+         for(int i=0;i<4;++i)for(int j=i;j<4;++j)a[k++]+=v[i]*v[j]*weight;
+@@ -27,12 +29,22 @@
+         if(!finite(p)){if(stats)++stats->nonfinite_solves;return false;}return true;
+     }
+ };
+-static_assert(sizeof(Quadric)==80);
++#if defined(BLITZ_FLOAT_QUADRICS)
++using Quadric=QuadricT<float>;
++#else
++using Quadric=QuadricT<double>;
++#endif
++static_assert(sizeof(QuadricT<float>)==40 && sizeof(QuadricT<double>)==80);
+ struct PositionKey {uint32_t x,y,z;bool operator==(const PositionKey&)const=default;};
+ struct PositionEntry {PositionKey key;uint32_t index;};
+ static_assert(sizeof(PositionEntry)==16);
+-struct Candidate {double cost;uint32_t u,v;Vec3 point;};
+-static_assert(sizeof(Candidate)==32);
++#if defined(BLITZ_FLOAT_COSTS)
++using CandidateCost=float;
++#else
++using CandidateCost=double;
++#endif
++struct Candidate {CandidateCost cost;uint32_t u,v;Vec3 point;};
++static_assert(sizeof(Candidate)==(sizeof(CandidateCost)==4?24:32));
+ struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces;};
+ constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8,LinkNeighbor=16,LinkOpposite=32;
+ }
+@@ -151,7 +163,8 @@
+             size_t j=i+1;while(j<edges.size()&&edges[j]==edges[i])++j;
+             auto u=uint32_t(edges[i]>>32),v=uint32_t(edges[i]);i=j;
+             if((flags[u]|flags[v])&Locked){if(stats)++stats->last_locked_edges;continue;}
+-            Quadric sum=q[u];sum+=q[v];
++            // Promote stored coefficients before combining an edge's temporary quadric.
++            QuadricT<double> sum(q[u]);sum+=q[v];
+             if((flags[v]&Boundary)&&!(flags[u]&Boundary))std::swap(u,v);
+             Vec3 point=p[u];double cost=sum.cost(point);
+             if(!(flags[u]&Boundary) && sum.cost(p[v])<cost) {std::swap(u,v);point=p[u];cost=sum.cost(point);}
+@@ -166,8 +179,11 @@
+                 cost+=settings.normal_weight*bend*dot(p[u]-p[v],p[u]-p[v])*1e-3;
+                 if(settings.objective==Objective::Visual)cost+=bend*bend*dot(p[u]-p[v],p[u]-p[v])*.05;
+             }
+-            if(stats&&!std::isfinite(cost))++stats->nonfinite_costs;
+-            candidates.push_back({cost,u,v,point});
++            if(stats&&(!std::isfinite(cost)||cost>std::numeric_limits<CandidateCost>::max()))++stats->nonfinite_costs;
++            // Finite saturation avoids an out-of-range narrowing conversion in the
++            // float-cost experiment. IDs still break ties deterministically.
++            if constexpr(sizeof(CandidateCost)==4)cost=std::min(cost,double(std::numeric_limits<float>::max()));
++            candidates.push_back({CandidateCost(cost),u,v,point});
+         }
+         if(stats){stats->last_candidates=uint32_t(candidates.size());if(pass==0)stats->first_locked_edges=stats->last_locked_edges;}
+         std::sort(candidates.begin(),candidates.end(),[](auto& a,auto& b){if(a.cost!=b.cost)return a.cost<b.cost;return std::pair(a.u,a.v)<std::pair(b.u,b.v);});
+--- a/tools/precision-research.sh
++++ b/tools/precision-research.sh
+@@ -3,25 +3,28 @@
+ set -euo pipefail
+ cd "$(dirname "$0")/.."
+ mode=${1:-build}
+-variant=${2:-production}
++variant=${2:-packed}
++root=research/precision
++mkdir -p "$root/builds" "$root/logs"
+ case "$variant" in
+-  production|packed) ;;
+-  *) echo "Precision variant '$variant' is archived; see research/precision/ARCHIVE.md." >&2; exit 1 ;;
++  full) packed=OFF; quadrics=OFF; costs=OFF ;;
++  packed) packed=ON; quadrics=OFF; costs=OFF ;;
++  quadrics) packed=ON; quadrics=ON; costs=OFF ;;
++  costs) packed=ON; quadrics=OFF; costs=ON ;;
++  both) packed=ON; quadrics=ON; costs=ON ;;
++  *) echo "Unknown precision variant: $variant" >&2; exit 1 ;;
+ esac
+-root=research/precision/production
+-mkdir -p "$root/builds" "$root/logs"
+-build=build/precision-production
++build="build/precision-$variant"
+ if [[ "$mode" == build ]]; then
+-  cmake -S . -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release
++  cmake -S . -B "$build" -G Ninja -DCMAKE_BUILD_TYPE=Release \
++    -DBLITZ_PACKED_COVERAGE="$packed" -DBLITZ_FLOAT_QUADRICS="$quadrics" -DBLITZ_FLOAT_COSTS="$costs"
+   cmake --build "$build" -j "${PRECISION_BUILD_JOBS:-2}"
+-  ctest --test-dir "$build" -R 'precision-contracts|c-abi' --output-on-failure
+   ctest --test-dir "$build" --output-on-failure
+-  bash tools/stamp-build.sh "$root/builds/production.json" "$build/blitz"
+-  bash tools/stamp-build.sh "$root/builds/micro.json" "$build/blitz-precision-bench"
++  bash tools/stamp-build.sh "$root/builds/$variant.json" "$build/blitz"
+   exit
+ fi
+ if [[ "$mode" == micro ]]; then
+-  "$build/blitz-precision-bench" > "$root/micro.json"
++  "$build/blitz-precision-bench" > "$root/micro-$variant.json"
+   exit
+ fi
+ scenario=${3:-pilot}
+@@ -39,5 +42,5 @@
+   *) echo "Unknown precision scenario: $scenario" >&2; exit 1 ;;
+ esac
+ [[ "$mode" == bench ]] || { echo "Use build, micro, or bench" >&2; exit 1; }
+-"$build/blitz" bench "$manifest" "$config" "research/runs/precision-production/production-$scenario-$repeat" \
+-  --build-stamp "$root/builds/production.json" --minutes 50 "${extra[@]}"
++"$build/blitz" bench "$manifest" "$config" "research/runs/precision-v2/$variant-$scenario-$repeat" \
++  --build-stamp "$root/builds/$variant.json" --minutes 50 "${extra[@]}"
+--- a/include/blitz/remesher.hpp
++++ b/include/blitz/remesher.hpp
+@@ -50,7 +50,7 @@
+     uint8_t passes{}; // The reducer has at most 128 collapse passes.
+ };
+ struct ReductionStorage { uint8_t quadric_bytes{},candidate_bytes{}; };
+-ReductionStorage reduction_storage(); // Reports record sizes for diagnostics.
++ReductionStorage reduction_storage(); // Identifies the compiled research precision variant.
+ struct ReduceSettings {
+     OutputMode output{OutputMode::Rebuild}; Objective objective{Objective::Quadric};
+     size_t target_triangles{}; double normal_weight{1},regularization{1e-5};

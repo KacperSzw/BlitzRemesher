@@ -19,6 +19,7 @@ struct Settings {
     uint8_t search_supersample{4},audit_supersample{8},max_supersample{32};
     uint16_t candidate_budget{64}; uint8_t beam_width{8};
     bool prune{true},force_scalar{},coupled_wedges{true}; std::function<bool()> cancelled;
+    PerformanceStats* performance{}; // Borrowed; reset at the start of generate().
 };
 struct ScheduleEntry { double pixels{},transition{},source{}; };
 std::vector<ScheduleEntry> schedule(const Bounds&,const Settings&);
@@ -44,9 +45,12 @@ struct Result {
 std::vector<uint8_t> runtime_levels(const Result&);
 struct ReductionStats {
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
+    uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};
     uint32_t initial_triangles{},final_triangles{},last_candidates{},last_locked_edges{},first_locked_edges{};
     uint8_t passes{}; // The reducer has at most 128 collapse passes.
 };
+struct ReductionStorage { uint8_t quadric_bytes{},candidate_bytes{}; };
+ReductionStorage reduction_storage(); // Reports record sizes for diagnostics.
 struct ReduceSettings {
     OutputMode output{OutputMode::Rebuild}; Objective objective{Objective::Quadric};
     size_t target_triangles{}; double normal_weight{1},regularization{1e-5};

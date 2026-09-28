@@ -40,7 +40,7 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
         if((!m->indices&&m->index_count)||(!m->materials&&m->material_count)||(!m->double_sided&&m->double_sided_count))throw std::invalid_argument("null index or material pointer");
         if((reinterpret_cast<uintptr_t>(m->indices)%alignof(uint32_t))||(reinterpret_cast<uintptr_t>(m->materials)%alignof(uint16_t)))throw std::invalid_argument("unaligned index or material stream");
         blitz::MeshView v{stream<blitz::Vec3>(m->positions),stream<blitz::Vec3>(m->normals),stream<blitz::Vec2>(m->uv),
-            stream<blitz::Vec4>(m->colors),stream<blitz::Vec4>(m->tangents),{m->indices,m->index_count},{m->materials,m->material_count},{m->double_sided,m->double_sided_count}};
+            stream<blitz::ColorRGBA8>(m->colors),stream<blitz::Vec4>(m->tangents),{m->indices,m->index_count},{m->materials,m->material_count},{m->double_sided,m->double_sided_count}};
         blitz::Settings s;s.levels=c->levels;s.output=blitz::OutputMode(c->output_mode);s.chain=blitz::ChainMode(c->chain_mode);s.profile=blitz::Profile(c->profile);s.objective=blitz::Objective(c->objective);
         s.beam_width=c->beam_width;s.candidate_budget=c->candidate_budget;s.search_supersample=c->search_supersample;s.audit_supersample=c->audit_supersample;s.max_supersample=c->max_supersample;
         s.search_views={c->search_ortho,c->search_perspective,c->search_seed};s.audit_views={c->audit_ortho,c->audit_perspective,c->audit_seed};

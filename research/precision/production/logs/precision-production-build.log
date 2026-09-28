@@ -1,0 +1,83 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher' is dirty
+-- The C compiler identification is Clang 21.1.8
+-- The CXX compiler identification is Clang 21.1.8
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/5ivvhzl37ci5sfdmyxc62s0yq56gs0gf-clang-wrapper-21.1.8/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/5ivvhzl37ci5sfdmyxc62s0yq56gs0gf-clang-wrapper-21.1.8/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found nlohmann_json: /nix/store/2b0s70vh5fydcdmhvimgw64zi070gvip-nlohmann_json-3.12.0/share/cmake/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.12.0")
+-- Found CURL: /nix/store/cjxc4x3cnlzlcdrsi92k5i7pkn78ixnz-curl-8.21.0/lib/libcurl.so (found version "8.21.0")
+-- Found OpenSSL: /nix/store/p26kxyf1s61k1fbfiv1r7fk36mkaj4jp-openssl-3.6.3/lib/libcrypto.so (found version "3.6.3")
+-- Found LibArchive: /nix/store/3nf6r9s0wd9jwpy036wygsch97wir1xp-libarchive-3.8.9-lib/lib/libarchive.so (found version "3.8.9")
+-- Configuring done (1.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher/build/precision-production
+[1/39] Building CXX object CMakeFiles/blitz_eval.dir/src/render_cost.cpp.o
+[2/39] Building CXX object CMakeFiles/blitzremesher.dir/src/mesh.cpp.o
+[3/39] Building CXX object CMakeFiles/blitz_eval.dir/src/evaluate.cpp.o
+[4/39] Linking CXX static library libblitz_eval.a
+[5/39] Building CXX object CMakeFiles/blitzremesher.dir/src/simplify.cpp.o
+[6/39] Building CXX object CMakeFiles/blitzremesher.dir/src/c_api.cpp.o
+[7/39] Building CXX object CMakeFiles/blitzremesher.dir/src/chain.cpp.o
+[8/39] Linking CXX static library libblitzremesher.a
+[9/39] Building CXX object CMakeFiles/blitz.dir/tools/main.cpp.o
+[10/39] Building CXX object CMakeFiles/blitz_io.dir/src/io.cpp.o
+[11/39] Linking CXX static library libblitz_io.a
+[12/39] Building CXX object CMakeFiles/blitz.dir/tools/benchmark.cpp.o
+[13/39] Building CXX object CMakeFiles/blitz-microbench.dir/tools/microbench.cpp.o
+[14/39] Building CXX object CMakeFiles/blitz-precision-bench.dir/tools/precision_bench.cpp.o
+[15/39] Building CXX object CMakeFiles/blitz-corpus.dir/tools/corpus.cpp.o
+[16/39] Building CXX object CMakeFiles/blitz-report.dir/tools/report.cpp.o
+[17/39] Building CXX object CMakeFiles/blitz-board.dir/tools/board.cpp.o
+[18/39] Building CXX object CMakeFiles/blitz-probe.dir/tools/probe.cpp.o
+[19/39] Building CXX object CMakeFiles/blitz-lod-report.dir/tools/lod_report.cpp.o
+[20/39] Building CXX object CMakeFiles/blitz-tail-audit.dir/tools/tail_audit.cpp.o
+[21/39] Building CXX object CMakeFiles/blitz-precision-tests.dir/tests/precision.cpp.o
+[22/39] Building CXX object CMakeFiles/blitz-tests.dir/tests/contracts.cpp.o
+[23/39] Building C object CMakeFiles/blitz-c-smoke.dir/tests/c_smoke.c.o
+[24/39] Building CXX object CMakeFiles/blitz-render-cost-tests.dir/tests/render_cost.cpp.o
+[25/39] Linking CXX executable blitz
+[26/39] Linking CXX executable blitz-corpus
+[27/39] Linking CXX executable blitz-microbench
+[28/39] Linking CXX executable blitz-precision-bench
+[29/39] Linking CXX executable blitz-report
+[30/39] Linking CXX executable blitz-board
+[31/39] Linking CXX executable blitz-probe
+[32/39] Linking CXX executable blitz-lod-report
+[33/39] Linking CXX executable blitz-tail-audit
+[34/39] Linking CXX executable blitz-tests
+[35/39] Linking CXX executable blitz-precision-tests
+[36/39] Linking CXX executable blitz-render-cost-tests
+[37/39] Linking CXX executable blitz-c-smoke
+[38/39] Building CXX object CMakeFiles/blitz-io-tests.dir/tests/io_tests.cpp.o
+[39/39] Linking CXX executable blitz-io-tests
+Test project /home/kacper/Projects/BlitzRemesher/build/precision-production
+    Start 2: precision-contracts
+1/2 Test #2: precision-contracts ..............   Passed    0.04 sec
+    Start 4: c-abi
+2/2 Test #4: c-abi ............................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.05 sec
+Test project /home/kacper/Projects/BlitzRemesher/build/precision-production
+    Start 1: contracts
+1/5 Test #1: contracts ........................   Passed    0.18 sec
+    Start 2: precision-contracts
+2/5 Test #2: precision-contracts ..............   Passed    0.04 sec
+    Start 3: render-cost-contracts
+3/5 Test #3: render-cost-contracts ............   Passed    0.00 sec
+    Start 4: c-abi
+4/5 Test #4: c-abi ............................   Passed    0.00 sec
+    Start 5: io-contracts
+5/5 Test #5: io-contracts .....................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.23 sec

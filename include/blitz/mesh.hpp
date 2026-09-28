@@ -12,6 +12,12 @@ namespace blitz {
 struct Vec2 { float x{}, y{}; };
 struct Vec3 { float x{}, y{}, z{}; };
 struct Vec4 { float x{}, y{}, z{}, w{1}; };
+// Linear UNORM8 channels in RGBA byte order; no padding or endian dependence.
+struct ColorRGBA8 { uint8_t r{},g{},b{},a{255}; bool operator==(const ColorRGBA8&) const=default; };
+static_assert(sizeof(ColorRGBA8)==4 && alignof(ColorRGBA8)==1);
+// Rejects nonfinite/out-of-range channels; rounds nearest with ties upward.
+ColorRGBA8 quantize_color(double r,double g,double b,double a=1);
+inline Vec4 linear_color(ColorRGBA8 c) { return {c.r/255.f,c.g/255.f,c.b/255.f,c.a/255.f}; }
 inline Vec3 operator+(Vec3 a, Vec3 b) { return {a.x+b.x,a.y+b.y,a.z+b.z}; }
 inline Vec3 operator-(Vec3 a, Vec3 b) { return {a.x-b.x,a.y-b.y,a.z-b.z}; }
 inline Vec3 operator*(Vec3 a, double s) { return {float(a.x*s),float(a.y*s),float(a.z*s)}; }
@@ -31,7 +37,8 @@ template<class T> struct Stream {
 struct MeshView {
     Stream<Vec3> positions,normals;
     Stream<Vec2> uv;
-    Stream<Vec4> colors,tangents;
+    Stream<ColorRGBA8> colors;
+    Stream<Vec4> tangents;
     std::span<const uint32_t> indices;
     std::span<const uint16_t> materials;
     std::span<const uint8_t> double_sided;
@@ -42,7 +49,8 @@ struct MeshView {
 struct Mesh {
     std::vector<Vec3> positions,normals;
     std::vector<Vec2> uv;
-    std::vector<Vec4> colors,tangents;
+    std::vector<ColorRGBA8> colors;
+    std::vector<Vec4> tangents;
     std::vector<uint32_t> indices;
     std::vector<uint16_t> materials;
     std::vector<uint8_t> double_sided;

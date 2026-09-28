@@ -1,0 +1,104 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher' is dirty
+-- The C compiler identification is GNU 15.2.0
+-- The CXX compiler identification is GNU 15.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/hbsz2ngi9ixbhd9na1xagh2yc8qnmj7y-gcc-wrapper-15.2.0/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/hbsz2ngi9ixbhd9na1xagh2yc8qnmj7y-gcc-wrapper-15.2.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (1.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher/build/precision-production-gcc
+[1/16] Building CXX object CMakeFiles/blitz_eval.dir/src/evaluate.cpp.o
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp: In function ‘bool blitz::{anonymous}::equal_stream(blitz::Stream<T>, blitz::Stream<T>)’:
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp:70:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   70 |     if(a.count!=b.count)return false;if(!a.count)return true;
+      |     ^~
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp:70:38: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   70 |     if(a.count!=b.count)return false;if(!a.count)return true;
+      |                                      ^~
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp: In function ‘double blitz::coverage_distance_impl(const R&, const R&, uint8_t, bool)’:
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp:200:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  200 |     if(same)return 0;if(ca!=cb)return inf;
+      |     ^~
+/home/kacper/Projects/BlitzRemesher/src/evaluate.cpp:200:22: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  200 |     if(same)return 0;if(ca!=cb)return inf;
+      |                      ^~
+[2/16] Building CXX object CMakeFiles/blitz_eval.dir/src/render_cost.cpp.o
+[3/16] Linking CXX static library libblitz_eval.a
+[4/16] Building CXX object CMakeFiles/blitzremesher.dir/src/mesh.cpp.o
+[5/16] Building CXX object CMakeFiles/blitzremesher.dir/src/simplify.cpp.o
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp: In function ‘blitz::Lod blitz::reduce_impl(MeshView, const ReduceSettings&, {anonymous}::Trace*)’:
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:91:13: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   91 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |             ^~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:91:78: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   91 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |                                                                              ^~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:117:13: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  117 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |             ^~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:117:78: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  117 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |                                                                              ^~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:140:9: warning: this ‘for’ clause does not guard... [-Wmisleading-indentation]
+  140 |         for(auto& f:flags)f&=Locked;candidates.clear();
+      |         ^~~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:140:37: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘for’
+  140 |         for(auto& f:flags)f&=Locked;candidates.clear();
+      |                                     ^~~~~~~~~~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:248:13: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  248 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |             ^~
+/home/kacper/Projects/BlitzRemesher/src/simplify.cpp:248:78: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  248 |             if(!mesh.materials.empty())mesh.materials[dst]=mesh.materials[f];++dst;
+      |                                                                              ^~
+[6/16] Building CXX object CMakeFiles/blitzremesher.dir/src/chain.cpp.o
+[7/16] Building CXX object CMakeFiles/blitzremesher.dir/src/c_api.cpp.o
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp: In function ‘blitz::Curve {anonymous}::curve(const blitz_curve_point*, size_t, blitz::Curve)’:
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:11:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   11 |     if(!n)return fallback;if(!p||n>1024)throw std::invalid_argument("invalid curve");
+      |     ^~
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:11:27: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   11 |     if(!n)return fallback;if(!p||n>1024)throw std::invalid_argument("invalid curve");
+      |                           ^~
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp: In function ‘blitz_status blitz_generate(const blitz_mesh*, const blitz_settings*, blitz_result**, char*, size_t)’:
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:36:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   36 |     if(out)*out=nullptr;message(error,capacity,"");
+      |     ^~
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:36:25: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   36 |     if(out)*out=nullptr;message(error,capacity,"");
+      |                         ^~~~~~~
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:48:9: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   48 |         if(c->base_pixels!=0)s.base_pixels=c->base_pixels;if(c->max_lod0_delta_px!=0)s.max_lod0_delta_px=c->max_lod0_delta_px;
+      |         ^~
+/home/kacper/Projects/BlitzRemesher/src/c_api.cpp:48:59: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   48 |         if(c->base_pixels!=0)s.base_pixels=c->base_pixels;if(c->max_lod0_delta_px!=0)s.max_lod0_delta_px=c->max_lod0_delta_px;
+      |                                                           ^~
+[8/16] Linking CXX static library libblitzremesher.a
+[9/16] Building CXX object CMakeFiles/blitz-tests.dir/tests/contracts.cpp.o
+[10/16] Building CXX object CMakeFiles/blitz-precision-tests.dir/tests/precision.cpp.o
+[11/16] Building CXX object CMakeFiles/blitz-render-cost-tests.dir/tests/render_cost.cpp.o
+[12/16] Building C object CMakeFiles/blitz-c-smoke.dir/tests/c_smoke.c.o
+[13/16] Linking CXX executable blitz-tests
+[14/16] Linking CXX executable blitz-precision-tests
+[15/16] Linking CXX executable blitz-render-cost-tests
+[16/16] Linking CXX executable blitz-c-smoke
+Test project /home/kacper/Projects/BlitzRemesher/build/precision-production-gcc
+    Start 1: contracts
+1/4 Test #1: contracts ........................   Passed    0.19 sec
+    Start 2: precision-contracts
+2/4 Test #2: precision-contracts ..............   Passed    0.05 sec
+    Start 3: render-cost-contracts
+3/4 Test #3: render-cost-contracts ............   Passed    0.00 sec
+    Start 4: c-abi
+4/4 Test #4: c-abi ............................   Passed    0.00 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   0.25 sec

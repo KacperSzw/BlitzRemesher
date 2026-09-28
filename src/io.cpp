@@ -81,7 +81,7 @@ Mesh gltf(const fs::path& path,std::optional<size_t> selected={}) {
                 out.positions.push_back({t[0]*x+t[4]*y+t[8]*z+t[12],t[1]*x+t[5]*y+t[9]*z+t[13],t[2]*x+t[6]*y+t[10]*z+t[14]});
                 out.normals.push_back(norm?direction({nv[i*3],nv[i*3+1],nv[i*3+2]},true):Vec3{});
                 out.uv.push_back(uv?Vec2{uvv[i*2],uvv[i*2+1]}:Vec2{});
-                out.colors.push_back(col?Vec4{cv[i*cc],cv[i*cc+1],cv[i*cc+2],cc==4?cv[i*cc+3]:1}:Vec4{1,1,1,1});
+                out.colors.push_back(col?quantize_color(cv[i*cc],cv[i*cc+1],cv[i*cc+2],cc==4?cv[i*cc+3]:1):ColorRGBA8{255,255,255,255});
                 auto v=tan?direction({tv[i*4],tv[i*4+1],tv[i*4+2]},false):Vec3{};
                 out.tangents.push_back({v.x,v.y,v.z,tan?float(tv[i*4+3]*(det<0?-1:1)):1});
             }
@@ -140,7 +140,7 @@ Mesh obj(const fs::path& path) {
                     out.normals.push_back(key.n<0?Vec3{}:Vec3{a.normals[key.n*3],a.normals[key.n*3+1],a.normals[key.n*3+2]});
                     out.uv.push_back(key.t<0?Vec2{}:Vec2{a.texcoords[key.t*2],a.texcoords[key.t*2+1]});
                     normals|=key.n>=0;uv|=key.t>=0;
-                    if(a.colors.size()==a.vertices.size())out.colors.push_back({a.colors[key.v*3],a.colors[key.v*3+1],a.colors[key.v*3+2],1});
+                    if(a.colors.size()==a.vertices.size())out.colors.push_back(quantize_color(a.colors[key.v*3],a.colors[key.v*3+1],a.colors[key.v*3+2]));
                 }
                 out.indices.push_back(it->second);
             }
@@ -175,7 +175,7 @@ Mesh ply(const fs::path& path) {
     };
     Mesh m;bool normals=false,uv=false,colors=false;
     for(auto& e:elements)for(size_t i=0;i<e.count;++i) {
-        Vec3 p{},n{};Vec2 t{};Vec4 c{1,1,1,1};uint16_t mat=0;
+        Vec3 p{},n{};Vec2 t{};ColorRGBA8 c{255,255,255,255};uint16_t mat=0;
         for(auto& prop:e.props) {
             if(!prop.count.empty()) {
                 double raw=value(prop.count);if(raw<0||raw>1000000||std::floor(raw)!=raw)fail("bad PLY list length");
@@ -188,8 +188,14 @@ Mesh ply(const fs::path& path) {
                     if(prop.name=="x")p.x=float(v);if(prop.name=="y")p.y=float(v);if(prop.name=="z")p.z=float(v);
                     if(prop.name=="nx"){n.x=float(v);normals=true;}if(prop.name=="ny")n.y=float(v);if(prop.name=="nz")n.z=float(v);
                     if(prop.name=="u"||prop.name=="s"){t.x=float(v);uv=true;}if(prop.name=="v"||prop.name=="t")t.y=float(v);
-                    double cv=(prop.type=="uchar"||prop.type=="uint8")?v/255:v;
-                    if(prop.name=="red"){c.x=float(cv);colors=true;}if(prop.name=="green")c.y=float(cv);if(prop.name=="blue")c.z=float(cv);
+                    if(prop.name=="red"||prop.name=="green"||prop.name=="blue"||prop.name=="alpha") {
+                        double maximum=(prop.type=="uchar"||prop.type=="uint8")?255:(prop.type=="ushort"||prop.type=="uint16")?65535:1;
+                        if(maximum!=1&&std::floor(v)!=v)fail("nonintegral PLY integer color");
+                        auto channel=quantize_color(v/maximum,0,0).r;
+                        if(prop.name=="red")c.r=channel;if(prop.name=="green")c.g=channel;
+                        if(prop.name=="blue")c.b=channel;if(prop.name=="alpha")c.a=channel;
+                        colors=true;
+                    }
                 } else if(e.name=="face"&&prop.name=="material_index"){if(v<0||v>65535||std::floor(v)!=v)fail("invalid material index");mat=uint16_t(v);}
             }
         }
@@ -230,13 +236,13 @@ void save_ply(MeshView m,const fs::path& path) {
     std::ofstream f(path,std::ios::binary);f<<"ply\nformat binary_little_endian 1.0\nelement vertex "<<m.positions.count<<"\nproperty float x\nproperty float y\nproperty float z\n";
     if(m.normals)f<<"property float nx\nproperty float ny\nproperty float nz\n";
     if(m.uv)f<<"property float u\nproperty float v\n";
-    if(m.colors)f<<"property float red\nproperty float green\nproperty float blue\n";
+    if(m.colors)f<<"property uchar red\nproperty uchar green\nproperty uchar blue\nproperty uchar alpha\n";
     f<<"element face "<<m.triangles()<<"\nproperty list uchar uint vertex_indices\nproperty ushort material_index\nend_header\n";
     std::vector<uint8_t> row;auto flush=[&]{f.write(reinterpret_cast<char*>(row.data()),row.size());row.clear();};
     for(size_t i=0;i<m.positions.count;++i){auto p=m.positions[i];append(row,p.x);append(row,p.y);append(row,p.z);
         if(m.normals){auto n=m.normals[i];append(row,n.x);append(row,n.y);append(row,n.z);}
         if(m.uv){auto u=m.uv[i];append(row,u.x);append(row,u.y);}
-        if(m.colors){auto c=m.colors[i];append(row,c.x);append(row,c.y);append(row,c.z);}flush();}
+        if(m.colors){auto c=m.colors[i];append(row,c.r);append(row,c.g);append(row,c.b);append(row,c.a);}flush();}
     for(size_t f0=0;f0<m.triangles();++f0){append(row,uint8_t(3));for(int k=0;k<3;++k)append(row,m.indices[f0*3+k]);append(row,m.material(f0));flush();}
     if(!f)fail("cannot write PLY");
 }
@@ -262,7 +268,7 @@ void save_chain(const Result& r,const fs::path& directory) {
     std::vector<uint8_t> bytes;
     auto accessor=[&](size_t offset,size_t count,int components,int type,const char* shape) {
         size_t view=j["bufferViews"].size(),id=j["accessors"].size();
-        j["bufferViews"].push_back({{"buffer",0},{"byteOffset",offset},{"byteLength",count*components*4}});
+        j["bufferViews"].push_back({{"buffer",0},{"byteOffset",offset},{"byteLength",count*components*(type==5121?1:4)}});
         j["accessors"].push_back({{"bufferView",view},{"componentType",type},{"count",count},{"type",shape}});return id;
     };
     auto attributes=[&](MeshView v) {
@@ -272,7 +278,13 @@ void save_chain(const Result& r,const fs::path& directory) {
             for(size_t i=0;i<stream.count;++i){auto p=stream[i];const float* fields=reinterpret_cast<const float*>(&p);for(int k=0;k<n;++k)append(bytes,fields[k]);}
             a[name]=accessor(start,stream.count,n,5126,shape);
         };
-        vec(v.positions,"POSITION",3,"VEC3");vec(v.normals,"NORMAL",3,"VEC3");vec(v.uv,"TEXCOORD_0",2,"VEC2");vec(v.colors,"COLOR_0",4,"VEC4");vec(v.tangents,"TANGENT",4,"VEC4");
+        vec(v.positions,"POSITION",3,"VEC3");vec(v.normals,"NORMAL",3,"VEC3");vec(v.uv,"TEXCOORD_0",2,"VEC2");
+        if(v.colors) {
+            size_t start=bytes.size();
+            for(size_t i=0;i<v.colors.count;++i){auto c=v.colors[i];bytes.insert(bytes.end(),{c.r,c.g,c.b,c.a});}
+            auto id=accessor(start,v.colors.count,4,5121,"VEC4");j["accessors"][id]["normalized"]=true;a["COLOR_0"]=id;
+        }
+        vec(v.tangents,"TANGENT",4,"VEC4");
         Vec3 lo=v.positions[0],hi=lo;for(size_t i=1;i<v.positions.count;++i){auto p=v.positions[i];lo={std::min(lo.x,p.x),std::min(lo.y,p.y),std::min(lo.z,p.z)};hi={std::max(hi.x,p.x),std::max(hi.y,p.y),std::max(hi.z,p.z)};}
         j["accessors"][a["POSITION"].get<size_t>()]["min"]={lo.x,lo.y,lo.z};j["accessors"][a["POSITION"].get<size_t>()]["max"]={hi.x,hi.y,hi.z};return a;
     };

@@ -1,5 +1,9 @@
 # Recorded experiments
 
+These historical tables use protocol v1. The RGBA8 input contract starts a new
+comparison under [protocol v2](PROTOCOL.md); see the [precision report](precision/REPORT.md).
+Do not interpret changes between these input protocols as algorithmic gains.
+
 The latest [Round 4 report](round4/REPORT.md) covers larger starting sizes,
 source caps, coarse LODs and a separate 20-asset validation comparison.
 The table below preserves the original 32→16 px experiments.

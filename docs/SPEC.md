@@ -63,10 +63,27 @@ zero-sample triangles describe setup pressure without assigning hardware time.
 Compare source and reduced foreground coverage at the same size. These values
 do not affect the visual gates or SCORE.
 
-Core storage: float streams, double quadric accumulation/solving, checked u32
+Vertex colors use linear RGBA8 (0..255 per channel, 256 levels), including
+the strided C++ and C API streams. The C ABI version and shared-library
+compatibility version are 2; version 1 float color streams are unsupported.
+Import rounds normalized float/unsigned-16 colors to nearest with ties upward,
+rejects nonfinite/out-of-range channels, and defaults missing alpha to 255.
+Reuse preserves the imported/supplied bytes. Rebuild rounds interpolated RGB
+on storage and preserves the retained endpoint's alpha. Raster interpolation
+and the linear RGB metric continue to use floating-point arithmetic.
+glTF exports normalized UNSIGNED_BYTE VEC4 colors; PLY exports uchar RGBA.
+
+Core storage: float geometry streams, RGBA8 colors, double quadric accumulation/solving, checked u32
 IDs, smaller bounded fields and packed flags. Scalar reference before AVX2;
 runtime feature dispatch and scalar fallback. Stream raster data and bound
 caches. Parallelize assets/views before topology mutation.
+Coverage-only evaluation uses an exact packed mask and skips attribute/depth
+work. The full public rasterizer remains available, and the per-view sample
+cap and all acceptance/refinement rules are unchanged. Production has one
+precision path: float32 geometry, double quadric storage/arithmetic/solving,
+and double candidate costs. Float quadric/cost variants are archived research.
+UNORM16 positions are excluded following the feasibility probe; supplied
+float positions and all reuse-mode streams retain their existing contracts.
 
 Acquire 120 distinct CC0 assets: 30 rocks, 30 opaque organics (>=10 woody),
 40 manufactured, 20 complex scans/stress. Sources: Poly Haven, ambientCG,

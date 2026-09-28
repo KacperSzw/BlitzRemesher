@@ -1,10 +1,16 @@
 # BlitzRemesher
 
-C++20 library for static, opaque mesh LOD chains. Reducers propose candidates;
-independent screen-space audits against the previous LOD and source decide which
-ones can be delivered. Audited views are not an all-view or optimality guarantee.
-Read docs/SPEC.md for behavior and research/PROTOCOL.md before changing scores
-or comparisons. Do not introduce Python.
+## User requirements
+
+Build a reusable C++20 library for game-engine import pipelines that generates
+configurable LOD chains for static, opaque meshes.
+Minimize triangles within audited screen-space error limits against the previous LOD and source, using selectable coverage, normal, and attribute quality profiles.
+Automatically choose vertex storage and reduction strategy within the configured
+triangle/memory tradeoff;
+measure bake time and improve results through reproducible comparisons.
+
+Audited views are not an all-view or optimality guarantee. Read docs/SPEC.md
+for behavior and research/PROTOCOL.md before changing scores or comparisons.
 
 ## Implementation
 

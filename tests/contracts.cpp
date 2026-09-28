@@ -113,7 +113,7 @@ int main() {
         e.screen_size=4096;e.supersample=e.max_supersample=8;
         auto limited=evaluate(m.view(),moved.view(),bounds(m.view()),e);CHECK(!limited.passed&&limited.resource_limited);
         for(auto mode:{OutputMode::Reuse,OutputMode::Rebuild})for(auto chain:{ChainMode::Direct,ChainMode::Progressive,ChainMode::Hybrid}) {
-            s=small();s.output=mode;s.chain=chain;
+            s=small();s.research.output=mode;s.research.chain=chain;
             auto r=generate(m.view(),s);CHECK(r.status==Status::Complete);CHECK(r.lods.size()==s.levels);
             for(size_t i=1;i<r.lods.size();++i){auto& l=r.lods[i];CHECK(l.adjacent.passed&&l.source_error.passed);
                 CHECK(l.data.indices.size()<=r.lods[i-1].data.indices.size());if(mode==OutputMode::Reuse)CHECK(l.shared_vertices);}
@@ -129,7 +129,7 @@ int main() {
         CHECK(runtime_levels(Result{}).empty());
         // Progressive reducers borrow the previous rebuilt vertex buffer, whose
         // compact IDs cannot be interpreted against the original dense grid.
-        s=small();s.chain=ChainMode::Progressive;s.levels=4;s.candidate_budget=3;
+        s=small();s.research.chain=ChainMode::Progressive;s.levels=4;s.candidate_budget=3;
         bool borrowed_previous=false,trim_borrowed=false;
         Proposer local_proposal=[&](MeshView input,const ReduceSettings&){
             Lod l;
@@ -165,7 +165,7 @@ int main() {
         }
         s=small();s.transition={{{0,0},{1,0}}};r=generate(m.view(),s);
         for(auto& l:r.lods)CHECK(l.data.indices==m.indices);
-        s=small();s.levels=2;s.base_pixels=s.last_pixels=4096;s.search_supersample=s.audit_supersample=s.max_supersample=8;s.candidate_budget=1;s.chain=ChainMode::Direct;
+        s=small();s.levels=2;s.base_pixels=s.last_pixels=4096;s.search_supersample=s.audit_supersample=s.max_supersample=8;s.candidate_budget=1;s.research.chain=ChainMode::Direct;
         r=generate(m.view(),s);CHECK(r.status==Status::BudgetLimited);CHECK(r.lods.back().data.indices==m.indices);
         std::cout<<checks<<" contract checks passed ("<<evaluator_backend()<<")\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}

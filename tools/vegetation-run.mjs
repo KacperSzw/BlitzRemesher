@@ -19,6 +19,7 @@ const deadline=Date.now()+50*60*1000,jobs=[],groups=[];
 for(const variant of plan.variants)for(const output of plan.modes)for(const budget of plan.budgets){
  const suffix=`${variant.name}-${output}-b${budget}`;if(filters.length&&!filters.includes(suffix))continue;
  const run=`research/runs/${plan.name}-${suffix}`,config={...plan.config,output,candidate_budget:budget,research:{...variant.research,trace:plan.trace??true}};
+ if(plan.schema_version===3){delete config.output;delete config.chain;config.research.output=output==='auto'?null:output;config.research.chain=variant.chain??'hybrid';}
  const metadata={version:1,scope:inputs.scope,scored:false,config,variant:variant.name,extra_args:variant.args??[],cohort:plan.assets,workers,plan_sha256:sha(await fs.readFile(planPath)),...identity,timing_scope:'Generation/search/audit; import and export measured separately; shared workstation'};
  metadata.run_sha256=sha(JSON.stringify(metadata));await fs.mkdir(run+'/rows',{recursive:true});await fs.mkdir(run+'/configs',{recursive:true});await fs.mkdir(run+'/.scratch',{recursive:true});
  try{const old=await read(run+'/metadata.json');if(old.run_sha256!==metadata.run_sha256)throw Error('Run identity changed: '+run);}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -33,7 +34,7 @@ async function bake({id,run,config,metadata}){
  const cfg=run+'/configs/'+id+'.json';await fs.writeFile(cfg,JSON.stringify(config,null,2)+'\n');const begin=performance.now(),rss=run+'/.scratch/'+id+'.rss';
  const r=await new Promise((done,fail)=>{const child=spawn('/run/current-system/sw/bin/time',['-f','%M','-o',rss,binary,'simplify',model,'--config',cfg,'--out',run+'/meshes/'+id,...metadata.extra_args],{detached:true,stdio:['ignore','pipe','pipe']});let stdout='',stderr='';
   const timer=setTimeout(()=>{try{process.kill(-child.pid,'SIGTERM');}catch{}},Math.max(1,deadline-Date.now()));child.stdout.on('data',d=>stdout+=d);child.stderr.on('data',d=>stderr+=d);child.on('error',e=>{clearTimeout(timer);fail(e);});child.on('close',code=>{clearTimeout(timer);done({code,stdout,stderr});});});
- const row={id,category:collection.assets.find(a=>a.id===id).category,run_sha256:metadata.run_sha256,scope:inputs.scope,scored:false,complete:false,failed:r.code!==0,config,output_mode:config.output,input:record,seconds:(performance.now()-begin)/1000,stderr:r.stderr};
+ const row={id,category:collection.assets.find(a=>a.id===id).category,run_sha256:metadata.run_sha256,scope:inputs.scope,scored:false,complete:false,failed:r.code!==0,config,output_mode:config.output??config.research.output??"auto",input:record,seconds:(performance.now()-begin)/1000,stderr:r.stderr};
  try{row.result=JSON.parse(r.stdout);if(r.code!==0||row.result.status!=='complete')throw Error('Incomplete bake');const levels=row.result.lods;
   if(levels.length!==config.levels||levels[0].triangles!==record.triangles||levels.some((l,i)=>!l.source.passed||!l.adjacent.passed||(i&&l.triangles>levels[i-1].triangles)))throw Error('Invalid chain');
   if(config.output==='reuse'&&levels.some(l=>!l.shared_vertices))throw Error('Reuse contract failed');

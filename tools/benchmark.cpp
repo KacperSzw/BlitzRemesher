@@ -183,7 +183,7 @@ int benchmark_main(int argc,char** argv) {
                 Proposer proposer;
                 if(method!="native") {
                     if(settings.profile!=Profile::Coverage)throw std::runtime_error("external adapters expose geometry-only coverage capabilities");
-                    if(settings.output==OutputMode::Reuse&&method!="meshopt")throw std::runtime_error("baseline cannot preserve source vertices");
+                    if(settings.research.output==OutputMode::Reuse&&method!="meshopt")throw std::runtime_error("baseline cannot preserve source vertices");
                     fs::create_directories(output/".scratch");auto scratch=output/".scratch";
                     proposer=[&,scratch](MeshView input,const ReduceSettings& rs) {
                         uint16_t material=input.material(0);

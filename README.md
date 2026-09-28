@@ -11,9 +11,10 @@ view coverage or globally optimal simplification.
 The meshes are enlarged to show each LOD; labels give their target screen sizes.
 [Inspect the chains, audits, and source credits](research/round4/board/README.md).
 
-[Vegetation comparisons](research/vegetation/REPORT.md) add paired fern and tree
-chains in shared and rebuilt vertex modes, measured bake times, and independent
-tail checks. [Open the offline board](research/vegetation/board/index.html).
+[Automatic hybrid research](research/hybrid/REPORT.md) compares resident buffer
+bytes and triangle counts, with measured bake times and independent tail checks.
+[Open the current offline board](research/hybrid/board/index.html).
+[Previous shared/rebuilt comparisons](research/vegetation/REPORT.md) remain archived.
 These experiments score opaque card geometry; texture opacity and shading remain
 outside their contract.
 
@@ -41,7 +42,7 @@ third-party runtime libraries:
 
 The quality defaults audit 642 orthographic and 64 perspective cameras at
 8× supersampling, refining uncertain coverage to 16×/32×. This can be
-expensive. [The small pilot configuration](research/configs/pilot-coupled.json)
+expensive. [The small automatic configuration](configs/automatic-fast.json)
 is useful for a quick first run; it has a different, much smaller camera
 contract and must not be described as the default quality audit.
 
@@ -55,8 +56,8 @@ per channel). Normalized float and 16-bit file colors are rounded on import;
 nonfinite or out-of-range channels are rejected. Missing alpha becomes 255.
 
 Output contains chain.gltf, chain.bin and lods.json. The default glTF scene
-contains LOD0; other LOD meshes are identified in the manifest. Reuse mode
-shares original vertex accessors and writes new index accessors.
+contains LOD0; other LOD meshes are identified in the manifest. Automatic generation can share original vertex accessors or write compact new
+vertex buffers for each level. The manifest records which storage each LOD uses.
 For the CLI, original means the decoded mesh after import transforms;
 compressed or quantized source-file bytes are not preserved verbatim.
 The diagnostic exporter writes placeholder materials with stable material
@@ -65,10 +66,13 @@ material graph. Engine integrations retain their own material payloads.
 
 ## Controls
 
-- Output: rebuild or reuse. Reuse never changes source vertex bytes or IDs;
-  every output index references an original vertex.
-- Chain: direct, progressive, or hybrid. Hybrid retains a bounded beam of
-  valid paths and chooses the smallest total triangle count it found.
+- Automatic hybrid chooses the smallest resident vertex/index payload within
+  `triangle_overhead_bps` of a triangle-minimizing reference chain found by the
+  search. Default 500 means 5%; each LOD must satisfy its own integer bound.
+  Set 0 for no per-level triangle overhead. This is a bounded search, not a global optimum.
+- Both original-source and preceding-LOD proposals undergo source and transition
+  audits. Shared levels preserve source vertex bytes and IDs; owned levels are compact.
+  The reference and selected candidate costs and a 0/2/5/10% selection sweep are recorded.
 - Profiles: coverage, normals, attributes. Coverage measures maximum
   foreground displacement, not changed pixel area. Appearance weights
   support curves and can be zero.
@@ -79,7 +83,7 @@ material graph. Engine integrations retain their own material payloads.
   rather than treated as a mathematical composition guarantee.
 - coupled_wedges (enabled by default) enables synchronized positional reduction across separate
   attribute wedges in rebuild mode. Original UV charts and attributes stay
-  separate. Reuse uses endpoint reduction.
+  separate. Endpoint proposals preserve source vertices where possible.
 - Candidate budget, beam width, camera sets, supersampling, pruning and
   scalar/AVX2 dispatch are explicit settings.
 
@@ -89,8 +93,10 @@ selection, component subset proposals, and proposal traces. Defaults are
 unchanged. Component and independent-chart experiments require the coverage
 profile; every proposal still passes the existing source and adjacent gates.
 See the [measured preset and limitations](research/vegetation/REPORT.md).
-These options are not added to the stable C descriptor; C++ clients must rebuild
-against the updated header.
+Forced whole-chain placements (`research.output`) and proposal origins
+(`research.chain`) are also research controls. These options are absent from
+the C descriptor. Archived top-level output/chain JSON requires the explicit
+`--legacy-config` simplify option; normal `--config` rejects it. C++ clients must rebuild.
 
 LOD0 is always unchanged. Cancellation returns an exact, validated source
 chain with cancelled status; the implementation does not yet preserve a
@@ -151,7 +157,7 @@ records remain in the acquisition manifest. No scored asset is removed to
 improve a score.
 
     bash tools/stamp-build.sh build/release/blitz-build.json build/release/blitz
-    build/release/blitz bench research/pilot.json research/configs/pilot-coupled.json \
+    build/release/blitz bench research/pilot.json configs/automatic-fast.json \
         research/runs/example --build-stamp build/release/blitz-build.json
     build/release/blitz-microbench
 
@@ -176,7 +182,7 @@ External references are separate executables:
 
     cmake --preset research
     cmake --build --preset research
-    build/release/blitz bench research/pilot.json research/configs/pilot-qem.json research/runs/meshopt --baseline meshopt
+    build/release/blitz bench research/pilot.json configs/research-quadric.json research/runs/meshopt --baseline meshopt
 
 Baseline names: meshopt, fastquadric, cgal-lt, cgal-qem, cgal-probabilistic.
 The initial adapters compare single-material geometry under the coverage
@@ -228,9 +234,11 @@ Installed CMake consumers use find_package(BlitzRemesher CONFIG REQUIRED)
 and link Blitz::remesher. BUILD_SHARED_LIBS=ON builds shared libraries.
 The C++ package propagates its C++20 requirement to consumers.
 
-Version 0.2 uses C ABI 2 and shared-library compatibility version 2. C++ colors
+Version 0.3 uses C ABI 3 and shared-library compatibility version 3. Replace
+`output_mode`/`chain_mode` with `triangle_overhead_bps`; use
+`blitz_result_storage` and per-LOD `reference_triangles` to inspect the result. C++ colors
 are `ColorRGBA8`; C colors are `blitz_color_rgba8`. Migrate old float colors
-before calling the library; descriptors carrying ABI 1 are rejected. Strided
+before calling the library; older ABI descriptors are rejected. Strided
 RGBA8 streams need only byte alignment and retain their original bytes in reuse.
 Rebuilt colors are rounded when stored; raster interpolation remains floating
 point. Exported glTF uses normalized unsigned-byte colors and PLY uses uchar RGBA.

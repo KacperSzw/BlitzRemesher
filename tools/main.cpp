@@ -21,7 +21,7 @@ int main(int argc,char** argv) {
         Settings s;std::filesystem::path out="output";double pixels=32,limit=2;
         int start=command=="evaluate"?4:3;
         for(int i=start;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("option needs a value");std::string k=argv[i];
-            if(k=="--config"){nlohmann::json j;std::ifstream f(argv[i+1]);f>>j;s=settings_json(j);}
+            if(k=="--config"||k=="--legacy-config"){nlohmann::json j;std::ifstream f(argv[i+1]);f>>j;s=settings_json(j,k=="--legacy-config");}
             else if(k=="--out")out=argv[i+1];else if(k=="--pixels")pixels=std::stod(argv[i+1]);else if(k=="--limit")limit=std::stod(argv[i+1]);else throw std::invalid_argument("unknown option "+k);}
         s.cancelled=[]{return stopped!=0;};auto m=load_mesh(argv[2]);
         if(command=="simplify") {

@@ -24,7 +24,7 @@ int main(int argc,char** argv){
         auto seed=argc==5?std::stoull(argv[4],nullptr,0):uint64_t(0xB1172026);if(seed>UINT32_MAX)throw std::invalid_argument("invalid rotation seed");
         fs::path run=argv[1],dir=run/"meshes"/argv[2];auto row=read(run/"rows"/(std::string(argv[2])+".json")),meta=read(run/"metadata.json");
         if(!row.at("complete").get<bool>()||row.value("failed",false)||row.at("run_sha256")!=meta.at("run_sha256"))throw std::runtime_error("invalid audit input");
-        auto settings=settings_json(meta.at("config"));auto g=read(dir/"chain.gltf");auto levels=row.at("result").at("lods");
+        auto settings=settings_json(meta.at("config"),true);auto g=read(dir/"chain.gltf");auto levels=row.at("result").at("lods");
         auto source=load_gltf_mesh(dir/"chain.gltf",g.at("nodes").at(0).at("mesh"));auto reference=bounds(source.view());
         json report={{"version",1},{"id",argv[2]},{"run",run.filename().string()},{"run_sha256",meta.at("run_sha256")},
             {"chain_gltf_sha256",hash(dir/"chain.gltf")},{"chain_bin_sha256",hash(dir/"chain.bin")},

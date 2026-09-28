@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+const read=async p=>JSON.parse(await fs.readFile(p,'utf8'));
+const original=await read('research/foliage/board/examples.json'),assets=await read('research/foliage/chains.json'),measurements=await read('research/hybrid/measurements.json');
+const development=measurements.groups.find(g=>g.name==='hybrid-development-v5-mixed-auto-b8');if(!development?.complete)throw Error('Complete development run required');
+const examples=original.examples.slice(0,4),comparisons=[];
+async function add(asset,run,budget){
+ const group=measurements.groups.find(g=>g.name===run),r=group?.assets.find(r=>r.id===asset.id);if(!group?.complete||!r?.complete)throw Error('Missing recorded chain');
+ const audit=await read(`research/hybrid/dense/mixed-b${budget}-${asset.id}.json`),row=await read(`research/runs/${run}/rows/${asset.id}.json`);
+ if(audit.run!==run||audit.run_sha256!==row.run_sha256||audit.chain_bin_sha256!==row.output_sha256||audit.chain_gltf_sha256!==row.gltf_sha256)throw Error('Dense audit mismatch');
+ examples.push({...asset,run,output:'auto',name:asset.name+' · automatic / '+budget+' proposals',note:`${budget} proposals per level; up to 5% triangles over this search’s reference at each LOD. Card geometry; opacity and shading are not audited.`,dense_passed:audit.passed});
+ const old=r.baseline.rebuild;if(!old)throw Error('Missing comparison');comparisons.push({name:asset.name,budget,before_final:old.triangles.at(-1),after_final:r.triangles.at(-1),before_bytes:old.bytes,after_bytes:r.storage.total_bytes,before_seconds:old.seconds,after_seconds:r.seconds,reference_total:r.reference_total,selected_total:r.selected_total});
+}
+for(const asset of assets.examples)await add(asset,development.name,8);
+for(const b of [32,64])for(const id of ['ph_fern_02_clump_1','loaf_tree_1'])await add(assets.examples.find(a=>a.id===id),`hybrid-quality-v5-mixed-auto-b${b}`,b);
+const a=development.assets,before=a.reduce((s,r)=>s+r.baseline.rebuild.bytes,0),after=a.reduce((s,r)=>s+r.storage.total_bytes,0),passed=examples.filter(e=>e.dense_passed===true).length;
+const data={kind:'automatic-hybrid',intro:'One automatic policy: minimize resident vertex and index bytes while keeping each LOD within 5% of its triangle reference. Inspect the actual mixed-buffer chains, or compare 8, 32 and 64 proposal budgets below.',audit_note:'Rows 01–04 are archived opaque examples. New rows audit full card geometry, without opacity textures or shading. The triangle reference is found within each run’s budget; it can regress against older searches. Memory and timing comparisons include those regressions.',stats:[{label:'Resident bytes · development',value:(100*(1-after/before)).toFixed(1)+'% less',detail:'28 assets vs previous rebuilt · eight proposals · includes LOD0'},{label:'Maximum triangle overhead',value:'5% / LOD',detail:'Compared with this run’s reference; the pixel-error limits are unchanged'},{label:'Production policy',value:'Automatic',detail:'Source and previous-LOD proposals · source or new vertex buffers'},{label:'Dense tail checks',value:passed+'/10',detail:'706 independent cameras · source and adjacent gates · failures remain visible'}],comparisons};
+await fs.mkdir('research/hybrid/board',{recursive:true});await fs.writeFile('research/hybrid/board-data.json',JSON.stringify(data,null,2)+'\n');await fs.writeFile('research/hybrid/board/examples.json',JSON.stringify({...original,examples,vegetation:'research/hybrid/board-data.json'},null,2)+'\n');console.log(examples.length+' chains');

@@ -55,7 +55,7 @@ int main(int argc,char** argv) {
         fs::path run=argv[1],output=argv[2];auto meta=read(run/"metadata.json"),summary=read(run/"summary.json");
         if(!summary.at("complete").get<bool>())throw std::runtime_error("diagnostics require a complete batch");
         if(summary.at("run_sha256")!=meta.at("run_sha256"))throw std::runtime_error("summary hash mismatch");
-        auto settings=settings_json(meta.at("config"));
+        auto settings=settings_json(meta.at("config"),true);
         json report={{"version",1},{"run",run.filename().string()},{"run_sha256",meta.at("run_sha256")},
             {"summary_sha256",hash(bytes(run/"summary.json"))},{"config",meta.at("config")},{"score",summary.at("score")},
             {"proxy",{{"version",1},{"samples","pixel centers at (x+0.5,y+0.5); top-left fill; fixed even viewport; no MSAA"},

@@ -5,11 +5,16 @@ CLI, independent evaluator and reproducible research harness. Original code is
 MIT OR Apache-2.0. Skinning, morphs, alpha textures, texture-image scoring and
 engine-specific plugins are deferred.
 
-Output modes: Rebuild (default, owned new positions/attributes) and Reuse
-(only indices/material metadata; immutable original vertex IDs and streams).
-Topology changes are permitted only when the chosen visual contract passes.
-Chain modes: Direct from source, Progressive from previous, Hybrid (default)
-combining proposals and selecting minimum-total-triangle valid chains.
+Production uses automatic hybrid generation. Both source and predecessor inputs,
+and both endpoint and repositioning reductions, propose audited candidates.
+The selected complete chain minimizes packed resident vertex/index bytes while
+each scheduled LOD uses at most floor(reference_triangles*(1+overhead)) triangles.
+The reference is one complete minimum-total-triangle path found by this run;
+it is not a global optimum. Default overhead is 500 basis points (5%), with
+0..10000 supported. The proposal pool is independent of overhead. Source vertex
+streams remain immutable; owned levels are compact. Source buffers count once,
+exact consecutive runtime duplicates once, and all present attributes/u32 indices
+count. Forced output/origin modes remain research controls. See research/hybrid/PLAN.md.
 Borrowed reducer/proposer outputs address the input passed to that call. In
 progressive rebuild, compact IDs from the preceding LOD must not be interpreted
 against LOD0; preserve the referenced input for as long as the output needs it.
@@ -41,8 +46,9 @@ One empty render versus nonempty fails; two empty renders agree.
 Normals are sampled visible interpolated normals, or face normals when absent.
 These are audited-camera/sample guarantees, never universal appearance bounds.
 
-Quality preset allows 64 candidate evaluations/level, fast eight. Hybrid
-retains eight reduced candidates plus incumbent and source fallback. Counts
+Quality preset allows 64 candidate evaluations/level, fast eight. Automatic search
+reserves half the bounded beam for triangles and fills the rest by resident bytes,
+with an exact source fallback. Counts
 must not increase with level. Cancellation returns a validated incumbent with
 an explicit completion status. Benchmarks use deterministic work budgets.
 
@@ -69,7 +75,7 @@ do not affect the visual gates or SCORE.
 
 Vertex colors use linear RGBA8 (0..255 per channel, 256 levels), including
 the strided C++ and C API streams. The C ABI version and shared-library
-compatibility version are 2; version 1 float color streams are unsupported.
+compatibility version are 3; older descriptors are unsupported.
 Import rounds normalized float/unsigned-16 colors to nearest with ties upward,
 rejects nonfinite/out-of-range channels, and defaults missing alpha to 255.
 Reuse preserves the imported/supplied bytes. Rebuild rounds interpolated RGB

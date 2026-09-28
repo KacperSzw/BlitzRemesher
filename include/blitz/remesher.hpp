@@ -7,14 +7,16 @@ enum class ChainMode:uint8_t { Direct,Progressive,Hybrid };
 enum class Objective:uint8_t { Quadric,Regularized,Visual,TopologyRelaxed };
 enum class Status:uint8_t { Complete,BudgetLimited,Cancelled };
 struct Curve { std::vector<Vec2> points{{0,2},{1,3}}; double at(double) const; };
-// Opt-in proposal experiments. Acceptance, output ownership and C ABI are unchanged.
+// Forced whole-chain modes are research controls, not production policies.
 struct ResearchOptions {
+    std::optional<OutputMode> output;
+    ChainMode chain{ChainMode::Hybrid};
     double boundary_weight{};
     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{};
 };
 struct Settings {
-    uint8_t levels{8}; OutputMode output{OutputMode::Rebuild};
-    ChainMode chain{ChainMode::Hybrid}; Objective objective{Objective::Quadric};
+    uint8_t levels{8}; Objective objective{Objective::Quadric};
+    uint16_t triangle_overhead_bps{500}; // 100 basis points = 1%; range 0..10000.
     double pixels_per_meter{512},meters_per_unit{1};
     std::optional<double> base_pixels{},max_lod0_delta_px{};
     double last_pixels{16}; Curve transition{};
@@ -46,6 +48,18 @@ struct ProposalTrace {
     uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2.
     // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8.
 };
+struct StorageStats {
+    uint64_t source_vertex_bytes{},added_vertex_bytes{},index_bytes{};
+    uint64_t total() const { return source_vertex_bytes+added_vertex_bytes+index_bytes; }
+};
+struct ChainCost {
+    std::vector<uint32_t> triangles;
+    StorageStats storage;
+};
+struct ChainSelection { size_t reference{},selected{}; };
+// Deterministic selection from an already audited pool. Does not establish validity.
+ChainSelection select_chain(std::span<const ChainCost>,uint16_t overhead_bps);
+uint64_t vertex_bytes(MeshView); // Canonical packed attributes, excluding borrowed stride padding.
 struct Result {
     MeshView source; Bounds reference_bounds; std::vector<Lod> lods;
     Status status{Status::Complete}; uint64_t candidate_evaluations{};
@@ -54,7 +68,12 @@ struct Result {
     std::array<Measurement,4> worst_rejected{};
     std::vector<ProposalTrace> proposals;
     uint64_t duplicate_proposals{},component_builds{},component_unavailable{};
+    uint64_t transition_reconnections{}; // Extra audited edges, not reduction proposals.
+    uint16_t triangle_overhead_bps{};
+    ChainSelection selection;
+    std::vector<ChainCost> candidates; // Final audited pool; no duplicate geometry payloads.
 };
+StorageStats storage_stats(const Result&); // Same buffer layout and duplicate policy as save_chain().
 // First scheduled slot of each consecutive group with identical render data.
 // Scheduled slots and their independent audit records remain unchanged (at most 32).
 std::vector<uint8_t> runtime_levels(const Result&);

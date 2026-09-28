@@ -1,0 +1,149 @@
+{
+  "kind": "automatic-hybrid",
+  "intro": "One automatic policy: minimize resident vertex and index bytes while keeping each LOD within 5% of its triangle reference. Inspect the actual mixed-buffer chains, or compare 8, 32 and 64 proposal budgets below.",
+  "audit_note": "Rows 01–04 are archived opaque examples. New rows audit full card geometry, without opacity textures or shading. The triangle reference is found within each run’s budget; it can regress against older searches. Memory and timing comparisons include those regressions.",
+  "stats": [
+    {
+      "label": "Resident bytes · development",
+      "value": "41.9% less",
+      "detail": "28 assets vs previous rebuilt · eight proposals · includes LOD0"
+    },
+    {
+      "label": "Maximum triangle overhead",
+      "value": "5% / LOD",
+      "detail": "Compared with this run’s reference; the pixel-error limits are unchanged"
+    },
+    {
+      "label": "Production policy",
+      "value": "Automatic",
+      "detail": "Source and previous-LOD proposals · source or new vertex buffers"
+    },
+    {
+      "label": "Dense tail checks",
+      "value": "9/10",
+      "detail": "706 independent cameras · source and adjacent gates · failures remain visible"
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "Grass clump",
+      "budget": 8,
+      "before_final": 245,
+      "after_final": 198,
+      "before_bytes": 242440,
+      "after_bytes": 227376,
+      "before_seconds": 15.806726888,
+      "after_seconds": 18.338406291,
+      "reference_total": 10578,
+      "selected_total": 10578
+    },
+    {
+      "name": "Fern fronds",
+      "budget": 8,
+      "before_final": 16,
+      "after_final": 22,
+      "before_bytes": 201484,
+      "after_bytes": 152272,
+      "before_seconds": 31.951503397,
+      "after_seconds": 33.393166023,
+      "reference_total": 5847,
+      "selected_total": 5923
+    },
+    {
+      "name": "Leafy shrub",
+      "budget": 8,
+      "before_final": 136,
+      "after_final": 108,
+      "before_bytes": 665316,
+      "after_bytes": 602520,
+      "before_seconds": 36.127691424,
+      "after_seconds": 25.657507161,
+      "reference_total": 12316,
+      "selected_total": 12430
+    },
+    {
+      "name": "Broadleaf tree",
+      "budget": 8,
+      "before_final": 110,
+      "after_final": 109,
+      "before_bytes": 77100,
+      "after_bytes": 57676,
+      "before_seconds": 8.689301548,
+      "after_seconds": 11.187492967,
+      "reference_total": 4642,
+      "selected_total": 4642
+    },
+    {
+      "name": "Flowering ground cover",
+      "budget": 8,
+      "before_final": 664,
+      "after_final": 370,
+      "before_bytes": 1800972,
+      "after_bytes": 792136,
+      "before_seconds": 28.78280157,
+      "after_seconds": 20.75854108,
+      "reference_total": 67714,
+      "selected_total": 67714
+    },
+    {
+      "name": "Leafy branch",
+      "budget": 8,
+      "before_final": 10,
+      "after_final": 10,
+      "before_bytes": 21964,
+      "after_bytes": 19732,
+      "before_seconds": 6.721861267,
+      "after_seconds": 6.951476182,
+      "reference_total": 493,
+      "selected_total": 497
+    },
+    {
+      "name": "Fern fronds",
+      "budget": 32,
+      "before_final": 9,
+      "after_final": 8,
+      "before_bytes": 225748,
+      "after_bytes": 243668,
+      "before_seconds": 75.256934986,
+      "after_seconds": 86.189149425,
+      "reference_total": 5220,
+      "selected_total": 5220
+    },
+    {
+      "name": "Broadleaf tree",
+      "budget": 32,
+      "before_final": 103,
+      "after_final": 86,
+      "before_bytes": 84156,
+      "after_bytes": 114108,
+      "before_seconds": 23.519212606,
+      "after_seconds": 37.457298386,
+      "reference_total": 3629,
+      "selected_total": 3629
+    },
+    {
+      "name": "Fern fronds",
+      "budget": 64,
+      "before_final": 5,
+      "after_final": 6,
+      "before_bytes": 221124,
+      "after_bytes": 168332,
+      "before_seconds": 125.494749576,
+      "after_seconds": 113.531451846,
+      "reference_total": 5071,
+      "selected_total": 5147
+    },
+    {
+      "name": "Broadleaf tree",
+      "budget": 64,
+      "before_final": 90,
+      "after_final": 46,
+      "before_bytes": 197488,
+      "after_bytes": 73924,
+      "before_seconds": 42.563574943,
+      "after_seconds": 42.227682105,
+      "reference_total": 3512,
+      "selected_total": 3512
+    }
+  ]
+}

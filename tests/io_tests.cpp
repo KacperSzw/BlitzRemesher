@@ -81,6 +81,13 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        CHECK(!config.contains("output")&&!config.contains("chain"));
+        throws([&]{settings_json(nlohmann::json{{"output","reuse"}});});
+        auto legacy=settings_json(nlohmann::json{{"output","reuse"},{"chain","progressive"}},true);
+        CHECK(legacy.research.output==OutputMode::Reuse&&legacy.research.chain==ChainMode::Progressive);
+        for(int b:{0,137,10000})CHECK(settings_json(nlohmann::json{{"triangle_overhead_bps",b}}).triangle_overhead_bps==b);
+        throws([&]{settings_json(nlohmann::json{{"triangle_overhead_bps",2.5}});});
+        CHECK(std::filesystem::file_size(dir/"distinct/chain.bin")==storage_stats(r).total());
         for(double weight:{0.,7.5,100.}){
             auto experiment=settings_json(nlohmann::json{{"profile","coverage"},{"research",{{"boundary_weight",weight},{"boundary_placement",true},{"adaptive_targets",true},{"independent_seams",true},{"trace",true}}}});
             CHECK(experiment.research.boundary_weight==weight&&experiment.research.boundary_placement&&experiment.research.adaptive_targets&&experiment.research.independent_seams&&experiment.research.trace);

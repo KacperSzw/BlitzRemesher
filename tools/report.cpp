@@ -23,7 +23,10 @@ int main(int argc,char** argv) {
             svg<<"<text x=\"24\" y=\""<<y+17<<"\" font-size=\"13\">"<<escape(label)<<"</text>";
             if(!fs::exists(dir/"summary.json")){md<<"| "<<label<<" | pending | no | — | — | — | — |\n";continue;}
             auto s=read(dir/"summary.json"),meta=read(dir/"metadata.json");auto c=meta.at("config");
-            std::string scenario=c.at("output").get<std::string>()+"/"+c.at("profile").get<std::string>()+"/"+c.at("chain").get<std::string>()+", N="+std::to_string(c.at("levels").get<int>())+", budget="+std::to_string(c.at("candidate_budget").get<int>());
+            auto research=c.value("research",json::object());auto placement=research.value("output",json(nullptr));
+            std::string output_mode=c.value("output",placement.is_null()?std::string("auto"):placement.get<std::string>());
+            std::string scenario=output_mode+"/"+c.at("profile").get<std::string>()+"/"+c.value("chain",research.value("chain",std::string("hybrid")))+", N="+std::to_string(c.at("levels").get<int>())+", budget="+std::to_string(c.at("candidate_budget").get<int>());
+            if(output_mode=="auto")scenario+=", overhead bps="+std::to_string(c.at("triangle_overhead_bps").get<int>());
             size_t failed=0;for(auto& row:fs::directory_iterator(dir/"rows"))if(row.path().extension()==".json")failed+=read(row.path()).value("failed",false);
             md<<"| ["<<label<<"]("<<fs::relative(dir,output).generic_string()<<"/summary.json) | "<<scenario<<" | "<<s.at("completed")<<"/"<<s.at("expected")<<" | ";
             if(s["score"].is_null())md<<"—";else md<<std::fixed<<std::setprecision(2)<<s["score"].get<double>();

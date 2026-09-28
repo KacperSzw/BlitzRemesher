@@ -22,7 +22,7 @@ blitz_status blitz_settings_init(blitz_settings* out,size_t n) {
     if(!out||n!=sizeof(blitz_settings))return BLITZ_INVALID_ARGUMENT;
     try {
     blitz::Settings s;*out={};out->struct_size=sizeof(*out);out->abi_version=BLITZ_ABI_VERSION;
-    out->levels=s.levels;out->output_mode=uint8_t(s.output);out->chain_mode=uint8_t(s.chain);out->profile=uint8_t(s.profile);
+    out->levels=s.levels;out->triangle_overhead_bps=s.triangle_overhead_bps;out->profile=uint8_t(s.profile);
     out->objective=uint8_t(s.objective);out->beam_width=s.beam_width;out->candidate_budget=s.candidate_budget;
     out->search_supersample=s.search_supersample;out->audit_supersample=s.audit_supersample;out->max_supersample=s.max_supersample;
     out->search_ortho=s.search_views.orthographic;out->search_perspective=s.search_views.perspective;out->search_seed=s.search_views.rotation_seed;
@@ -41,7 +41,7 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
         if((reinterpret_cast<uintptr_t>(m->indices)%alignof(uint32_t))||(reinterpret_cast<uintptr_t>(m->materials)%alignof(uint16_t)))throw std::invalid_argument("unaligned index or material stream");
         blitz::MeshView v{stream<blitz::Vec3>(m->positions),stream<blitz::Vec3>(m->normals),stream<blitz::Vec2>(m->uv),
             stream<blitz::ColorRGBA8>(m->colors),stream<blitz::Vec4>(m->tangents),{m->indices,m->index_count},{m->materials,m->material_count},{m->double_sided,m->double_sided_count}};
-        blitz::Settings s;s.levels=c->levels;s.output=blitz::OutputMode(c->output_mode);s.chain=blitz::ChainMode(c->chain_mode);s.profile=blitz::Profile(c->profile);s.objective=blitz::Objective(c->objective);
+        blitz::Settings s;s.levels=c->levels;s.triangle_overhead_bps=c->triangle_overhead_bps;s.profile=blitz::Profile(c->profile);s.objective=blitz::Objective(c->objective);
         s.beam_width=c->beam_width;s.candidate_budget=c->candidate_budget;s.search_supersample=c->search_supersample;s.audit_supersample=c->audit_supersample;s.max_supersample=c->max_supersample;
         s.search_views={c->search_ortho,c->search_perspective,c->search_seed};s.audit_views={c->audit_ortho,c->audit_perspective,c->audit_seed};
         s.pixels_per_meter=c->pixels_per_meter;s.meters_per_unit=c->meters_per_unit;s.last_pixels=c->last_pixels;
@@ -64,7 +64,12 @@ size_t blitz_result_runtime_lod_index(const blitz_result* r,size_t i){return r&&
 blitz_status blitz_result_lod(const blitz_result* r,size_t i,blitz_lod_info* out) {
     if(!r||!out||out->struct_size!=sizeof(*out)||i>=r->value.lods.size())return BLITZ_INVALID_ARGUMENT;
     const auto& l=r->value.lods[i];*out={sizeof(*out),exported(l.view(r->value.source)),l.schedule.pixels,l.schedule.transition,l.schedule.source,
-        l.adjacent.error,l.source_error.error,l.adjacent.worst_view,l.source_error.worst_view,uint8_t(l.shared_vertices),uint8_t(l.adjacent.passed&&l.source_error.passed)};return BLITZ_OK;
+        l.adjacent.error,l.source_error.error,l.adjacent.worst_view,l.source_error.worst_view,uint8_t(l.shared_vertices),uint8_t(l.adjacent.passed&&l.source_error.passed),r->value.candidates[r->value.selection.reference].triangles[i]};return BLITZ_OK;
+}
+blitz_status blitz_result_storage(const blitz_result* r,blitz_storage_info* out) {
+    if(!r||!out||out->struct_size!=sizeof(*out))return BLITZ_INVALID_ARGUMENT;
+    const auto& s=r->value.candidates[r->value.selection.selected].storage;
+    *out={sizeof(*out),s.source_vertex_bytes,s.added_vertex_bytes,s.index_bytes,s.total()};return BLITZ_OK;
 }
 void blitz_result_destroy(blitz_result* r){delete r;}
 }

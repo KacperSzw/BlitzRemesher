@@ -1,0 +1,117 @@
+{
+  "audit": {
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 2971082802,
+    "supersample": 8
+  },
+  "binary_sha256": "39c907893bd18a829839004baae98dc99e23fb0558539e314336b4fef29dde57",
+  "chain_bin_sha256": "b6c97d4a3b755b98881dc8c8436bb6cf7a4c68d8256ce7aaffd9a493d437f9b7",
+  "chain_gltf_sha256": "a509fe3fe05314343a25317aeb27ecebcb8148585d78b606148c9a0a88fb237d",
+  "id": "ph_shrub_02_clump_1",
+  "lods": [
+    {
+      "adjacent": {
+        "changed_area": 0.2030039223189515,
+        "complete": true,
+        "coverage_upper_px": 2.3061168095699376,
+        "error_px": 2.3061168095699376,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 460
+      },
+      "level": 5,
+      "screen_pixels": 43.0688061642354,
+      "source": {
+        "changed_area": 0.29206773618538323,
+        "complete": true,
+        "coverage_upper_px": 2.329977928198511,
+        "error_px": 2.329977928198511,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 35
+      },
+      "source_limit": 5.823886432980217,
+      "transition_limit": 2.666666666666667,
+      "triangles": 1230
+    },
+    {
+      "adjacent": {
+        "changed_area": 0.25118483412322273,
+        "complete": true,
+        "coverage_upper_px": 1.6035543905932736,
+        "error_px": 1.6035543905932736,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 82
+      },
+      "level": 6,
+      "screen_pixels": 26.25073139224442,
+      "source": {
+        "changed_area": 0.2879250661779678,
+        "complete": true,
+        "coverage_upper_px": 1.6035543905932736,
+        "error_px": 1.6035543905932736,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 82
+      },
+      "source_limit": 6.3830318745028745,
+      "transition_limit": 2.833333333333333,
+      "triangles": 1033
+    },
+    {
+      "adjacent": {
+        "changed_area": 0.7706708268330733,
+        "complete": true,
+        "coverage_upper_px": 2.199157273122449,
+        "error_px": 2.199157273122449,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 121
+      },
+      "level": 7,
+      "screen_pixels": 16,
+      "source": {
+        "changed_area": 0.7983449477351916,
+        "complete": true,
+        "coverage_upper_px": 2.4748747341529165,
+        "error_px": 2.4748747341529165,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 189
+      },
+      "source_limit": 6.890501505120695,
+      "transition_limit": 3,
+      "triangles": 108
+    }
+  ],
+  "passed": true,
+  "profile": "coverage",
+  "purpose": "Dense independent tail check; does not rewrite pilot SCORE or select replacement meshes",
+  "row_sha256": "67ffa5274b424ad498363545a8614fc1612eb49fef0152c23da7bb7f37a92e8f",
+  "run": "hybrid-development-v5-mixed-auto-b8",
+  "run_sha256": "56ea9faaa758429afbfacf66ca388434adb4e338aa075cc0b2cb10d0f9900155",
+  "seconds": 16.044478616,
+  "version": 1,
+  "audit_binary_sha256": "39c907893bd18a829839004baae98dc99e23fb0558539e314336b4fef29dde57"
+}

@@ -97,7 +97,7 @@ int main() {
         struct Slot {uint8_t prefix;ColorRGBA8 color;uint8_t padding[3];};
         std::vector<Slot> slots(m.colors.size());for(auto& s:slots)s={19,{17,128,249,73},{7,8,9}};
         const auto before=slots;auto view=m.view();view.colors.data=reinterpret_cast<const std::byte*>(slots.data())+offsetof(Slot,color);view.colors.stride=sizeof(Slot);
-        Settings settings;settings.output=OutputMode::Reuse;settings.chain=ChainMode::Progressive;
+        Settings settings;settings.research.output=OutputMode::Reuse;settings.research.chain=ChainMode::Progressive;
         settings.levels=3;settings.base_pixels=16;settings.last_pixels=8;settings.profile=Profile::Attributes;
         settings.search_views={2,1,17};settings.audit_views={4,1,31};settings.search_supersample=settings.audit_supersample=2;settings.max_supersample=4;
         settings.candidate_budget=2;settings.beam_width=1;PerformanceStats work;work.raster_ns=UINT64_MAX;settings.performance=&work;

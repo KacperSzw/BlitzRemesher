@@ -153,9 +153,12 @@ int main(int argc, char** argv) {
             }
             example["run"]=example_run;
             example["ratio"] = row.at("ratio");
-            example["output_mode"] = row.contains("output_mode")?row.at("output_mode"):example_meta.at("config").at("output");
+            auto placement=example_meta.at("config").value("output",example_meta.at("config").value("research",json::object()).value("output",json("auto")));
+            if(placement.is_null())placement="auto";
+            example["output_mode"] = row.contains("output_mode")?row.at("output_mode"):placement;
             example["bake_seconds"] = row.value("generation_seconds",row.at("seconds").get<double>());
             example["bake_timing_scope"] = row.contains("generation_seconds") ? "generation_and_audit" : "import_generation_audit_export";
+            if(row.at("result").contains("storage")){example["storage"]=row.at("result").at("storage");example["triangle_overhead_bps"]=row.at("result").at("triangle_overhead_bps");}
             example["lods"] = json::array();
             auto rows = row.at("result").at("lods");
             if (gltf.at("nodes").size() != rows.size()) throw std::runtime_error("LOD node count mismatch");

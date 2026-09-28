@@ -247,10 +247,15 @@ void save_ply(MeshView m,const fs::path& path) {
     if(!f)fail("cannot write PLY");
 }
 json result_json(const Result& r) {
-    json j={{"version",1},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
+    json j={{"version",2},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
+    auto storage=[](StorageStats s){return json{{"source_vertex_bytes",s.source_vertex_bytes},{"added_vertex_bytes",s.added_vertex_bytes},{"index_bytes",s.index_bytes},{"total_bytes",s.total()}};};
+    j["storage"]=storage(storage_stats(r));j["triangle_overhead_bps"]=r.triangle_overhead_bps;
+    j["reference_candidate"]=r.selection.reference;j["selected_candidate"]=r.selection.selected;
+    j["candidates"]=json::array();for(auto& c:r.candidates)j["candidates"].push_back({{"triangles",c.triangles},{"storage",storage(c.storage)}});
+    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
-    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable}};
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"transition_reconnections",r.transition_reconnections}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
         const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components"};
@@ -261,8 +266,8 @@ json result_json(const Result& r) {
     }
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
     for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
-    for(auto& l:r.lods){auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
-      {"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},
+    for(size_t index=0;index<r.lods.size();++index){auto& l=r.lods[index];auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
+      {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},
       {"screen_pixels",l.schedule.pixels},{"transition_limit",l.schedule.transition},{"source_limit",l.schedule.source},
       {"adjacent",measurement(l.adjacent)},{"source",measurement(l.source_error)},
       {"uv_diagnostics",{{"mean_density",d.mean_uv_density},{"max_density",d.max_uv_density},{"max_anisotropy",d.max_uv_anisotropy},
@@ -321,7 +326,7 @@ void save_chain(const Result& r,const fs::path& directory) {
 json settings_json(const Settings& s) {
     auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
     auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
-    return {{"levels",s.levels},{"output",s.output==OutputMode::Reuse?"reuse":"rebuild"},{"chain",s.chain==ChainMode::Direct?"direct":s.chain==ChainMode::Progressive?"progressive":"hybrid"},
+    return {{"levels",s.levels},{"triangle_overhead_bps",s.triangle_overhead_bps},
       {"objective",s.objective==Objective::Quadric?"quadric":s.objective==Objective::Regularized?"regularized":s.objective==Objective::Visual?"visual":"topology_relaxed"},
       {"profile",s.profile==Profile::Coverage?"coverage":s.profile==Profile::Normals?"normals":"attributes"},{"pixels_per_meter",s.pixels_per_meter},
       {"meters_per_unit",s.meters_per_unit},{"base_pixels",s.base_pixels?json(*s.base_pixels):json(nullptr)},{"last_pixels",s.last_pixels},
@@ -329,15 +334,22 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams}}}};
+      {"research",{{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams}}}};
 }
-Settings settings_json(const json& input) {
+Settings settings_json(const json& original,bool legacy_research) {
+    auto input=original;
+    if(input.contains("output")||input.contains("chain")) {
+        if(!legacy_research)fail("output/chain are research controls in ABI 3; move them under research or use --legacy-config for archived experiments");
+        for(auto key:{"output","chain"})if(input.contains(key)){input["research"][key]=input[key];input.erase(key);}
+    }
     Settings s;auto j=settings_json(s);for(auto it=input.begin();it!=input.end();++it){if(!j.contains(it.key()))fail("unknown setting: "+it.key());}
     j.merge_patch(input);
     auto mode=[&](const char* key,std::initializer_list<const char*> names){std::string v=j.at(key);unsigned i=0;for(auto name:names){if(v==name)return i;++i;}fail(std::string("unknown ")+key);};
-    s.output=OutputMode(mode("output",{"rebuild","reuse"}));s.chain=ChainMode(mode("chain",{"direct","progressive","hybrid"}));s.profile=Profile(mode("profile",{"coverage","normals","attributes"}));s.objective=Objective(mode("objective",{"quadric","regularized","visual","topology_relaxed"}));
+    s.profile=Profile(mode("profile",{"coverage","normals","attributes"}));s.objective=Objective(mode("objective",{"quadric","regularized","visual","topology_relaxed"}));
     auto byte=[&](const char* k){int n=j.at(k);if(n<0||n>255)fail("byte setting out of range");return uint8_t(n);};
     s.levels=byte("levels");s.beam_width=byte("beam_width");s.search_supersample=byte("search_supersample");s.audit_supersample=byte("audit_supersample");s.max_supersample=byte("max_supersample");
+    if(!j.at("triangle_overhead_bps").is_number_integer())fail("triangle overhead must be integer basis points");
+    int overhead=j.at("triangle_overhead_bps");if(overhead<0||overhead>10000)fail("triangle overhead out of range");s.triangle_overhead_bps=uint16_t(overhead);
     int budget=j.at("candidate_budget");if(budget<1||budget>65535)fail("invalid candidate budget");s.candidate_budget=uint16_t(budget);
     s.pixels_per_meter=j.at("pixels_per_meter");s.meters_per_unit=j.at("meters_per_unit");s.last_pixels=j.at("last_pixels");
     if(j.contains("base_pixels")&&!j["base_pixels"].is_null())s.base_pixels=j["base_pixels"];
@@ -349,6 +361,9 @@ Settings settings_json(const json& input) {
     s.search_views=views("search_views");s.audit_views=views("audit_views");s.prune=j.at("prune");s.force_scalar=j.at("force_scalar");s.coupled_wedges=j.at("coupled_wedges");
     auto experimental=j.at("research");
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
+    auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
+    if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));
+    s.research.chain=ChainMode(research_mode("chain",{"direct","progressive","hybrid"}));
     s.research.boundary_weight=experimental.at("boundary_weight");s.research.boundary_placement=experimental.at("boundary_placement");
     s.research.adaptive_targets=experimental.at("adaptive_targets");s.research.component_candidates=experimental.at("component_candidates");s.research.trace=experimental.at("trace");
     s.research.independent_seams=experimental.at("independent_seams");

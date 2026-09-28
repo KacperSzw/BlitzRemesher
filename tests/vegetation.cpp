@@ -40,9 +40,10 @@ int main(){try {
     CHECK(detail::component_order(materials.view(),bounds(materials.view()),e).counts.size()==2);
     Settings s;s.levels=4;s.base_pixels=32;s.last_pixels=16;s.profile=Profile::Coverage;s.transition={{{0,2},{1,3}}};s.candidate_budget=7;s.beam_width=2;
     s.search_views={4,1,17};s.audit_views={6,2,83};s.search_supersample=2;s.audit_supersample=4;s.max_supersample=8;
-    s.research={10,true,true,true,true};
+    s.research.boundary_weight=10;s.research.boundary_placement=true;
+    s.research.adaptive_targets=true;s.research.component_candidates=true;s.research.trace=true;
     for(auto mode:{OutputMode::Reuse,OutputMode::Rebuild})for(auto chain:{ChainMode::Direct,ChainMode::Progressive,ChainMode::Hybrid}) {
-        s.output=mode;s.chain=chain;auto r=generate(cards.view(),s);CHECK(r.status==Status::Complete);CHECK(r.proposals.size()==r.candidate_evaluations);
+        s.research.output=mode;s.research.chain=chain;auto r=generate(cards.view(),s);CHECK(r.status==Status::Complete);CHECK(r.proposals.size()==r.candidate_evaluations);
         CHECK(r.candidate_evaluations<=uint64_t(s.levels-1)*s.candidate_budget);
         for(size_t i=1;i<r.lods.size();++i){auto& l=r.lods[i];CHECK(l.source_error.passed&&l.adjacent.passed&&l.data.indices.size()<=r.lods[i-1].data.indices.size());if(mode==OutputMode::Reuse)CHECK(l.shared_vertices);}
         for(auto& p:r.proposals)CHECK(p.level>0&&p.level<s.levels&&p.gate<=8&&p.achieved>0&&p.seconds>=0);
@@ -51,7 +52,7 @@ int main(){try {
     // A deliberately nonmonotonic provider: intermediate targets fail, but a
     // coarse representation exactly covers the source. Rejections must not
     // permanently exclude exploratory coarse requests.
-    auto flat=sheet(6);s.cancelled={};s.levels=2;s.base_pixels=24;s.last_pixels=16;s.chain=ChainMode::Direct;s.research.component_candidates=false;
+    auto flat=sheet(6);s.cancelled={};s.levels=2;s.base_pixels=24;s.last_pixels=16;s.research.chain=ChainMode::Direct;s.research.component_candidates=false;
     for(uint16_t budget:{6,9}) {
         s.candidate_budget=budget;
         auto nonmonotonic=generate(flat.view(),s,[&](MeshView input,const ReduceSettings& proposal){

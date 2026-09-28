@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "scope": "foliage_card_geometry_only",
+  "scored": false,
+  "config": {
+    "attribute_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 512,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16,
+    "levels": 8,
+    "max_lod0_delta_px": 8,
+    "max_supersample": 8,
+    "meters_per_unit": 1,
+    "normal_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "objective": "quadric",
+    "pixels_per_meter": 512,
+    "profile": "coverage",
+    "prune": true,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "weights": {
+      "color": 4,
+      "material": 4,
+      "normal": 5.729577951308232
+    },
+    "triangle_overhead_bps": 500,
+    "research": {
+      "boundary_weight": 10,
+      "boundary_placement": true,
+      "independent_seams": true,
+      "adaptive_targets": true,
+      "trace": true,
+      "output": null,
+      "chain": "hybrid"
+    }
+  },
+  "variant": "repeat2",
+  "extra_args": [],
+  "cohort": [
+    "ph_fern_02_clump_1",
+    "loaf_tree_1"
+  ],
+  "workers": 1,
+  "plan_sha256": "64c199153edc6b98802cc7cf59aeac7abfb14c91d45abbb0b21be2768e18195e",
+  "binary_sha256": "d368497e0edd977e92218289ab15827e2f96e8a7d979f4339d1a94c9e41669ea",
+  "source_tree_sha256": "07d8c4017953a1edfe1851dfa4bc52d9c91760875d80b1a9d03442d5013e77db",
+  "cmake_cache_sha256": "9b09c59fa2437c9249f2270072c2e380a3133359f6881c7d4c6b17896ea9ecf6",
+  "runner_sha256": "6445bfb4ab70cc0eca253f86be6bc5efcd2221dbbf14ae449c9dcf5daf5a9777",
+  "git_revision": "658276884ef90250beea983d6bc60ed9f0559aa9",
+  "protocol_sha256": "0de5d1904b4ccb3f1543eb848b89caf043c6154d3e3f72e8605253162e115aed",
+  "geometry_manifest_sha256": "86f7ec842ad1fcb47959f19f1bf08160b01304c40a29ad552dd7e53667ed8de0",
+  "source_manifest_sha256": "9a393b4452538e23a6ac1c87bde0e3f28697bd9225cefb8e4de7d1d98c3a868b",
+  "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "compiler": "clang version 21.1.8",
+  "threads_per_bake": 1,
+  "timing_scope": "Generation/search/audit; import and export measured separately; shared workstation",
+  "run_sha256": "f6c21ab265078f559721b2c142288189e1234e829f1a08a8e3a49413bacb272e"
+}

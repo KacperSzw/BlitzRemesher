@@ -42,5 +42,12 @@ int main(void) {
     s.max_changed_area=0;
     CHECK(blitz_generate(&m,&s,&r,error,sizeof(error))==BLITZ_CANCELLED&&r!=NULL);
     blitz_result_destroy(r);
+    blitz_neural_options neural;blitz_neural_model* model=NULL;
+    CHECK(blitz_neural_options_init(&neural,sizeof(neural))==BLITZ_OK);
+    CHECK(blitz_neural_options_init(&neural,sizeof(neural)-1)==BLITZ_INVALID_ARGUMENT);
+    neural.version=99;
+    CHECK(blitz_neural_model_load("missing.blzn",&neural,&model,error,sizeof(error))==BLITZ_INVALID_ARGUMENT&&model==NULL);
+    CHECK(blitz_generate_neural(&m,&s,NULL,&r,error,sizeof(error))==BLITZ_INVALID_ARGUMENT&&r==NULL);
+    CHECK(blitz_neural_model_sha256(NULL)==NULL);blitz_neural_model_destroy(NULL);
     CHECK(blitz_generate(NULL,NULL,&r,error,sizeof(error))==BLITZ_INVALID_ARGUMENT);return 0;
 }

@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 revision=$(git rev-parse HEAD 2>/dev/null || true)
 if [[ -z "$revision" || "$revision" == HEAD ]]; then revision=uncommitted; fi
-source_hash=$(rg --files src include tools tests cmake CMakeLists.txt CMakePresets.json flake.nix flake.lock -g '*.cpp' -g '*.hpp' -g '*.h' -g '*.c' -g '*.cmake' -g '*.sh' -g '*.json' -g '*.nix' -g '*.lock' -g 'CMakeLists.txt' | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d ' ' -f 1)
+source_hash=$(rg --files src include tools tests cmake CMakeLists.txt CMakePresets.json flake.nix flake.lock -g '*.cpp' -g '*.hpp' -g '*.h' -g '*.c' -g '*.cu' -g '*.cuh' -g '*.cmake' -g '*.sh' -g '*.json' -g '*.nix' -g '*.lock' -g 'CMakeLists.txt' | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d ' ' -f 1)
 dirty_hash=$(git diff --binary HEAD 2>/dev/null | sha256sum | cut -d ' ' -f 1) || dirty_hash=uncommitted
 stamp_output=${1:-research/build.json}
 binary_hash=""

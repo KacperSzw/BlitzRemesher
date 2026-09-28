@@ -47,7 +47,7 @@ struct ProposalTrace {
     uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     double seconds{};
-    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2, topology fallback=3.
+    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2, topology fallback=3, neural reuse=4, neural compact=5.
     // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8.
 };
 struct StorageStats {

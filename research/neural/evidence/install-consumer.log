@@ -1,0 +1,38 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+-- Install configuration: "Release"
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/libblitzremesher.a
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/libblitz_eval.a
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/blitz.h
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/mesh.hpp
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/evaluate.hpp
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/render_cost.hpp
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/remesher.hpp
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/include/blitz/neural.hpp
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/cmake/BlitzRemesher/BlitzRemesherTargets.cmake
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/cmake/BlitzRemesher/BlitzRemesherTargets-release.cmake
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/cmake/BlitzRemesher/BlitzRemesherConfig.cmake
+-- Installing: /home/kacper/Projects/BlitzRemesher-neural/build/install-neural/lib64/cmake/BlitzRemesher/BlitzRemesherConfigVersion.cmake
+-- The C compiler identification is GNU 14.4.0
+-- The CXX compiler identification is GNU 14.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /nix/store/x5jdywjy4pa79bzwj82ippzjwpawrazk-gcc-wrapper-14.4.0/bin/gcc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /nix/store/x5jdywjy4pa79bzwj82ippzjwpawrazk-gcc-wrapper-14.4.0/bin/g++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /nix/store/0007a1d8r8zd3p6zlxvm406zkp4y4i8g-cuda12.9-cuda_nvcc-12.9.86/include;/nix/store/4f4384vyhqbji88w879kkx71b2yq8my1-cuda-merged-12.9/include (found suitable version "12.9.86", minimum required is "12")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found OpenSSL: /nix/store/p26kxyf1s61k1fbfiv1r7fk36mkaj4jp-openssl-3.6.3/lib/libcrypto.so (found version "3.6.3")
+-- Configuring done (1.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher-neural/build/consumer-neural
+[1/4] Building C object CMakeFiles/consumer.dir/home/kacper/Projects/BlitzRemesher-neural/tests/c_smoke.c.o
+[2/4] Linking CXX executable consumer
+[3/4] Building CXX object CMakeFiles/cpp-consumer.dir/main.cpp.o
+[4/4] Linking CXX executable cpp-consumer

@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 #define BLITZ_ABI_VERSION 4u
-typedef enum blitz_status { BLITZ_OK=0, BLITZ_INVALID_ARGUMENT=1, BLITZ_OUT_OF_MEMORY=2, BLITZ_INTERNAL_ERROR=3, BLITZ_CANCELLED=4, BLITZ_BUDGET_LIMITED=5 } blitz_status;
+typedef enum blitz_status { BLITZ_OK=0, BLITZ_INVALID_ARGUMENT=1, BLITZ_OUT_OF_MEMORY=2, BLITZ_INTERNAL_ERROR=3, BLITZ_CANCELLED=4, BLITZ_BUDGET_LIMITED=5, BLITZ_UNAVAILABLE=6 } blitz_status;
 typedef struct blitz_stream { const void* data; size_t count, stride; } blitz_stream;
 typedef struct blitz_color_rgba8 { uint8_t r,g,b,a; } blitz_color_rgba8;
 /* Float xyz positions/normals, float uv, linear RGBA8 colors, float xyzw tangents.
@@ -63,6 +63,28 @@ size_t blitz_result_runtime_lod_count(const blitz_result*);
 size_t blitz_result_runtime_lod_index(const blitz_result*,size_t);
 blitz_status blitz_result_lod(const blitz_result*,size_t,blitz_lod_info*);
 void blitz_result_destroy(blitz_result*);
+/* Additive neural API; existing ABI-4 descriptors retain their sizes and layout. */
+typedef struct blitz_neural_model blitz_neural_model;
+typedef struct blitz_neural_options {
+    uint32_t struct_size, version;
+    int32_t device;
+    uint32_t memory_mib;
+    uint8_t overdraw_tiebreak;
+    uint8_t reserved[3];
+} blitz_neural_options;
+typedef struct blitz_neural_info {
+    uint32_t struct_size;
+    uint64_t encode_ns, inference_ns, decode_ns, gpu_audit_ns, reference_audit_ns;
+    uint64_t decoded, legal_collapses, rejected_collapses, reference_rejections;
+    uint32_t fallback_levels;
+} blitz_neural_info;
+blitz_status blitz_neural_options_init(blitz_neural_options*,size_t);
+blitz_status blitz_neural_model_load(const char* path,const blitz_neural_options*,blitz_neural_model**,char* error,size_t error_capacity);
+void blitz_neural_model_destroy(blitz_neural_model*);
+/* Borrowed hash string, valid until model destruction. */
+const char* blitz_neural_model_sha256(const blitz_neural_model*);
+blitz_status blitz_generate_neural(const blitz_mesh*,const blitz_settings*,const blitz_neural_model*,blitz_result**,char* error,size_t error_capacity);
+blitz_status blitz_result_neural_info(const blitz_result*,blitz_neural_info*);
 #ifdef __cplusplus
 }
 #endif

@@ -1,3 +1,8 @@
 @PACKAGE_INIT@
+if(@BLITZ_CUDA@)
+  include(CMakeFindDependencyMacro)
+  find_dependency(CUDAToolkit 12)
+  find_dependency(OpenSSL)
+endif()
 include("${CMAKE_CURRENT_LIST_DIR}/BlitzRemesherTargets.cmake")
 check_required_components(BlitzRemesher)

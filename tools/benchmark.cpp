@@ -1,4 +1,5 @@
 #include "blitz/io.hpp"
+#include "neural_json.hpp"
 #include <openssl/evp.h>
 #include <chrono>
 #include <fstream>
@@ -126,14 +127,15 @@ int corpus_check(const fs::path& manifest,const fs::path& output) {
 }
 int benchmark_main(int argc,char** argv) {
     if(argc<3)throw std::invalid_argument("bench MANIFEST CONFIG OUTPUT");
-    fs::path manifest=argv[0],config=argv[1],output=argv[2],baseline_dir="build/research",build_stamp="research/build.json";std::string split="development",method="native";size_t limit=SIZE_MAX;double minutes=50;
+    fs::path manifest=argv[0],config=argv[1],output=argv[2],baseline_dir="build/research",build_stamp="research/build.json";std::string split="development",method="native";size_t limit=SIZE_MAX;double minutes=50;std::string neural_file;NeuralOptions neural_options;
     for(int i=3;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("missing benchmark option value");std::string k=argv[i];
         if(k=="--split")split=argv[i+1];else if(k=="--limit")limit=std::stoull(argv[i+1]);else if(k=="--minutes")minutes=std::stod(argv[i+1]);
+        else if(k=="--neural-model")neural_file=argv[i+1];else if(k=="--device")neural_options.device=std::stoi(argv[i+1]);
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
     auto corpus=read(manifest);
     if(!corpus.value("benchmark_eligible",true))throw std::invalid_argument("collection-only assets: opacity-aware benchmarking is deferred");
-    auto settings=settings_json(read(config));auto normalized=settings_json(settings);
+    auto settings=settings_json(read(config));if(!neural_file.empty())settings.research.chain=ChainMode::Direct;auto normalized=settings_json(settings);
     auto storage=reduction_storage();
     json metadata={{"version",2},{"input_format","linear-rgba8-v2"},{"quadric_bytes",storage.quadric_bytes},{"candidate_bytes",storage.candidate_bytes},
       {"packed_coverage",packed_coverage_enabled()},{"stage_timing",true},{"manifest_sha256",file_hash(manifest)},{"config",normalized},{"config_sha256",digest(normalized.dump())},
@@ -141,9 +143,10 @@ int benchmark_main(int argc,char** argv) {
       {"backend",evaluator_backend(settings.force_scalar)},{"peak_rss_scope","process high-water; KiB"}};
     metadata["camera_sha256"]=digest(normalized["search_views"].dump()+normalized["audit_views"].dump());
     fs::path baseline;
+    std::unique_ptr<NeuralModel> model;if(!neural_file.empty()){if(method!="native")throw std::invalid_argument("neural model cannot be combined with an external baseline");model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);method="neural";metadata["model_sha256"]=model->sha256();metadata["cuda_device"]=neural_options.device;metadata["backend"]="cuda+reference-confirmation";}
     metadata["method"]=method;
     metadata["output_hash_scope"]="output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data";
-    if(method!="native") {
+    if(method!="native"&&method!="neural") {
         if(method!="meshopt"&&method!="fastquadric"&&method!="cgal-lt"&&method!="cgal-qem"&&method!="cgal-probabilistic")throw std::invalid_argument("unknown baseline");
         baseline=fs::absolute(baseline_dir/("blitz-baseline-"+(method.starts_with("cgal-")?std::string("cgal"):method)));
         metadata["baseline_sha256"]=file_hash(baseline);
@@ -153,7 +156,7 @@ int benchmark_main(int argc,char** argv) {
     metadata["binary_sha256"]=file_hash("/proc/self/exe");
     std::ifstream cpu("/proc/cpuinfo");std::string line;while(std::getline(cpu,line))if(line.starts_with("model name")){metadata["cpu"]=line;break;}
 #endif
-    if(fs::exists(build_stamp))metadata["build"]=read(build_stamp);
+    if(fs::exists(build_stamp)&&!(model&&build_stamp=="research/build.json"))metadata["build"]=read(build_stamp);
     else if(build_stamp!="research/build.json")throw std::invalid_argument("explicit build stamp is missing");
     if(metadata.contains("binary_sha256")&&metadata.contains("build")&&metadata["build"].contains("binary_sha256")
        &&metadata["build"]["binary_sha256"]!=metadata["binary_sha256"])throw std::invalid_argument("build stamp belongs to a different executable");
@@ -181,7 +184,7 @@ int benchmark_main(int argc,char** argv) {
                 row["load_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
                 row["canonical_attributes_sha256"]=attribute_hash(mesh.view());
                 Proposer proposer;
-                if(method!="native") {
+                if(method!="native"&&method!="neural") {
                     if(settings.profile!=Profile::Coverage)throw std::runtime_error("external adapters expose geometry-only coverage capabilities");
                     if(settings.research.output==OutputMode::Reuse&&method!="meshopt")throw std::runtime_error("baseline cannot preserve source vertices");
                     fs::create_directories(output/".scratch");auto scratch=output/".scratch";
@@ -203,7 +206,7 @@ int benchmark_main(int argc,char** argv) {
                 }
                 PerformanceStats work;settings.performance=&work;
                 auto generation_begin=std::chrono::steady_clock::now();
-                auto result=generate(mesh.view(),settings,proposer);
+                NeuralStats neural_stats;auto result=model?generate_neural(mesh.view(),settings,*model,&neural_stats):generate(mesh.view(),settings,proposer);if(model)row["neural"]=neural_json(neural_stats);
                 row["generation_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-generation_begin).count();
                 row["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
                 row["numerics"]={{"solve_attempts",work.solve_attempts},{"singular_solves",work.singular_solves},{"nonfinite_solves",work.nonfinite_solves},

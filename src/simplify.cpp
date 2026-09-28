@@ -1,4 +1,5 @@
 #include "blitz/remesher.hpp"
+#include "neural_internal.hpp"
 #include <bit>
 #include <numeric>
 #include <stdexcept>
@@ -33,7 +34,7 @@ struct PositionEntry {PositionKey key;uint32_t index;};
 static_assert(sizeof(PositionEntry)==16);
 struct Candidate {double cost;uint32_t u,v;Vec3 point;};
 static_assert(sizeof(Candidate)==32);
-struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces;};
+struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces,representatives;};
 constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8,LinkNeighbor=16,LinkOpposite=32;
 }
 ReductionStorage reduction_storage() {return {uint8_t(sizeof(Quadric)),uint8_t(sizeof(Candidate))};}
@@ -236,7 +237,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 Vec3 np[3];for(int j=0;j<3;++j)np[j]=(a[j]==u||a[j]==v)?c.point:p[a[j]];
                 Vec3 newn=cross(np[1]-np[0],np[2]-np[0]);
                 if(length(newn)<1e-15||dot(oldn,newn)<=.05*length(oldn)*length(newn)){valid=false;bad_geometry=true;}
-                if(!mesh.uv.empty()&&(settings.output==OutputMode::Rebuild||settings.independent_seams)) {
+                if(!mesh.uv.empty()&&(settings.output==OutputMode::Rebuild||settings.independent_seams||trace)) {
                     auto edge=p[v]-p[u];double len2=dot(edge,edge),t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
                     auto ua=mesh.uv[u],va=mesh.uv[v];Vec2 replacement{float(ua.x*(1-t)+va.x*t),float(ua.y*(1-t)+va.y*t)};
                     Vec2 old[3],now[3];for(int j=0;j<3;++j){old[j]=mesh.uv[a[j]];now[j]=(a[j]==u||a[j]==v)?replacement:old[j];}
@@ -280,8 +281,10 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
         mesh.indices.resize(dst*3);if(!mesh.materials.empty())mesh.materials.resize(dst);
         if(trace)trace->faces.resize(dst);
     }
+    if(trace)trace->representatives.resize(n);
     if(trace)for(uint32_t i=0;i<n;++i) {
         auto root=i;while(history[root]!=root){history[root]=history[history[root]];root=history[root];}
+        trace->representatives[i]=root;
         trace->positions[i]={float(double(p[root].x)*scale+b.center.x),float(double(p[root].y)*scale+b.center.y),float(double(p[root].z)*scale+b.center.z)};
     }
     if(std::equal(mesh.indices.begin(),mesh.indices.end(),source.indices.begin(),source.indices.end()))result.shared_vertices=true;
@@ -294,6 +297,13 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     }
     if(stats)stats->final_triangles=uint32_t(mesh.indices.size()/3);
     result.data=std::move(mesh);return result;
+}
+Lod neural::teacher(MeshView source,const ReduceSettings& settings,std::vector<uint32_t>& representatives) {
+    if(settings.output!=OutputMode::Reuse||settings.prune||settings.coupled_wedges)
+        throw std::invalid_argument("teacher requires endpoint output, no pruning and uncoupled wedges");
+    Trace trace;auto out=reduce_impl(source,settings,&trace);representatives=std::move(trace.representatives);
+    if(representatives.empty()){representatives.resize(source.positions.count);std::iota(representatives.begin(),representatives.end(),0);}
+    return out;
 }
 Lod reduce(MeshView source,const ReduceSettings& settings) {
     if(!settings.coupled_wedges||settings.output==OutputMode::Reuse)return reduce_impl(source,settings,nullptr);

@@ -259,7 +259,7 @@ json result_json(const Result& r) {
     j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
-        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
+        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components","topology_fallback","neural_reuse","neural_compact"};
         const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable"};
         for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},

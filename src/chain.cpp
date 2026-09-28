@@ -2,6 +2,7 @@
 #include "timing.hpp"
 #include "components.hpp"
 #include "coverage.hpp"
+#include "chain_hooks.hpp"
 #include <chrono>
 #include <memory>
 #include <stdexcept>
@@ -101,7 +102,7 @@ EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,boo
     e.max_supersample=s.max_supersample;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;e.performance=s.performance;return e;
 }
 }
-Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+Result detail::generate_with_hooks(MeshView source,const Settings& s,const Proposer& proposer,const GenerationHooks* hooks) {
     if(s.performance)*s.performance={};
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
@@ -156,12 +157,15 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 coverage.begin_candidate();
                 const auto parent_index=size_t(std::find(beam.begin(),beam.end(),parent)-beam.begin());
                 const auto parent_id=reference_ids[parent_index];
-                if(!accepted(coverage.evaluate(source,view,search_source,0,false),0))gate=1;
-                else if(!accepted(coverage.evaluate(previous,view,search_adj,parent_id,false),1))gate=2;
+                auto measure=[&](MeshView reference,const EvalSettings& config,uint8_t id,bool audit) {
+                    return hooks?hooks->evaluate(reference,view,result.reference_bounds,config):coverage.evaluate(reference,view,config,id,audit);
+                };
+                if(!accepted(measure(source,search_source,0,false),0))gate=1;
+                else if(!accepted(measure(previous,search_adj,parent_id,false),1))gate=2;
                 else {
-                    candidate.source_error=coverage.evaluate(source,view,audit_source,0,true);
+                    candidate.source_error=measure(source,audit_source,0,true);
                     if(!accepted(candidate.source_error,2))gate=3;
-                    else {candidate.adjacent=coverage.evaluate(previous,view,audit_adj,parent_id,true);if(!accepted(candidate.adjacent,3))gate=4;}
+                    else {candidate.adjacent=measure(previous,audit_adj,parent_id,true);if(!accepted(candidate.adjacent,3))gate=4;}
                 }
                 coverage.begin_candidate();
                 if(automatic||s.research.adaptive_targets) {
@@ -238,12 +242,14 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 rs.independent_seams=s.research.independent_seams;
                 ReductionStats stats;rs.statistics=(s.performance||s.research.trace||s.research.topology_fallback)?&stats:nullptr;
                 ProposalTrace trace;trace.level=uint8_t(level);trace.origin=!slot.direct;trace.strategy=rs.output==OutputMode::Reuse?1:0;
+                if(hooks)trace.strategy=rs.output==OutputMode::Reuse?4:5;
                 trace.input_triangles=uint32_t(input.triangles());trace.parent_triangles=uint32_t(parent->lod.view(source).triangles());trace.requested=uint32_t(target);
                 if(!automatic&&!proposer&&*s.research.output==OutputMode::Rebuild&&rs.boundary_placement&&proposals%3==1){rs.output=OutputMode::Reuse;trace.strategy=1;}
                 auto begin=std::chrono::steady_clock::now();
                 Lod candidate;
                 {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);
-                 if(!proposer&&s.research.component_candidates&&steps[level].pixels<=128&&proposals%3==2) {
+                 if(hooks)candidate=hooks->propose(input,rs,search_source,steps[level].transition);
+                 else if(!proposer&&s.research.component_candidates&&steps[level].pixels<=128&&proposals%3==2) {
                      trace.strategy=2;auto found=std::find_if(components.begin(),components.end(),[&](auto& c){return same_mesh_data(c.input,input);});
                      if(found==components.end()) {components.push_back({input,detail::component_order(input,result.reference_bounds,search_source)});found=std::prev(components.end());++result.component_builds;}
                      if(found->order.available)candidate=found->order.select(input,target);
@@ -278,7 +284,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 // reducer misses its requested target by more than 4x with
                 // link-condition rejections. The usual four visual gates decide
                 // whether the topology-changing result is usable.
-                if(s.research.topology_fallback&&!proposer&&s.objective==Objective::Quadric&&
+                if(s.research.topology_fallback&&!proposer&&!hooks&&s.objective==Objective::Quadric&&
                    !topology_fallback_attempted&&stats.link_rejections&&uint64_t(trace.achieved)>uint64_t(target)*4) {
                     if(cancelled()){result.status=Status::Cancelled;return result;}
                     topology_fallback_attempted=true;
@@ -349,10 +355,45 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         beam=std::move(next);
     }
     result.candidates.clear();for(auto& node:finalists)result.candidates.push_back(cost(node));
-    result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0);
-    if(!automatic)result.selection={0,0}; // Historical triangle-first research controls.
-    auto best=finalists[result.selection.selected];
-    for(size_t i=result.lods.size();i-->0;) {result.lods[i]=std::move(best->lod);best=best->parent;}
+    if(!hooks) {
+        result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0);
+        if(!automatic)result.selection={0,0};
+        auto best=finalists[result.selection.selected];
+        for(size_t i=result.lods.size();i-->0;){result.lods[i]=std::move(best->lod);best=best->parent;}
+        return result;
+    }
+    auto materialize=[&](size_t selected){auto node=finalists[selected];for(size_t i=result.lods.size();i-->0;){result.lods[i]=node->lod;node=node->parent;}};
+    auto cancel_confirmation=[&]{result.status=Status::Cancelled;result.lods.clear();for(auto step:steps)result.lods.push_back(unchanged(source,step));result.candidates={{std::vector<uint32_t>(steps.size(),uint32_t(source.triangles())),storage_stats(result)}};result.selection=ChainSelection{};};
+    for(;;) {
+        result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0);
+        if(!automatic)result.selection={0,0}; // Historical triangle-first research controls.
+        if(hooks&&result.selection.reference!=result.selection.selected){
+            materialize(result.selection.reference);
+            if(!hooks->confirm(result)){
+                if(cancelled()){cancel_confirmation();return result;}
+                const auto rejected=result.selection.reference;
+                finalists.erase(finalists.begin()+rejected);result.candidates.erase(result.candidates.begin()+rejected);continue;
+            }
+        }
+        materialize(result.selection.selected);
+        if(!hooks||hooks->confirm(result))break;
+        const auto rejected=result.selection.selected;
+        finalists.erase(finalists.begin()+rejected);result.candidates.erase(result.candidates.begin()+rejected);
+        if(finalists.empty())throw std::logic_error("exact source fallback failed reference audit");
+        if(cancelled()){cancel_confirmation();return result;}
+    }
+    const auto selected=result.selection.selected;
+    const bool has_ties=std::count_if(result.candidates.begin(),result.candidates.end(),[&](const auto& c){return c.triangles==result.candidates[selected].triangles&&c.storage.total()==result.candidates[selected].storage.total();})>1;
+    if(hooks&&hooks->tiebreak&&has_ties&&!cancelled()) {
+        auto selected=result.selection.selected;double best=hooks->tiebreak(result);auto confirmed=result.lods;
+        for(size_t i=0;i<finalists.size();++i)if(i!=selected&&result.candidates[i].triangles==result.candidates[selected].triangles&&result.candidates[i].storage.total()==result.candidates[selected].storage.total()) {
+            if(cancelled())break;materialize(i);if(!hooks->confirm(result))continue;
+            double overlap=hooks->tiebreak(result);if(overlap<best){best=overlap;selected=i;confirmed=result.lods;}
+        }
+        result.selection.selected=selected;result.lods=std::move(confirmed);
+    }
+    if(cancelled())result.status=Status::Cancelled;
     return result;
 }
+Result generate(MeshView source,const Settings& s,const Proposer& proposer) {return detail::generate_with_hooks(source,s,proposer,nullptr);}
 }

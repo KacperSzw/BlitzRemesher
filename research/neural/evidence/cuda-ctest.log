@@ -1,0 +1,58 @@
+[1/19] Building CXX object CMakeFiles/blitzremesher.dir/src/chain.cpp.o
+/home/kacper/Projects/BlitzRemesher-neural/src/chain.cpp: In function ‘blitz::Result blitz::detail::generate_with_hooks(blitz::MeshView, const blitz::Settings&, const blitz::Proposer&, const GenerationHooks*)’:
+/home/kacper/Projects/BlitzRemesher-neural/src/chain.cpp:390:13: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+  390 |             if(cancelled())break;materialize(i);if(!hooks->confirm(result))continue;
+      |             ^~
+/home/kacper/Projects/BlitzRemesher-neural/src/chain.cpp:390:34: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  390 |             if(cancelled())break;materialize(i);if(!hooks->confirm(result))continue;
+      |                                  ^~~~~~~~~~~
+[2/19] Linking CXX static library libblitzremesher.a
+[3/19] Linking CXX executable blitz-neural-prepare
+[4/19] Linking CXX executable blitz
+[5/19] Linking CXX executable blitz-microbench
+[6/19] Linking CXX executable blitz-precision-bench
+[7/19] Linking CXX executable blitz-neural-train
+[8/19] Linking CXX executable blitz-probe
+[9/19] Linking CXX executable blitz-lod-report
+[10/19] Linking CXX executable blitz-tail-audit
+[11/19] Linking CXX executable blitz-neural-tests
+[12/19] Linking CXX executable blitz-coverage-cache-tests
+[13/19] Linking CXX executable blitz-hybrid-tests
+[14/19] Linking CXX executable blitz-vegetation-tests
+[15/19] Linking CXX executable blitz-tests
+[16/19] Linking CXX executable blitz-precision-tests
+[17/19] Linking CXX executable blitz-render-cost-tests
+[18/19] Linking CXX executable blitz-c-smoke
+[19/19] Linking CXX executable blitz-io-tests
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/neural
+      Start  1: neural-contracts
+ 1/10 Test  #1: neural-contracts .................   Passed    0.07 sec
+      Start  2: coverage-cache-contracts
+ 2/10 Test  #2: coverage-cache-contracts .........   Passed    0.53 sec
+      Start  3: hybrid-contracts
+ 3/10 Test  #3: hybrid-contracts .................   Passed    0.20 sec
+      Start  4: vegetation-contracts
+ 4/10 Test  #4: vegetation-contracts .............   Passed    0.12 sec
+      Start  5: contracts
+ 5/10 Test  #5: contracts ........................   Passed    0.23 sec
+      Start  6: precision-contracts
+ 6/10 Test  #6: precision-contracts ..............   Passed    0.09 sec
+      Start  7: render-cost-contracts
+ 7/10 Test  #7: render-cost-contracts ............   Passed    0.05 sec
+      Start  8: c-abi
+ 8/10 Test  #8: c-abi ............................   Passed    0.05 sec
+      Start  9: foliage-contracts
+ 9/10 Test  #9: foliage-contracts ................   Passed    0.01 sec
+      Start 10: io-contracts
+10/10 Test #10: io-contracts .....................   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 10
+
+Total Test time (real) =   1.44 sec
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/neural
+    Start 2: neural-cuda-contracts
+1/1 Test #2: neural-cuda-contracts ............   Passed    1.67 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.67 sec

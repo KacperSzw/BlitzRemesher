@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "selection": "Two development assets per category: smallest and median among sources at most 150k triangles, selected before reduction measurements. Pilot only.",
+  "assets": [
+    {
+      "bytes": 23538,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 1.2805488481526566,
+      "files": [
+        {
+          "bytes": 20680,
+          "path": "data/polyhaven/painted_wooden_shelves/painted_wooden_shelves.bin",
+          "sha256": "894c032cda1c5668014c87b15ddcc42bccaede15e369e59f628d5219d38edf5f",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_shelves/painted_wooden_shelves.bin"
+        },
+        {
+          "bytes": 2858,
+          "path": "data/polyhaven/painted_wooden_shelves/source.gltf",
+          "sha256": "f4d9ffc04ad1e9ce3155522ac962c336bf1fa74b4a27b8a5fd4c8bdb81c2e8f6",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_shelves/painted_wooden_shelves_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "f298bafda8f46b1e9ba675c3b8d094930b4105225ef2cf8d547035618a2c8c80",
+      "id": "ph_painted_wooden_shelves",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/painted_wooden_shelves/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:painted_wooden_shelves",
+      "source_identity": "painted_wooden_shelves",
+      "source_url": "https://polyhaven.com/a/painted_wooden_shelves",
+      "split": "development",
+      "triangles": 524,
+      "uv": true,
+      "vertices": 548,
+      "woody": false
+    },
+    {
+      "bytes": 185769,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 0.6605415366862926,
+      "files": [
+        {
+          "bytes": 182872,
+          "path": "data/polyhaven/metal_stool_02/metal_stool_02.bin",
+          "sha256": "17127317d391eb90ce3446739463b1067cc490210db821769b7a46bd1ff02e1c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_stool_02/metal_stool_02.bin"
+        },
+        {
+          "bytes": 2897,
+          "path": "data/polyhaven/metal_stool_02/source.gltf",
+          "sha256": "de8d603993443294b8a0aed48ea631ac38f2b15872491ea929551f72be726fcb",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_stool_02/metal_stool_02_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "8704c6c1c324abbe548d946903af76059f02cf2b62884c0308cc45277836baf9",
+      "id": "ph_metal_stool_02",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/metal_stool_02/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:metal_stool",
+      "source_identity": "metal_stool_02",
+      "source_url": "https://polyhaven.com/a/metal_stool_02",
+      "split": "development",
+      "triangles": 6532,
+      "uv": true,
+      "vertices": 4490,
+      "woody": false
+    }
+  ]
+}

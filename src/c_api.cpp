@@ -1,8 +1,10 @@
 #include "blitz/blitz.h"
 #include "blitz/remesher.hpp"
+#include "blitz/neural.hpp"
 #include <new>
 #include <stdexcept>
-struct blitz_result { blitz::Result value; std::vector<uint8_t> runtime; };
+struct blitz_result { blitz::Result value; std::vector<uint8_t> runtime; blitz::NeuralStats neural;bool is_neural{}; };
+struct blitz_neural_model {blitz::NeuralModel value;};
 namespace {
 template<class T> blitz::Stream<T> stream(blitz_stream s) {blitz::Stream<T> v;v.data=static_cast<const std::byte*>(s.data);v.count=s.count;v.stride=s.stride;return v;}
 template<class T> blitz_stream stream(blitz::Stream<T> s) {return {s.data,s.count,s.stride};}
@@ -33,7 +35,7 @@ blitz_status blitz_settings_init(blitz_settings* out,size_t n) {
     }catch(const std::bad_alloc&){*out={};return BLITZ_OUT_OF_MEMORY;}
      catch(...){*out={};return BLITZ_INTERNAL_ERROR;}
 }
-blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_result** out,char* error,size_t capacity) {
+static blitz_status generate_impl(const blitz_mesh* m,const blitz_settings* c,const blitz_neural_model* model,blitz_result** out,char* error,size_t capacity) {
     if(out)*out=nullptr;message(error,capacity,"");
     try {
         if(!m||!c||!out||m->struct_size!=sizeof(*m)||c->struct_size!=sizeof(*c)||m->abi_version!=BLITZ_ABI_VERSION||c->abi_version!=BLITZ_ABI_VERSION)
@@ -52,13 +54,40 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
         s.transition=curve(c->transition,c->transition_count,s.transition);s.normal_importance=curve(c->normal_importance,c->normal_importance_count,s.normal_importance);
         s.attribute_importance=curve(c->attribute_importance,c->attribute_importance_count,s.attribute_importance);
         if(c->cancelled)s.cancelled=[=]{return c->cancelled(c->user_data)!=0;};
-        auto r=blitz::generate(v,s);auto status=r.status;auto runtime=blitz::runtime_levels(r);
-        *out=new blitz_result{std::move(r),std::move(runtime)};
+        blitz::NeuralStats stats;auto r=model?blitz::generate_neural(v,s,model->value,&stats):blitz::generate(v,s);auto status=r.status;auto runtime=blitz::runtime_levels(r);
+        *out=new blitz_result{std::move(r),std::move(runtime),stats,model!=nullptr};
         return status==blitz::Status::Cancelled?BLITZ_CANCELLED:status==blitz::Status::BudgetLimited?BLITZ_BUDGET_LIMITED:BLITZ_OK;
-    } catch(const std::invalid_argument& e){message(error,capacity,e.what());return BLITZ_INVALID_ARGUMENT;}
+    } catch(const blitz::NeuralUnavailable& e){message(error,capacity,e.what());return BLITZ_UNAVAILABLE;}
+      catch(const std::invalid_argument& e){message(error,capacity,e.what());return BLITZ_INVALID_ARGUMENT;}
       catch(const std::bad_alloc&){message(error,capacity,"allocation failed");return BLITZ_OUT_OF_MEMORY;}
       catch(const std::exception& e){message(error,capacity,e.what());return BLITZ_INTERNAL_ERROR;}
       catch(...){message(error,capacity,"unknown exception");return BLITZ_INTERNAL_ERROR;}
+}
+blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_result** out,char* error,size_t capacity) {return generate_impl(m,c,nullptr,out,error,capacity);}
+blitz_status blitz_neural_options_init(blitz_neural_options* out,size_t n) {
+    if(!out||n!=sizeof(*out))return BLITZ_INVALID_ARGUMENT;
+    *out={sizeof(*out),1,0,6144,1,{0,0,0}};return BLITZ_OK;
+}
+blitz_status blitz_neural_model_load(const char* path,const blitz_neural_options* options,blitz_neural_model** out,char* error,size_t capacity) {
+    if(out)*out=nullptr;message(error,capacity,"");
+    try {
+        if(!out||!options||options->struct_size!=sizeof(*options)||options->version!=1||options->overdraw_tiebreak>1||options->reserved[0]||options->reserved[1]||options->reserved[2])throw std::invalid_argument("invalid neural descriptor");
+        *out=new blitz_neural_model{blitz::NeuralModel(path,{options->device,options->memory_mib,bool(options->overdraw_tiebreak)})};return BLITZ_OK;
+    }catch(const blitz::NeuralUnavailable& e){message(error,capacity,e.what());return BLITZ_UNAVAILABLE;}
+     catch(const std::invalid_argument& e){message(error,capacity,e.what());return BLITZ_INVALID_ARGUMENT;}
+     catch(const std::bad_alloc&){message(error,capacity,"allocation failed");return BLITZ_OUT_OF_MEMORY;}
+     catch(const std::exception& e){message(error,capacity,e.what());return BLITZ_INTERNAL_ERROR;}
+     catch(...){message(error,capacity,"unknown exception");return BLITZ_INTERNAL_ERROR;}
+}
+void blitz_neural_model_destroy(blitz_neural_model* model){delete model;}
+const char* blitz_neural_model_sha256(const blitz_neural_model* model){return model?model->value.sha256().c_str():nullptr;}
+blitz_status blitz_generate_neural(const blitz_mesh* m,const blitz_settings* c,const blitz_neural_model* model,blitz_result** out,char* error,size_t capacity) {
+    if(!model){if(out)*out=nullptr;message(error,capacity,"neural model is required");return BLITZ_INVALID_ARGUMENT;}
+    return generate_impl(m,c,model,out,error,capacity);
+}
+blitz_status blitz_result_neural_info(const blitz_result* result,blitz_neural_info* out) {
+    if(!result||!out||out->struct_size!=sizeof(*out)||!result->is_neural)return BLITZ_INVALID_ARGUMENT;
+    auto& s=result->neural;*out={sizeof(*out),s.encode_ns,s.inference_ns,s.decode_ns,s.gpu_audit_ns,s.reference_audit_ns,s.decoded,s.legal_collapses,s.rejected_collapses,s.reference_rejections,s.fallback_levels};return BLITZ_OK;
 }
 size_t blitz_result_lod_count(const blitz_result* r){return r?r->value.lods.size():0;}
 size_t blitz_result_runtime_lod_count(const blitz_result* r){return r?r->runtime.size():0;}

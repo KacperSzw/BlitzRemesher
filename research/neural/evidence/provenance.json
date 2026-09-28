@@ -1,0 +1,412 @@
+{
+  "git_revision": "7466a9e96843db6b39408c7c38d3090e5a4d9125",
+  "source_files": [
+    {
+      "file": "CMakeLists.txt",
+      "sha256": "97a9a0354c15441285450fe798a66f863573560fd8688ceb63d3fc1d10cfc9dc"
+    },
+    {
+      "file": "cmake/Baselines.cmake",
+      "sha256": "9d01de35dd54c0f42d885191391d345399716ea2de0fb857fc1b653c4b29d481"
+    },
+    {
+      "file": "cmake/BlitzRemesherConfig.cmake.in",
+      "sha256": "86db4bca7fcb5ae43e7a2f4e3ca6f2f1012170a8e7b7c313caf2918928a42532"
+    },
+    {
+      "file": "flake.lock",
+      "sha256": "050a8f1cc980e14bd4df8dfa5965305126fb8854ca452f4b214586a8866df06d"
+    },
+    {
+      "file": "flake.nix",
+      "sha256": "9e966148c93784f5a37a29443fb1224668b4a68321b6a34c6cd8b4ddfa57c350"
+    },
+    {
+      "file": "include/blitz/blitz.h",
+      "sha256": "6a300dd1e681984d2aa24b2de48761fba53c892da8191e8a1a00f883748b036a"
+    },
+    {
+      "file": "include/blitz/evaluate.hpp",
+      "sha256": "4a85f132b82f8ef5db7727814253ee2e012283d24cfe369cc4af2d31ba6c7e8b"
+    },
+    {
+      "file": "include/blitz/io.hpp",
+      "sha256": "c7dfd3b395bc1b7380e3a0426b9b209940c131286c06a5b205b63bfb053c23d1"
+    },
+    {
+      "file": "include/blitz/mesh.hpp",
+      "sha256": "a75e603a8be73e67a0000896585b033b50a4adfb442261a11ae2c2ac29b2f597"
+    },
+    {
+      "file": "include/blitz/neural.hpp",
+      "sha256": "bd98cc2c6396ea1c856a002413b9eea0dc06612b3c8cae5fb8f72033b3ee310e"
+    },
+    {
+      "file": "include/blitz/remesher.hpp",
+      "sha256": "263082d1f37eba8aadf251ec0007833adb48ec0b72f72473ba809c8f4586ce73"
+    },
+    {
+      "file": "include/blitz/render_cost.hpp",
+      "sha256": "2f8dec7998213223e249fe2c8d6f2970c0ed643b4f45d4e668990443487e043d"
+    },
+    {
+      "file": "research/neural/PLAN.md",
+      "sha256": "863d6553d6239ccb0f2c7e48d20736062f03d60f9ec367e0b332ee3ad9bb1f23"
+    },
+    {
+      "file": "research/neural/README.md",
+      "sha256": "b8fb38b36a5d2a098c077abd8dafded2eb995c1700a53d689b8d3617f237b054"
+    },
+    {
+      "file": "research/neural/first-pass.json",
+      "sha256": "6ee2f14eaf357b34fef4f63b1da9986d76bb7580375841abc809535755800d14"
+    },
+    {
+      "file": "research/neural/libtorch.sha256",
+      "sha256": "cc020d46d793c8c06d3e66483a1eede08c688448a1dd66e5247c62b843ffc8cb"
+    },
+    {
+      "file": "research/neural/pilot-smoke.json",
+      "sha256": "5a3efac5c027bd1aefcf082ffd945e422d44d87a588347d3dc6406aa55168cfd"
+    },
+    {
+      "file": "research/neural/run.mjs",
+      "sha256": "ce84a35230e464839e6b9a52e5fa1ff0e211bbb8525345e6a8d2a5edaf918119"
+    },
+    {
+      "file": "research/neural/smoke.json",
+      "sha256": "9844c6a278f3f97d4ef20b0707734fbc0af455c29f5e23ab6c0e2fd4ce513a50"
+    },
+    {
+      "file": "research/neural/training-manifest.json",
+      "sha256": "c4365db7abe9fd0ba99dd48f865a75306360bc02395d25cbb400e5747e20c281"
+    },
+    {
+      "file": "src/c_api.cpp",
+      "sha256": "b3d977f5ddd1e33fd68f9da01324b080f70b9d5c2fb5805b51d99ec108897532"
+    },
+    {
+      "file": "src/chain.cpp",
+      "sha256": "670cb4f600d27eac36049e27c81c1f77442d38ecb29105c1bf1211ea16baa3b6"
+    },
+    {
+      "file": "src/chain_hooks.hpp",
+      "sha256": "1f2d89bcbf84f3affbce509b187123010ac1c77c1e40a07f1aa874492154b9d1"
+    },
+    {
+      "file": "src/components.cpp",
+      "sha256": "75e445e7e8565ff8023a18adbb162525289ce578bae9263ced3579266bbce1ac"
+    },
+    {
+      "file": "src/components.hpp",
+      "sha256": "e1a64f103b9291087ce053bdca4e7069dcd07ff9eab5f0d4d3152598e4e68dfc"
+    },
+    {
+      "file": "src/coverage.hpp",
+      "sha256": "d82235aba85ba5f7db492c85a85367b217bddcf09ea7166adc01762b373192e2"
+    },
+    {
+      "file": "src/evaluate.cpp",
+      "sha256": "a6bd5cf1971d5744de5199732c6f4d0d205351b624eaeb1be35127c038b48cdb"
+    },
+    {
+      "file": "src/io.cpp",
+      "sha256": "9c2c2f9dcfbe8e3eeb95a2bffe77f25342bc459c139bc5ccbf53d05b96435329"
+    },
+    {
+      "file": "src/mesh.cpp",
+      "sha256": "b5e080b8f63ecb91d49eda11f7e1bbb7ff5880ce467146a9e8eb6e1e9ae6a08e"
+    },
+    {
+      "file": "src/neural.cpp",
+      "sha256": "23670d4c7db93ac587de23def5f1b969d1548db3e6d7af3e4002ff27733fd4c9"
+    },
+    {
+      "file": "src/neural_cuda.cuh",
+      "sha256": "68729181688fdf1ac4031e99291c56424f49f3d6e3e8d132534cf1b0af7a1d67"
+    },
+    {
+      "file": "src/neural_evaluate.cu",
+      "sha256": "004e8a68ac33d704165f2aea5d56e66c82ca480cf5e7667b28d01a1329e1c975"
+    },
+    {
+      "file": "src/neural_graph.cpp",
+      "sha256": "b595d84b04d0080620f3552cd6ab303281babebd0b682b470127395910ccd760"
+    },
+    {
+      "file": "src/neural_inference.cu",
+      "sha256": "6a801e484dfbb680a20b43092005d82d32e16b1e7f10babcd527f846e8709c60"
+    },
+    {
+      "file": "src/neural_internal.hpp",
+      "sha256": "1d98b115b432e8cd4e2a18ef5c9369953a4491f9518e11d0ecdcd85e984c2d57"
+    },
+    {
+      "file": "src/neural_model_io.cpp",
+      "sha256": "da691d595bd385a62b514b14f979f93d5832ee96cf6e5edcf25d88a623a671fb"
+    },
+    {
+      "file": "src/render_cost.cpp",
+      "sha256": "5bc4c3f7adea3a2485745bd2bee979357a01c68a9ccbd82043569bc54276a5bf"
+    },
+    {
+      "file": "src/selection.cpp",
+      "sha256": "8da217f349e1a38161bfa566641e729dad3db337a4e25087577c0d4c78efceff"
+    },
+    {
+      "file": "src/simplify.cpp",
+      "sha256": "a47b0fd1853fe35f39c36dc37f35db61a14892fc14a7b2417bc81faa298b73a1"
+    },
+    {
+      "file": "src/timing.hpp",
+      "sha256": "a1da6f07124cd4cc10b929015fb45379f008ea27e588afa6580731cc729e4a33"
+    },
+    {
+      "file": "tests/c_smoke.c",
+      "sha256": "302c7f9b4375d412f26a70975b83d42d46a11ce8bfc3b2537dc9bc3f1578732e"
+    },
+    {
+      "file": "tests/consumer/CMakeLists.txt",
+      "sha256": "948ac0d9aedf630d503bf688b49872848afadc7dd3b24378072cd9b0cc77ff72"
+    },
+    {
+      "file": "tests/consumer/main.cpp",
+      "sha256": "96ecca067c0c1803213f100bd86d76a49ffed6ae3fccaab368f38c3004b0361c"
+    },
+    {
+      "file": "tests/contracts.cpp",
+      "sha256": "42d641c10a3bebc31e4b3cee90880bc9444bde8d9c9a05565ac8ea448148d7d2"
+    },
+    {
+      "file": "tests/coverage_cache.cpp",
+      "sha256": "bf04d68a2e62fc825333c95656bc755168b14525c812a0b40c41c22ea027f7f3"
+    },
+    {
+      "file": "tests/foliage.cpp",
+      "sha256": "1b9d54ecd645f9d502635b5d89d86cd0d842d7f339548733937acc58b348f640"
+    },
+    {
+      "file": "tests/fuzz-corpus/degenerate-budget",
+      "sha256": "3791cb7901e1736bd91086211dfc7c25b1282d644d9beecf95f3d28cb0518a37"
+    },
+    {
+      "file": "tests/fuzz.cpp",
+      "sha256": "4b0f96564f3eb20ae255cd3eceefca9dc1e23798fee9ca63ff97042b37bacfe7"
+    },
+    {
+      "file": "tests/hybrid.cpp",
+      "sha256": "a3ece279186ce5319f0e49926ad66cbde43b3f4196e31b91cd546dc509415d79"
+    },
+    {
+      "file": "tests/io_tests.cpp",
+      "sha256": "da8f112063d20e44db085383089ccaeebfcff7b98a2b62e4d4ba6eca18b84897"
+    },
+    {
+      "file": "tests/neural.cpp",
+      "sha256": "7333c4be1a019ac5c71f31fd1cea341d7ed4ce5aa8e4e3186d216c4e8a4d31af"
+    },
+    {
+      "file": "tests/precision.cpp",
+      "sha256": "d4931d24947ad1f4849f687cb969a03c419c589c42db0d5b53f2ac1462421d33"
+    },
+    {
+      "file": "tests/render_cost.cpp",
+      "sha256": "325d2d401429a6de6cd059fb3daff02d98f94ddabe8f9266136d535110b653f4"
+    },
+    {
+      "file": "tests/vegetation.cpp",
+      "sha256": "1b53b89c65bbf04c973d955d9b16d856658d388e4f0f03f39f549bb358a5394a"
+    },
+    {
+      "file": "tools/bake-foliage.mjs",
+      "sha256": "34f27fa8e8fba6a8cd5c3a7586f74f60a4d009dd596bbc6609a9664b29e05951"
+    },
+    {
+      "file": "tools/baseline_cgal.cpp",
+      "sha256": "69c8e28bf9b0159438857adf0c9acb0fd3e134651a5c1cf877479fef23c90a30"
+    },
+    {
+      "file": "tools/baseline_fastquadric.cpp",
+      "sha256": "c8a4ae52e1d843b3d744bbc99b855c589a4fd624e14d62542c8c9080ad18f3b6"
+    },
+    {
+      "file": "tools/baseline_meshopt.cpp",
+      "sha256": "ed6be7090da4e7b4ed5d7f3de2e379c8c39cb5efa196d5bcccc0774d7ed0e636"
+    },
+    {
+      "file": "tools/benchmark.cpp",
+      "sha256": "d5bcaec14933639fbf4329fcf0bf50b9b28068f0baf1f0fcf13f9e6daeeb368b"
+    },
+    {
+      "file": "tools/board.cpp",
+      "sha256": "fdd13e5a9dca2284b75b80a28692936757d713d0db7780a6ae59a8d7584ee880"
+    },
+    {
+      "file": "tools/board.html",
+      "sha256": "c5190c49c8d0dddc99dab905bb0cc6882bb4997f7afe7bc40615c34551bec7bb"
+    },
+    {
+      "file": "tools/capture-board.mjs",
+      "sha256": "66dfbf10e892a8421a777dff2e8d0894f396cce7908ad53ac8812a081c2cc5bc"
+    },
+    {
+      "file": "tools/capture-foliage.mjs",
+      "sha256": "921272f1a3c0ac928d8a7886e19df47a92147267787ed66f4b6f70995a4c4522"
+    },
+    {
+      "file": "tools/capture-readme-demo.mjs",
+      "sha256": "0570a27a00937eadd185812b387717023e70a69489a8dee6e33453672a9bc19a"
+    },
+    {
+      "file": "tools/check-foliage-chains.mjs",
+      "sha256": "309e3aaa4155ee21021baf6946491bad153d9f6437978da3f1f1fbf5a2cb19a1"
+    },
+    {
+      "file": "tools/corpus.cpp",
+      "sha256": "f08621908434427cc84f100af603cf914221631a92161e9c96d107f2ee4df5a7"
+    },
+    {
+      "file": "tools/foliage.cpp",
+      "sha256": "e3707e1f90b677c1b70b5be32807fcbda55c60e96cbb8ab70b379709db1c3be6"
+    },
+    {
+      "file": "tools/foliage.hpp",
+      "sha256": "1c3db116ac37985f2bdce48d62c6cf5ed2a15f71e86bcba82b0c715b5c1e412d"
+    },
+    {
+      "file": "tools/foliage.html",
+      "sha256": "3d58954d80d96e072507e4476770e18abb8e766deddbf986b7a26374f70b2b2f"
+    },
+    {
+      "file": "tools/hybrid-audit.mjs",
+      "sha256": "1ccb02098db32e411a2d86316c7f012fb90791368a8bd91223f4fa07ae26edcf"
+    },
+    {
+      "file": "tools/hybrid-board.mjs",
+      "sha256": "46cc59229a3c9986faa1baff0453cc0c59865f1e37a69c93885eacd1b324200b"
+    },
+    {
+      "file": "tools/hybrid-opaque.mjs",
+      "sha256": "0cfa3c1d2b2c1de029e1bf04d346e81e99d297892bb4974f531d13758289c1f1"
+    },
+    {
+      "file": "tools/hybrid-report.mjs",
+      "sha256": "0e236b6d17ed18dccb4a3c83ade13dde820ae2b1bd794e8124fa7102f71077b4"
+    },
+    {
+      "file": "tools/lod_report.cpp",
+      "sha256": "27999fa32a534d323e9afd046ab564d6c3bff48df8126ebe9151f03df5326de4"
+    },
+    {
+      "file": "tools/main.cpp",
+      "sha256": "610ef74e6e7eca22d5da1e560f1b300b65c99966db240ff2ac28ef0669b40148"
+    },
+    {
+      "file": "tools/microbench.cpp",
+      "sha256": "e29eb3f0daf8609bd30eda6121153f451fa93768de39ef2d9436f74fdb7e9d9d"
+    },
+    {
+      "file": "tools/neural_data.hpp",
+      "sha256": "fbc95e870da169ffedb24e09b8b7760940bb66544689923c18392afcea2acc18"
+    },
+    {
+      "file": "tools/neural_json.hpp",
+      "sha256": "3bc3b6e1081f39b32669595cf2c84b78ff235274c3f51dcc463e007b13756358"
+    },
+    {
+      "file": "tools/neural_prepare.cpp",
+      "sha256": "90714a2e20420bd5ae63e4db13120f4907a7fa57b4f5da50c20580ac20527d6c"
+    },
+    {
+      "file": "tools/neural_train.cpp",
+      "sha256": "25390de8ee79bfeb1156643ecd00e983404a3e723def28521f8f4f97739098c5"
+    },
+    {
+      "file": "tools/precision-research.sh",
+      "sha256": "26c0a5b04378e3f34134c7fa6748bcc4bf063ab4a86fba6043abcad57b9c55ec"
+    },
+    {
+      "file": "tools/precision_bench.cpp",
+      "sha256": "29c2295e1aa04254b98b730bafab216ae980b98d2047a59bfff484d563f34aca"
+    },
+    {
+      "file": "tools/probe.cpp",
+      "sha256": "1f483781b9c98a2115817c71cdb0dd6921b6d01e82e390aa91b21c04fc27351d"
+    },
+    {
+      "file": "tools/report.cpp",
+      "sha256": "d901e085dceddc5c564dd645d13bd5724a8b0f9b0a028f799c6b65d6610885cd"
+    },
+    {
+      "file": "tools/stamp-build.sh",
+      "sha256": "44f388b23e446798076618a4952a5374411fc3b74d553bbf34e35c4ad0fcfddd"
+    },
+    {
+      "file": "tools/tail_audit.cpp",
+      "sha256": "c57e331056d153aff8ef852facf0e59ed2a1d63be4e9c62446e40b727e166260"
+    },
+    {
+      "file": "tools/vegetation-audit.mjs",
+      "sha256": "8b514b117e379b62042d52d6d07b1db019e89882dc883261ca0001ca76d8975f"
+    },
+    {
+      "file": "tools/vegetation-board.mjs",
+      "sha256": "6f15179152773792142534470985e926beafd2f7062a7025be107827b3f2fe7e"
+    },
+    {
+      "file": "tools/vegetation-opaque.mjs",
+      "sha256": "b5ca45d90370103abbcc28382051aee4532cdf1f6cb108a08b4e142c70627a31"
+    },
+    {
+      "file": "tools/vegetation-report.mjs",
+      "sha256": "62b595e057f081c9393fef737a0837be56faab274d0919fca5ab1b882daea23f"
+    },
+    {
+      "file": "tools/vegetation-run.mjs",
+      "sha256": "6445bfb4ab70cc0eca253f86be6bc5efcd2221dbbf14ae449c9dcf5daf5a9777"
+    },
+    {
+      "file": "tools/vegetation-summary.mjs",
+      "sha256": "2da5edf3155b6ad0ff4bc123de294d09a521a0f4a7fe0732b9eec4a8e6410e09"
+    },
+    {
+      "file": "tools/vegetation_meshopt.cpp",
+      "sha256": "36f8ac2273267008a86bf3c1a76aaa41c488174299b1810e5d826ee027f16406"
+    }
+  ],
+  "binaries": {
+    "blitz": "54786ee969851cd99b21d452d37c4aef3e44ae5a9cf51532f7673b9f44bdbfc8",
+    "blitz-neural-prepare": "32d21ac2409960127cb5ea91a5c8a9e6c1aaf59b36faa02279743e6ac8ae1c8d",
+    "blitz-neural-train": "05c007bc95a049989d85fc9743b9d29d1db9f9498db62be604dfc5ab52ae021b"
+  },
+  "gpu": "NVIDIA GeForce RTX 2080, GPU-168d3b59-2ee0-397b-94a6-4758b3133a56, 595.71.05, 8192 MiB",
+  "protocol_sha256": "71e7a71e508f400140f99fff10ba248c0d89cabe95e32329cf8a968f204dd42b",
+  "config_sha256": "6ee2f14eaf357b34fef4f63b1da9986d76bb7580375841abc809535755800d14",
+  "corpus_sha256": "3219a4fdfb46c04e73914401d0b11f798d459b5d59007146b9b0ae358af6dc63",
+  "source_archives": [
+    {
+      "file": "source-initial.tar.gz",
+      "sha256": "5f23d5c0850f035d21f5ed96975d19e445b8560e0ecb5ca9ddbb34b329418b98",
+      "binaries": [
+        "blitz-neural-prepare",
+        "blitz-neural-train"
+      ]
+    },
+    {
+      "file": "source-audit.tar.gz",
+      "sha256": "12ad006c6dc0b0a2740357cc8ae44f7fb46233b91ea85df51e43cc21863135ba",
+      "binaries": [
+        "blitz"
+      ]
+    }
+  ],
+  "binary_updates": [
+    {
+      "binary": "blitz",
+      "before_sha256": "3cbb8b32ebfda97eedddf4d482cb393b47879f682483170103291b00ba16a662",
+      "after_sha256": "54786ee969851cd99b21d452d37c4aef3e44ae5a9cf51532f7673b9f44bdbfc8",
+      "reason": "Preserve cancellation status and exact incumbent when cancellation arrives during CPU confirmation; focused regression and all 11 CUDA build CTests passed. Applied before the first mesh benchmark.",
+      "at": "2026-09-28T20:22:46.086Z"
+    }
+  ]
+}

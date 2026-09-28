@@ -123,3 +123,35 @@ Preliminary runs were recorded before the first Git commit. They retain
 binary/source hashes and complete per-asset rows; subsequent runs should
 start from committed source. The baseline comparison is an adapter and
 end-to-end study, not an isolated reducer speed ranking.
+
+## Round 4 — larger screens and coarse LODs
+
+The new [report](round4/REPORT.md) and [visual board](round4/board/index.html)
+retain the complete experiment matrix, including negative results and the
+separate 20-asset validation replay. The pilot now includes 128, 512 and
+1024 px starting sizes, 2/4/8/12 px source caps and six/eight-slot schedules.
+These are separate visual contracts, not interchangeable score comparisons.
+
+At fixed 512→16 px, cap 8, eight slots and unchanged camera/work budgets,
+the accepted guard/search change raises pilot SCORE from 75.8644 to 80.1790.
+The category-balanced final retained ratio falls 48.9%; the last-three ratio
+falls 50.9%. A neighbor guard prevents many collapses that create permanent
+topology locks. Removing redundant hybrid inputs and using the remaining
+proposal budget improves search. Relaxing locks alone and the guard alone
+both slightly regress the main SCORE; those experiments remain archived.
+
+Exact consecutive duplicates share runtime meshes through the C/C++ API and
+glTF export. Scheduled audits and the SCORE denominator remain unchanged.
+CPU diagnostics measure tiny/zero-sample triangles, quad occupancy and
+pre-depth overlap without claiming GPU timings. The aggressive Quiver tail
+has two triangles and passes a denser 706-camera check, but loses substantial
+filled area. At cap 2 it retains 34 triangles; the six-slot cap-8 chain ends
+at 14. The report keeps these visual tradeoffs explicit.
+
+Review also found and fixed borrowed vertex ownership in progressive
+rebuild: compact predecessor indices must address predecessor vertex streams,
+not LOD0. Regression tests cover unchanged and changed borrowed proposals.
+Final-build replays cover every scenario and the complete validation split;
+their per-asset position/index and attribute comparisons are recorded in
+[replay-identity.json](round4/replay-identity.json). No held-out assets were
+used to select or confirm this round's change.

@@ -1,0 +1,88 @@
+{
+  "backend": "avx2",
+  "binary_sha256": "f22b505b267201d6d314c09545d63a8c87604fa51c7b1bf5a4f8d94e60428a52",
+  "build": {
+    "git_revision": "77adf6fe8c7504c70f872afbe741b68703cf9c7a",
+    "source_tree_sha256": "8dcdd99a6e93d3a208d824c7380f46e0bb2176a90adc745fe6ab4f9400950ca3",
+    "tracked_diff_sha256": "b81a23b4bbd80d5eda41a39cb9adfb73c424180a367dadbe473dc0ea13de68ac"
+  },
+  "camera_sha256": "b9149c5ce5cfa42a25b234d3f218239937986513cdeb6413d97bdc3b7048071f",
+  "compiler": "Clang 21.1.8",
+  "config": {
+    "attribute_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 128.0,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "hybrid",
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16.0,
+    "levels": 8,
+    "max_lod0_delta_px": 12.0,
+    "max_supersample": 8,
+    "meters_per_unit": 1.0,
+    "normal_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "objective": "quadric",
+    "output": "rebuild",
+    "pixels_per_meter": 512.0,
+    "profile": "coverage",
+    "prune": true,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0.0,
+        2.0
+      ],
+      [
+        1.0,
+        3.0
+      ]
+    ],
+    "weights": {
+      "color": 4.0,
+      "material": 4.0,
+      "normal": 5.729577951308232
+    }
+  },
+  "config_sha256": "01dfbc79fadfb6cadb3152ba615269e88380e5336c775f0a0cb1edf9d33a2b4b",
+  "cpu": "model name\t: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "limit": 18446744073709551615,
+  "manifest_sha256": "4ae0b74dbe76d7b67453f67efec34c63a0cc0fe3c137ab30817cd52937578ae0",
+  "method": "native",
+  "output_hash_scope": "output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data",
+  "peak_rss_scope": "process high-water; KiB",
+  "protocol_sha256": "fbac2528f7f9f30b2e88a4d8f5604365aa6dbe0ecfd2b7eec5e809492ce5dc17",
+  "run_sha256": "b49e31439677a5df1557447cc1f247bba492e6f9946ec61b0dbf8e74af535bde",
+  "split": "development",
+  "threads": 1,
+  "version": 1
+}

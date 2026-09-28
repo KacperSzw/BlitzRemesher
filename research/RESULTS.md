@@ -1,5 +1,9 @@
 # Recorded experiments
 
+The latest [Round 4 report](round4/REPORT.md) covers larger starting sizes,
+source caps, coarse LODs and a separate 20-asset validation comparison.
+The table below preserves the original 32→16 px experiments.
+
 Three research rounds on the frozen eight-asset development pilot, followed by a 120-asset smoke scenario. Screen size 32 to 16 pixels; search 6+2 and audit 12+4 cameras, with 2x/4x sampling refined to 8x. These are not the default quality preset. Profiles, chain modes, level counts, work budgets and corpus selections are separate scenarios. Detailed hypotheses and limitations are in EXPERIMENTS.md.
 
 SCORE = 100 × (1 − category-balanced mean retained triangle ratio). Compare rows only within the stated scenario. Failed assets remain in the denominator. An incomplete run has no score.

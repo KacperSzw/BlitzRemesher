@@ -1,0 +1,16 @@
+--- a/src/chain.cpp
++++ b/src/chain.cpp
+@@ -147,13 +147,6 @@
+                 rs.coupled_wedges=s.coupled_wedges;
+                 auto candidate=proposer?proposer(input,rs):reduce(input,rs);
+                 ++proposals;++result.candidate_evaluations;
+-                if(candidate.shared_vertices&&!slot.direct&&!parent->lod.shared_vertices) {
+-                    // A reducer borrows from its actual input. An owned previous
+-                    // LOD has different vertex IDs/storage from the original source.
+-                    auto local=candidate.view(input);
+-                    if(same_mesh_data(local,input))continue; // Already offered as the incumbent.
+-                    candidate.data=copy_mesh(local);candidate.shared_vertices=false;
+-                }
+                 offer(std::move(candidate),parent);
+             }
+         }

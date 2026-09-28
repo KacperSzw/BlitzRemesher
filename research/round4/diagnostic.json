@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "selection": "Two development assets per category: smallest and median among sources at most 150k triangles, selected before reduction measurements. Pilot only.",
+  "assets": [
+    {
+      "bytes": 185769,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 0.6605415366862926,
+      "files": [
+        {
+          "bytes": 182872,
+          "path": "data/polyhaven/metal_stool_02/metal_stool_02.bin",
+          "sha256": "17127317d391eb90ce3446739463b1067cc490210db821769b7a46bd1ff02e1c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_stool_02/metal_stool_02.bin"
+        },
+        {
+          "bytes": 2897,
+          "path": "data/polyhaven/metal_stool_02/source.gltf",
+          "sha256": "de8d603993443294b8a0aed48ea631ac38f2b15872491ea929551f72be726fcb",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_stool_02/metal_stool_02_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "8704c6c1c324abbe548d946903af76059f02cf2b62884c0308cc45277836baf9",
+      "id": "ph_metal_stool_02",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/metal_stool_02/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:metal_stool",
+      "source_identity": "metal_stool_02",
+      "source_url": "https://polyhaven.com/a/metal_stool_02",
+      "split": "development",
+      "triangles": 6532,
+      "uv": true,
+      "vertices": 4490,
+      "woody": false
+    },
+    {
+      "bytes": 414221,
+      "category": "organic",
+      "colors": false,
+      "diameter": 2.01953912982165,
+      "files": [
+        {
+          "bytes": 411388,
+          "path": "data/polyhaven/dead_quiver_trunk/dead_quiver_trunk.bin",
+          "sha256": "2f2a74458c071801cde2287970a396d503ffe0ebf4dedc3c5f3b39024186c00a",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dead_quiver_trunk/dead_quiver_trunk.bin"
+        },
+        {
+          "bytes": 2833,
+          "path": "data/polyhaven/dead_quiver_trunk/source.gltf",
+          "sha256": "c130bce552d608057143e7f131f36e9c4e06a9b780947c85d4e5eb1cacfedbaf",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dead_quiver_trunk/dead_quiver_trunk_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "1dc881d393e6418eea9cdd50445b9fcc196d2939ae81c7139aa959cfecd99d88",
+      "id": "ph_dead_quiver_trunk",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/dead_quiver_trunk/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:dead_quiver_trunk",
+      "source_identity": "dead_quiver_trunk",
+      "source_url": "https://polyhaven.com/a/dead_quiver_trunk",
+      "split": "development",
+      "triangles": 17978,
+      "uv": true,
+      "vertices": 9485,
+      "woody": true
+    },
+    {
+      "bytes": 81710,
+      "category": "rocks",
+      "colors": false,
+      "diameter": 0.3281631680869341,
+      "files": [
+        {
+          "bytes": 78928,
+          "path": "data/polyhaven/moon_rock_02/moon_rock_02.bin",
+          "sha256": "3ba6af10eebb46347e4e0c9d3e2a836d1328525d9d47e82b798a13d9ca2b216f",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/moon_rock_02/moon_rock_02.bin"
+        },
+        {
+          "bytes": 2782,
+          "path": "data/polyhaven/moon_rock_02/source.gltf",
+          "sha256": "fada2419ab6de440c24081bf06545f37c41c3d4f8bb57fc4d1ba45bdb35baf5d",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/moon_rock_02/moon_rock_02_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "0ff586942577aebfedaae707b9448f582d200679536e33cef182a32493f565f8",
+      "id": "ph_moon_rock_02",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/moon_rock_02/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:moon_rock",
+      "source_identity": "moon_rock_02",
+      "source_url": "https://polyhaven.com/a/moon_rock_02",
+      "split": "development",
+      "triangles": 3304,
+      "uv": true,
+      "vertices": 1847,
+      "woody": false
+    }
+  ]
+}

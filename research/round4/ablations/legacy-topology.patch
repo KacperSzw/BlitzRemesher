@@ -1,0 +1,29 @@
+--- a/src/simplify.cpp
++++ b/src/simplify.cpp
+@@ -172,26 +172,6 @@
+             if(remaining<=target)break;
+             auto u=c.u,v=c.v;if((flags[u]|flags[v])&Used)continue;
+             if(stats)++stats->attempts;
+-            if(settings.objective!=Objective::TopologyRelaxed) {
+-                // Reject contractions that would create a new edge with >2
+-                // incident faces. Otherwise these edges become permanent locks
+-                // and prevent useful coarse LODs later in the reduction.
+-                unsigned edge_faces=0;
+-                for(uint32_t k=offsets[u];k<offsets[u+1];++k) {
+-                    auto f=adj[k];bool opposite=false;
+-                    for(int j=0;j<3;++j)opposite|=mesh.indices[f*3+j]==v;
+-                    edge_faces+=opposite;
+-                    for(int j=0;j<3;++j){auto a=mesh.indices[f*3+j];if(a!=u&&a!=v)flags[a]|=LinkNeighbor|(opposite?LinkOpposite:0);}
+-                }
+-                bool link_ok=!(flags[u]&Boundary)||!(flags[v]&Boundary)||edge_faces==1;
+-                for(uint32_t k=offsets[v];k<offsets[v+1]&&link_ok;++k)for(int j=0;j<3;++j) {
+-                    auto a=mesh.indices[adj[k]*3+j];
+-                    if(a!=u&&a!=v&&(flags[a]&LinkNeighbor)&&!(flags[a]&LinkOpposite))link_ok=false;
+-                }
+-                for(uint32_t k=offsets[u];k<offsets[u+1];++k)for(int j=0;j<3;++j)
+-                    flags[mesh.indices[adj[k]*3+j]]&=uint8_t(~(LinkNeighbor|LinkOpposite));
+-                if(!link_ok){if(stats)++stats->link_rejections;continue;}
+-            }
+             bool valid=true,bad_geometry=false,bad_uv=false;size_t removed=0;
+             for(auto vertex:{u,v}) for(uint32_t k=offsets[vertex];k<offsets[vertex+1]&&valid;++k) {
+                 auto f=adj[k];uint32_t a[3]={map[mesh.indices[3*f]],map[mesh.indices[3*f+1]],map[mesh.indices[3*f+2]]};

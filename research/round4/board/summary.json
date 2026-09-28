@@ -1,0 +1,54 @@
+{
+  "baseline": "r4-base-s512-cap8",
+  "intro": "Round 4 starts at 512 pixels and follows real meshes down to 16. Better candidate search reduces late triangles; exact repeats share one runtime level.",
+  "results_intro": "Preventing new topology locks helps coarse reductions. Avoiding duplicate hybrid inputs and using the full existing proposal budget improves the complete chain score.",
+  "comparisons": [
+    {
+      "run": "r4-base-s512-cap8",
+      "label": "Previous implementation"
+    },
+    {
+      "run": "r4-relaxed-s512-cap8",
+      "label": "Relax topology locks"
+    },
+    {
+      "run": "r4-link-s512-cap8",
+      "label": "Prevent new locks"
+    },
+    {
+      "run": "r4-search-s512-cap8",
+      "label": "Guard + better search"
+    },
+    {
+      "run": "r4-final-s512-cap8",
+      "label": "Correct input ownership"
+    }
+  ],
+  "validation": {
+    "score": 86.47595308852954,
+    "gain": 6.1754509292996715,
+    "completed": 20,
+    "expected": 20,
+    "failed": 0
+  },
+  "findings": [
+    {
+      "value": "−48.9%",
+      "label": "FINAL RETAINED RATIO",
+      "title": "The last levels use fewer triangles.",
+      "text": "Category-balanced final retained triangles fall from 3.14% to 1.61%. Last-three-level retained ratio falls 50.9%. Gates and SCORE are unchanged."
+    },
+    {
+      "value": "53/64",
+      "label": "RUNTIME / AUDIT SLOTS",
+      "title": "Exact repeats share one mesh.",
+      "text": "The C/C++ API and glTF export expose compact runtime levels. Every scheduled source and transition audit stays in the manifest and in the score."
+    },
+    {
+      "value": "2 vs 34",
+      "label": "TREE / CAP 8 vs 2",
+      "title": "A loose distance budget can lose filled area.",
+      "text": "The 2-triangle tail passes the denser 706-camera recheck but loses much of the thin trunk’s coverage. Its smaller quad cost includes that coverage loss. Shading is outside this coverage-only run."
+    }
+  ]
+}

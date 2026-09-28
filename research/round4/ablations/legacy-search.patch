@@ -1,0 +1,35 @@
+--- a/src/chain.cpp
++++ b/src/chain.cpp
+@@ -122,24 +122,17 @@
+         };
+         // Retaining each incumbent is important: camera-space errors need not decrease monotonically.
+         for(auto& parent:beam)offer(parent->lod,parent);
+-        struct Slot { std::shared_ptr<Node> parent; bool direct; };
+-        std::vector<Slot> slots;
+-        for(auto& parent:beam) {
+-            if(s.chain!=ChainMode::Progressive)slots.push_back({parent,true});
+-            if(s.chain==ChainMode::Progressive||(s.chain==ChainMode::Hybrid&&!same_mesh_data(source,parent->lod.view(source))))
+-                slots.push_back({parent,false});
+-        }
+-        const unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/unsigned(slots.size()));
++        unsigned origins=s.chain==ChainMode::Hybrid?2:1;
++        unsigned slots=unsigned(beam.size())*origins;
++        unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/slots);
+         unsigned proposals=0;
+-        for(unsigned r=0;proposals<s.candidate_budget;++r) {
+-            for(auto& slot:slots) {
+-                if(proposals==s.candidate_budget)break;
++        for(unsigned r=0;r<rounds&&proposals<s.candidate_budget;++r) {
++            for(auto& parent:beam)for(unsigned o=0;o<origins&&proposals<s.candidate_budget;++o) {
+                 if(cancelled()){result.status=Status::Cancelled;return result;}
+-                auto& parent=slot.parent;
+-                auto input=slot.direct?source:parent->lod.view(source);
++                bool direct=s.chain==ChainMode::Direct||(s.chain==ChainMode::Hybrid&&o==0);
++                auto input=direct?source:parent->lod.view(source);
+                 // Logarithmic ladder spends proposals on both aggressive reductions and near-incumbents.
+-                // A partial final round probes a deeper reduction instead of discarding the remaining budget.
+-                double fraction=r==rounds?.1:rounds==1?.5:.02*std::pow(45.0,double(r)/(rounds-1));
++                double fraction=rounds==1?.5:.02*std::pow(45.0,double(r)/(rounds-1));
+                 size_t target=std::max<size_t>(1,size_t(parent->lod.view(source).triangles()*fraction));
+                 ReduceSettings rs;rs.output=s.output;rs.objective=s.objective;rs.target_triangles=target;
+                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;

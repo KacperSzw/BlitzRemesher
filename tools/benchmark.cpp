@@ -126,10 +126,10 @@ int corpus_check(const fs::path& manifest,const fs::path& output) {
 }
 int benchmark_main(int argc,char** argv) {
     if(argc<3)throw std::invalid_argument("bench MANIFEST CONFIG OUTPUT");
-    fs::path manifest=argv[0],config=argv[1],output=argv[2],baseline_dir="build/research";std::string split="development",method="native";size_t limit=SIZE_MAX;double minutes=50;
+    fs::path manifest=argv[0],config=argv[1],output=argv[2],baseline_dir="build/research",build_stamp="research/build.json";std::string split="development",method="native";size_t limit=SIZE_MAX;double minutes=50;
     for(int i=3;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("missing benchmark option value");std::string k=argv[i];
         if(k=="--split")split=argv[i+1];else if(k=="--limit")limit=std::stoull(argv[i+1]);else if(k=="--minutes")minutes=std::stod(argv[i+1]);
-        else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
+        else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
     auto corpus=read(manifest);auto settings=settings_json(read(config));auto normalized=settings_json(settings);
     json metadata={{"version",1},{"manifest_sha256",file_hash(manifest)},{"config",normalized},{"config_sha256",digest(normalized.dump())},
@@ -149,7 +149,8 @@ int benchmark_main(int argc,char** argv) {
     metadata["binary_sha256"]=file_hash("/proc/self/exe");
     std::ifstream cpu("/proc/cpuinfo");std::string line;while(std::getline(cpu,line))if(line.starts_with("model name")){metadata["cpu"]=line;break;}
 #endif
-    if(fs::exists("research/build.json"))metadata["build"]=read("research/build.json");
+    if(fs::exists(build_stamp))metadata["build"]=read(build_stamp);
+    else if(build_stamp!="research/build.json")throw std::invalid_argument("explicit build stamp is missing");
     auto runhash=digest(metadata.dump());metadata["run_sha256"]=runhash;
     fs::create_directories(output/"rows");
     if(fs::exists(output/"metadata.json")&&read(output/"metadata.json")!=metadata)throw std::runtime_error("resume refused: input, settings, protocol or binary changed");

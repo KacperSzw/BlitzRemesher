@@ -7,6 +7,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* bytes,size_t count) {
     if(!blitz::validate(m.view()).empty())return 0;
     blitz::ReduceSettings s;s.output=blitz::OutputMode(bytes[1]%2);s.target_triangles=1+bytes[2]%20;
     s.coupled_wedges=bytes[3]%2;s.prune=bytes[4]%2;
+    s.objective=blitz::Objective(bytes[5]%4);
     try{auto result=blitz::reduce(m.view(),s);if(!blitz::validate(result.view(m.view())).empty())__builtin_trap();}catch(const std::invalid_argument&){}
     return 0;
 }

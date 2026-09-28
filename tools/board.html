@@ -21,6 +21,7 @@ h1{font-size:clamp(44px,4.3vw,72px);line-height:1.02;letter-spacing:-.055em;marg
 .asset{padding:24px 0 23px;border-bottom:1px solid var(--line)}.asset-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:20px}.asset-name{display:flex;align-items:baseline;gap:15px;flex-wrap:wrap}.asset-category{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:104px}.asset h3{font-size:21px;letter-spacing:-.035em;margin:0;font-weight:600}.asset-note{font-size:11px;color:var(--muted);margin-top:5px}.asset-reduction{text-align:right;white-space:nowrap;font-size:12px}.asset-reduction strong{color:var(--teal);font-size:19px;font-weight:600;letter-spacing:-.03em;margin-right:8px}.asset-reduction small{display:block;font:10px/1.8 ui-monospace,monospace;color:var(--muted)}
 .chain{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}.lod-card{display:block;text-align:left;padding:0;background:transparent;border:1px solid transparent;border-radius:6px;overflow:hidden;position:relative;transition:border-color .15s,background .15s}.lod-card:hover,.lod-card:focus-visible{border-color:#b9c7c2;background:#fff9}.lod-card:first-child{background:#e9eae4;border-color:#dce0d8}.lod-card:last-child{background:#e6efeb;border-color:#c6d8ce}.lod-head{padding:9px 10px 0;display:flex;justify-content:space-between;align-items:center;font:10px ui-monospace,monospace;letter-spacing:.03em}.lod-head .screen-px{color:var(--muted);font-size:9px}.viewport{height:158px;position:relative;touch-action:none;cursor:grab}.viewport:active{cursor:grabbing}.viewport::after{content:"";height:1px;position:absolute;bottom:8px;left:15%;right:15%;background:linear-gradient(90deg,transparent,#b8c4bf90,transparent)}.lod-footer{padding:3px 10px 10px}.triangle-count{font-size:18px;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}.triangle-count span{font-size:9px;margin-left:4px;font-weight:500;letter-spacing:0;color:var(--muted)}.lod-error{font:9px/1.6 ui-monospace,monospace;color:var(--muted);margin-top:5px;white-space:nowrap}.lod-error .check{color:var(--teal)}
 .gallery-foot{display:flex;justify-content:space-between;gap:20px;font-size:10px;line-height:1.65;color:var(--muted);padding:12px 0 28px}.gallery-foot p{margin:0;max-width:700px}
+.lod-card[hidden]{display:none}
 .lower{display:grid;grid-template-columns:1.08fr 1fr;gap:28px}.panel{background:var(--white);border:1px solid var(--line);padding:25px 26px}.panel h2{font-size:24px;margin-bottom:10px}.panel-intro{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 23px}.bar-row{display:grid;grid-template-columns:145px 1fr 44px;align-items:center;gap:12px;margin:13px 0;font-size:11px}.bar-track{height:10px;background:#edf0eb;border-radius:1px}.bar-fill{height:100%;background:#8b9d9f}.bar-row.emphasis .bar-fill{background:var(--orange)}.bar-row.emphasis .bar-label{font-weight:700}.bar-value{text-align:right;font:12px ui-monospace,monospace}.chart-axis{display:flex;justify-content:space-between;margin:9px 56px 0 157px;font:9px ui-monospace,monospace;color:var(--muted)}.chart-note{font-size:10px;line-height:1.65;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin-top:21px}
 .finding{display:grid;grid-template-columns:92px 1fr;gap:18px;padding:14px 0}.finding+.finding{border-top:1px solid var(--line)}.finding-number{font-size:33px;letter-spacing:-.05em;font-weight:600;line-height:1.2}.finding-number small{display:block;font:9px/1.5 ui-monospace,monospace;letter-spacing:0;color:var(--muted);margin-top:5px}.finding strong{font-size:12px;display:block;margin-bottom:5px}.finding p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.finding.warn .finding-number{color:var(--orange)}.finding.good .finding-number{color:var(--teal)}
 .contract{margin-top:28px;padding:22px 24px;background:var(--ink);color:#f3f4ee;display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:32px}.contract .section-index{color:#a6b7bd}.contract strong{display:block;font-size:15px;margin:7px 0 9px}.contract p{font-size:11px;line-height:1.7;color:#bec9cb;margin:0}.credits{display:flex;justify-content:space-between;gap:24px;font-size:10px;color:var(--muted);line-height:1.8;padding:22px 0 0}.credits strong{color:var(--ink);font-weight:600}.credit-links a{margin-right:14px}.footer-brand{font-weight:700;letter-spacing:.12em;margin-bottom:4px;font-size:10px;color:var(--ink)}
@@ -36,7 +37,7 @@ dialog{width:min(1120px,94vw);max-height:94vh;border:1px solid var(--line);borde
 <main class="sheet">
   <header class="masthead">
     <div class="brand"><span class="brand-icon" aria-hidden="true">ϟ</span> BLITZREMESHER</div>
-    <div class="edition">Research board / 001<br><span id="date"></span></div>
+    <div class="edition"><span id="edition">Research board / 001</span><br><span id="date"></span></div>
   </header>
   <section class="hero" aria-labelledby="title">
     <div>
@@ -66,6 +67,7 @@ dialog{width:min(1120px,94vw);max-height:94vh;border:1px solid var(--line);borde
         <button type="button" data-mode="wire" aria-pressed="false">Wireframe</button>
         <button type="button" data-mode="silhouette" aria-pressed="false">Silhouette</button>
       </div></div>
+      <div class="control-group"><span class="control-label">Levels</span><div class="segmented" role="group" aria-label="LOD selection"><button type="button" data-level-mode="all" aria-pressed="true">Audit slots</button><button type="button" data-level-mode="runtime" aria-pressed="false">Runtime levels</button></div></div>
       <div class="control-group"><span class="control-label">Scale</span><div class="segmented" role="group" aria-label="Viewing scale">
         <button type="button" data-scale="enlarged" aria-pressed="true">Enlarged</button>
         <button type="button" data-scale="target" aria-pressed="false">Target px</button>
@@ -167,12 +169,37 @@ set('smoke-minutes',fixed(data.scores['corpus-smoke'].seconds/60,1));
 set('simd-speedup',fixed(data.microbench.speedup));set('normal-score',fixed(data.scores['profile-normals'].score));
 const comparisons=[['round1-qem','Native QEM'],['baseline-meshopt','meshoptimizer'],['baseline-fastquadric','Fast Quadric'],['baseline-cgal-probabilistic','CGAL probabilistic *'],['round2-coupled','Coupled positions']];
 byId('score-bars').innerHTML=comparisons.map(([id,label])=>'<div class="bar-row '+(id==='round2-coupled'?'emphasis':'')+'"><span class="bar-label">'+label+'</span><div class="bar-track"><div class="bar-fill" style="width:'+data.scores[id].score+'%"></div></div><span class="bar-value">'+fixed(data.scores[id].score)+'</span></div>').join('');
+if(data.round4){
+  const r=data.round4,dom=(selector,value)=>{document.querySelector(selector).textContent=value;};
+  dom('#edition','Research board / 004');
+  dom('.intro',r.intro);dom('.stats .stat:nth-child(2) .stat-label','512 → 16 px / coverage pilot');
+  set('pilot-score',fixed(data.scores[data.run].score));
+  document.querySelector('.stats .stat:nth-child(2) .stat-detail').textContent='+'+fixed(data.scores[data.run].score-data.scores[r.baseline].score)+' points · same eight assets and visual gates';
+  dom('.stats .stat:nth-child(3) .stat-label',r.validation.label||'Frozen validation / 20 meshes');
+  set('smoke-score',fixed(r.validation.score));
+  dom('.stats .stat:nth-child(3) .stat-detail','+'+fixed(r.validation.gain)+' points · '+r.validation.completed+'/'+r.validation.expected+' completed · '+r.validation.failed+' failures');
+  dom('.section-side','Four examples from the recorded hybrid coverage run. Switch to Runtime levels to hide exact repeats.');
+  dom('.gallery-foot p:nth-child(2)','Neutral clay uses geometric face normals, without textures. Presentation angles are not audit cameras. A low coverage error does not constrain shading.');
+  set('results-title','Useful final LODs need better search.');
+  dom('.panel-intro',r.results_intro);
+  byId('score-bars').innerHTML=r.comparisons.map(c=>'<div class="bar-row '+(c.run===data.run?'emphasis':'')+'"><span class="bar-label">'+escape(c.label)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+data.scores[c.run].score+'%"></div></div><span class="bar-value">'+fixed(data.scores[c.run].score)+'</span></div>').join('');
+  dom('.chart-note','Same eight development assets, 512 → 16 px, hybrid rebuild, source cap 8 px, eight proposals per level, unchanged cameras and gates. SCORE = 100 × (1 − category-balanced mean retained triangle ratio). Exact duplicate compaction does not change SCORE.');
+  set('findings-title','Smaller tails, with measured limits.');
+  document.querySelectorAll('.finding').forEach((el,i)=>{const f=r.findings[i];el.innerHTML='<div class="finding-number">'+escape(f.value)+'<small>'+escape(f.label)+'</small></div><div><strong>'+escape(f.title)+'</strong><p>'+escape(f.text)+'</p></div>';});
+  dom('.contract > div:first-child strong','512 → 16 px · 8 audit slots');
+  dom('.contract > div:first-child p','2 → 3 px transitions; source cap 8 px. The cumulative policy reaches 6.89 px at the final level. Runtime meshes share exact duplicate slots.');
+  document.querySelector('.credits > div:first-child').innerHTML='<div class="footer-brand">BLITZREMESHER / ROUND 4</div>C++20 · exact runtime compaction · quad occupancy proxies<br><a href="../REPORT.md">Round 4 report</a> · <a href="../../VALIDATION.md">Validation</a> · <a href="manifest.json">Provenance</a>';
+}
 byId('source-credits').innerHTML=data.assets.map(a=>'<a href="'+escape(a.source_url)+'" title="'+escape(a.credit+' · '+a.license)+'">'+escape(a.name)+'</a>').join('');
 const state={mode:'clay',scale:'enlarged',asset:0,lod:7,cameras:data.assets.map(a=>({yaw:a.yaw,pitch:a.pitch})),suppressClickUntil:0};
 byId('chains').innerHTML=data.assets.map((a,ai)=>{
   const first=a.lods[0].triangles,last=a.lods.at(-1).triangles;
-  return '<article class="asset" data-asset="'+ai+'" aria-labelledby="asset-'+ai+'"><div class="asset-header"><div><div class="asset-name"><span class="asset-category">'+String(ai+1).padStart(2,'0')+' / '+escape(a.category)+'</span><h3 id="asset-'+ai+'">'+escape(a.name)+'</h3></div><div class="asset-note">'+escape(a.note)+'</div></div><div class="asset-reduction"><strong>−'+fixed(100*(1-last/first),1)+'%</strong> at LOD 7<small>'+number(first)+' → '+number(last)+' tris</small></div></div><div class="chain">'+a.lods.map((l,li)=>'<button type="button" class="lod-card" data-asset="'+ai+'" data-lod="'+li+'" aria-label="Inspect '+escape(a.name)+', LOD '+li+', '+number(l.triangles)+' triangles"><div class="lod-head"><span>LOD '+li+'</span><span class="screen-px">'+fixed(l.screen_pixels,1)+' px</span></div><div class="viewport"><canvas data-asset="'+ai+'" data-lod="'+li+'" aria-hidden="true"></canvas></div><div class="lod-footer"><div class="triangle-count">'+number(l.triangles)+'<span>tris</span></div><div class="lod-error">'+(li?'<span class="check">✓</span> Δ '+fixed(l.adjacent.error_px)+' / '+fixed(l.transition_limit):'UNCHANGED SOURCE')+'</div></div></button>').join('')+'</div></article>';
+  return '<article class="asset" data-asset="'+ai+'" aria-labelledby="asset-'+ai+'"><div class="asset-header"><div><div class="asset-name"><span class="asset-category">'+String(ai+1).padStart(2,'0')+' / '+escape(a.category)+'</span><h3 id="asset-'+ai+'">'+escape(a.name)+'</h3></div><div class="asset-note">'+escape(a.note)+'</div></div><div class="asset-reduction"><strong>−'+fixed(100*(1-last/first),last>0&&last/first<.0005?2:1)+'%</strong> at LOD '+(a.lods.length-1)+'<small>'+number(first)+' → '+number(last)+' tris</small></div></div><div class="chain">'+a.lods.map((l,li)=>'<button type="button" class="lod-card" data-asset="'+ai+'" data-lod="'+li+'" aria-label="Inspect '+escape(a.name)+', LOD '+li+', '+number(l.triangles)+' triangles"><div class="lod-head"><span>LOD '+li+'</span><span class="screen-px">'+fixed(l.screen_pixels,1)+' px</span></div><div class="viewport"><canvas data-asset="'+ai+'" data-lod="'+li+'" aria-hidden="true"></canvas></div><div class="lod-footer"><div class="triangle-count">'+number(l.triangles)+'<span>tris</span></div><div class="lod-error">'+(li?'<span class="check">✓</span> Δ '+fixed(l.adjacent.error_px)+' / '+fixed(l.transition_limit):'UNCHANGED SOURCE')+'</div></div></button>').join('')+'</div></article>';
 }).join('');
+data.assets.forEach((a,i)=>{
+  if(!a.runtime_levels?.length)a.runtime_levels=a.lods.map((_,l)=>l);
+  if(data.round4)document.querySelector('.asset[data-asset="'+i+'"] .asset-note').append(' · '+a.runtime_levels.length+' runtime levels / '+a.lods.length+' audit slots');
+});
 byId('level-buttons').innerHTML=Array.from({length:8},(_,i)=>'<button type="button" data-level="'+i+'" aria-pressed="false">LOD '+i+'</button>').join('');
 function typed(text,Type){const raw=atob(text),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;++i)bytes[i]=raw.charCodeAt(i);return new Type(bytes.buffer);}
 function rotation(y,p){const cy=Math.cos(y),sy=Math.sin(y),cp=Math.cos(p),sp=Math.sin(p);return new Float32Array([cy,sp*sy,-cp*sy,0,cp,sp,sy,-sp*cy,cp*cy]);}
@@ -197,7 +224,7 @@ class MeshRenderer{
       });
     });
   }
-  draw(canvas,ai,li){
+  draw(canvas,ai,li,screenPixels=data.assets[ai].lods[li].screen_pixels){
     const w=Math.max(1,Math.round(canvas.clientWidth)),h=Math.max(1,Math.round(canvas.clientHeight));
     const dpr=Math.min(window.devicePixelRatio||1,2);
     const W=Math.round(w*dpr),H=Math.round(h*dpr);
@@ -207,7 +234,7 @@ class MeshRenderer{
     gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
     gl.useProgram(this.program);gl.bindVertexArray(mesh.vao);
     gl.uniform3fv(u.center,a.center);gl.uniform1f(u.radius,a.radius);gl.uniformMatrix3fv(u.rotation,false,rotation(camera.yaw,camera.pitch));gl.uniform3fv(u.color,a.rgb);
-    const scale=state.scale==='target'?a.lods[li].screen_pixels/h:0.94*Math.min(w,h)/h;
+    const scale=state.scale==='target'?screenPixels/h:0.94*Math.min(w,h)/h;
     gl.uniform2f(u.projection,scale*h/w,scale);
     gl.uniform1i(u.mode,state.mode==='silhouette'?2:0);
     gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.faces);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0);gl.disable(gl.POLYGON_OFFSET_FILL);
@@ -221,8 +248,8 @@ class MeshRenderer{
 }
 let renderer;
 const dirty=new Set();let framePending=false;
-function renderRow(ai){if(!renderer)return;document.querySelectorAll('.chain canvas[data-asset="'+ai+'"]').forEach(c=>renderer.draw(c,ai,Number(c.dataset.lod)));}
-function renderInspector(){if(!renderer||!byId('inspector').open)return;renderer.draw(byId('source-view'),state.asset,0);renderer.draw(byId('selected-view'),state.asset,state.lod);}
+function renderRow(ai){if(!renderer)return;document.querySelectorAll('.chain canvas[data-asset="'+ai+'"]').forEach(c=>{if(!c.closest('.lod-card').hidden)renderer.draw(c,ai,Number(c.dataset.lod));});}
+function renderInspector(){if(!renderer||!byId('inspector').open)return;const pixels=data.assets[state.asset].lods[state.lod].screen_pixels;renderer.draw(byId('source-view'),state.asset,0,pixels);renderer.draw(byId('selected-view'),state.asset,state.lod,pixels);}
 function renderAll(){data.assets.forEach((_,ai)=>renderRow(ai));renderInspector();}
 function schedule(ai){dirty.add(ai);if(!framePending){framePending=true;requestAnimationFrame(()=>{framePending=false;dirty.forEach(renderRow);dirty.clear();renderInspector();});}}
 function updateInspector(){
@@ -243,7 +270,17 @@ byId('inspector').addEventListener('click',e=>{if(e.target===byId('inspector')){
 byId('lod-slider').addEventListener('input',e=>{state.lod=Number(e.target.value);updateInspector();});
 document.querySelectorAll('[data-level]').forEach(b=>b.addEventListener('click',()=>{state.lod=Number(b.dataset.level);updateInspector();}));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(v=>v.setAttribute('aria-pressed',v.dataset.mode===state.mode));renderAll();}));
-document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',()=>{state.scale=b.dataset.scale;document.querySelectorAll('[data-scale]').forEach(v=>v.setAttribute('aria-pressed',v.dataset.scale===state.scale));set('scale-caption',state.scale==='target'?'Target size in CSS pixels · illustrative orthographic view.':'Enlarged for inspection.');renderAll();}));
+document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',()=>{state.scale=b.dataset.scale;document.querySelectorAll('[data-scale]').forEach(v=>v.setAttribute('aria-pressed',v.dataset.scale===state.scale));set('scale-caption',state.scale==='target'?'Target size in CSS pixels; large levels are cropped to the tile. Inspector compares both meshes at the selected size.':'Enlarged for inspection.');renderAll();}));
+document.querySelectorAll('[data-level-mode]').forEach(b=>b.addEventListener('click',()=>{
+  const compact=b.dataset.levelMode==='runtime';
+  document.querySelectorAll('[data-level-mode]').forEach(v=>v.setAttribute('aria-pressed',v===b));
+  data.assets.forEach((a,i)=>{
+    const article=document.querySelector('.asset[data-asset="'+i+'"]');
+    article.querySelectorAll('.lod-card').forEach(c=>c.hidden=compact&&!a.runtime_levels.includes(Number(c.dataset.lod)));
+    const columns=window.innerWidth<=550?2:window.innerWidth<=850?4:a.runtime_levels.length;
+    article.querySelector('.chain').style.gridTemplateColumns=compact?'repeat('+Math.min(a.runtime_levels.length,columns)+',minmax(0,1fr))':'';
+  });renderAll();
+}));
 function reset(ai){state.cameras[ai]={yaw:data.assets[ai].yaw,pitch:data.assets[ai].pitch};schedule(ai);}
 byId('reset').addEventListener('click',()=>data.assets.forEach((_,i)=>reset(i)));
 byId('inspect-reset').addEventListener('click',()=>reset(state.asset));

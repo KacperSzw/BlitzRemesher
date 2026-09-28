@@ -36,6 +36,21 @@ Mesh copy_mesh(MeshView v) {
     return {copy(v.positions),copy(v.normals),copy(v.uv),copy(v.colors),copy(v.tangents),
       {v.indices.begin(),v.indices.end()},{v.materials.begin(),v.materials.end()},{v.double_sided.begin(),v.double_sided.end()}};
 }
+template<class T> static bool same_stream(Stream<T> a,Stream<T> b) {
+    if(a.count!=b.count)return false;
+    if(!a.count||(a.data==b.data&&a.stride==b.stride))return true;
+    if(a.stride==sizeof(T)&&b.stride==sizeof(T))return std::memcmp(a.data,b.data,a.count*sizeof(T))==0;
+    for(size_t i=0;i<a.count;++i)if(std::memcmp(a.data+i*a.stride,b.data+i*b.stride,sizeof(T)))return false;
+    return true;
+}
+template<class T> static bool same_span(std::span<const T> a,std::span<const T> b) {
+    return a.size()==b.size()&&(a.empty()||a.data()==b.data()||std::memcmp(a.data(),b.data(),a.size_bytes())==0);
+}
+bool same_mesh_data(MeshView a,MeshView b) {
+    return same_span(a.indices,b.indices)&&same_span(a.materials,b.materials)&&same_span(a.double_sided,b.double_sided)
+      &&same_stream(a.positions,b.positions)&&same_stream(a.normals,b.normals)&&same_stream(a.uv,b.uv)
+      &&same_stream(a.colors,b.colors)&&same_stream(a.tangents,b.tangents);
+}
 void compact(Mesh& m) {
     std::vector<uint32_t> map(m.positions.size(),UINT32_MAX);
     Mesh out;out.materials=std::move(m.materials);out.double_sided=std::move(m.double_sided);

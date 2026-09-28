@@ -2,7 +2,7 @@
 #include "blitz/remesher.hpp"
 #include <new>
 #include <stdexcept>
-struct blitz_result { blitz::Result value; };
+struct blitz_result { blitz::Result value; std::vector<uint8_t> runtime; };
 namespace {
 template<class T> blitz::Stream<T> stream(blitz_stream s) {blitz::Stream<T> v;v.data=static_cast<const std::byte*>(s.data);v.count=s.count;v.stride=s.stride;return v;}
 template<class T> blitz_stream stream(blitz::Stream<T> s) {return {s.data,s.count,s.stride};}
@@ -50,7 +50,8 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
         s.transition=curve(c->transition,c->transition_count,s.transition);s.normal_importance=curve(c->normal_importance,c->normal_importance_count,s.normal_importance);
         s.attribute_importance=curve(c->attribute_importance,c->attribute_importance_count,s.attribute_importance);
         if(c->cancelled)s.cancelled=[=]{return c->cancelled(c->user_data)!=0;};
-        auto r=blitz::generate(v,s);auto status=r.status;*out=new blitz_result{std::move(r)};
+        auto r=blitz::generate(v,s);auto status=r.status;auto runtime=blitz::runtime_levels(r);
+        *out=new blitz_result{std::move(r),std::move(runtime)};
         return status==blitz::Status::Cancelled?BLITZ_CANCELLED:status==blitz::Status::BudgetLimited?BLITZ_BUDGET_LIMITED:BLITZ_OK;
     } catch(const std::invalid_argument& e){message(error,capacity,e.what());return BLITZ_INVALID_ARGUMENT;}
       catch(const std::bad_alloc&){message(error,capacity,"allocation failed");return BLITZ_OUT_OF_MEMORY;}
@@ -58,6 +59,8 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
       catch(...){message(error,capacity,"unknown exception");return BLITZ_INTERNAL_ERROR;}
 }
 size_t blitz_result_lod_count(const blitz_result* r){return r?r->value.lods.size():0;}
+size_t blitz_result_runtime_lod_count(const blitz_result* r){return r?r->runtime.size():0;}
+size_t blitz_result_runtime_lod_index(const blitz_result* r,size_t i){return r&&i<r->runtime.size()?r->runtime[i]:SIZE_MAX;}
 blitz_status blitz_result_lod(const blitz_result* r,size_t i,blitz_lod_info* out) {
     if(!r||!out||out->struct_size!=sizeof(*out)||i>=r->value.lods.size())return BLITZ_INVALID_ARGUMENT;
     const auto& l=r->value.lods[i];*out={sizeof(*out),exported(l.view(r->value.source)),l.schedule.pixels,l.schedule.transition,l.schedule.source,

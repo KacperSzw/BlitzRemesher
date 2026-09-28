@@ -52,6 +52,9 @@ struct Bounds { Vec3 center{}; double radius{}; double diameter() const {return 
 Bounds bounds(MeshView);
 std::string validate(MeshView);
 Mesh copy_mesh(MeshView);
+// Exact stream bytes and index/material order; ignores padding between strided items.
+// Both views must meet the mesh stream contract.
+bool same_mesh_data(MeshView,MeshView);
 void compact(Mesh&);
 struct Distortion {
     double mean_uv_density{},max_uv_density{},max_uv_anisotropy{};

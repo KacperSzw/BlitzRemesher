@@ -20,7 +20,7 @@ typedef struct blitz_curve_point { float x,y; } blitz_curve_point;
 typedef struct blitz_settings {
     uint32_t struct_size, abi_version;
     uint8_t levels, output_mode, chain_mode, profile; /* rebuild/reuse; direct/progressive/hybrid; coverage/normals/attributes */
-    uint8_t objective, beam_width, search_supersample, audit_supersample;
+    uint8_t objective, beam_width, search_supersample, audit_supersample; /* objective: quadric/regularized/visual/topology_relaxed */
     uint8_t max_supersample, prune, force_scalar, coupled_wedges;
     uint16_t candidate_budget, search_ortho, search_perspective, audit_ortho, audit_perspective;
     uint32_t search_seed, audit_seed;
@@ -44,6 +44,10 @@ blitz_status blitz_settings_init(blitz_settings*,size_t);
 /* Source streams must remain alive and unchanged until result destruction. Never frees source. */
 blitz_status blitz_generate(const blitz_mesh*,const blitz_settings*,blitz_result**,char* error,size_t error_capacity);
 size_t blitz_result_lod_count(const blitz_result*);
+/* Exact consecutive duplicates share one runtime level; scheduled audit slots remain. */
+size_t blitz_result_runtime_lod_count(const blitz_result*);
+/* Returns the scheduled slot, or SIZE_MAX for a null result or invalid runtime index. */
+size_t blitz_result_runtime_lod_index(const blitz_result*,size_t);
 blitz_status blitz_result_lod(const blitz_result*,size_t,blitz_lod_info*);
 void blitz_result_destroy(blitz_result*);
 #ifdef __cplusplus

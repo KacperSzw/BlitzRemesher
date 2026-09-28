@@ -25,7 +25,7 @@ template<class T> void append(std::vector<uint8_t>& bytes,T v) {
     if constexpr(std::endian::native==std::endian::big)std::reverse(b.begin(),b.end());
     bytes.insert(bytes.end(),b.begin(),b.end());
 }
-Mesh gltf(const fs::path& path) {
+Mesh gltf(const fs::path& path,std::optional<size_t> selected={}) {
     cgltf_options opts{};cgltf_data* raw{};
     auto filename=path.string();
     if(cgltf_parse_file(&opts,filename.c_str(),&raw)!=cgltf_result_success)fail("cannot parse glTF");
@@ -104,7 +104,11 @@ Mesh gltf(const fs::path& path) {
         if(n->mesh){float t[16];cgltf_node_transform_world(n,t);add(n->mesh,t);}
         for(size_t i=0;i<n->children_count;++i)node(n->children[i],depth+1);
     };
-    if(d.scene){for(size_t i=0;i<d.scene->nodes_count;++i)node(d.scene->nodes[i],0);}
+    if(selected) {
+        if(*selected>=d.meshes_count)fail("glTF mesh index out of range");
+        float t[16]={1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};add(d.meshes+*selected,t);
+    }
+    else if(d.scene){for(size_t i=0;i<d.scene->nodes_count;++i)node(d.scene->nodes[i],0);}
     else if(d.nodes_count){for(size_t i=0;i<d.nodes_count;++i)if(!d.nodes[i].parent)node(d.nodes+i,0);}
     else {float t[16]={1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};for(size_t i=0;i<d.meshes_count;++i)add(d.meshes+i,t);}
     if(!any_normal)out.normals.clear();if(!any_uv)out.uv.clear();if(!any_color)out.colors.clear();if(!any_tangent)out.tangents.clear();
@@ -216,6 +220,12 @@ Mesh load_mesh(const fs::path& p) {
     if(auto e=validate(m.view());!e.empty())fail(p.string()+": "+e);
     return m;
 }
+Mesh load_gltf_mesh(const fs::path& p,size_t index) {
+    if(fs::file_size(p)>1024ull*1024*1024)fail("input exceeds 1 GiB import cap");
+    auto m=gltf(p,index);
+    if(auto e=validate(m.view());!e.empty())fail(p.string()+": "+e);
+    return m;
+}
 void save_ply(MeshView m,const fs::path& path) {
     std::ofstream f(path,std::ios::binary);f<<"ply\nformat binary_little_endian 1.0\nelement vertex "<<m.positions.count<<"\nproperty float x\nproperty float y\nproperty float z\n";
     if(m.normals)f<<"property float nx\nproperty float ny\nproperty float nz\n";
@@ -233,6 +243,7 @@ void save_ply(MeshView m,const fs::path& path) {
 json result_json(const Result& r) {
     json j={{"version",1},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
+    auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
     for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
     for(auto& l:r.lods){auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
@@ -266,26 +277,31 @@ void save_chain(const Result& r,const fs::path& directory) {
         j["accessors"][a["POSITION"].get<size_t>()]["min"]={lo.x,lo.y,lo.z};j["accessors"][a["POSITION"].get<size_t>()]["max"]={hi.x,hi.y,hi.z};return a;
     };
     json shared=attributes(r.source);
-    for(size_t i=0;i<r.lods.size();++i) {
+    const auto runtime=runtime_levels(r);
+    for(auto i:runtime) {
         auto v=r.lods[i].view(r.source);auto a=r.lods[i].shared_vertices?shared:attributes(v);json primitives=json::array();
         std::map<uint16_t,std::vector<uint32_t>> groups;
         for(size_t f=0;f<v.triangles();++f)for(int k=0;k<3;++k)groups[v.material(f)].push_back(v.indices[f*3+k]);
         for(auto& [mat,indices]:groups){size_t offset=bytes.size();for(auto index:indices)append(bytes,index);
             primitives.push_back({{"attributes",a},{"indices",accessor(offset,indices.size(),1,5125,"SCALAR")},{"material",mat},{"mode",4}});}
         j["meshes"].push_back({{"name","LOD"+std::to_string(i)},{"primitives",primitives}});
-        j["nodes"].push_back({{"mesh",i},{"name","LOD"+std::to_string(i)}});
+    }
+    size_t mesh_index=0;
+    for(size_t i=0;i<r.lods.size();++i) {
+        if(mesh_index+1<runtime.size()&&i==runtime[mesh_index+1])++mesh_index;
+        j["nodes"].push_back({{"mesh",mesh_index},{"name","LOD"+std::to_string(i)}});
     }
     j["buffers"]=json::array({{{"uri","chain.bin"},{"byteLength",bytes.size()}}});
     std::ofstream bin(directory/"chain.bin",std::ios::binary);bin.write(reinterpret_cast<char*>(bytes.data()),bytes.size());if(!bin)fail("cannot write glTF buffer");
     std::ofstream(directory/"chain.gltf")<<j.dump(2)<<'\n';auto manifest=result_json(r);manifest["gltf"]="chain.gltf";
-    for(size_t i=0;i<r.lods.size();++i){manifest["lods"][i]["gltf_mesh"]=i;manifest["lods"][i]["gltf_node"]=i;}
+    for(size_t i=0;i<r.lods.size();++i){manifest["lods"][i]["gltf_mesh"]=j["nodes"][i]["mesh"];manifest["lods"][i]["gltf_node"]=i;}
     std::ofstream(directory/"lods.json")<<manifest.dump(2)<<'\n';
 }
 json settings_json(const Settings& s) {
     auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
     auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
     return {{"levels",s.levels},{"output",s.output==OutputMode::Reuse?"reuse":"rebuild"},{"chain",s.chain==ChainMode::Direct?"direct":s.chain==ChainMode::Progressive?"progressive":"hybrid"},
-      {"objective",s.objective==Objective::Quadric?"quadric":s.objective==Objective::Regularized?"regularized":"visual"},
+      {"objective",s.objective==Objective::Quadric?"quadric":s.objective==Objective::Regularized?"regularized":s.objective==Objective::Visual?"visual":"topology_relaxed"},
       {"profile",s.profile==Profile::Coverage?"coverage":s.profile==Profile::Normals?"normals":"attributes"},{"pixels_per_meter",s.pixels_per_meter},
       {"meters_per_unit",s.meters_per_unit},{"base_pixels",s.base_pixels?json(*s.base_pixels):json(nullptr)},{"last_pixels",s.last_pixels},
       {"max_lod0_delta_px",s.max_lod0_delta_px?json(*s.max_lod0_delta_px):json(nullptr)},{"transition",curve(s.transition)},
@@ -297,7 +313,7 @@ Settings settings_json(const json& input) {
     Settings s;auto j=settings_json(s);for(auto it=input.begin();it!=input.end();++it){if(!j.contains(it.key()))fail("unknown setting: "+it.key());}
     j.merge_patch(input);
     auto mode=[&](const char* key,std::initializer_list<const char*> names){std::string v=j.at(key);unsigned i=0;for(auto name:names){if(v==name)return i;++i;}fail(std::string("unknown ")+key);};
-    s.output=OutputMode(mode("output",{"rebuild","reuse"}));s.chain=ChainMode(mode("chain",{"direct","progressive","hybrid"}));s.profile=Profile(mode("profile",{"coverage","normals","attributes"}));s.objective=Objective(mode("objective",{"quadric","regularized","visual"}));
+    s.output=OutputMode(mode("output",{"rebuild","reuse"}));s.chain=ChainMode(mode("chain",{"direct","progressive","hybrid"}));s.profile=Profile(mode("profile",{"coverage","normals","attributes"}));s.objective=Objective(mode("objective",{"quadric","regularized","visual","topology_relaxed"}));
     auto byte=[&](const char* k){int n=j.at(k);if(n<0||n>255)fail("byte setting out of range");return uint8_t(n);};
     s.levels=byte("levels");s.beam_width=byte("beam_width");s.search_supersample=byte("search_supersample");s.audit_supersample=byte("audit_supersample");s.max_supersample=byte("max_supersample");
     int budget=j.at("candidate_budget");if(budget<1||budget>65535)fail("invalid candidate budget");s.candidate_budget=uint16_t(budget);

@@ -2,6 +2,13 @@
 #include <memory>
 #include <stdexcept>
 namespace blitz {
+std::vector<uint8_t> runtime_levels(const Result& r) {
+    if(r.lods.size()>32)throw std::invalid_argument("runtime chain exceeds 32 scheduled levels");
+    std::vector<uint8_t> levels;
+    for(size_t i=0;i<r.lods.size();++i)
+        if(!i||!same_mesh_data(r.lods[i-1].view(r.source),r.lods[i].view(r.source)))levels.push_back(uint8_t(i));
+    return levels;
+}
 double Curve::at(double t) const {
     if(points.empty())throw std::invalid_argument("empty curve");
     if(t<=points.front().x)return points.front().y;
@@ -13,7 +20,7 @@ double Curve::at(double t) const {
 }
 std::string validate(const Settings& s) {
     if(s.levels<2||s.levels>32)return "level count must be 2..32";
-    if(unsigned(s.output)>1||unsigned(s.chain)>2||unsigned(s.objective)>2||unsigned(s.profile)>2)return "unknown mode";
+    if(unsigned(s.output)>1||unsigned(s.chain)>2||unsigned(s.objective)>3||unsigned(s.profile)>2)return "unknown mode";
     for(double v:{s.pixels_per_meter,s.meters_per_unit,s.last_pixels})
         if(!std::isfinite(v)||v<=0)return "screen scale must be positive and finite";
     for(auto v:{s.base_pixels,s.max_lod0_delta_px})if(v&&(!std::isfinite(*v)||*v<=0))return "invalid optional pixel limit";
@@ -115,17 +122,24 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         };
         // Retaining each incumbent is important: camera-space errors need not decrease monotonically.
         for(auto& parent:beam)offer(parent->lod,parent);
-        unsigned origins=s.chain==ChainMode::Hybrid?2:1;
-        unsigned slots=unsigned(beam.size())*origins;
-        unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/slots);
+        struct Slot { std::shared_ptr<Node> parent; bool direct; };
+        std::vector<Slot> slots;
+        for(auto& parent:beam) {
+            if(s.chain!=ChainMode::Progressive)slots.push_back({parent,true});
+            if(s.chain==ChainMode::Progressive||(s.chain==ChainMode::Hybrid&&!same_mesh_data(source,parent->lod.view(source))))
+                slots.push_back({parent,false});
+        }
+        const unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/unsigned(slots.size()));
         unsigned proposals=0;
-        for(unsigned r=0;r<rounds&&proposals<s.candidate_budget;++r) {
-            for(auto& parent:beam)for(unsigned o=0;o<origins&&proposals<s.candidate_budget;++o) {
+        for(unsigned r=0;proposals<s.candidate_budget;++r) {
+            for(auto& slot:slots) {
+                if(proposals==s.candidate_budget)break;
                 if(cancelled()){result.status=Status::Cancelled;return result;}
-                bool direct=s.chain==ChainMode::Direct||(s.chain==ChainMode::Hybrid&&o==0);
-                auto input=direct?source:parent->lod.view(source);
+                auto& parent=slot.parent;
+                auto input=slot.direct?source:parent->lod.view(source);
                 // Logarithmic ladder spends proposals on both aggressive reductions and near-incumbents.
-                double fraction=rounds==1?.5:.02*std::pow(45.0,double(r)/(rounds-1));
+                // A partial final round probes a deeper reduction instead of discarding the remaining budget.
+                double fraction=r==rounds?.1:rounds==1?.5:.02*std::pow(45.0,double(r)/(rounds-1));
                 size_t target=std::max<size_t>(1,size_t(parent->lod.view(source).triangles()*fraction));
                 ReduceSettings rs;rs.output=s.output;rs.objective=s.objective;rs.target_triangles=target;
                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;
@@ -133,6 +147,13 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 rs.coupled_wedges=s.coupled_wedges;
                 auto candidate=proposer?proposer(input,rs):reduce(input,rs);
                 ++proposals;++result.candidate_evaluations;
+                if(candidate.shared_vertices&&!slot.direct&&!parent->lod.shared_vertices) {
+                    // A reducer borrows from its actual input. An owned previous
+                    // LOD has different vertex IDs/storage from the original source.
+                    auto local=candidate.view(input);
+                    if(same_mesh_data(local,input))continue; // Already offered as the incumbent.
+                    candidate.data=copy_mesh(local);candidate.shared_vertices=false;
+                }
                 offer(std::move(candidate),parent);
             }
         }

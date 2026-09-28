@@ -90,6 +90,19 @@ explicit status/error buffers and an opaque result handle:
 4. Read each LOD with blitz_result_lod.
 5. Call blitz_result_destroy exactly once.
 
+Scheduled slots retain their source and transition audit records. For engine
+runtime selection, use `blitz_result_runtime_lod_count` and
+`blitz_result_runtime_lod_index` (C++: `runtime_levels`) to skip exact
+consecutive duplicates. The returned indices address the scheduled slots;
+use each retained slot's original screen threshold. Equal triangle counts
+alone never cause a merge. glTF export shares one mesh and buffer payload for
+each identical consecutive group, while `lods.json` preserves every audit.
+
+`blitz/render_cost.hpp` exposes optional, deterministic CPU geometry
+diagnostics: projected tiny triangles, zero-sample primitives, per-primitive
+2×2 quad occupancy and pre-depth overlap. They do not change the quality
+score and are not measurements of GPU execution time.
+
 Source storage is never freed by the library. Returned views are read-only,
 borrow result/source storage and expire at result destruction. No exception
 or STL object crosses the C ABI. Cancellation callbacks must not throw or
@@ -142,11 +155,15 @@ Read [the algorithm review](research/ALGORITHMS.md),
 [the accepted specification](docs/SPEC.md) before modifying research rules.
 Measured runs, including negative findings, are in
 [RESULTS.md](research/RESULTS.md) and [EXPERIMENTS.md](research/EXPERIMENTS.md).
-The [visual board](research/board/index.html) shows four actual eight-level
-LOD chains with rotation, wireframe, silhouette and source/LOD comparison.
-It opens offline without a server. [PNG](research/board/board.png) and
-[PDF](research/board/board.pdf) versions are available for sharing.
-See [board reproduction and provenance](research/board/README.md).
+The latest [Round 4 report](research/round4/REPORT.md) studies 128/512/1024 px
+starting sizes, source caps, six/eight levels and final-LOD rendering costs.
+The [visual board](research/round4/board/index.html) shows four actual
+512→16 px chains with rotation, wireframe, silhouette, source comparison and
+an exact-duplicate runtime toggle. It opens offline without a server.
+[PNG](research/round4/board/board.png) and
+[PDF](research/round4/board/board.pdf) versions are available for sharing.
+See [board reproduction and provenance](research/round4/board/README.md).
+The earlier [32→16 px board](research/board/index.html) remains archived.
 
 ## Validation
 

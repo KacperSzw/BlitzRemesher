@@ -1,5 +1,7 @@
 #include "blitz/remesher.hpp"
 #include <iostream>
+#include <map>
+#include <tuple>
 #include <random>
 #include <stdexcept>
 using namespace blitz;
@@ -17,6 +19,26 @@ static Settings small() {
     s.search_views={4,1,27};s.audit_views={8,2,83};s.search_supersample=2;s.audit_supersample=4;s.max_supersample=8;
     s.candidate_budget=4;s.beam_width=2;return s;
 }
+static Mesh torus() {
+    Mesh m;constexpr unsigned major=10,minor=8;
+    for(unsigned i=0;i<major;++i)for(unsigned j=0;j<minor;++j) {
+        double a=i*6.283185307179586/major,b=j*6.283185307179586/minor;
+        m.positions.push_back({float((2+.6*std::cos(b))*std::cos(a)),float((2+.6*std::cos(b))*std::sin(a)),float(.6*std::sin(b))});
+    }
+    for(unsigned i=0;i<major;++i)for(unsigned j=0;j<minor;++j) {
+        uint32_t a=i*minor+j,b=((i+1)%major)*minor+j,c=((i+1)%major)*minor+(j+1)%minor,d=i*minor+(j+1)%minor;
+        m.indices.insert(m.indices.end(),{a,b,c,a,c,d});
+    }
+    return m;
+}
+static bool no_overshared_edges(MeshView m) {
+    std::map<std::pair<uint32_t,uint32_t>,unsigned> edges;
+    for(size_t f=0;f<m.indices.size();f+=3)for(unsigned k=0;k<3;++k) {
+        auto a=m.indices[f+k],b=m.indices[f+(k+1)%3];if(a>b)std::swap(a,b);
+        if(++edges[{a,b}]>2)return false;
+    }
+    return true;
+}
 static double brute(const Raster& a,const Raster& b,unsigned ss) {
     auto directed=[&](const Raster& p,const Raster& q){double worst=0;for(unsigned i=0;i<p.pixels.size();++i)if(p.pixels[i].covered){
         double best=INFINITY;for(unsigned j=0;j<q.pixels.size();++j)if(q.pixels[j].covered){double x=int(i%p.width)-int(j%p.width),y=int(i/p.width)-int(j/p.width);best=std::min(best,x*x+y*y);}worst=std::max(worst,best);}return worst;};
@@ -32,6 +54,10 @@ int main() {
         std::vector<Padded> padded;for(auto p:m.positions)padded.push_back({0xB117,p,0xC0DE});
         auto v=m.view();v.positions.data=reinterpret_cast<const std::byte*>(&padded[0].p);v.positions.stride=sizeof(Padded);
         CHECK(validate(v).empty());auto original=padded;
+        CHECK(same_mesh_data(v,m.view()));CHECK(same_mesh_data(v,empty_optional.view()));
+        auto different=m;different.uv[0].x=.125f;CHECK(!same_mesh_data(v,different.view()));
+        different=m;different.normals[0].x=.125f;CHECK(!same_mesh_data(v,different.view()));
+        different=m;different.double_sided[0]=0;CHECK(!same_mesh_data(v,different.view()));
         ReduceSettings rs;rs.output=OutputMode::Reuse;rs.target_triangles=24;
         auto reduced=reduce(v,rs);CHECK(reduced.shared_vertices);CHECK(reduced.data.positions.empty());CHECK(reduced.view(v).triangles()<m.view().triangles());
         CHECK(std::memcmp(original.data(),padded.data(),padded.size()*sizeof(Padded))==0);
@@ -46,6 +72,16 @@ int main() {
         CHECK(coupled.data.indices.size()<conservative.data.indices.size());CHECK(validate(coupled.view(split.view())).empty());
         CHECK(coupled.data.uv.size()==coupled.data.positions.size());CHECK(uv_distortion(coupled.view(split.view())).negative_uv_faces==0);
         rs.coupled_wedges=false;
+        // Guarding common neighbors prevents collapses from manufacturing new
+        // overshared edges on an initially manifold handle.
+        auto handle=torus();CHECK(no_overshared_edges(handle.view()));
+        for(auto mode:{OutputMode::Reuse,OutputMode::Rebuild})for(size_t target:{1u,12u,40u}) {
+            ReduceSettings test;test.output=mode;test.target_triangles=target;ReductionStats stats;test.statistics=&stats;
+            auto lod=reduce(handle.view(),test);
+            CHECK(no_overshared_edges(lod.view(handle.view())));CHECK(validate(lod.view(handle.view())).empty());
+            CHECK(stats.initial_triangles==handle.view().triangles()&&stats.final_triangles==lod.view(handle.view()).triangles());
+            CHECK(stats.collapsed>0&&stats.attempts>=stats.collapsed);
+        }
         auto s=small();auto steps=schedule(bounds(m.view()),s);
         CHECK(steps.size()==3);CHECK(steps[0].pixels==24);CHECK(std::abs(steps.back().pixels-8)<1e-12);
         CHECK(std::abs(steps[2].source-(3*8/steps[1].pixels+4))<1e-12);
@@ -85,6 +121,48 @@ int main() {
         }
         s=small();s.cancelled=[]{return true;};auto r=generate(m.view(),s);CHECK(r.status==Status::Cancelled);
         for(auto& l:r.lods)CHECK(l.data.indices==m.indices&&l.shared_vertices);
+        CHECK(runtime_levels(r)==std::vector<uint8_t>{0});
+        r.lods[1].shared_vertices=false;r.lods[1].data=copy_mesh(m.view());
+        CHECK(runtime_levels(r)==std::vector<uint8_t>{0}); // Ownership is not render data.
+        r.lods[1].data.uv[0].x=.25f;auto active=runtime_levels(r);
+        CHECK(active.size()==3&&active[0]==0&&active[1]==1&&active[2]==2);
+        CHECK(runtime_levels(Result{}).empty());
+        // Progressive reducers borrow the previous rebuilt vertex buffer, whose
+        // compact IDs cannot be interpreted against the original dense grid.
+        s=small();s.chain=ChainMode::Progressive;s.levels=4;s.candidate_budget=3;
+        bool borrowed_previous=false,trim_borrowed=false;
+        Proposer local_proposal=[&](MeshView input,const ReduceSettings&){
+            Lod l;
+            if(input.positions.count==4) {
+                borrowed_previous=true;l.data.indices.assign(input.indices.begin(),input.indices.end());
+                if(trim_borrowed)l.data.indices.resize(3);return l;
+            }
+            l.shared_vertices=false;l.data.positions={{0,0,0},{1,0,0},{1,1,0},{0,1,0}};
+            l.data.indices={0,1,2,0,2,3};l.data.double_sided={1};return l;
+        };
+        auto local_ids=generate(m.view(),s,local_proposal);
+        CHECK(borrowed_previous&&local_ids.status==Status::Complete);
+        CHECK(std::all_of(local_ids.rejected_gates.begin(),local_ids.rejected_gates.end(),[](auto n){return n==0;}));
+        CHECK(local_ids.lods.back().view(m.view()).triangles()==2&&!local_ids.lods.back().shared_vertices);
+        trim_borrowed=true;s.transition={{{0,10},{1,11}}};
+        auto trimmed=generate(m.view(),s,local_proposal);auto trimmed_view=trimmed.lods.back().view(m.view());
+        CHECK(trimmed_view.triangles()==1&&!trimmed.lods.back().shared_vertices);
+        CHECK(trimmed_view.positions[1].x==1&&trimmed_view.positions[2].y==1);
+        // Hybrid's root has only one distinct input. Deterministic requests
+        // must not repeat it with identical settings under the two origin labels.
+        // The budget is a ceiling; valid early termination and retuning are allowed.
+        for(uint16_t budget:{5,7}) {
+            s=small();s.levels=2;s.candidate_budget=budget;
+            std::vector<std::tuple<size_t,OutputMode,Objective,double,double,bool,bool>> requests;
+            auto counted=generate(m.view(),s,[&](MeshView input,const ReduceSettings& settings){
+                CHECK(same_mesh_data(input,m.view()));
+                requests.emplace_back(settings.target_triangles,settings.output,settings.objective,
+                    settings.normal_weight,settings.regularization,settings.prune,settings.coupled_wedges);
+                Lod unchanged;unchanged.data.indices.assign(input.indices.begin(),input.indices.end());return unchanged;
+            });
+            CHECK(counted.candidate_evaluations<=budget&&counted.candidate_evaluations==requests.size()&&!requests.empty());
+            std::sort(requests.begin(),requests.end());CHECK(std::adjacent_find(requests.begin(),requests.end())==requests.end());
+        }
         s=small();s.transition={{{0,0},{1,0}}};r=generate(m.view(),s);
         for(auto& l:r.lods)CHECK(l.data.indices==m.indices);
         s=small();s.levels=2;s.base_pixels=s.last_pixels=4096;s.search_supersample=s.audit_supersample=s.max_supersample=8;s.candidate_budget=1;s.chain=ChainMode::Direct;

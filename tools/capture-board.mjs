@@ -11,6 +11,7 @@ const require = createRequire(import.meta.url);
 const {chromium} = require(process.env.BLITZ_PLAYWRIGHT_MODULE || 'playwright');
 const root = resolve(process.argv[2] || '.');
 const output = resolve(process.argv[3] || root + '/research/board');
+const input = resolve(process.argv[4] || root + '/research/board/index.html');
 await mkdir(output, {recursive:true});
 const browser = await chromium.launch({
   headless:true,
@@ -25,13 +26,17 @@ try {
   // This must remain a portable, offline document.
   const requests = [];
   page.on('request',request=>{if(/^https?:/.test(request.url()))requests.push(request.url());});
-  await page.goto(pathToFileURL(root + '/research/board/index.html').href);
+  await page.goto(pathToFileURL(input).href);
   await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
   const counts = await page.evaluate(()=>{
     const {data,renderer}=window.blitzBoard;
     return {
       cards:document.querySelectorAll('.lod-card').length,
       assets:data.assets.length,
+      expectedCards:data.assets.reduce((n,a)=>n+a.lods.length,0),
+      lastLevel:data.assets[0].lods.length-1,
+      expectedSelected:data.assets[2].lods.at(-1).triangles,
+      expectedSource:data.assets[2].lods[0].triangles,
       correctGeometry:renderer.meshes.every((levels,a)=>levels.every((mesh,l)=>mesh.count/3===data.assets[a].lods[l].triangles)),
       painted:[...document.querySelectorAll('.chain canvas')].map(canvas=>{
         const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
@@ -42,7 +47,7 @@ try {
     };
   });
   assert.equal(counts.assets,4);
-  assert.equal(counts.cards,32);
+  assert.equal(counts.cards,counts.expectedCards);
   assert.ok(counts.correctGeometry,'Displayed triangle counts must match the loaded geometry');
   assert.ok(counts.painted.every(n=>n>20),'Each LOD tile must contain a visible mesh');
   assert.equal(counts.overflow,false,'Desktop layout must fit the viewport');
@@ -60,22 +65,33 @@ try {
   assert.notEqual(silhouette,wire);
   await page.locator('.controls [data-mode="clay"]').click();
 
+  const targetCanvas=page.locator('.chain canvas[data-asset="0"][data-lod="'+counts.lastLevel+'"]');
   await page.locator('.controls [data-scale="target"]').click();
-  const targetPixels = await page.locator('.chain canvas').first().evaluate(c=>{
+  const targetPixels = await targetCanvas.evaluate(c=>{
     const p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
     for(let i=3;i<p.length;i+=4)if(p[i])++n;return n;
   });
-  assert.ok(targetPixels>0&&targetPixels<counts.painted[0]/2,'Target scale should render a smaller, nonempty mesh');
+  assert.ok(targetPixels>0&&targetPixels<counts.painted[counts.lastLevel]/2,'Final target scale should render a smaller, nonempty mesh');
   await page.locator('.controls [data-scale="enlarged"]').click();
+  let runtimeChecked=false;
+  if(await page.locator('[data-level-mode="runtime"]').count()){
+    await page.locator('[data-level-mode="runtime"]').click();
+    const expected=await page.evaluate(()=>window.blitzBoard.data.assets.reduce((n,a)=>n+a.runtime_levels.length,0));
+    assert.equal(await page.locator('.lod-card:visible').count(),expected);
+    await page.locator('[data-level-mode="all"]').click();
+    assert.equal(await page.locator('.lod-card:visible').count(),counts.expectedCards);
+    runtimeChecked=true;
+  }
+  assert.ok(!await page.evaluate(()=>Boolean(window.blitzBoard.data.round4))||runtimeChecked);
 
-  await page.locator('.lod-card[data-asset="2"][data-lod="7"]').click();
+  await page.locator('.lod-card[data-asset="2"][data-lod="'+counts.lastLevel+'"]').click();
   assert.equal(await page.locator('#inspector').evaluate(d=>d.open),true);
-  assert.equal(await page.locator('#selected-triangles').textContent(),'126 triangles');
+  assert.equal(await page.locator('#selected-triangles').textContent(),counts.expectedSelected.toLocaleString('en-US')+' triangles');
   await page.locator('[data-level="0"]').click();
-  assert.equal(await page.locator('#selected-triangles').textContent(),'6,532 triangles');
+  assert.equal(await page.locator('#selected-triangles').textContent(),counts.expectedSource.toLocaleString('en-US')+' triangles');
   const sameSource=await page.evaluate(()=>document.getElementById('source-view').toDataURL()===document.getElementById('selected-view').toDataURL());
   assert.ok(sameSource,'Comparing LOD 0 against itself must produce identical images');
-  await page.locator('[data-level="7"]').click();
+  await page.locator('[data-level="'+counts.lastLevel+'"]').click();
   const beforeRotate=await page.locator('#selected-view').evaluate(c=>c.toDataURL());
   await page.locator('#rotate-right').click();
   await page.waitForFunction(before=>document.getElementById('selected-view').toDataURL()!==before,beforeRotate);
@@ -85,17 +101,23 @@ try {
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#inspector').evaluate(d=>d.open),false);
   await page.locator('.controls [data-mode="clay"]').click();
+  await page.locator('.lod-card[data-asset="1"][data-lod="'+counts.lastLevel+'"]').click();
+  await page.locator('#inspector [data-mode="silhouette"]').click();
+  await page.locator('#inspector').screenshot({path:output+'/tree-comparison.png'});
+  await page.keyboard.press('Escape');
+  await page.locator('.controls [data-mode="clay"]').click();
 
   await page.setViewportSize({width:390,height:844});
   await page.waitForTimeout(200);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false,'Mobile layout must not overflow horizontally');
-  assert.equal(await page.locator('.lod-card').count(),32);
+  assert.equal(await page.locator('.lod-card').count(),counts.expectedCards);
   await page.screenshot({path:output+'/mobile-preview.png',fullPage:true});
   assert.deepEqual(requests,[],'The board must not fetch external scripts, models or fonts');
   assert.deepEqual(failures,[],'The board must have no browser errors');
   const record={
     browser:await browser.version(), desktop:{width:1600,height:counts.height},
-    mobile_width:390, examples:4, lod_tiles:32, all_tiles_painted:true,
+    mobile_width:390, examples:counts.assets, lod_tiles:counts.expectedCards, all_tiles_painted:true,
+    runtime_compaction_ui_checked:runtimeChecked,
     triangle_counts_match:true, modes_checked:['clay','wire','silhouette'],
     target_scale_checked:true, inspector_lod0_identity_checked:true,
     inspector_selection_and_rotation_checked:true, no_horizontal_overflow:true,

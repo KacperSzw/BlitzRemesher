@@ -4,7 +4,7 @@
 namespace blitz {
 enum class OutputMode:uint8_t { Rebuild,Reuse };
 enum class ChainMode:uint8_t { Direct,Progressive,Hybrid };
-enum class Objective:uint8_t { Quadric,Regularized,Visual };
+enum class Objective:uint8_t { Quadric,Regularized,Visual,TopologyRelaxed };
 enum class Status:uint8_t { Complete,BudgetLimited,Cancelled };
 struct Curve { std::vector<Vec2> points{{0,2},{1,3}}; double at(double) const; };
 struct Settings {
@@ -25,6 +25,7 @@ std::vector<ScheduleEntry> schedule(const Bounds&,const Settings&);
 std::string validate(const Settings&);
 struct Lod {
     Mesh data; ScheduleEntry schedule{}; Measurement adjacent{},source_error{};
+    // reduce(): relative to that call's input; generate(): relative to Result.source.
     bool shared_vertices{true};
     MeshView view(MeshView source) const {
         if(!shared_vertices) return data.view();
@@ -38,13 +39,24 @@ struct Result {
     std::array<uint64_t,4> rejected_gates{};
     std::array<Measurement,4> worst_rejected{};
 };
+// First scheduled slot of each consecutive group with identical render data.
+// Scheduled slots and their independent audit records remain unchanged (at most 32).
+std::vector<uint8_t> runtime_levels(const Result&);
+struct ReductionStats {
+    uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
+    uint32_t initial_triangles{},final_triangles{},last_candidates{},last_locked_edges{},first_locked_edges{};
+    uint8_t passes{}; // The reducer has at most 128 collapse passes.
+};
 struct ReduceSettings {
     OutputMode output{OutputMode::Rebuild}; Objective objective{Objective::Quadric};
     size_t target_triangles{}; double normal_weight{1},regularization{1e-5};
     bool prune{},coupled_wedges{}; std::function<bool()> cancelled;
+    ReductionStats* statistics{}; // Optional borrowed diagnostic output, reset per reduction.
 };
 Lod reduce(MeshView,const ReduceSettings&);
 using Proposer=std::function<Lod(MeshView,const ReduceSettings&)>;
-// Optional research proposal provider. All candidates still pass the independent visual gates.
+// Optional research provider: borrowed output is relative to the provided input,
+// which can be a rebuilt predecessor. generate() resolves its ownership and
+// sends every changed candidate through the independent visual gates.
 Result generate(MeshView,const Settings&,const Proposer& = {});
 }

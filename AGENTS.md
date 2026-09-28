@@ -3,13 +3,6 @@
 Read docs/SPEC.md and research/PROTOCOL.md before changing algorithms or scores.
 The implementation language is C++20. Do not introduce Python.
 
-## Workstation
-
-Use the pinned Nix shell. Never reboot automatically. Other agents may be active.
-Do not close terminals without verifying they contain no live Codex session.
-Preserve desktop workspace and focus; GUI launches use workstation-desktop.
-Research batches are resumable and must stay below one hour, four CPU workers,
-and 24 GiB combined memory. Do not change /etc/nixos for this project.
 
 ## Correctness and memory
 
@@ -31,6 +24,19 @@ Protocol changes require a new version and rerunning every baseline.
 Save hypotheses, raw measurements, failures and negative results.
 Incomplete batches have no aggregate score. Report unreduced fallbacks.
 Do not claim global optimality or all-view guarantees.
+Report final-level and last-three-level retained ratios alongside SCORE when
+working on tails. A changed source cap, starting size or level count is a
+different scenario, not evidence of an algorithmic gain. The source cap only
+clamps the cumulative screen-space policy; an already inactive cap adds nothing.
+Tiny-triangle and quad-occupancy measurements are geometry proxies before
+depth testing, not GPU timings. Report coverage changes alongside cost changes.
+Runtime compaction may merge only exact consecutive render-data duplicates;
+retain scheduled audit records and the original SCORE denominator. Equal
+triangle counts are insufficient. Preserve each retained slot's threshold.
+Reducer/proposer borrowed outputs address their actual input. In progressive
+rebuild, those compact vertex IDs must never be interpreted against LOD0.
+Use explicit per-binary build stamps for overlapping benchmark jobs; never
+pair a frozen executable with a mutable, unrelated global source stamp.
 
 ## Tests and changes
 

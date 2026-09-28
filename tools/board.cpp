@@ -106,9 +106,11 @@ static Geometry geometry(const json& gltf, std::span<const uint8_t> binary, size
 }
 int main(int argc, char** argv) {
     try {
-        if (argc != 2) throw std::invalid_argument("blitz-board REPOSITORY_ROOT");
+        if (argc != 2 && argc != 4) throw std::invalid_argument("blitz-board REPOSITORY_ROOT [CONFIG OUTPUT_DIRECTORY]");
         const fs::path root = fs::absolute(argv[1]);
-        auto config = read_json(root / "research/board/examples.json");
+        auto config = read_json(argc==4?fs::path(argv[2]):root / "research/board/examples.json");
+        const fs::path output_dir=argc==4?fs::path(argv[3]):root/"research/board";
+        fs::create_directories(output_dir);
         auto corpus = read_json(root / "research/corpus.json");
         auto scan_rights = read_json(root / "research/scan-rights.json").at("items");
         const auto run = config.at("run").get<std::string>();
@@ -140,14 +142,15 @@ int main(int argc, char** argv) {
             example["ratio"] = row.at("ratio");
             example["lods"] = json::array();
             auto rows = row.at("result").at("lods");
-            if (gltf.at("meshes").size() != rows.size()) throw std::runtime_error("LOD count mismatch");
+            if (gltf.at("nodes").size() != rows.size()) throw std::runtime_error("LOD node count mismatch");
+            example["runtime_levels"]=row.at("result").value("runtime_levels",json::array());
             json record{{"id", id}, {"chain_bin_sha256", sha256(binary)},
                         {"source_url", example.at("source_url")}, {"license", example.at("license")},
                         {"license_url", example.at("license_url")}, {"credit", example.at("credit")},
                         {"output_sha256", row.at("output_sha256")}, {"triangles", json::array()}};
             size_t previous = SIZE_MAX;
             for (size_t i = 0; i < rows.size(); ++i) {
-                auto g = geometry(gltf, binary, i);
+                auto g = geometry(gltf, binary, gltf.at("nodes").at(i).at("mesh").get<size_t>());
                 size_t triangles = g.indices.size() / 12;
                 if (triangles != rows[i].at("triangles") || triangles > previous ||
                     !rows[i].at("source").at("passed").get<bool>() ||
@@ -192,6 +195,15 @@ int main(int argc, char** argv) {
             board["scores"][name] = summary;
         }
         board["microbench"] = read_json(root / "research/microbench-optimized.json");
+        if(config.contains("round4")) {
+            board["round4"]=read_json(root/config.at("round4").get<std::string>());
+            for(auto& item:board["round4"].at("comparisons")) {
+                std::string name=item.at("run");
+                auto summary=read_json(root/"research/runs"/name/"summary.json");
+                if(!summary.at("complete").get<bool>())throw std::runtime_error("Incomplete comparison");
+                board["scores"][name]=summary;
+            }
+        }
         auto text = read_text(root / "tools/board.html");
         auto data = board.dump();
         // Protect the script element even if a future caption contains HTML.
@@ -200,11 +212,11 @@ int main(int argc, char** argv) {
         auto position = text.find(token);
         if (position == std::string::npos) throw std::runtime_error("Missing board data token");
         text.replace(position, std::char_traits<char>::length(token), data);
-        auto output = root / "research/board/index.html";
+        auto output = output_dir / "index.html";
         std::ofstream html(output, std::ios::binary);
         html << text;
         if (!html) throw std::runtime_error("Cannot write board");
-        std::ofstream manifest_file(root / "research/board/manifest.json");
+        std::ofstream manifest_file(output_dir / "manifest.json");
         manifest_file << manifest.dump(2) << '\n';
         if (!manifest_file) throw std::runtime_error("Cannot write board manifest");
         std::cout << output << " (" << text.size() << " bytes; " << board["assets"].size()

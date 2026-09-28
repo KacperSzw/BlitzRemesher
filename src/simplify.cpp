@@ -32,13 +32,15 @@ static_assert(sizeof(PositionEntry)==16);
 struct Candidate {double cost;uint32_t u,v;Vec3 point;};
 static_assert(sizeof(Candidate)==32);
 struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces;};
-constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8;
+constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8,LinkNeighbor=16,LinkOpposite=32;
 }
 static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* trace) {
     if(auto error=validate(source);!error.empty())throw std::invalid_argument(error);
-    if(unsigned(settings.output)>1||unsigned(settings.objective)>2||!std::isfinite(settings.normal_weight)||settings.normal_weight<0
+    if(unsigned(settings.output)>1||unsigned(settings.objective)>3||!std::isfinite(settings.normal_weight)||settings.normal_weight<0
        ||!std::isfinite(settings.regularization)||settings.regularization<0)throw std::invalid_argument("invalid reduction settings");
     Lod result;result.shared_vertices=settings.output==OutputMode::Reuse;
+    auto stats=settings.statistics;
+    if(stats){*stats={};stats->initial_triangles=uint32_t(source.triangles());stats->final_triangles=stats->initial_triangles;}
     Mesh mesh=copy_mesh(source);const size_t n=mesh.positions.size();
     std::vector<uint32_t> history;
     if(trace){history.resize(n);std::iota(history.begin(),history.end(),0);trace->faces.resize(source.triangles());std::iota(trace->faces.begin(),trace->faces.end(),0);trace->positions=mesh.positions;}
@@ -118,6 +120,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     std::vector<uint64_t> edges;std::vector<Candidate> candidates;
     for(unsigned pass=0;pass<128 && mesh.indices.size()/3>target;++pass) {
         if(settings.cancelled&&settings.cancelled())break;
+        if(stats){++stats->passes;stats->last_candidates=0;stats->last_locked_edges=0;}
         std::fill(offsets.begin(),offsets.end(),0);
         for(auto i:mesh.indices)++offsets[i+1];
         std::partial_sum(offsets.begin(),offsets.end(),offsets.begin());
@@ -136,13 +139,15 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
             size_t j=i+1;while(j<edges.size()&&edges[j]==edges[i])++j;
             auto u=uint32_t(edges[i]>>32),v=uint32_t(edges[i]);
             if(j-i==1){flags[u]|=Boundary;flags[v]|=Boundary;}
-            if(j-i>2){flags[u]|=Locked;flags[v]|=Locked;}
+            // An optional topology-changing proposal. Attribute/material locks,
+            // face orientation checks and all generate() visual gates still apply.
+            if(j-i>2&&settings.objective!=Objective::TopologyRelaxed){flags[u]|=Locked;flags[v]|=Locked;}
             i=j;
         }
         for(size_t i=0;i<edges.size();) {
             size_t j=i+1;while(j<edges.size()&&edges[j]==edges[i])++j;
             auto u=uint32_t(edges[i]>>32),v=uint32_t(edges[i]);i=j;
-            if((flags[u]|flags[v])&Locked)continue;
+            if((flags[u]|flags[v])&Locked){if(stats)++stats->last_locked_edges;continue;}
             Quadric sum=q[u];sum+=q[v];
             if((flags[v]&Boundary)&&!(flags[u]&Boundary))std::swap(u,v);
             Vec3 point=p[u];double cost=sum.cost(point);
@@ -159,13 +164,35 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
             }
             candidates.push_back({cost,u,v,point});
         }
+        if(stats){stats->last_candidates=uint32_t(candidates.size());if(pass==0)stats->first_locked_edges=stats->last_locked_edges;}
         std::sort(candidates.begin(),candidates.end(),[](auto& a,auto& b){if(a.cost!=b.cost)return a.cost<b.cost;return std::pair(a.u,a.v)<std::pair(b.u,b.v);});
         std::iota(map.begin(),map.end(),0);
         size_t remaining=mesh.indices.size()/3,collapsed=0;
         for(auto& c:candidates) {
             if(remaining<=target)break;
             auto u=c.u,v=c.v;if((flags[u]|flags[v])&Used)continue;
-            bool valid=true;size_t removed=0;
+            if(stats)++stats->attempts;
+            if(settings.objective!=Objective::TopologyRelaxed) {
+                // Reject contractions that would create a new edge with >2
+                // incident faces. Otherwise these edges become permanent locks
+                // and prevent useful coarse LODs later in the reduction.
+                unsigned edge_faces=0;
+                for(uint32_t k=offsets[u];k<offsets[u+1];++k) {
+                    auto f=adj[k];bool opposite=false;
+                    for(int j=0;j<3;++j)opposite|=mesh.indices[f*3+j]==v;
+                    edge_faces+=opposite;
+                    for(int j=0;j<3;++j){auto a=mesh.indices[f*3+j];if(a!=u&&a!=v)flags[a]|=LinkNeighbor|(opposite?LinkOpposite:0);}
+                }
+                bool link_ok=!(flags[u]&Boundary)||!(flags[v]&Boundary)||edge_faces==1;
+                for(uint32_t k=offsets[v];k<offsets[v+1]&&link_ok;++k)for(int j=0;j<3;++j) {
+                    auto a=mesh.indices[adj[k]*3+j];
+                    if(a!=u&&a!=v&&(flags[a]&LinkNeighbor)&&!(flags[a]&LinkOpposite))link_ok=false;
+                }
+                for(uint32_t k=offsets[u];k<offsets[u+1];++k)for(int j=0;j<3;++j)
+                    flags[mesh.indices[adj[k]*3+j]]&=uint8_t(~(LinkNeighbor|LinkOpposite));
+                if(!link_ok){if(stats)++stats->link_rejections;continue;}
+            }
+            bool valid=true,bad_geometry=false,bad_uv=false;size_t removed=0;
             for(auto vertex:{u,v}) for(uint32_t k=offsets[vertex];k<offsets[vertex+1]&&valid;++k) {
                 auto f=adj[k];uint32_t a[3]={map[mesh.indices[3*f]],map[mesh.indices[3*f+1]],map[mesh.indices[3*f+2]]};
                 bool hasu=a[0]==u||a[1]==u||a[2]==u,hasv=a[0]==v||a[1]==v||a[2]==v;
@@ -173,16 +200,18 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 Vec3 oldn=cross(p[a[1]]-p[a[0]],p[a[2]]-p[a[0]]);
                 Vec3 np[3];for(int j=0;j<3;++j)np[j]=(a[j]==u||a[j]==v)?c.point:p[a[j]];
                 Vec3 newn=cross(np[1]-np[0],np[2]-np[0]);
-                if(length(newn)<1e-15||dot(oldn,newn)<=.05*length(oldn)*length(newn))valid=false;
+                if(length(newn)<1e-15||dot(oldn,newn)<=.05*length(oldn)*length(newn)){valid=false;bad_geometry=true;}
                 if(!mesh.uv.empty()&&settings.output==OutputMode::Rebuild) {
                     auto edge=p[v]-p[u];double len2=dot(edge,edge),t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
                     auto ua=mesh.uv[u],va=mesh.uv[v];Vec2 replacement{float(ua.x*(1-t)+va.x*t),float(ua.y*(1-t)+va.y*t)};
                     Vec2 old[3],now[3];for(int j=0;j<3;++j){old[j]=mesh.uv[a[j]];now[j]=(a[j]==u||a[j]==v)?replacement:old[j];}
                     auto area=[](Vec2* t){return (double(t[1].x)-t[0].x)*(double(t[2].y)-t[0].y)-(double(t[1].y)-t[0].y)*(double(t[2].x)-t[0].x);};
-                    double before=area(old),after=area(now);if(std::abs(before)>1e-20&&before*after<=0)valid=false;
+                    double before=area(old),after=area(now);if(std::abs(before)>1e-20&&before*after<=0){valid=false;bad_uv=true;}
                 }
             }
+            if(stats){stats->geometry_rejections+=bad_geometry;stats->uv_rejections+=bad_uv;}
             if(!valid||!removed||remaining<target+removed)continue;
+            if(stats)++stats->collapsed;
             if(settings.output==OutputMode::Rebuild) {
                 auto edge=p[v]-p[u];double len2=dot(edge,edge);
                 double t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
@@ -223,6 +252,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     } else {
         mesh.positions.clear();mesh.normals.clear();mesh.uv.clear();mesh.colors.clear();mesh.tangents.clear();
     }
+    if(stats)stats->final_triangles=uint32_t(mesh.indices.size()/3);
     result.data=std::move(mesh);return result;
 }
 Lod reduce(MeshView source,const ReduceSettings& settings) {

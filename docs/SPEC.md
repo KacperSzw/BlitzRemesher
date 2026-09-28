@@ -48,6 +48,21 @@ No C++ exception, STL or cross-module allocator ownership crosses the ABI.
 Initial file formats: glTF/GLB, OBJ, PLY, STL. glTF output defaults to LOD0
 and includes a JSON LOD manifest; reuse output shares source accessors.
 
+Scheduled and runtime LOD counts are separate. Exact consecutive duplicates
+share a runtime mesh, exposed through C++ runtime_levels and additive C ABI
+queries. Scheduled nodes/manifest rows retain their original thresholds,
+source checks and adjacent checks. No score denominator changes. No merge
+based only on triangle count or approximate visual similarity.
+
+Optional render-cost diagnostics use fixed pixel centers, a top-left fill
+rule, material culling and aligned 2x2 quads. For each primitive, count
+covered samples P and touched quads Q before depth testing. P/(4Q) is geometric
+lane utilization, not measured shader occupancy. P/unique covered pixels is
+pre-depth geometric overlap. Projected area below 1 or 4 pixel squared and
+zero-sample triangles describe setup pressure without assigning hardware time.
+Compare source and reduced foreground coverage at the same size. These values
+do not affect the visual gates or SCORE.
+
 Core storage: float streams, double quadric accumulation/solving, checked u32
 IDs, smaller bounded fields and packed flags. Scalar reference before AVX2;
 runtime feature dispatch and scalar fallback. Stream raster data and bound

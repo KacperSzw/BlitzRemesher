@@ -2,3 +2,5 @@
 third_party/*.h -whitespace
 # Portable presentation artifact with embedded CC0 mesh geometry.
 research/board/index.html linguist-generated=true
+# Exact downloaded evidence: preserve bytes and avoid giant third-party HTML diffs.
+research/foliage/provenance/** -text -diff -whitespace

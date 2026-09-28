@@ -1,0 +1,120 @@
+{
+  "date": "28 September 2026",
+  "run": "r4-final-s512-cap8",
+  "examples": [
+    {
+      "id": "ph_moon_rock_02",
+      "name": "Moon rock",
+      "category": "Rock",
+      "credit": "Poly Haven · Moon Rock 02",
+      "color": "#ba9066",
+      "yaw": 0.62,
+      "pitch": 0.36,
+      "note": "Rock surface detail gives way to the permitted distant silhouette."
+    },
+    {
+      "id": "ph_dead_quiver_trunk",
+      "name": "Quiver tree trunk",
+      "category": "Organic",
+      "credit": "Poly Haven · Dead Quiver Trunk",
+      "color": "#87996d",
+      "yaw": 0.6,
+      "pitch": 0.12,
+      "note": "The extreme tail passes pixel-distance gates but loses filled area."
+    },
+    {
+      "id": "ph_metal_stool_02",
+      "name": "Metal stool",
+      "category": "Manufactured",
+      "credit": "Poly Haven · Metal Stool 02",
+      "color": "#548f96",
+      "yaw": 0.64,
+      "pitch": 0.28,
+      "note": "This asset still needs better intermediate proposals."
+    },
+    {
+      "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+      "name": "Bell X-1",
+      "category": "Complex scan",
+      "credit": "Smithsonian · Bell X-1",
+      "color": "#8495b1",
+      "yaw": 0.68,
+      "pitch": 0.65,
+      "note": "Repeated audit slots can share one runtime mesh."
+    },
+    {
+      "id": "ph_grass_medium_02_clump_4",
+      "name": "Grass clump",
+      "category": "Nature · grass",
+      "color": "#89976b",
+      "output": "rebuild",
+      "yaw": 0.5,
+      "pitch": 0.35,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Poly Haven",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    },
+    {
+      "id": "ph_fern_02_clump_1",
+      "name": "Fern fronds",
+      "category": "Nature · fern",
+      "color": "#63885a",
+      "output": "reuse",
+      "yaw": 0.5,
+      "pitch": 0.32,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Poly Haven",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    },
+    {
+      "id": "ph_shrub_02_clump_1",
+      "name": "Leafy shrub",
+      "category": "Nature · shrub",
+      "color": "#7e966b",
+      "output": "rebuild",
+      "yaw": 0.5,
+      "pitch": 0.2,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Poly Haven",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    },
+    {
+      "id": "loaf_tree_1",
+      "name": "Broadleaf tree",
+      "category": "Nature · tree",
+      "color": "#809b64",
+      "output": "rebuild",
+      "yaw": 0.5,
+      "pitch": 0.1,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Loaf · Foliage_1",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    },
+    {
+      "id": "ph_flower_heliophila_clump_3",
+      "name": "Flowering ground cover",
+      "category": "Nature · flowers",
+      "color": "#9f9871",
+      "output": "rebuild",
+      "yaw": 0.5,
+      "pitch": 0.55,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Poly Haven",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    },
+    {
+      "id": "loaf_leafstick3_3",
+      "name": "Leafy branch",
+      "category": "Nature · branch",
+      "color": "#6b8c68",
+      "output": "rebuild",
+      "yaw": 0.5,
+      "pitch": 0.15,
+      "run": "foliage-card-geometry-v2",
+      "credit": "Loaf · Foliage_1",
+      "note": "Card geometry coverage; texture opacity and shading are not audited."
+    }
+  ],
+  "round4": "research/round4/board/summary.json",
+  "foliage": "research/foliage/manifest.json"
+}

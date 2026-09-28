@@ -131,7 +131,9 @@ int benchmark_main(int argc,char** argv) {
         if(k=="--split")split=argv[i+1];else if(k=="--limit")limit=std::stoull(argv[i+1]);else if(k=="--minutes")minutes=std::stod(argv[i+1]);
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
-    auto corpus=read(manifest);auto settings=settings_json(read(config));auto normalized=settings_json(settings);
+    auto corpus=read(manifest);
+    if(!corpus.value("benchmark_eligible",true))throw std::invalid_argument("collection-only assets: opacity-aware benchmarking is deferred");
+    auto settings=settings_json(read(config));auto normalized=settings_json(settings);
     auto storage=reduction_storage();
     json metadata={{"version",2},{"input_format","linear-rgba8-v2"},{"quadric_bytes",storage.quadric_bytes},{"candidate_bytes",storage.candidate_bytes},
       {"packed_coverage",packed_coverage_enabled()},{"stage_timing",true},{"manifest_sha256",file_hash(manifest)},{"config",normalized},{"config_sha256",digest(normalized.dump())},

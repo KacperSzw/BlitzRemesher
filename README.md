@@ -171,12 +171,19 @@ Measured runs, including negative findings, are in
 [RESULTS.md](research/RESULTS.md) and [EXPERIMENTS.md](research/EXPERIMENTS.md).
 The latest [Round 4 report](research/round4/REPORT.md) studies 128/512/1024 px
 starting sizes, source caps, six/eight levels and final-LOD rendering costs.
-The [visual board](research/round4/board/index.html) shows four actual
+The [visual board](research/foliage/board/index.html) shows four actual
 512→16 px chains with rotation, wireframe, silhouette, source comparison and
-an exact-duplicate runtime toggle. It opens offline without a server.
-[PNG](research/round4/board/board.png) and
-[PDF](research/round4/board/board.pdf) versions are available for sharing.
-See [board reproduction and provenance](research/round4/board/README.md).
+an exact-duplicate runtime toggle, measured bake seconds and vertex-storage
+labels. It also includes six newly baked nature chains from the 40-model CC0
+[foliage library](research/foliage/README.md), with a
+[complete source catalog](research/foliage/board/catalog.html).
+It opens offline without a server. [PNG](research/foliage/board/board.png) and
+[PDF](research/foliage/board/board.pdf) versions are available for sharing.
+Nature chains audit full card geometry; texture opacity and shading are excluded,
+and no foliage SCORE is reported. The first four chains and score charts are
+archived protocol v1 Round 4 observations; the six nature rows use the current
+library. See [nature measurements](research/foliage/CHAINS.md) and
+[board reproduction](research/foliage/README.md).
 The earlier [32→16 px board](research/board/index.html) remains archived.
 
 ## Validation

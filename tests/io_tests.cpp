@@ -61,6 +61,10 @@ int main() {
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"].size()==1&&j["nodes"].size()==3&&j["nodes"][2]["mesh"]==0);
+        // Collection-only foliage inspection must not relax the production
+        // importer's opaque-material contract.
+        for(auto mode:{"MASK","BLEND"}){auto alpha=j;alpha["materials"]=nlohmann::json::array({{{"alphaMode",mode},{"alphaCutoff",.41}}});alpha["meshes"][0]["primitives"][0]["material"]=0;
+            std::ofstream(dir/"gltf/alpha.gltf")<<alpha.dump();throws([&]{load_gltf_mesh(dir/"gltf/alpha.gltf",0);});}
         j["nodes"][0]["scale"]={-1,2,3};std::ofstream(dir/"gltf/chain.gltf")<<j.dump();
         g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.positions[1].x==-1);CHECK(g.positions[2].y==2);CHECK(g.indices[1]==2);
         auto n=cross(g.positions[g.indices[1]]-g.positions[0],g.positions[g.indices[2]]-g.positions[0]);CHECK(dot(n,g.normals[0])>0);

@@ -25,8 +25,8 @@ int main(int argc,char** argv) {
             else if(k=="--out")out=argv[i+1];else if(k=="--pixels")pixels=std::stod(argv[i+1]);else if(k=="--limit")limit=std::stod(argv[i+1]);else throw std::invalid_argument("unknown option "+k);}
         s.cancelled=[]{return stopped!=0;};auto m=load_mesh(argv[2]);
         if(command=="simplify") {
-            auto begin=std::chrono::steady_clock::now();auto r=generate(m.view(),s);save_chain(r,out);
-            auto j=result_json(r);j["seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();j["output"]=out.string();std::cout<<j.dump(2)<<'\n';return r.status==Status::Complete?0:2;
+            auto begin=std::chrono::steady_clock::now();auto r=generate(m.view(),s);auto generated=std::chrono::steady_clock::now();save_chain(r,out);auto exported=std::chrono::steady_clock::now();
+            auto j=result_json(r);j["seconds"]=std::chrono::duration<double>(exported-begin).count();j["generation_seconds"]=std::chrono::duration<double>(generated-begin).count();j["export_seconds"]=std::chrono::duration<double>(exported-generated).count();j["output"]=out.string();std::cout<<j.dump(2)<<'\n';return r.status==Status::Complete?0:2;
         }
         if(command=="evaluate") {
             if(argc<4)throw std::invalid_argument("evaluate requires two inputs");auto candidate=load_mesh(argv[3]);

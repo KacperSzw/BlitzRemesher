@@ -13,6 +13,7 @@
 #include <map>
 #include <set>
 #include <regex>
+#include "foliage.hpp"
 using json=nlohmann::json;
 namespace fs=std::filesystem;
 static constexpr uint64_t max_file=1024ull*1024*1024;
@@ -131,6 +132,7 @@ static json smithsonian(const json& row,const fs::path& root) {
       {"archive_sha256",ziphash},{"bytes",bytes.size()},{"variant",c.value("quality","unknown")},{"opaque",true}};
 }
 int main(int argc,char** argv) try {
+    if(argc>1&&std::string_view(argv[1]).starts_with("foliage-"))return foliage::main(argc-1,argv+1);
     fs::path root=argc>1?argv[1]:"data";
     const auto start=std::chrono::steady_clock::now();
     curl_global_init(CURL_GLOBAL_DEFAULT);

@@ -122,24 +122,40 @@ int main(int argc, char** argv) {
         json manifest{{"version", 1}, {"run", run}, {"run_sha256", meta.at("run_sha256")},
                       {"rendering", "Untextured geometric face normals; presentation views are not audit cameras"},
                       {"assets", json::array()}};
+        const auto collection=config.contains("foliage")?read_json(root/config.at("foliage").get<std::string>()):json();
+        const auto collection_text=collection.dump();const auto collection_hash=sha256({reinterpret_cast<const uint8_t*>(collection_text.data()),collection_text.size()});
+        unsigned foliage_chains=0;
         for (auto example : config.at("examples")) {
             const auto id = example.at("id").get<std::string>();
-            auto row = read_json(run_dir / "rows" / (id + ".json"));
+            const auto example_run=example.value("run",run);const auto example_dir=root/"research/runs"/example_run;
+            const auto example_meta=example_run==run?meta:read_json(example_dir/"metadata.json");
+            auto row = read_json(example_dir / "rows" / (id + ".json"));
             if (!row.at("complete").get<bool>() || row.value("failed", false) ||
-                row.at("run_sha256") != meta.at("run_sha256"))
+                row.at("run_sha256") != example_meta.at("run_sha256"))
                 throw std::runtime_error("Incomplete or mismatched example row: " + id);
-            auto gltf = read_json(run_dir / "meshes" / id / "chain.gltf");
-            auto storage = read_text(run_dir / "meshes" / id / "chain.bin");
+            auto gltf_text=read_text(example_dir / "meshes" / id / "chain.gltf");auto gltf=json::parse(gltf_text);
+            auto storage = read_text(example_dir / "meshes" / id / "chain.bin");
             std::span<const uint8_t> binary(reinterpret_cast<const uint8_t*>(storage.data()), storage.size());
             auto source = std::find_if(corpus.at("assets").begin(), corpus.at("assets").end(),
                                       [&](const auto& a) { return a.at("id") == id; });
-            if (source == corpus.at("assets").end()) throw std::runtime_error("Missing provenance: " + id);
-            example["source_url"] = source->at("source_url");
-            const auto identity = source->at("source_identity").get<std::string>();
-            if (scan_rights.contains(identity)) example["source_url"] = scan_rights.at(identity).at("url");
-            example["license"] = source->at("license");
-            example["license_url"] = source->at("license_url");
+            if (source == corpus.at("assets").end()) {
+                if(collection.is_null()||example_meta.value("scope",std::string())!="foliage_card_geometry_only"||example_meta.at("source_manifest_sha256")!=collection_hash||row.at("output_sha256")!=sha256(binary)||row.at("gltf_sha256")!=sha256({reinterpret_cast<const uint8_t*>(gltf_text.data()),gltf_text.size()}))throw std::runtime_error("Missing foliage chain provenance: "+id);
+                auto asset=std::find_if(collection.at("assets").begin(),collection.at("assets").end(),[&](const auto& a){return a.at("id")==id;});
+                if(asset==collection.at("assets").end()||asset->at("geometry").at("triangles")!=row.at("result").at("lods").at(0).at("triangles"))throw std::runtime_error("Missing foliage source");
+                auto package=std::find_if(collection.at("packages").begin(),collection.at("packages").end(),[&](const auto& p){return p.at("id")==asset->at("package");});
+                if(package==collection.at("packages").end())throw std::runtime_error("Missing foliage package");
+                example["source_url"]=package->at("source_url");example["license"]=package->at("license");example["license_url"]=package->at("license_url");example["audit_scope"]="card_geometry_only";++foliage_chains;
+            }else{
+                example["source_url"] = source->at("source_url");
+                const auto identity = source->at("source_identity").get<std::string>();
+                if (scan_rights.contains(identity)) example["source_url"] = scan_rights.at(identity).at("url");
+                example["license"] = source->at("license");example["license_url"] = source->at("license_url");example["audit_scope"]="archived_opaque_v1";
+            }
+            example["run"]=example_run;
             example["ratio"] = row.at("ratio");
+            example["output_mode"] = row.contains("output_mode")?row.at("output_mode"):example_meta.at("config").at("output");
+            example["bake_seconds"] = row.value("generation_seconds",row.at("seconds").get<double>());
+            example["bake_timing_scope"] = row.contains("generation_seconds") ? "generation_and_audit" : "import_generation_audit_export";
             example["lods"] = json::array();
             auto rows = row.at("result").at("lods");
             if (gltf.at("nodes").size() != rows.size()) throw std::runtime_error("LOD node count mismatch");
@@ -147,7 +163,9 @@ int main(int argc, char** argv) {
             json record{{"id", id}, {"chain_bin_sha256", sha256(binary)},
                         {"source_url", example.at("source_url")}, {"license", example.at("license")},
                         {"license_url", example.at("license_url")}, {"credit", example.at("credit")},
-                        {"output_sha256", row.at("output_sha256")}, {"triangles", json::array()}};
+                        {"output_sha256", row.at("output_sha256")}, {"triangles", json::array()},
+                        {"output_mode",example.at("output_mode")},{"bake_seconds",example.at("bake_seconds")},
+                        {"bake_timing_scope",example.at("bake_timing_scope")},{"run",example_run},{"run_sha256",example_meta.at("run_sha256")},{"audit_scope",example.at("audit_scope")}};
             size_t previous = SIZE_MAX;
             for (size_t i = 0; i < rows.size(); ++i) {
                 auto g = geometry(gltf, binary, gltf.at("nodes").at(i).at("mesh").get<size_t>());
@@ -186,6 +204,7 @@ int main(int argc, char** argv) {
             board["assets"].push_back(std::move(example));
             manifest["assets"].push_back(std::move(record));
         }
+        board["foliage_chains"]=foliage_chains;
         board["scores"] = json::object();
         for (const auto* name : {"round1-qem", "baseline-meshopt", "baseline-fastquadric",
                                 "baseline-cgal-probabilistic", "round2-coupled",
@@ -203,6 +222,30 @@ int main(int argc, char** argv) {
                 if(!summary.at("complete").get<bool>())throw std::runtime_error("Incomplete comparison");
                 board["scores"][name]=summary;
             }
+        }
+        if(config.contains("foliage")) {
+            auto file=root/config.at("foliage").get<std::string>();
+            auto checks=read_json(file.parent_path()/"previews/checks.json");auto canonical=collection.dump();
+            const auto hash=sha256({reinterpret_cast<const uint8_t*>(canonical.data()),canonical.size()});
+            if(checks.at("manifest_sha256")!=hash||collection.at("benchmark_eligible")!=false||!checks.at("errors").empty())throw std::runtime_error("Unverified foliage previews");
+            json gallery={{"assets",json::array()},{"targets",collection.at("targets")},{"manifest_sha256",hash}};
+            for(auto& asset:collection.at("assets")) {
+                const std::string id=asset.at("id");if(id.find_first_of("/\\.")!=id.npos)throw std::runtime_error("Invalid foliage id");
+                auto package=std::find_if(collection.at("packages").begin(),collection.at("packages").end(),[&](const auto& p){return p.at("id")==asset.at("package");});
+                auto checked=std::find_if(checks.at("assets").begin(),checks.at("assets").end(),[&](const auto& a){return a.at("id")==id;});
+                auto png=read_text(file.parent_path()/"previews"/(id+".png"));std::span<const uint8_t> bytes(reinterpret_cast<const uint8_t*>(png.data()),png.size());
+                if(package==collection.at("packages").end()||checked==checks.at("assets").end()||checked->at("sha256")!=sha256(bytes)||checked->at("triangles")!=asset.at("geometry").at("triangles"))throw std::runtime_error("Foliage preview provenance mismatch");
+                gallery["assets"].push_back({{"id",id},{"name",asset.at("name")},{"category",asset.at("category")},{"triangles",asset.at("geometry").at("triangles")},
+                    {"image","data:image/png;base64,"+base64(bytes)},{"source_url",package->at("source_url")},{"license_url",package->at("license_url")},{"license",package->at("license")},
+                    {"requires_material_setup",asset.at("requires_material_setup")},{"material_setup",asset.at("material_setup")},{"preview_note",asset.at("preview").at("mask_note")},
+                    {"source_group",asset.at("source_group")},{"model",asset.at("model")},{"selector",asset.at("selector")},{"bake_seconds",nullptr},{"bake_status","not_baked"},{"vertex_mode","original_source"}});
+            }
+            auto catalog=read_text(root/"tools/foliage.html"),serialized=gallery.dump();
+            for(size_t p=0;(p=serialized.find('<',p))!=std::string::npos;p+=6)serialized.replace(p,1,"\\u003c");
+            auto marker=catalog.find("@FOLIAGE_DATA@");if(marker==catalog.npos)throw std::runtime_error("Missing catalog data token");catalog.replace(marker,14,serialized);
+            std::ofstream catalog_file(output_dir/"catalog.html");catalog_file<<catalog;if(!catalog_file)throw std::runtime_error("Cannot write foliage catalog");
+            board["foliage_source_count"]=collection.at("assets").size();
+            manifest["foliage"]={{"manifest_sha256",hash},{"chain_count",foliage_chains},{"audit_scope","Opaque card geometry only; opacity and shading are not audited; no SCORE"}};
         }
         auto text = read_text(root / "tools/board.html");
         auto data = board.dump();

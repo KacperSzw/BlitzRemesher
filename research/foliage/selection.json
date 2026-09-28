@@ -1,0 +1,1248 @@
+{
+  "version": 1,
+  "date": "2026-09-28",
+  "targets": {
+    "grass": 8,
+    "fern": 6,
+    "shrub": 8,
+    "tree": 6,
+    "reed_flower_weed": 6,
+    "leafy_branch": 6
+  },
+  "assets": [
+    {
+      "id": "loaf_grass_1",
+      "name": "Grass 1",
+      "category": "grass",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 61
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Grass_1",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_grass_3",
+      "name": "Grass 3",
+      "category": "grass",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 62
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Grass_3",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_grass_4",
+      "name": "Grass 4",
+      "category": "grass",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 68
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Grass_4",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "ph_grass_medium_02_clump_1",
+      "name": "Grass Medium 02 · 1",
+      "category": "grass",
+      "package": "ph_grass_medium_02",
+      "model": "packages/ph_grass_medium_02/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_grass_medium_02:mesh:0",
+      "source_group": "ph_grass_medium_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_grass_medium_02/opacity/grass_medium_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_grass_medium_02_clump_2",
+      "name": "Grass Medium 02 · 2",
+      "category": "grass",
+      "package": "ph_grass_medium_02",
+      "model": "packages/ph_grass_medium_02/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_grass_medium_02:mesh:1",
+      "source_group": "ph_grass_medium_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_grass_medium_02/opacity/grass_medium_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_grass_medium_02_clump_3",
+      "name": "Grass Medium 02 · 3",
+      "category": "grass",
+      "package": "ph_grass_medium_02",
+      "model": "packages/ph_grass_medium_02/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_grass_medium_02:mesh:2",
+      "source_group": "ph_grass_medium_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_grass_medium_02/opacity/grass_medium_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_grass_medium_02_clump_4",
+      "name": "Grass Medium 02 · 4",
+      "category": "grass",
+      "package": "ph_grass_medium_02",
+      "model": "packages/ph_grass_medium_02/source.gltf",
+      "selector": {
+        "mesh": 3
+      },
+      "authored_identity": "ph_grass_medium_02:mesh:3",
+      "source_group": "ph_grass_medium_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_grass_medium_02/opacity/grass_medium_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_grass_medium_02_clump_5",
+      "name": "Grass Medium 02 · 5",
+      "category": "grass",
+      "package": "ph_grass_medium_02",
+      "model": "packages/ph_grass_medium_02/source.gltf",
+      "selector": {
+        "mesh": 4
+      },
+      "authored_identity": "ph_grass_medium_02:mesh:4",
+      "source_group": "ph_grass_medium_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_grass_medium_02/opacity/grass_medium_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.35,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "liefz_fern_01",
+      "name": "Liefz fern · 01",
+      "category": "fern",
+      "package": "itch_liefz_fern",
+      "model": "packages/itch_liefz_fern/content/Fern_Asset/model/Fern_00_01.obj",
+      "selector": {
+        "shape": 0
+      },
+      "authored_identity": "liefz_lily:Fern_00_01",
+      "source_group": "liefz_lily_fern",
+      "allow_missing_mtl": true,
+      "card_evidence": "Distinct author-supplied frond arrangements (48 and 150 triangles), not the paired mirror/rotation variants. UV-mapped curved frond sheets use the included RGBA fern atlas.",
+      "requires_material_setup": true,
+      "material_setup": "The archive references an absent Fern_01.mtl. Preserve the OBJ; assign the included RGBA atlas to the whole model. Alpha mode, cutoff and sidedness are unspecified by the source.",
+      "opacity_bindings": [
+        {
+          "material": null,
+          "scope": "whole_model",
+          "path": "packages/itch_liefz_fern/content/Fern_Asset/texture/Fern_00.png",
+          "base_color_path": "packages/itch_liefz_fern/content/Fern_Asset/texture/Fern_00.png",
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "flip_v": true,
+        "mask_note": "Sidecar atlas hookup; 0.5 cutoff and two-sided rendering are preview assumptions."
+      }
+    },
+    {
+      "id": "liefz_fern_17",
+      "name": "Liefz fern · 17",
+      "category": "fern",
+      "package": "itch_liefz_fern",
+      "model": "packages/itch_liefz_fern/content/Fern_Asset/model/Fern_00_17.obj",
+      "selector": {
+        "shape": 0
+      },
+      "authored_identity": "liefz_lily:Fern_00_17",
+      "source_group": "liefz_lily_fern",
+      "allow_missing_mtl": true,
+      "card_evidence": "Distinct author-supplied frond arrangements (48 and 150 triangles), not the paired mirror/rotation variants. UV-mapped curved frond sheets use the included RGBA fern atlas.",
+      "requires_material_setup": true,
+      "material_setup": "The archive references an absent Fern_01.mtl. Preserve the OBJ; assign the included RGBA atlas to the whole model. Alpha mode, cutoff and sidedness are unspecified by the source.",
+      "opacity_bindings": [
+        {
+          "material": null,
+          "scope": "whole_model",
+          "path": "packages/itch_liefz_fern/content/Fern_Asset/texture/Fern_00.png",
+          "base_color_path": "packages/itch_liefz_fern/content/Fern_Asset/texture/Fern_00.png",
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "flip_v": true,
+        "mask_note": "Sidecar atlas hookup; 0.5 cutoff and two-sided rendering are preview assumptions."
+      }
+    },
+    {
+      "id": "ph_fern_02_clump_1",
+      "name": "Fern 02 · 1",
+      "category": "fern",
+      "package": "ph_fern_02",
+      "model": "packages/ph_fern_02/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_fern_02:mesh:0",
+      "source_group": "ph_fern_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_fern_02/opacity/fern_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_fern_02_clump_2",
+      "name": "Fern 02 · 2",
+      "category": "fern",
+      "package": "ph_fern_02",
+      "model": "packages/ph_fern_02/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_fern_02:mesh:1",
+      "source_group": "ph_fern_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_fern_02/opacity/fern_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_fern_02_clump_3",
+      "name": "Fern 02 · 3",
+      "category": "fern",
+      "package": "ph_fern_02",
+      "model": "packages/ph_fern_02/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_fern_02:mesh:2",
+      "source_group": "ph_fern_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_fern_02/opacity/fern_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_fern_02_clump_4",
+      "name": "Fern 02 · 4",
+      "category": "fern",
+      "package": "ph_fern_02",
+      "model": "packages/ph_fern_02/source.gltf",
+      "selector": {
+        "mesh": 3
+      },
+      "authored_identity": "ph_fern_02:mesh:3",
+      "source_group": "ph_fern_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_fern_02/opacity/fern_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.32,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_02_clump_1",
+      "name": "Shrub 02 · 1",
+      "category": "shrub",
+      "package": "ph_shrub_02",
+      "model": "packages/ph_shrub_02/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_shrub_02:mesh:0",
+      "source_group": "ph_shrub_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_02/opacity/shrub_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_02_clump_2",
+      "name": "Shrub 02 · 2",
+      "category": "shrub",
+      "package": "ph_shrub_02",
+      "model": "packages/ph_shrub_02/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_shrub_02:mesh:1",
+      "source_group": "ph_shrub_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_02/opacity/shrub_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_02_clump_3",
+      "name": "Shrub 02 · 3",
+      "category": "shrub",
+      "package": "ph_shrub_02",
+      "model": "packages/ph_shrub_02/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_shrub_02:mesh:2",
+      "source_group": "ph_shrub_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_02/opacity/shrub_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_02_clump_4",
+      "name": "Shrub 02 · 4",
+      "category": "shrub",
+      "package": "ph_shrub_02",
+      "model": "packages/ph_shrub_02/source.gltf",
+      "selector": {
+        "mesh": 3
+      },
+      "authored_identity": "ph_shrub_02:mesh:3",
+      "source_group": "ph_shrub_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_02/opacity/shrub_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_03_clump_1",
+      "name": "Shrub 03 · 1",
+      "category": "shrub",
+      "package": "ph_shrub_03",
+      "model": "packages/ph_shrub_03/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_shrub_03:mesh:0",
+      "source_group": "ph_shrub_03",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_03/opacity/shrub_03_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_03_clump_2",
+      "name": "Shrub 03 · 2",
+      "category": "shrub",
+      "package": "ph_shrub_03",
+      "model": "packages/ph_shrub_03/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_shrub_03:mesh:1",
+      "source_group": "ph_shrub_03",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_03/opacity/shrub_03_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_03_clump_3",
+      "name": "Shrub 03 · 3",
+      "category": "shrub",
+      "package": "ph_shrub_03",
+      "model": "packages/ph_shrub_03/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_shrub_03:mesh:2",
+      "source_group": "ph_shrub_03",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_03/opacity/shrub_03_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_shrub_03_clump_4",
+      "name": "Shrub 03 · 4",
+      "category": "shrub",
+      "package": "ph_shrub_03",
+      "model": "packages/ph_shrub_03/source.gltf",
+      "selector": {
+        "mesh": 3
+      },
+      "authored_identity": "ph_shrub_03:mesh:3",
+      "source_group": "ph_shrub_03",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_shrub_03/opacity/shrub_03_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "loaf_tree_1",
+      "name": "Loaf Tree 1",
+      "category": "tree",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "node": 11
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Tree 1",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "One complete authored tree assembly: trunk, twig and leaf child meshes with their original hierarchy transforms. Child pieces are not counted separately. Leaves and twigs use the embedded card atlas.",
+      "requires_material_setup": false,
+      "material_setup": "Original hierarchy, embedded color alpha, MASK 0.5 and double-sided material.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.08,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_tree_3",
+      "name": "Loaf Tree 3",
+      "category": "tree",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "node": 5
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Tree 3",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "One complete authored tree assembly: trunk, twig and leaf child meshes with their original hierarchy transforms. Child pieces are not counted separately. Leaves and twigs use the embedded card atlas.",
+      "requires_material_setup": false,
+      "material_setup": "Original hierarchy, embedded color alpha, MASK 0.5 and double-sided material.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.08,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_tree_5",
+      "name": "Loaf Tree 5",
+      "category": "tree",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "node": 2
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:Tree 5",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "One complete authored tree assembly: trunk, twig and leaf child meshes with their original hierarchy transforms. Child pieces are not counted separately. Leaves and twigs use the embedded card atlas.",
+      "requires_material_setup": false,
+      "material_setup": "Original hierarchy, embedded color alpha, MASK 0.5 and double-sided material.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.08,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "ph_pine_sapling_small_clump_1",
+      "name": "Pine Sapling Small · 1",
+      "category": "tree",
+      "package": "ph_pine_sapling_small",
+      "model": "packages/ph_pine_sapling_small/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_pine_sapling_small:mesh:0",
+      "source_group": "ph_pine_sapling_small",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 1,
+          "path": "packages/ph_pine_sapling_small/opacity/pine_sapling_small_twig_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "twig_alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_pine_sapling_small_clump_2",
+      "name": "Pine Sapling Small · 2",
+      "category": "tree",
+      "package": "ph_pine_sapling_small",
+      "model": "packages/ph_pine_sapling_small/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_pine_sapling_small:mesh:1",
+      "source_group": "ph_pine_sapling_small",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 1,
+          "path": "packages/ph_pine_sapling_small/opacity/pine_sapling_small_twig_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "twig_alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_pine_sapling_small_clump_3",
+      "name": "Pine Sapling Small · 3",
+      "category": "tree",
+      "package": "ph_pine_sapling_small",
+      "model": "packages/ph_pine_sapling_small/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_pine_sapling_small:mesh:2",
+      "source_group": "ph_pine_sapling_small",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 1,
+          "path": "packages/ph_pine_sapling_small/opacity/pine_sapling_small_twig_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "twig_alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.12,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_flower_heliophila_clump_1",
+      "name": "Flower Heliophila · 1",
+      "category": "reed_flower_weed",
+      "package": "ph_flower_heliophila",
+      "model": "packages/ph_flower_heliophila/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_flower_heliophila:mesh:0",
+      "source_group": "ph_flower_heliophila",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_flower_heliophila/opacity/flower_heliophila_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_flower_heliophila_clump_2",
+      "name": "Flower Heliophila · 2",
+      "category": "reed_flower_weed",
+      "package": "ph_flower_heliophila",
+      "model": "packages/ph_flower_heliophila/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_flower_heliophila:mesh:1",
+      "source_group": "ph_flower_heliophila",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_flower_heliophila/opacity/flower_heliophila_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_flower_heliophila_clump_3",
+      "name": "Flower Heliophila · 3",
+      "category": "reed_flower_weed",
+      "package": "ph_flower_heliophila",
+      "model": "packages/ph_flower_heliophila/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_flower_heliophila:mesh:2",
+      "source_group": "ph_flower_heliophila",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_flower_heliophila/opacity/flower_heliophila_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": null,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; 0.5 cutoff is a preview assumption."
+      }
+    },
+    {
+      "id": "ph_weed_plant_02_clump_1",
+      "name": "Weed Plant 02 · 1",
+      "category": "reed_flower_weed",
+      "package": "ph_weed_plant_02",
+      "model": "packages/ph_weed_plant_02/source.gltf",
+      "selector": {
+        "mesh": 0
+      },
+      "authored_identity": "ph_weed_plant_02:mesh:0",
+      "source_group": "ph_weed_plant_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_weed_plant_02/opacity/weed_plant_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_weed_plant_02_clump_2",
+      "name": "Weed Plant 02 · 2",
+      "category": "reed_flower_weed",
+      "package": "ph_weed_plant_02",
+      "model": "packages/ph_weed_plant_02/source.gltf",
+      "selector": {
+        "mesh": 1
+      },
+      "authored_identity": "ph_weed_plant_02:mesh:1",
+      "source_group": "ph_weed_plant_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_weed_plant_02/opacity/weed_plant_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "ph_weed_plant_02_clump_3",
+      "name": "Weed Plant 02 · 3",
+      "category": "reed_flower_weed",
+      "package": "ph_weed_plant_02",
+      "model": "packages/ph_weed_plant_02/source.gltf",
+      "selector": {
+        "mesh": 2
+      },
+      "authored_identity": "ph_weed_plant_02:mesh:2",
+      "source_group": "ph_weed_plant_02",
+      "card_evidence": "Author-supplied independent clump; UV-mapped open frond/leaf/twig sheets with a matching provider opacity map. Whole selected mesh retained.",
+      "requires_material_setup": true,
+      "material_setup": "Bind the separate opacity map; the source base-color JPEG has no alpha channel.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "path": "packages/ph_weed_plant_02/opacity/weed_plant_02_alpha_2k.png",
+          "channel": "R",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5,
+          "provider_slot": "Alpha"
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.55,
+        "mask_note": "Separate provider opacity map; source MASK cutoff."
+      }
+    },
+    {
+      "id": "loaf_leafstick1_4",
+      "name": "LeafStick1 4",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 37
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick1_4",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_leafstick3_2",
+      "name": "LeafStick3 2",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 32
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick3_2",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_leafstick3_3",
+      "name": "LeafStick3 3",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 33
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick3_3",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_leafstick3_4",
+      "name": "LeafStick3 4",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 29
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick3_4",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_leafstick3_6",
+      "name": "LeafStick3 6",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 17
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick3_6",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    },
+    {
+      "id": "loaf_leafstick3_7",
+      "name": "LeafStick3 7",
+      "category": "leafy_branch",
+      "package": "oga_foliage1",
+      "model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+      "selector": {
+        "mesh": 31
+      },
+      "authored_identity": "loafbrr:Generic_Foliage:LeafStick3_7",
+      "source_group": "loafbrr_foliage1",
+      "card_evidence": "Standalone author-named grass or leafy-branch cluster. Source uses disconnected flat cards and the PlantAtlas color/alpha texture. Tree component meshes, duplicate Trees.gltf meshes and exact geometry duplicates are excluded.",
+      "requires_material_setup": false,
+      "material_setup": "Embedded color alpha, MASK 0.5 and double-sided rendering are declared in the original glTF.",
+      "opacity_bindings": [
+        {
+          "material": 0,
+          "image": 1,
+          "channel": "A",
+          "texcoord": 0,
+          "source_cutoff": 0.5,
+          "preview_cutoff": 0.5
+        }
+      ],
+      "preview": {
+        "yaw": 0.5,
+        "pitch": 0.15,
+        "mask_note": "Original embedded color alpha and MASK 0.5."
+      }
+    }
+  ]
+}

@@ -130,15 +130,27 @@ these decisions precede all scored comparisons. Original rejected download
 records remain in the acquisition manifest. No scored asset is removed to
 improve a score.
 
-    bash tools/stamp-build.sh
-    build/release/blitz bench research/pilot.json research/configs/pilot-coupled.json research/runs/example
+    bash tools/stamp-build.sh build/release/blitz-build.json build/release/blitz
+    build/release/blitz bench research/pilot.json research/configs/pilot-coupled.json \
+        research/runs/example --build-stamp build/release/blitz-build.json
     build/release/blitz-microbench
+
+Run focused tests and one or two development assets with `--limit` before a
+complete pilot. Partial runs are smoke checks, not aggregate scores. Compare
+promising methods on the same frozen pilot scenario before validation and
+full-corpus runs. For tail changes, report final and last-three retained ratios
+alongside SCORE; for render-cost changes, report coverage alongside cost proxies.
+A changed source cap, starting size, or level count is a different scenario.
+Version scoring-protocol changes and rerun every baseline before comparing scores.
 
 Runs checkpoint per asset. Resume requires identical executable,
 configuration, camera, protocol and source hashes. Batches stop at 50 minutes.
 Do not run more than four CPU workers or exceed 24 GiB combined memory.
 The runner is sequential; independent batches may run concurrently within
 those limits.
+Stamp each frozen executable immediately after building it and pass its own
+`--build-stamp` path when benchmark jobs overlap; do not pair it with a mutable
+stamp from another build.
 
 External references are separate executables:
 

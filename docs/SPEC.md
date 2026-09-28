@@ -10,6 +10,9 @@ Output modes: Rebuild (default, owned new positions/attributes) and Reuse
 Topology changes are permitted only when the chosen visual contract passes.
 Chain modes: Direct from source, Progressive from previous, Hybrid (default)
 combining proposals and selecting minimum-total-triangle valid chains.
+Borrowed reducer/proposer outputs address the input passed to that call. In
+progressive rebuild, compact IDs from the preceding LOD must not be interpreted
+against LOD0; preserve the referenced input for as long as the output needs it.
 
 Reference D is the source bounding-sphere diameter in metres. Defaults:
 rho=512 px/m, S_last=16 px, N=8 total levels including unchanged LOD0.
@@ -19,6 +22,7 @@ one transition uses the start. B_i=sum(j=1..i,delta_j*S_i/S_j).
 An optional max_lod0_delta_px caps B_i. Both source and adjacent errors are
 measured directly at S_i. B is a source-fidelity POLICY, not a proof that
 appearance, rasterization or perspective errors compose under rescaling.
+An inactive source cap leaves the cumulative policy unchanged.
 
 Coverage is symmetric Hausdorff distance of filled foreground, not contours.
 Appearance uses Hausdorff in the product metric:

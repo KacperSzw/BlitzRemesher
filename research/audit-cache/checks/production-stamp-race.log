@@ -1,0 +1,11 @@
+blitz: explicit build stamp is missing
+file:///home/kacper/Projects/BlitzRemesher/research/audit-cache/run.mjs:15
+  child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error(`${exe} exited ${code}`)));
+                                                                           ^
+
+Error: build/audit-cache-production/blitz exited 1
+    at ChildProcess.<anonymous> (file:///home/kacper/Projects/BlitzRemesher/research/audit-cache/run.mjs:15:76)
+    at ChildProcess.emit (node:events:509:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:295:12)
+
+Node.js v24.19.0

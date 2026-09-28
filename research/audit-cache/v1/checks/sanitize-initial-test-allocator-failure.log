@@ -1,0 +1,51 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher' is dirty
+Test project /home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize
+    Start 1: coverage-cache-contracts
+1/9 Test #1: coverage-cache-contracts .........***Failed    1.46 sec
+=================================================================
+==3757907==ERROR: AddressSanitizer: alloc-dealloc-mismatch (operator new vs free) on 0x7c1ff73e1fb0
+    #0 0x55555569caab  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x148aab)
+    #1 0x555555729f9a  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x1d5f9a)
+    #2 0x5555556f9544  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x1a5544)
+    #3 0x7ffff782b284  (/nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6+0x2b284) (BuildId: efb85690f4b57f8e3536cf17e8835f0ec7631404)
+    #4 0x7ffff782b337  (/nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6+0x2b337) (BuildId: efb85690f4b57f8e3536cf17e8835f0ec7631404)
+    #5 0x555555599874  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x45874)
+
+0x7c1ff73e1fb0 is located 0 bytes inside of 16-byte region [0x7c1ff73e1fb0,0x7c1ff73e1fc0)
+allocated by thread T0 here:
+    #0 0x5555556f061b  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x19c61b)
+    #1 0x555555738e1f  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x1e4e1f)
+    #2 0x555555729ebb  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x1d5ebb)
+    #3 0x5555556f9544  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x1a5544)
+    #4 0x7ffff782b284  (/nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6+0x2b284) (BuildId: efb85690f4b57f8e3536cf17e8835f0ec7631404)
+    #5 0x7ffff782b337  (/nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6+0x2b337) (BuildId: efb85690f4b57f8e3536cf17e8835f0ec7631404)
+    #6 0x555555599874  (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x45874)
+
+SUMMARY: AddressSanitizer: alloc-dealloc-mismatch (/home/kacper/Projects/BlitzRemesher/build/audit-cache-sanitize/blitz-coverage-cache-tests+0x148aab) 
+==3757907==HINT: if you don't care about these errors you may set ASAN_OPTIONS=alloc_dealloc_mismatch=0
+==3757907==ABORTING
+
+    Start 2: hybrid-contracts
+2/9 Test #2: hybrid-contracts .................   Passed    2.06 sec
+    Start 3: vegetation-contracts
+3/9 Test #3: vegetation-contracts .............   Passed    0.44 sec
+    Start 4: contracts
+4/9 Test #4: contracts ........................   Passed    1.33 sec
+    Start 5: precision-contracts
+5/9 Test #5: precision-contracts ..............   Passed    0.19 sec
+    Start 6: render-cost-contracts
+6/9 Test #6: render-cost-contracts ............   Passed    0.01 sec
+    Start 7: c-abi
+7/9 Test #7: c-abi ............................   Passed    0.01 sec
+    Start 8: foliage-contracts
+8/9 Test #8: foliage-contracts ................   Passed    0.04 sec
+    Start 9: io-contracts
+9/9 Test #9: io-contracts .....................   Passed    0.06 sec
+
+89% tests passed, 1 tests failed out of 9
+
+Total Test time (real) =   5.59 sec
+
+The following tests FAILED:
+	  1 - coverage-cache-contracts (Failed)
+Errors while running CTest

@@ -335,7 +335,7 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+      {"research",{{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
@@ -361,6 +361,9 @@ Settings settings_json(const json& original,bool legacy_research) {
     auto views=[&](const char* key){auto v=j.at(key);int o=v.at("orthographic"),p=v.at("perspective");if(o<0||p<0||o>65535||p>65535)fail("camera count out of range");return ViewSet{uint16_t(o),uint16_t(p),v.at("seed")};};
     s.search_views=views("search_views");s.audit_views=views("audit_views");s.prune=j.at("prune");s.force_scalar=j.at("force_scalar");s.coupled_wedges=j.at("coupled_wedges");
     auto experimental=j.at("research");
+    const auto& cache=experimental.at("coverage_cache_mib");
+    if(!cache.is_number_integer()||cache<0||cache>256)fail("coverage cache must be an integer in 0..256 MiB");
+    s.research.coverage_cache_mib=cache.get<uint16_t>();
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));

@@ -1,0 +1,151 @@
+{
+  "audit": {
+    "max_changed_area": 0.5,
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 3665436710,
+    "supersample": 8
+  },
+  "binary_sha256": "28c04372002424e9588effd5fe1085a00309718ee167a555f90b2cf869338c6d",
+  "chain_bin_sha256": "d2605574989403e214a25ab54fb1cfe23be7e60cd04dbf849e23d954ed04f2b9",
+  "chain_gltf_sha256": "381b0dc706a65c65f7cc977a873af5f753d3f207ca191a9a711594dcb4830804",
+  "coverage_cache": {
+    "bypasses": 0,
+    "field_hits": 0,
+    "fields": 8392,
+    "mask_hits": 0,
+    "mib": 0,
+    "peak_bytes": 0,
+    "rasters": 8472
+  },
+  "id": "ph_dead_quiver_trunk",
+  "lods": [
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.1712370505789153,
+        "changed_area_worst_view": 593,
+        "complete": true,
+        "coverage_upper_px": 1.539408513156416,
+        "distance_passed": true,
+        "error_px": 1.539408513156416,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 460
+      },
+      "level": 5,
+      "max_changed_area": 0.5,
+      "screen_pixels": 43.0688061642354,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.23102625298329355,
+        "changed_area_worst_view": 703,
+        "complete": true,
+        "coverage_upper_px": 1.7677679529663688,
+        "distance_passed": true,
+        "error_px": 1.7677679529663688,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 481
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 80
+    },
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.0220125786163522,
+        "changed_area_worst_view": 426,
+        "complete": true,
+        "coverage_upper_px": 0.6035543905932738,
+        "distance_passed": true,
+        "error_px": 0.6035543905932738,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 236
+      },
+      "level": 6,
+      "max_changed_area": 0.5,
+      "screen_pixels": 26.25073139224442,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.2294478527607362,
+        "changed_area_worst_view": 703,
+        "complete": true,
+        "coverage_upper_px": 1.237437867076458,
+        "distance_passed": true,
+        "error_px": 1.237437867076458,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 100
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 72
+    },
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.28615384615384615,
+        "changed_area_worst_view": 614,
+        "complete": true,
+        "coverage_upper_px": 1.1920798821556948,
+        "distance_passed": true,
+        "error_px": 1.1920798821556948,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 52
+      },
+      "level": 7,
+      "max_changed_area": 0.5,
+      "screen_pixels": 16.0,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.40484429065743943,
+        "changed_area_worst_view": 42,
+        "complete": true,
+        "coverage_upper_px": 1.428845048973602,
+        "distance_passed": true,
+        "error_px": 1.428845048973602,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 350
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 36
+    }
+  ],
+  "passed": true,
+  "profile": "coverage",
+  "purpose": "Dense independent tail check; does not rewrite pilot SCORE or select replacement meshes",
+  "row_sha256": "f6f4c9d1ef080d2c2be5d8f48aeee9e8dafd4591c41ea75098b16575e6e21c71",
+  "run": "pilot-1-256",
+  "run_sha256": "af7f9ff587ecfc8bf87c3cf8e92249286a31cadbc5c1d84eda8575ed402f015c",
+  "seconds": 14.742090556,
+  "stage_seconds": {
+    "distance": 12.435471356,
+    "raster": 2.3031494770000003
+  },
+  "version": 2
+}

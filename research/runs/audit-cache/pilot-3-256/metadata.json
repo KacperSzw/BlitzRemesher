@@ -1,0 +1,106 @@
+{
+  "backend": "avx2",
+  "binary_sha256": "2ea040531c895f9985cdbc63d33e8b6c6530e32aec8c678fa3e768aca47758ac",
+  "build": {
+    "binary_sha256": "2ea040531c895f9985cdbc63d33e8b6c6530e32aec8c678fa3e768aca47758ac",
+    "git_revision": "5c0c62386b212f573d2cae07bf8e33f73dfa9052",
+    "source_tree_sha256": "dcc40dff6780930469719787f9b3f0d768577043006c58ccce459293312b24ca",
+    "tracked_diff_sha256": "3ac5c6145ad4720c5f0077503e84a56f6cf23906aa5459936d7985829a0c431c"
+  },
+  "camera_sha256": "b9149c5ce5cfa42a25b234d3f218239937986513cdeb6413d97bdc3b7048071f",
+  "candidate_bytes": 32,
+  "compiler": "Clang 21.1.8",
+  "config": {
+    "attribute_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 512.0,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16.0,
+    "levels": 8,
+    "max_changed_area": 0.5,
+    "max_lod0_delta_px": 3.0,
+    "max_supersample": 8,
+    "meters_per_unit": 1.0,
+    "normal_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "objective": "quadric",
+    "pixels_per_meter": 512.0,
+    "profile": "coverage",
+    "prune": true,
+    "research": {
+      "adaptive_targets": false,
+      "boundary_placement": false,
+      "boundary_weight": 0.0,
+      "chain": "hybrid",
+      "component_candidates": false,
+      "coverage_cache_mib": 256,
+      "independent_seams": false,
+      "output": null,
+      "topology_fallback": false,
+      "trace": false
+    },
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0.0,
+        2.0
+      ],
+      [
+        1.0,
+        2.0
+      ]
+    ],
+    "triangle_overhead_bps": 500,
+    "weights": {
+      "color": 4.0,
+      "material": 4.0,
+      "normal": 5.729577951308232
+    }
+  },
+  "config_sha256": "1edb46d93cc4c3ee6fedeaf39e7dd30b7ad1d5f96d6a2195fb45975c7a7b2416",
+  "cpu": "model name\t: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "input_format": "linear-rgba8-v2",
+  "limit": 18446744073709551615,
+  "manifest_sha256": "4ae0b74dbe76d7b67453f67efec34c63a0cc0fe3c137ab30817cd52937578ae0",
+  "method": "native",
+  "output_hash_scope": "output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data",
+  "packed_coverage": true,
+  "peak_rss_scope": "process high-water; KiB",
+  "protocol_sha256": "71e7a71e508f400140f99fff10ba248c0d89cabe95e32329cf8a968f204dd42b",
+  "quadric_bytes": 80,
+  "run_sha256": "af7f9ff587ecfc8bf87c3cf8e92249286a31cadbc5c1d84eda8575ed402f015c",
+  "split": "development",
+  "stage_timing": true,
+  "threads": 1,
+  "version": 2
+}

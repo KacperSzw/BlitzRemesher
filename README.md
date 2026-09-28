@@ -105,6 +105,12 @@ material graph. Engine integrations retain their own material payloads.
   separate. Endpoint proposals preserve source vertices where possible.
 - Candidate budget, beam width, camera sets, supersampling, pruning and
   scalar/AVX2 dispatch are explicit settings.
+- Coverage-profile generation reuses exact packed masks and distance fields.
+  C++/CLI `research.coverage_cache_mib` accepts 0..256 MiB per bake, default 256;
+  0 disables caching. The allowance covers retained payload and entry capacities,
+  including entry-array growth. Evaluator scratch and allocator bookkeeping are additional.
+  [Five paired pilot runs](research/audit-cache/REPORT.md) measured 40.35% less
+  generation time with identical output and audit records at 256 MiB.
 
 Per-LOD JSON reports `changed_area` and `changed_area_worst_view` separately for
 source and adjacent audits. Rejection counts include `area_only_count` for
@@ -276,10 +282,13 @@ Coverage-only evaluation always uses packed masks; normal/attribute profiles
 and reference tests retain the full rasterizer. Experimental precision switches
 have been removed. Their results and restoration patch remain in the
 [research archive](research/precision/ARCHIVE.md).
-Optional C++ `PerformanceStats` accumulates stage times and numerical counters;
+Optional C++ `PerformanceStats` accumulates stage times, numerical counters,
+coverage raster/field builds, cache hits/bypasses and peak charged cache bytes;
 `generate` resets it and `evaluate` adds to it. No instrumentation runs unless
 the caller supplies the borrowed pointer. The benchmark runner enables it,
 records the compiled storage configuration, and hashes canonical input attributes.
+C++ consumers must rebuild for the enlarged research settings and statistics.
+The coverage cache leaves the C descriptor and ABI version 4 unchanged.
 Protocol v2 results must be compared with freshly rerun v2 baselines.
 Measured speed, memory, quality changes and the complete validation matrix are
 in [the precision report](research/precision/REPORT.md).

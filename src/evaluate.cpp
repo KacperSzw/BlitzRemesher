@@ -191,7 +191,7 @@ Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_
 detail::CoverageRaster detail::rasterize_coverage(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
     return rasterize_impl<CoverageRaster>(m,b,c,screen,ss,force_two);
 }
-template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss,bool scalar) {
+template<class R,class Field> double coverage_distance_with(const R& a,const R& b,uint8_t ss,Field field) {
     if(a.width!=b.width||a.height!=b.height||!ss||!valid_shape(a)||!valid_shape(b))throw std::invalid_argument("raster shapes differ");
     bool ca=false,cb=false,same=true;
     if constexpr(std::is_same_v<R,detail::CoverageRaster>) {
@@ -199,11 +199,16 @@ template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss
     } else for(size_t i=0;i<a.pixels.size();++i){ca|=covered(a,i);cb|=covered(b,i);same&=a.pixels[i].covered==b.pixels[i].covered;}
     if(same)return 0;if(ca!=cb)return inf;
     double maximum=0;
-    auto directed=[&](const R& from,const R& to) {
-        auto field=distance_field(to,scalar);
-        for(size_t i=0;i<field.size();++i)if(covered(from,i))maximum=std::max(maximum,double(field[i]));
+    auto directed=[&](const R& from,const R& to,bool candidate) {
+        std::vector<float> scratch;auto values=field(to,candidate,scratch);
+        for(size_t i=0;i<values.size();++i)if(covered(from,i))maximum=std::max(maximum,double(values[i]));
     };
-    directed(a,b);directed(b,a);return std::sqrt(maximum)/ss;
+    directed(a,b,true);directed(b,a,false);return std::sqrt(maximum)/ss;
+}
+template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss,bool scalar,PerformanceStats* stats=nullptr) {
+    return coverage_distance_with(a,b,ss,[&](const R& to,bool,std::vector<float>& scratch)->std::span<const float> {
+        scratch=distance_field(to,scalar);if(stats)++stats->coverage_fields;return scratch;
+    });
 }
 double coverage_distance(const Raster& a,const Raster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
 double detail::coverage_distance(const CoverageRaster& a,const CoverageRaster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
@@ -238,16 +243,9 @@ double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s
     if(!std::isfinite(directed(a,b))||!std::isfinite(directed(b,a)))return inf;
     return std::sqrt(maximum);
 }
-template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
-    R a,c;
-    {
-        detail::ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
-        a=rasterize_impl<R>(reference,b,camera,s.screen_size,ss,s.force_two_sided);
-        c=rasterize_impl<R>(candidate,b,camera,s.screen_size,ss,s.force_two_sided);
-    }
-    detail::ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
+template<class R> void finish_view(Measurement& current,const R& a,const R& c,const EvalSettings& s,uint8_t ss,double coverage) {
     current.supersample=ss;
-    current.coverage=coverage_distance_impl(a,c,ss,s.force_scalar);
+    current.coverage=coverage;
     current.coverage_upper=current.coverage+2*std::sqrt(2.0)/ss+1e-6;
     if(c.clipped||a.clipped)current.coverage_upper=inf;
     size_t changed=0,total=0;
@@ -267,8 +265,20 @@ template<class R> void measure_view(Measurement& current,MeshView reference,Mesh
     current.changed_area=total?double(changed)/total:0;
     current.passed=current.error<=s.limit&&current.changed_area<=s.max_changed_area;
 }
+template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
+    R a,c;
+    {
+        detail::ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
+        a=rasterize_impl<R>(reference,b,camera,s.screen_size,ss,s.force_two_sided);
+        c=rasterize_impl<R>(candidate,b,camera,s.screen_size,ss,s.force_two_sided);
+        if constexpr(std::is_same_v<R,detail::CoverageRaster>)if(s.performance)s.performance->coverage_rasters+=2;
+    }
+    detail::ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
+    auto stats=s.profile==Profile::Coverage?s.performance:nullptr;
+    finish_view(current,a,c,s,ss,coverage_distance_impl(a,c,ss,s.force_scalar,stats));
+}
 bool packed_coverage_enabled() {return true;}
-Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
+static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s,detail::CoverageCache* cache=nullptr,uint8_t reference_id=0,bool audit=false) {
     Measurement result;result.supersample=s.supersample;
     if(!(s.screen_size>0)||!std::isfinite(s.screen_size)||!(b.radius>0)||!std::isfinite(b.radius)||!finite(b.center)||unsigned(s.profile)>2
       ||!(s.limit>=0)||!std::isfinite(s.limit)||!s.supersample||s.max_supersample<s.supersample||s.max_supersample>32
@@ -284,7 +294,15 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
         Measurement current;current.worst_view=v;
         for(unsigned ss=s.supersample;;ss=std::min<unsigned>(s.max_supersample,ss*2)) {
             try {
-                if(s.profile==Profile::Coverage)measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+                if(s.profile==Profile::Coverage) {
+                    if(cache&&cache->enabled()) {
+                        try {cache->measure(current,reference,candidate,views[v],s,uint8_t(ss),v,reference_id,audit);}
+                        catch(const std::bad_alloc&) {
+                            cache->disable(); // Drop optional storage before retrying this view, without repolling cancellation.
+                            measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+                        }
+                    } else measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+                }
                 else measure_view<Raster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
             }
             catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
@@ -304,5 +322,79 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
         if(!current.passed){result.passed=false;result.complete=false;return result;}
     }
     return result;
+}
+Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
+    return evaluate_impl(reference,candidate,b,s);
+}
+namespace detail {
+CoverageCache::CoverageCache(uint32_t bytes,const Bounds& b):bounds_(b) {
+    if(bytes>256u*1024*1024)throw std::invalid_argument("coverage cache exceeds 256 MiB");
+    references_.limit=candidate_.limit=bytes/2;
+}
+void CoverageCache::Store::clear() {
+    for(uint32_t i=0;i<count;++i)entries[i]=Entry{};
+    count=0;bytes=uint32_t(capacity*sizeof(Entry));
+}
+void CoverageCache::disable() {
+    references_=Store{};candidate_=Store{};
+}
+void CoverageCache::Store::peak(const Store& other,PerformanceStats* stats,uint32_t extra) const {
+    if(stats)stats->coverage_cache_peak_bytes=std::max(stats->coverage_cache_peak_bytes,bytes+other.bytes+extra);
+}
+CoverageCache::Entry* CoverageCache::Store::find(uint32_t key) {
+    if(!count)return nullptr;
+    auto it=std::lower_bound(entries.get(),entries.get()+count,key,[](auto& e,uint32_t k){return e.key<k;});
+    return it!=entries.get()+count&&it->key==key?it:nullptr;
+}
+const CoverageRaster& CoverageCache::Store::raster(uint32_t key,MeshView mesh,const Bounds& bounds,const Camera& camera,
+    const EvalSettings& s,uint8_t ss,CoverageRaster& scratch,const Store& other) {
+    if(auto* entry=find(key)) {if(s.performance)++s.performance->coverage_mask_hits;return entry->mask;}
+    scratch=rasterize_coverage(mesh,bounds,camera,s.screen_size,ss,s.force_two_sided);
+    if(s.performance)++s.performance->coverage_rasters;
+    const size_t payload=scratch.words.capacity()*sizeof(uint64_t);
+    const uint32_t next_capacity=count==capacity?std::max(8u,capacity*2):capacity;
+    // Charge both old and new entry arrays while growing the records.
+    const size_t growth=next_capacity==capacity?0:next_capacity*sizeof(Entry);
+    if(payload+growth>limit-bytes) {if(s.performance)++s.performance->coverage_cache_bypasses;return scratch;}
+    if(growth) {
+        auto next=std::make_unique<Entry[]>(next_capacity);peak(other,s.performance,uint32_t(growth));
+        for(uint32_t i=0;i<count;++i)next[i]=std::move(entries[i]);
+        entries=std::move(next);bytes+=uint32_t((next_capacity-capacity)*sizeof(Entry));capacity=next_capacity;
+    }
+    auto it=std::lower_bound(entries.get(),entries.get()+count,key,[](auto& e,uint32_t k){return e.key<k;});
+    std::move_backward(it,entries.get()+count,entries.get()+count+1);
+    *it=Entry{key,std::move(scratch),{}};++count;bytes+=uint32_t(payload);peak(other,s.performance);
+    return it->mask;
+}
+std::span<const float> CoverageCache::Store::field(uint32_t key,const CoverageRaster& mask,const EvalSettings& s,
+    std::vector<float>& scratch,const Store& other) {
+    auto* entry=find(key);
+    if(entry&&!entry->field.empty()) {if(s.performance)++s.performance->coverage_field_hits;return entry->field;}
+    scratch=distance_field(mask,s.force_scalar);if(s.performance)++s.performance->coverage_fields;
+    const size_t payload=scratch.capacity()*sizeof(float);
+    if(!entry||payload>limit-bytes) {if(s.performance)++s.performance->coverage_cache_bypasses;return scratch;}
+    entry->field=std::move(scratch);bytes+=uint32_t(payload);peak(other,s.performance);return entry->field;
+}
+void CoverageCache::measure(Measurement& current,MeshView reference,MeshView candidate,const Camera& camera,
+    const EvalSettings& s,uint8_t ss,uint32_t view,uint8_t reference_id,bool audit) {
+    // ViewSet allows at most 131070 views (17 bits); sampling needs 6 bits.
+    const uint32_t candidate_key=(uint32_t(audit)<<23)|(view<<6)|ss;
+    const uint32_t reference_key=(uint32_t(reference_id)<<24)|candidate_key;
+    CoverageRaster reference_scratch,candidate_scratch;
+    const CoverageRaster *a,*c;
+    {
+        ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
+        a=&references_.raster(reference_key,reference,bounds_,camera,s,ss,reference_scratch,candidate_);
+        c=&candidate_.raster(candidate_key,candidate,bounds_,camera,s,ss,candidate_scratch,references_);
+    }
+    ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
+    double distance=coverage_distance_with(*a,*c,ss,[&](const CoverageRaster& to,bool is_candidate,std::vector<float>& scratch) {
+        return is_candidate?candidate_.field(candidate_key,to,s,scratch,references_):references_.field(reference_key,to,s,scratch,candidate_);
+    });
+    finish_view(current,*a,*c,s,ss,distance);
+}
+Measurement CoverageCache::evaluate(MeshView reference,MeshView candidate,const EvalSettings& s,uint8_t reference_id,bool audit) {
+    return evaluate_impl(reference,candidate,bounds_,s,this,reference_id,audit);
+}
 }
 }

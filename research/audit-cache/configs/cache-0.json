@@ -1,0 +1,45 @@
+{
+  "levels": 8,
+  "base_pixels": 512,
+  "last_pixels": 16,
+  "max_lod0_delta_px": 3,
+  "max_changed_area": 0.5,
+  "profile": "coverage",
+  "objective": "quadric",
+  "prune": true,
+  "candidate_budget": 8,
+  "beam_width": 2,
+  "search_views": {
+    "orthographic": 6,
+    "perspective": 2,
+    "seed": 2971082788
+  },
+  "audit_views": {
+    "orthographic": 12,
+    "perspective": 4,
+    "seed": 2971082790
+  },
+  "search_supersample": 2,
+  "audit_supersample": 4,
+  "max_supersample": 8,
+  "force_scalar": false,
+  "coupled_wedges": true,
+  "research": {
+    "chain": "hybrid",
+    "output": null,
+    "adaptive_targets": false,
+    "topology_fallback": false,
+    "coverage_cache_mib": 0
+  },
+  "transition": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      2
+    ]
+  ],
+  "triangle_overhead_bps": 500
+}

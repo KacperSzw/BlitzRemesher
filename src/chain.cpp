@@ -1,6 +1,7 @@
 #include "blitz/remesher.hpp"
 #include "timing.hpp"
 #include "components.hpp"
+#include "coverage.hpp"
 #include <chrono>
 #include <memory>
 #include <stdexcept>
@@ -25,6 +26,7 @@ std::string validate(const Settings& s) {
     if(s.levels<2||s.levels>32)return "level count must be 2..32";
     if((s.research.output&&unsigned(*s.research.output)>1)||unsigned(s.research.chain)>2||unsigned(s.objective)>3||unsigned(s.profile)>2)return "unknown mode";
     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
+    if(s.research.coverage_cache_mib>256)return "coverage cache must be 0..256 MiB";
     if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
         return "maximum changed area must be in [0,1]";
     for(double v:{s.pixels_per_meter,s.meters_per_unit,s.last_pixels})
@@ -121,6 +123,12 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         auto search_adj=eval_config(s,steps[level],level,false,steps[level].transition);
         auto audit_source=eval_config(s,steps[level],level,true,steps[level].source);
         auto audit_adj=eval_config(s,steps[level],level,true,steps[level].transition);
+        detail::CoverageCache coverage(s.profile==Profile::Coverage?uint32_t(s.research.coverage_cache_mib)*1024*1024:0,
+            result.reference_bounds);
+        // IDs expire with this level. The source and exact source parents share ID 0.
+        std::array<uint8_t,33> reference_ids{};
+        for(size_t i=0;i<beam.size();++i)
+            reference_ids[i]=same_mesh_data(source,beam[i]->lod.view(source))?0:uint8_t(i+1);
         auto accepted=[&](const Measurement& m,size_t stage) {
             if(m.resource_limited)result.status=Status::BudgetLimited;
             if(m.passed)return true;
@@ -145,13 +153,17 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 }
             }
             if(!cached) {
-                if(!accepted(evaluate(source,view,result.reference_bounds,search_source),0))gate=1;
-                else if(!accepted(evaluate(previous,view,result.reference_bounds,search_adj),1))gate=2;
+                coverage.begin_candidate();
+                const auto parent_index=size_t(std::find(beam.begin(),beam.end(),parent)-beam.begin());
+                const auto parent_id=reference_ids[parent_index];
+                if(!accepted(coverage.evaluate(source,view,search_source,0,false),0))gate=1;
+                else if(!accepted(coverage.evaluate(previous,view,search_adj,parent_id,false),1))gate=2;
                 else {
-                    candidate.source_error=evaluate(source,view,result.reference_bounds,audit_source);
+                    candidate.source_error=coverage.evaluate(source,view,audit_source,0,true);
                     if(!accepted(candidate.source_error,2))gate=3;
-                    else {candidate.adjacent=evaluate(previous,view,result.reference_bounds,audit_adj);if(!accepted(candidate.adjacent,3))gate=4;}
+                    else {candidate.adjacent=coverage.evaluate(previous,view,audit_adj,parent_id,true);if(!accepted(candidate.adjacent,3))gate=4;}
                 }
+                coverage.begin_candidate();
                 if(automatic||s.research.adaptive_targets) {
                     size_t bytes=view.indices.size()*4+view.materials.size()*2+(candidate.shared_vertices?0:vertex_bytes(view));
                     if(bytes<=64u*1024u*1024u-seen_bytes){seen.push_back({parent.get(),candidate,gate});seen_bytes+=bytes;}

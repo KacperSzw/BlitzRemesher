@@ -12,6 +12,7 @@ struct ResearchOptions {
     std::optional<OutputMode> output;
     ChainMode chain{ChainMode::Hybrid};
     double boundary_weight{};
+    uint16_t coverage_cache_mib{256}; // 0 disables; 0..256 MiB, split equally between references and candidate.
     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
 };
 struct Settings {

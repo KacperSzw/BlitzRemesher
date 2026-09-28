@@ -1,0 +1,711 @@
+{
+  "attributes_sha256": "36d14773ff3d9803a746f9cc2c376e087ccc040225b30e1c46a32b8520b2b46c",
+  "canonical_attributes_sha256": "f3188183feef5e6b06e661f27048fcf0b9f7a0c4cf82f2cc3da7a4d008f4b8e8",
+  "category": "organic",
+  "complete": true,
+  "coverage_cache": {
+    "bypasses": 108,
+    "field_hits": 1831,
+    "fields": 1599,
+    "mask_hits": 1996,
+    "peak_bytes": 260904744,
+    "rasters": 1596
+  },
+  "export_seconds": 0.003604478,
+  "fallback": false,
+  "final_ratio": 0.06461203770848441,
+  "generation_seconds": 13.403215582,
+  "id": "ph_carrot_cake",
+  "last_three_ratio": 0.07926033357505438,
+  "load_seconds": 0.000592497,
+  "numerics": {
+    "nonfinite_costs": 0,
+    "nonfinite_solves": 0,
+    "position_fallbacks": 122,
+    "singular_solves": 0,
+    "solve_attempts": 2020738
+  },
+  "output_sha256": "1f17eedd03ef5c8a080b6acda13ed740f925bfb195223b12f9a1e3ede925d22c",
+  "peak_rss_kib": 575432,
+  "ratio": 0.3136537863876515,
+  "result": {
+    "candidate_evaluations": 56,
+    "candidates": [
+      {
+        "storage": {
+          "added_vertex_bytes": 838816,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1662372
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          891
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 842208,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1665764
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          891
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 862496,
+          "index_bytes": 528816,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1686064
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          892
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 839584,
+          "index_bytes": 529296,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1663632
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          932
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 840320,
+          "index_bytes": 529464,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1664536
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          946
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 792256,
+          "index_bytes": 518112,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1605120
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          991
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 795648,
+          "index_bytes": 518112,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1608512
+        },
+        "triangles": [
+          13790,
+          12412,
+          6206,
+          5586,
+          2794,
+          1397,
+          991,
+          991
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 0,
+          "index_bytes": 165480,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 460232
+        },
+        "triangles": [
+          13790,
+          13790,
+          13790,
+          13790,
+          13790,
+          13790,
+          13790,
+          13790
+        ]
+      }
+    ],
+    "lods": [
+      {
+        "adjacent": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "reference_triangles": 13790,
+        "screen_pixels": 512.0,
+        "shared_vertices": true,
+        "source": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "source_limit": 0.0,
+        "transition_limit": 0.0,
+        "triangles": 13790,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 31.81887581954886,
+          "max_density": 3.397032944426398,
+          "mean_density": 2.221892613753682,
+          "negative_winding_faces": 13790
+        },
+        "vertices": 9211
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.0003299739275395336,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 1.5206906325745548,
+          "coverage_upper_px": 1.8742450231678285,
+          "error_px": 1.8742450231678285,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "reference_triangles": 12412,
+        "screen_pixels": 312.0674954763457,
+        "shared_vertices": true,
+        "source": {
+          "changed_area": 0.0003299739275395336,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 1.5206906325745548,
+          "coverage_upper_px": 1.8742450231678285,
+          "error_px": 1.8742450231678285,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "source_limit": 2.0,
+        "transition_limit": 2.0,
+        "triangles": 12412,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 450.9775089224146,
+          "max_density": 3.351182112682267,
+          "mean_density": 2.221319611055299,
+          "negative_winding_faces": 12407
+        },
+        "vertices": 9211
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.005109430318635339,
+          "changed_area_worst_view": 6,
+          "complete": true,
+          "coverage_px": 1.505199322349037,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 4
+        },
+        "reference_triangles": 6206,
+        "screen_pixels": 190.2072690095294,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.0051040934668676475,
+          "changed_area_worst_view": 6,
+          "complete": true,
+          "coverage_px": 1.4577379737113252,
+          "coverage_upper_px": 2.164845754897873,
+          "error_px": 2.164845754897873,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 10
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 6206,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 82.20182584442958,
+          "max_density": 11.224652115341888,
+          "mean_density": 1.7345722291250907,
+          "negative_winding_faces": 6206
+        },
+        "vertices": 8051
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.00033821394850692634,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 0.5,
+          "coverage_upper_px": 1.2071077811865474,
+          "error_px": 1.2071077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 3
+        },
+        "reference_triangles": 5586,
+        "screen_pixels": 115.93262902578006,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.005240577039361916,
+          "changed_area_worst_view": 6,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 10
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 5586,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 75.80657966797554,
+          "max_density": 9.684089639368462,
+          "mean_density": 1.6649027400615828,
+          "negative_winding_faces": 5586
+        },
+        "vertices": 7667
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.009654757879709982,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "reference_triangles": 2794,
+        "screen_pixels": 70.661728875124,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.011064851280897191,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 1.0307764064044151,
+          "coverage_upper_px": 1.7378841875909627,
+          "error_px": 1.7378841875909627,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 2794,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 55.872873492804644,
+          "max_density": 4.951313902956167,
+          "mean_density": 1.3001063901356664,
+          "negative_winding_faces": 2794
+        },
+        "vertices": 5267
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.017709800764741396,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 1.4252192813739224,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 9
+        },
+        "reference_triangles": 1397,
+        "screen_pixels": 43.0688061642354,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.027489004398240705,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 1.4577379737113252,
+          "coverage_upper_px": 2.164845754897873,
+          "error_px": 2.164845754897873,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 12
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 1397,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 39.37230154294018,
+          "max_density": 4.951314211418637,
+          "mean_density": 1.3838920316708065,
+          "negative_winding_faces": 1397
+        },
+        "vertices": 2212
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.010326086956521738,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 0.75,
+          "coverage_upper_px": 1.4571077811865474,
+          "error_px": 1.4571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 12
+        },
+        "reference_triangles": 991,
+        "screen_pixels": 26.25073139224442,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.037360890302066775,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 1.0,
+          "coverage_upper_px": 1.7071077811865474,
+          "error_px": 1.7071077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 12
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 991,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 261.24558497757624,
+          "max_density": 4.951314211418637,
+          "mean_density": 1.4106526426151993,
+          "negative_winding_faces": 989
+        },
+        "vertices": 1561
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.003878474466709761,
+          "changed_area_worst_view": 15,
+          "complete": true,
+          "coverage_px": 0.25,
+          "coverage_upper_px": 0.9571077811865476,
+          "error_px": 0.9571077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "reference_triangles": 891,
+        "screen_pixels": 16.0,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.04233171408743928,
+          "changed_area_worst_view": 11,
+          "complete": true,
+          "coverage_px": 0.5590169943749475,
+          "coverage_upper_px": 1.2661247755614948,
+          "error_px": 1.2661247755614948,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 12
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 891,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 39.37231816474184,
+          "max_density": 4.951312014510234,
+          "mean_density": 1.3846031362726436,
+          "negative_winding_faces": 889
+        },
+        "vertices": 1455
+      }
+    ],
+    "max_changed_area": 0.5,
+    "proposal_diagnostics": {
+      "component_builds": 0,
+      "component_unavailable": 0,
+      "duplicate_proposals": 8,
+      "topology_fallback_proposals": 0,
+      "transition_reconnections": 6
+    },
+    "reference_candidate": 0,
+    "rejections": {
+      "adjacent_audit": {
+        "area_only_count": 0,
+        "count": 1,
+        "worst": {
+          "changed_area": 0.0043487594113867335,
+          "changed_area_worst_view": 13,
+          "complete": false,
+          "coverage_px": 1.6770509831248424,
+          "coverage_upper_px": 2.0306053737181164,
+          "error_px": 2.0306053737181164,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 14,
+          "worst_view": 13
+        }
+      },
+      "adjacent_search": {
+        "area_only_count": 0,
+        "count": 8,
+        "worst": {
+          "changed_area": 0.004211414518026624,
+          "changed_area_worst_view": 2,
+          "complete": false,
+          "coverage_px": 2.57390753524675,
+          "coverage_upper_px": 2.9274619258400243,
+          "error_px": 2.9274619258400243,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 3,
+          "worst_view": 2
+        }
+      },
+      "source_audit": {
+        "area_only_count": 0,
+        "count": 0,
+        "worst": null
+      },
+      "source_search": {
+        "area_only_count": 0,
+        "count": 18,
+        "worst": {
+          "changed_area": 0.03618354242504726,
+          "changed_area_worst_view": 0,
+          "complete": false,
+          "coverage_px": 8.73212459828649,
+          "coverage_upper_px": 10.146339160659585,
+          "error_px": 10.146339160659585,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 2,
+          "views_evaluated": 1,
+          "worst_view": 0
+        }
+      }
+    },
+    "runtime_levels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "runtime_lod_count": 8,
+    "selected_candidate": 0,
+    "selection_sweep": [
+      {
+        "overhead_bps": 0,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 838816,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1662372
+        }
+      },
+      {
+        "overhead_bps": 200,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 838816,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1662372
+        }
+      },
+      {
+        "overhead_bps": 500,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 838816,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1662372
+        }
+      },
+      {
+        "overhead_bps": 1000,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 838816,
+          "index_bytes": 528804,
+          "source_vertex_bytes": 294752,
+          "total_bytes": 1662372
+        }
+      }
+    ],
+    "status": "complete",
+    "storage": {
+      "added_vertex_bytes": 838816,
+      "index_bytes": 528804,
+      "source_vertex_bytes": 294752,
+      "total_bytes": 1662372
+    },
+    "triangle_overhead_bps": 500,
+    "version": 2
+  },
+  "run_sha256": "fbbe7937f9386997bb117464ee49dbd7b9b52ec9185d179098362cc5074cf624",
+  "seconds": 13.413742336,
+  "source_files": [
+    {
+      "bytes": 377492,
+      "path": "data/polyhaven/carrot_cake/carrot_cake.bin",
+      "sha256": "4390df681a8e7d1c1ec8640addb94e422073ccb88d0b1e73971e13cd48bb12cb",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/carrot_cake/carrot_cake.bin"
+    },
+    {
+      "bytes": 2682,
+      "path": "data/polyhaven/carrot_cake/source.gltf",
+      "sha256": "b0a743a0283bb2aea67d6d88bfb92b0afc5a2b5199f48ca4b9240330a28a87f6",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/carrot_cake/carrot_cake_1k.gltf"
+    }
+  ],
+  "stage_seconds": {
+    "distance": 7.955934782000001,
+    "raster": 4.545047517,
+    "reduction": 0.892000314
+  }
+}

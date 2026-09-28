@@ -9,6 +9,8 @@ struct ViewSet { uint16_t orthographic{642},perspective{64}; uint32_t rotation_s
 struct PerformanceStats {
     uint64_t reduction_ns{},raster_ns{},distance_ns{};
     uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};
+    uint64_t coverage_rasters{},coverage_fields{},coverage_mask_hits{},coverage_field_hits{},coverage_cache_bypasses{};
+    uint32_t coverage_cache_peak_bytes{}; // Charged payload and entry capacities; at most 256 MiB.
 };
 struct EvalSettings {
     Profile profile{Profile::Normals}; Weights weights{}; ViewSet views{};

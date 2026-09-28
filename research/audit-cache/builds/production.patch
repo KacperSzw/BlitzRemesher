@@ -1,0 +1,531 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 21f6955..a0e2d08 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -73,9 +73,14 @@ if(BLITZ_TOOLS)
+   add_executable(blitz-lod-report tools/lod_report.cpp)
+   target_link_libraries(blitz-lod-report PRIVATE blitz_io OpenSSL::Crypto)
+   add_executable(blitz-tail-audit tools/tail_audit.cpp)
++  target_include_directories(blitz-tail-audit PRIVATE src)
+   target_link_libraries(blitz-tail-audit PRIVATE blitz_io OpenSSL::Crypto)
+ endif()
+ if(BUILD_TESTING)
++  add_executable(blitz-coverage-cache-tests tests/coverage_cache.cpp)
++  target_include_directories(blitz-coverage-cache-tests PRIVATE src)
++  target_link_libraries(blitz-coverage-cache-tests PRIVATE blitzremesher)
++  add_test(NAME coverage-cache-contracts COMMAND blitz-coverage-cache-tests)
+   add_executable(blitz-hybrid-tests tests/hybrid.cpp)
+   target_link_libraries(blitz-hybrid-tests PRIVATE blitzremesher)
+   add_test(NAME hybrid-contracts COMMAND blitz-hybrid-tests)
+diff --git a/README.md b/README.md
+index 4b2c327..c085341 100644
+--- a/README.md
++++ b/README.md
+@@ -105,6 +105,12 @@ material graph. Engine integrations retain their own material payloads.
+   separate. Endpoint proposals preserve source vertices where possible.
+ - Candidate budget, beam width, camera sets, supersampling, pruning and
+   scalar/AVX2 dispatch are explicit settings.
++- Coverage-profile generation reuses exact packed masks and distance fields.
++  C++/CLI `research.coverage_cache_mib` accepts 0..256 MiB per bake, default 256;
++  0 disables caching. The allowance covers retained payload and entry capacities, including
++  entry-array growth. Evaluator scratch and allocator bookkeeping are additional.
++  [Five paired pilot runs](research/audit-cache/REPORT.md) measured 40.35% less
++  generation time with identical output and audit records at 256 MiB.
+ 
+ Per-LOD JSON reports `changed_area` and `changed_area_worst_view` separately for
+ source and adjacent audits. Rejection counts include `area_only_count` for
+@@ -276,10 +282,13 @@ Coverage-only evaluation always uses packed masks; normal/attribute profiles
+ and reference tests retain the full rasterizer. Experimental precision switches
+ have been removed. Their results and restoration patch remain in the
+ [research archive](research/precision/ARCHIVE.md).
+-Optional C++ `PerformanceStats` accumulates stage times and numerical counters;
++Optional C++ `PerformanceStats` accumulates stage times, numerical counters,
++coverage raster/field builds, cache hits/bypasses and peak charged cache bytes;
+ `generate` resets it and `evaluate` adds to it. No instrumentation runs unless
+ the caller supplies the borrowed pointer. The benchmark runner enables it,
+ records the compiled storage configuration, and hashes canonical input attributes.
++C++ consumers must rebuild for the enlarged research settings and statistics.
++The coverage cache leaves the C descriptor and ABI version 4 unchanged.
+ Protocol v2 results must be compared with freshly rerun v2 baselines.
+ Measured speed, memory, quality changes and the complete validation matrix are
+ in [the precision report](research/precision/REPORT.md).
+diff --git a/docs/SPEC.md b/docs/SPEC.md
+index f99238d..4a94625 100644
+--- a/docs/SPEC.md
++++ b/docs/SPEC.md
+@@ -106,7 +106,17 @@ runtime feature dispatch and scalar fallback. Stream raster data and bound
+ caches. Parallelize assets/views before topology mutation.
+ Coverage-only evaluation uses an exact packed mask and skips attribute/depth
+ work. The full public rasterizer remains available, and the per-view sample
+-cap and all acceptance/refinement rules are unchanged. Production has one
++cap and all acceptance/refinement rules are unchanged. Coverage generation
++caches those masks and the existing float32 squared distance fields under a
++per-bake allowance. C++/CLI `research.coverage_cache_mib` accepts 0..256, default 256; zero
++disables caching. Half belongs to references for one scheduled level, half to
++the current candidate. Full stores bypass new entries without evicting retained
++ones. Allocation failure drops optional storage and retries the current view
++without an extra cancellation poll. Charged bytes include retained vector and
++entry capacities, including overlapping entry arrays during growth; ordinary
++evaluator scratch and allocator bookkeeping are outside the cache allowance.
++The cache preserves view order, refinement, float distances and acceptance.
++Public standalone evaluation is uncached. Production has one
+ precision path: float32 geometry, double quadric storage/arithmetic/solving,
+ and double candidate costs. Float quadric/cost variants are archived research.
+ UNORM16 positions are excluded following the feasibility probe; supplied
+diff --git a/include/blitz/evaluate.hpp b/include/blitz/evaluate.hpp
+index 667c81d..6f53a22 100644
+--- a/include/blitz/evaluate.hpp
++++ b/include/blitz/evaluate.hpp
+@@ -9,6 +9,8 @@ struct ViewSet { uint16_t orthographic{642},perspective{64}; uint32_t rotation_s
+ struct PerformanceStats {
+     uint64_t reduction_ns{},raster_ns{},distance_ns{};
+     uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};
++    uint64_t coverage_rasters{},coverage_fields{},coverage_mask_hits{},coverage_field_hits{},coverage_cache_bypasses{};
++    uint32_t coverage_cache_peak_bytes{}; // Charged payload and entry capacities; at most 256 MiB.
+ };
+ struct EvalSettings {
+     Profile profile{Profile::Normals}; Weights weights{}; ViewSet views{};
+diff --git a/include/blitz/remesher.hpp b/include/blitz/remesher.hpp
+index f78c17a..48b4673 100644
+--- a/include/blitz/remesher.hpp
++++ b/include/blitz/remesher.hpp
+@@ -12,6 +12,7 @@ struct ResearchOptions {
+     std::optional<OutputMode> output;
+     ChainMode chain{ChainMode::Hybrid};
+     double boundary_weight{};
++    uint16_t coverage_cache_mib{256}; // 0 disables; 0..256 MiB, split equally between references and candidate.
+     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
+ };
+ struct Settings {
+diff --git a/research/ALGORITHMS.md b/research/ALGORITHMS.md
+index f789d10..44721de 100644
+--- a/research/ALGORITHMS.md
++++ b/research/ALGORITHMS.md
+@@ -70,11 +70,18 @@ An exact source fallback uses the mathematical identity shortcut. Other
+ proposals pay the raster uncertainty allowance. Reports identify the camera
+ and sampling settings; changing them creates a different scenario.
+ 
++Coverage generation reuses exact packed masks and float32 squared distance
++fields. Reference entries live for one scheduled level; candidate entries live
++for one offer across source/adjacent search/audit comparisons. Bounded admission
++retains a useful subset when the camera sweep exceeds the allowance. This
++preserves the existing transform, view order and gates. The [cache experiment](audit-cache/REPORT.md)
++records repeated timing, exact output agreement and independent dense checks.
++
+ ## Next research opportunities
+ 
+ 1. Attribute transfer and placement for the implemented coupled wedge proposals.
+ 2. Attribute quadrics and genuine render-derived proposal priorities.
+-3. Visibility caches / tiled structure-of-arrays raster storage.
++3. Normal/attribute visibility caches and tiled structure-of-arrays raster storage.
+ 4. Persistent collapse histories and geomorphable transitions.
+ 5. More aggressive topology proposals, admitted only by unchanged gates.
+ 6. Wider default-camera benchmarks after the small fixed pilot scenarios.
+diff --git a/research/VALIDATION.md b/research/VALIDATION.md
+index 120f02f..13092e8 100644
+--- a/research/VALIDATION.md
++++ b/research/VALIDATION.md
+@@ -1,5 +1,26 @@
+ # Validation record
+ 
++## Exact coverage audit caching
++
++The cache preserves outputs and complete audit/result records across all eight
++frozen automatic-coverage pilot assets and all 20 validation assets. Five
++sequential paired repetitions measured 40.35% lower category-balanced geometric
++mean generation time; each asset improved. The old executable also matches the
++cache-disabled implementation on the full pilot. There were no failures or
++unchanged-chain fallbacks in either complete cohort.
++
++Shelves and Quiver tree LOD5–7 passed independent 642+64 rotated-camera checks
++at 8× sampling, refining to 32×. Cached and uncached measurements agree exactly.
++No held-out assets were used; the timing result applies to the frozen small-camera
++coverage scenario, not the default quality audit or the appearance profiles.
++
++The corrected implementation passed 9/9 release and 9/9 ASan+UBSan targets
++before timing. New tests cover tiny/disabled/full budgets, oversized camera
++sweeps, reference/candidate lifetimes, high camera indices, scalar/SIMD results,
++refinement, clipping, cancellation and allocation failure. The first version's
++mutable-callback regression and incomplete timings remain documented separately.
++See the [report and raw evidence](audit-cache/REPORT.md).
++
+ ## Single production precision path
+ 
+ The cleaned float32-geometry/RGBA8/double-reducer configuration passed 5/5
+diff --git a/src/chain.cpp b/src/chain.cpp
+index 7517106..60fd999 100644
+--- a/src/chain.cpp
++++ b/src/chain.cpp
+@@ -1,6 +1,7 @@
+ #include "blitz/remesher.hpp"
+ #include "timing.hpp"
+ #include "components.hpp"
++#include "coverage.hpp"
+ #include <chrono>
+ #include <memory>
+ #include <stdexcept>
+@@ -25,6 +26,7 @@ std::string validate(const Settings& s) {
+     if(s.levels<2||s.levels>32)return "level count must be 2..32";
+     if((s.research.output&&unsigned(*s.research.output)>1)||unsigned(s.research.chain)>2||unsigned(s.objective)>3||unsigned(s.profile)>2)return "unknown mode";
+     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
++    if(s.research.coverage_cache_mib>256)return "coverage cache must be 0..256 MiB";
+     if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
+         return "maximum changed area must be in [0,1]";
+     for(double v:{s.pixels_per_meter,s.meters_per_unit,s.last_pixels})
+@@ -121,6 +123,12 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+         auto search_adj=eval_config(s,steps[level],level,false,steps[level].transition);
+         auto audit_source=eval_config(s,steps[level],level,true,steps[level].source);
+         auto audit_adj=eval_config(s,steps[level],level,true,steps[level].transition);
++        detail::CoverageCache coverage(s.profile==Profile::Coverage?uint32_t(s.research.coverage_cache_mib)*1024*1024:0,
++            result.reference_bounds);
++        // IDs expire with this level. The source and exact source parents share ID 0.
++        std::array<uint8_t,33> reference_ids{};
++        for(size_t i=0;i<beam.size();++i)
++            reference_ids[i]=same_mesh_data(source,beam[i]->lod.view(source))?0:uint8_t(i+1);
+         auto accepted=[&](const Measurement& m,size_t stage) {
+             if(m.resource_limited)result.status=Status::BudgetLimited;
+             if(m.passed)return true;
+@@ -145,13 +153,17 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+                 }
+             }
+             if(!cached) {
+-                if(!accepted(evaluate(source,view,result.reference_bounds,search_source),0))gate=1;
+-                else if(!accepted(evaluate(previous,view,result.reference_bounds,search_adj),1))gate=2;
++                coverage.begin_candidate();
++                const auto parent_index=size_t(std::find(beam.begin(),beam.end(),parent)-beam.begin());
++                const auto parent_id=reference_ids[parent_index];
++                if(!accepted(coverage.evaluate(source,view,search_source,0,false),0))gate=1;
++                else if(!accepted(coverage.evaluate(previous,view,search_adj,parent_id,false),1))gate=2;
+                 else {
+-                    candidate.source_error=evaluate(source,view,result.reference_bounds,audit_source);
++                    candidate.source_error=coverage.evaluate(source,view,audit_source,0,true);
+                     if(!accepted(candidate.source_error,2))gate=3;
+-                    else {candidate.adjacent=evaluate(previous,view,result.reference_bounds,audit_adj);if(!accepted(candidate.adjacent,3))gate=4;}
++                    else {candidate.adjacent=coverage.evaluate(previous,view,audit_adj,parent_id,true);if(!accepted(candidate.adjacent,3))gate=4;}
+                 }
++                coverage.begin_candidate();
+                 if(automatic||s.research.adaptive_targets) {
+                     size_t bytes=view.indices.size()*4+view.materials.size()*2+(candidate.shared_vertices?0:vertex_bytes(view));
+                     if(bytes<=64u*1024u*1024u-seen_bytes){seen.push_back({parent.get(),candidate,gate});seen_bytes+=bytes;}
+diff --git a/src/coverage.hpp b/src/coverage.hpp
+index db2d819..b67448d 100644
+--- a/src/coverage.hpp
++++ b/src/coverage.hpp
+@@ -1,5 +1,6 @@
+ #pragma once
+ #include "blitz/evaluate.hpp"
++#include <memory>
+ namespace blitz::detail {
+ // Owning, contiguous packed mask. Padding bits in the last word stay zero.
+ struct CoverageRaster {
+@@ -10,4 +11,30 @@ struct CoverageRaster {
+ };
+ CoverageRaster rasterize_coverage(MeshView,const Bounds&,const Camera&,double,uint8_t,bool);
+ double coverage_distance(const CoverageRaster&,const CoverageRaster&,uint8_t,bool);
++
++// Private to generation/tests. Bounds, cameras, screen size, culling and backend
++// are fixed for this level. Callers supply stable immutable reference IDs and
++// clear candidate storage before changing its mesh. No mesh storage is owned.
++class CoverageCache {
++    struct Entry { uint32_t key{}; CoverageRaster mask; std::vector<float> field; };
++    struct Store {
++        std::unique_ptr<Entry[]> entries; // Sorted keys; entry moves preserve payload allocations.
++        uint32_t count{},capacity{},limit{},bytes{};
++        Entry* find(uint32_t);
++        const CoverageRaster& raster(uint32_t,MeshView,const Bounds&,const Camera&,const EvalSettings&,uint8_t,
++            CoverageRaster&,const Store&);
++        std::span<const float> field(uint32_t,const CoverageRaster&,const EvalSettings&,std::vector<float>&,const Store&);
++        void clear();
++        void peak(const Store&,PerformanceStats*,uint32_t extra=0) const;
++    };
++    Store references_,candidate_;
++    Bounds bounds_;
++public:
++    CoverageCache(uint32_t bytes,const Bounds&);
++    void begin_candidate() { candidate_.clear(); }
++    void disable();
++    bool enabled() const { return references_.limit!=0; }
++    Measurement evaluate(MeshView,MeshView,const EvalSettings&,uint8_t reference_id,bool audit);
++    void measure(Measurement&,MeshView,MeshView,const Camera&,const EvalSettings&,uint8_t ss,uint32_t view,uint8_t reference_id,bool audit);
++};
+ }
+diff --git a/src/evaluate.cpp b/src/evaluate.cpp
+index 4c4ddd7..f389456 100644
+--- a/src/evaluate.cpp
++++ b/src/evaluate.cpp
+@@ -191,7 +191,7 @@ Raster rasterize(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_
+ detail::CoverageRaster detail::rasterize_coverage(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool force_two) {
+     return rasterize_impl<CoverageRaster>(m,b,c,screen,ss,force_two);
+ }
+-template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss,bool scalar) {
++template<class R,class Field> double coverage_distance_with(const R& a,const R& b,uint8_t ss,Field field) {
+     if(a.width!=b.width||a.height!=b.height||!ss||!valid_shape(a)||!valid_shape(b))throw std::invalid_argument("raster shapes differ");
+     bool ca=false,cb=false,same=true;
+     if constexpr(std::is_same_v<R,detail::CoverageRaster>) {
+@@ -199,11 +199,16 @@ template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss
+     } else for(size_t i=0;i<a.pixels.size();++i){ca|=covered(a,i);cb|=covered(b,i);same&=a.pixels[i].covered==b.pixels[i].covered;}
+     if(same)return 0;if(ca!=cb)return inf;
+     double maximum=0;
+-    auto directed=[&](const R& from,const R& to) {
+-        auto field=distance_field(to,scalar);
+-        for(size_t i=0;i<field.size();++i)if(covered(from,i))maximum=std::max(maximum,double(field[i]));
++    auto directed=[&](const R& from,const R& to,bool candidate) {
++        std::vector<float> scratch;auto values=field(to,candidate,scratch);
++        for(size_t i=0;i<values.size();++i)if(covered(from,i))maximum=std::max(maximum,double(values[i]));
+     };
+-    directed(a,b);directed(b,a);return std::sqrt(maximum)/ss;
++    directed(a,b,true);directed(b,a,false);return std::sqrt(maximum)/ss;
++}
++template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss,bool scalar,PerformanceStats* stats=nullptr) {
++    return coverage_distance_with(a,b,ss,[&](const R& to,bool,std::vector<float>& scratch)->std::span<const float> {
++        scratch=distance_field(to,scalar);if(stats)++stats->coverage_fields;return scratch;
++    });
+ }
+ double coverage_distance(const Raster& a,const Raster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
+ double detail::coverage_distance(const CoverageRaster& a,const CoverageRaster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
+@@ -238,16 +243,9 @@ double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s
+     if(!std::isfinite(directed(a,b))||!std::isfinite(directed(b,a)))return inf;
+     return std::sqrt(maximum);
+ }
+-template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
+-    R a,c;
+-    {
+-        detail::ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
+-        a=rasterize_impl<R>(reference,b,camera,s.screen_size,ss,s.force_two_sided);
+-        c=rasterize_impl<R>(candidate,b,camera,s.screen_size,ss,s.force_two_sided);
+-    }
+-    detail::ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
++template<class R> void finish_view(Measurement& current,const R& a,const R& c,const EvalSettings& s,uint8_t ss,double coverage) {
+     current.supersample=ss;
+-    current.coverage=coverage_distance_impl(a,c,ss,s.force_scalar);
++    current.coverage=coverage;
+     current.coverage_upper=current.coverage+2*std::sqrt(2.0)/ss+1e-6;
+     if(c.clipped||a.clipped)current.coverage_upper=inf;
+     size_t changed=0,total=0;
+@@ -267,8 +265,20 @@ template<class R> void measure_view(Measurement& current,MeshView reference,Mesh
+     current.changed_area=total?double(changed)/total:0;
+     current.passed=current.error<=s.limit&&current.changed_area<=s.max_changed_area;
+ }
++template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
++    R a,c;
++    {
++        detail::ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
++        a=rasterize_impl<R>(reference,b,camera,s.screen_size,ss,s.force_two_sided);
++        c=rasterize_impl<R>(candidate,b,camera,s.screen_size,ss,s.force_two_sided);
++        if constexpr(std::is_same_v<R,detail::CoverageRaster>)if(s.performance)s.performance->coverage_rasters+=2;
++    }
++    detail::ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
++    auto stats=s.profile==Profile::Coverage?s.performance:nullptr;
++    finish_view(current,a,c,s,ss,coverage_distance_impl(a,c,ss,s.force_scalar,stats));
++}
+ bool packed_coverage_enabled() {return true;}
+-Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
++static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s,detail::CoverageCache* cache=nullptr,uint8_t reference_id=0,bool audit=false) {
+     Measurement result;result.supersample=s.supersample;
+     if(!(s.screen_size>0)||!std::isfinite(s.screen_size)||!(b.radius>0)||!std::isfinite(b.radius)||!finite(b.center)||unsigned(s.profile)>2
+       ||!(s.limit>=0)||!std::isfinite(s.limit)||!s.supersample||s.max_supersample<s.supersample||s.max_supersample>32
+@@ -284,7 +294,15 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
+         Measurement current;current.worst_view=v;
+         for(unsigned ss=s.supersample;;ss=std::min<unsigned>(s.max_supersample,ss*2)) {
+             try {
+-                if(s.profile==Profile::Coverage)measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
++                if(s.profile==Profile::Coverage) {
++                    if(cache&&cache->enabled()) {
++                        try {cache->measure(current,reference,candidate,views[v],s,uint8_t(ss),v,reference_id,audit);}
++                        catch(const std::bad_alloc&) {
++                            cache->disable(); // Drop optional storage before retrying this view, without repolling cancellation.
++                            measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
++                        }
++                    } else measure_view<detail::CoverageRaster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
++                }
+                 else measure_view<Raster>(current,reference,candidate,b,views[v],s,uint8_t(ss));
+             }
+             catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
+@@ -305,4 +323,78 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
+     }
+     return result;
+ }
++Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
++    return evaluate_impl(reference,candidate,b,s);
++}
++namespace detail {
++CoverageCache::CoverageCache(uint32_t bytes,const Bounds& b):bounds_(b) {
++    if(bytes>256u*1024*1024)throw std::invalid_argument("coverage cache exceeds 256 MiB");
++    references_.limit=candidate_.limit=bytes/2;
++}
++void CoverageCache::Store::clear() {
++    for(uint32_t i=0;i<count;++i)entries[i]=Entry{};
++    count=0;bytes=uint32_t(capacity*sizeof(Entry));
++}
++void CoverageCache::disable() {
++    references_=Store{};candidate_=Store{};
++}
++void CoverageCache::Store::peak(const Store& other,PerformanceStats* stats,uint32_t extra) const {
++    if(stats)stats->coverage_cache_peak_bytes=std::max(stats->coverage_cache_peak_bytes,bytes+other.bytes+extra);
++}
++CoverageCache::Entry* CoverageCache::Store::find(uint32_t key) {
++    if(!count)return nullptr;
++    auto it=std::lower_bound(entries.get(),entries.get()+count,key,[](auto& e,uint32_t k){return e.key<k;});
++    return it!=entries.get()+count&&it->key==key?it:nullptr;
++}
++const CoverageRaster& CoverageCache::Store::raster(uint32_t key,MeshView mesh,const Bounds& bounds,const Camera& camera,
++    const EvalSettings& s,uint8_t ss,CoverageRaster& scratch,const Store& other) {
++    if(auto* entry=find(key)) {if(s.performance)++s.performance->coverage_mask_hits;return entry->mask;}
++    scratch=rasterize_coverage(mesh,bounds,camera,s.screen_size,ss,s.force_two_sided);
++    if(s.performance)++s.performance->coverage_rasters;
++    const size_t payload=scratch.words.capacity()*sizeof(uint64_t);
++    const uint32_t next_capacity=count==capacity?std::max(8u,capacity*2):capacity;
++    // Charge both old and new entry arrays while growing the records.
++    const size_t growth=next_capacity==capacity?0:next_capacity*sizeof(Entry);
++    if(payload+growth>limit-bytes) {if(s.performance)++s.performance->coverage_cache_bypasses;return scratch;}
++    if(growth) {
++        auto next=std::make_unique<Entry[]>(next_capacity);peak(other,s.performance,uint32_t(growth));
++        for(uint32_t i=0;i<count;++i)next[i]=std::move(entries[i]);
++        entries=std::move(next);bytes+=uint32_t((next_capacity-capacity)*sizeof(Entry));capacity=next_capacity;
++    }
++    auto it=std::lower_bound(entries.get(),entries.get()+count,key,[](auto& e,uint32_t k){return e.key<k;});
++    std::move_backward(it,entries.get()+count,entries.get()+count+1);
++    *it=Entry{key,std::move(scratch),{}};++count;bytes+=uint32_t(payload);peak(other,s.performance);
++    return it->mask;
++}
++std::span<const float> CoverageCache::Store::field(uint32_t key,const CoverageRaster& mask,const EvalSettings& s,
++    std::vector<float>& scratch,const Store& other) {
++    auto* entry=find(key);
++    if(entry&&!entry->field.empty()) {if(s.performance)++s.performance->coverage_field_hits;return entry->field;}
++    scratch=distance_field(mask,s.force_scalar);if(s.performance)++s.performance->coverage_fields;
++    const size_t payload=scratch.capacity()*sizeof(float);
++    if(!entry||payload>limit-bytes) {if(s.performance)++s.performance->coverage_cache_bypasses;return scratch;}
++    entry->field=std::move(scratch);bytes+=uint32_t(payload);peak(other,s.performance);return entry->field;
++}
++void CoverageCache::measure(Measurement& current,MeshView reference,MeshView candidate,const Camera& camera,
++    const EvalSettings& s,uint8_t ss,uint32_t view,uint8_t reference_id,bool audit) {
++    // ViewSet allows at most 131070 views (17 bits); sampling needs 6 bits.
++    const uint32_t candidate_key=(uint32_t(audit)<<23)|(view<<6)|ss;
++    const uint32_t reference_key=(uint32_t(reference_id)<<24)|candidate_key;
++    CoverageRaster reference_scratch,candidate_scratch;
++    const CoverageRaster *a,*c;
++    {
++        ScopedTime timer(s.performance?&s.performance->raster_ns:nullptr);
++        a=&references_.raster(reference_key,reference,bounds_,camera,s,ss,reference_scratch,candidate_);
++        c=&candidate_.raster(candidate_key,candidate,bounds_,camera,s,ss,candidate_scratch,references_);
++    }
++    ScopedTime timer(s.performance?&s.performance->distance_ns:nullptr);
++    double distance=coverage_distance_with(*a,*c,ss,[&](const CoverageRaster& to,bool is_candidate,std::vector<float>& scratch) {
++        return is_candidate?candidate_.field(candidate_key,to,s,scratch,references_):references_.field(reference_key,to,s,scratch,candidate_);
++    });
++    finish_view(current,*a,*c,s,ss,distance);
++}
++Measurement CoverageCache::evaluate(MeshView reference,MeshView candidate,const EvalSettings& s,uint8_t reference_id,bool audit) {
++    return evaluate_impl(reference,candidate,bounds_,s,this,reference_id,audit);
++}
++}
+ }
+diff --git a/src/io.cpp b/src/io.cpp
+index e238bbb..ac8bcd3 100644
+--- a/src/io.cpp
++++ b/src/io.cpp
+@@ -335,7 +335,7 @@ json settings_json(const Settings& s) {
+       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
+       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
+       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
+-      {"research",{{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
++      {"research",{{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+ }
+ Settings settings_json(const json& original,bool legacy_research) {
+     auto input=original;
+@@ -361,6 +361,9 @@ Settings settings_json(const json& original,bool legacy_research) {
+     auto views=[&](const char* key){auto v=j.at(key);int o=v.at("orthographic"),p=v.at("perspective");if(o<0||p<0||o>65535||p>65535)fail("camera count out of range");return ViewSet{uint16_t(o),uint16_t(p),v.at("seed")};};
+     s.search_views=views("search_views");s.audit_views=views("audit_views");s.prune=j.at("prune");s.force_scalar=j.at("force_scalar");s.coupled_wedges=j.at("coupled_wedges");
+     auto experimental=j.at("research");
++    const auto& cache=experimental.at("coverage_cache_mib");
++    if(!cache.is_number_integer()||cache<0||cache>256)fail("coverage cache must be an integer in 0..256 MiB");
++    s.research.coverage_cache_mib=cache.get<uint16_t>();
+     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
+     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
+     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));
+diff --git a/tests/io_tests.cpp b/tests/io_tests.cpp
+index 8433824..cd1e7e8 100644
+--- a/tests/io_tests.cpp
++++ b/tests/io_tests.cpp
+@@ -91,6 +91,12 @@ int main() {
+         for(double cap:{0.,.5,1.})CHECK(settings_json(nlohmann::json{{"max_changed_area",cap}}).max_changed_area==cap);
+         for(double cap:{-.01,1.01})throws([&]{settings_json(nlohmann::json{{"max_changed_area",cap}});});
+         auto fallback=settings_json(nlohmann::json{{"research",{{"topology_fallback",true}}}});
++        for(int mib:{0,3,256}) {
++            auto cached=settings_json(nlohmann::json{{"research",{{"coverage_cache_mib",mib}}}});
++            CHECK(cached.research.coverage_cache_mib==mib&&settings_json(cached)["research"]["coverage_cache_mib"]==mib);
++        }
++        for(auto bad:nlohmann::json::array({-1,257,1.5,"64",true,nullptr}))
++            throws([&]{settings_json(nlohmann::json{{"research",{{"coverage_cache_mib",bad}}}});});
+         CHECK(fallback.research.topology_fallback&&settings_json(fallback)["research"]["topology_fallback"]==true);
+         throws([&]{settings_json(nlohmann::json{{"objective","topology_relaxed"},{"research",{{"topology_fallback",true}}}});});
+         CHECK(std::filesystem::file_size(dir/"distinct/chain.bin")==storage_stats(r).total());
+diff --git a/tools/benchmark.cpp b/tools/benchmark.cpp
+index fec2fae..22fabe7 100644
+--- a/tools/benchmark.cpp
++++ b/tools/benchmark.cpp
+@@ -208,6 +208,8 @@ int benchmark_main(int argc,char** argv) {
+                 row["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
+                 row["numerics"]={{"solve_attempts",work.solve_attempts},{"singular_solves",work.singular_solves},{"nonfinite_solves",work.nonfinite_solves},
+                   {"position_fallbacks",work.position_fallbacks},{"nonfinite_costs",work.nonfinite_costs}};
++                row["coverage_cache"]={{"rasters",work.coverage_rasters},{"fields",work.coverage_fields},{"mask_hits",work.coverage_mask_hits},
++                  {"field_hits",work.coverage_field_hits},{"bypasses",work.coverage_cache_bypasses},{"peak_bytes",work.coverage_cache_peak_bytes}};
+                 row["result"]=result_json(result);
+                 row["complete"]=result.status==Status::Complete;
+                 double triangles=0;for(size_t i=1;i<result.lods.size();++i)triangles+=result.lods[i].data.indices.size()/3;
+diff --git a/tools/tail_audit.cpp b/tools/tail_audit.cpp
+index f195c28..6a6ba97 100644
+--- a/tools/tail_audit.cpp
++++ b/tools/tail_audit.cpp
+@@ -1,4 +1,5 @@
+ #include "blitz/io.hpp"
++#include "coverage.hpp"
+ #include <openssl/sha.h>
+ #include <chrono>
+ #include <fstream>
+@@ -22,8 +23,9 @@ static json measurement(Measurement m,double pixel_limit,double area_limit) {
+ }
+ int main(int argc,char** argv){
+     try{
+-        if(argc!=4&&argc!=5)throw std::invalid_argument("blitz-tail-audit RUN_DIRECTORY ASSET_ID OUTPUT.json [ROTATION_SEED]");
+-        auto seed=argc==5?std::stoull(argv[4],nullptr,0):uint64_t(0xB1172026);if(seed>UINT32_MAX)throw std::invalid_argument("invalid rotation seed");
++        if(argc<4||argc>6)throw std::invalid_argument("blitz-tail-audit RUN_DIRECTORY ASSET_ID OUTPUT.json [ROTATION_SEED [CACHE_MIB]]");
++        auto seed=argc>=5?std::stoull(argv[4],nullptr,0):uint64_t(0xB1172026);if(seed>UINT32_MAX)throw std::invalid_argument("invalid rotation seed");
++        auto cache_mib=argc==6?std::stoull(argv[5]):0;if(cache_mib>256)throw std::invalid_argument("cache must be 0..256 MiB");
+         fs::path run=argv[1],dir=run/"meshes"/argv[2];auto row=read(run/"rows"/(std::string(argv[2])+".json")),meta=read(run/"metadata.json");
+         if(!row.at("complete").get<bool>()||row.value("failed",false)||row.at("run_sha256")!=meta.at("run_sha256"))throw std::runtime_error("invalid audit input");
+         auto settings=settings_json(meta.at("config"),true);auto g=read(dir/"chain.gltf");auto levels=row.at("result").at("lods");
+@@ -38,17 +40,19 @@ int main(int argc,char** argv){
+ #if defined(__linux__)
+         report["binary_sha256"]=hash("/proc/self/exe");
+ #endif
+-        auto begin=std::chrono::steady_clock::now();
++        auto begin=std::chrono::steady_clock::now();PerformanceStats work;
+         const size_t first=std::max<size_t>(1,levels.size()>3?levels.size()-3:1);
+         for(size_t i=first;i<levels.size();++i) {
+             auto current=load_gltf_mesh(dir/"chain.gltf",g.at("nodes").at(i).at("mesh"));
+             auto previous=load_gltf_mesh(dir/"chain.gltf",g.at("nodes").at(i-1).at("mesh"));
+             EvalSettings e;e.profile=settings.profile;e.weights=settings.weights;e.screen_size=levels[i].at("screen_pixels");e.views.rotation_seed=uint32_t(seed);
+             e.max_changed_area=settings.max_changed_area;
++            e.performance=&work;
+             double t=settings.levels==2?0:double(i-1)/(settings.levels-2);
+             e.weights.normal*=settings.normal_importance.at(t);e.weights.color*=settings.attribute_importance.at(t);e.weights.material*=settings.attribute_importance.at(t);
+-            e.limit=levels[i].at("source_limit");auto src=evaluate(source.view(),current.view(),reference,e);
+-            e.limit=levels[i].at("transition_limit");auto adj=evaluate(previous.view(),current.view(),reference,e);
++            detail::CoverageCache cache(settings.profile==Profile::Coverage?uint32_t(cache_mib)*1024*1024:0,reference);
++            e.limit=levels[i].at("source_limit");auto src=cache.evaluate(source.view(),current.view(),e,0,true);
++            e.limit=levels[i].at("transition_limit");auto adj=cache.evaluate(previous.view(),current.view(),e,1,true);
+             if(!src.passed||!adj.passed)report["passed"]=false;
+             report["lods"].push_back({{"level",i},{"triangles",current.view().triangles()},{"screen_pixels",e.screen_size},
+                 {"source_limit",levels[i].at("source_limit")},{"transition_limit",e.limit},{"max_changed_area",e.max_changed_area},
+@@ -57,6 +61,10 @@ int main(int argc,char** argv){
+             std::cerr<<argv[2]<<" LOD"<<i<<" source="<<src.passed<<" adjacent="<<adj.passed<<'\n';
+         }
+         report["seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
++        report["coverage_cache"]={{"mib",cache_mib},{"rasters",work.coverage_rasters},{"fields",work.coverage_fields},
++            {"mask_hits",work.coverage_mask_hits},{"field_hits",work.coverage_field_hits},{"bypasses",work.coverage_cache_bypasses},
++            {"peak_bytes",work.coverage_cache_peak_bytes}};
++        report["stage_seconds"]={{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
+         fs::path output=argv[3];if(!output.parent_path().empty())fs::create_directories(output.parent_path());
+         std::ofstream out(output);out<<report.dump(2)<<'\n';if(!out)throw std::runtime_error("cannot write tail audit");
+         std::cout<<json{{"passed",report["passed"]},{"seconds",report["seconds"]}}.dump(2)<<'\n';

@@ -70,11 +70,18 @@ An exact source fallback uses the mathematical identity shortcut. Other
 proposals pay the raster uncertainty allowance. Reports identify the camera
 and sampling settings; changing them creates a different scenario.
 
+Coverage generation reuses exact packed masks and float32 squared distance
+fields. Reference entries live for one scheduled level; candidate entries live
+for one offer across source/adjacent search/audit comparisons. Bounded admission
+retains a useful subset when the camera sweep exceeds the allowance. This
+preserves the existing transform, view order and gates. The [cache experiment](audit-cache/REPORT.md)
+records repeated timing, exact output agreement and independent dense checks.
+
 ## Next research opportunities
 
 1. Attribute transfer and placement for the implemented coupled wedge proposals.
 2. Attribute quadrics and genuine render-derived proposal priorities.
-3. Visibility caches / tiled structure-of-arrays raster storage.
+3. Normal/attribute visibility caches and tiled structure-of-arrays raster storage.
 4. Persistent collapse histories and geomorphable transitions.
 5. More aggressive topology proposals, admitted only by unchanged gates.
 6. Wider default-camera benchmarks after the small fixed pilot scenarios.

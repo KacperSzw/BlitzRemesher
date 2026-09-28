@@ -91,6 +91,12 @@ int main() {
         for(double cap:{0.,.5,1.})CHECK(settings_json(nlohmann::json{{"max_changed_area",cap}}).max_changed_area==cap);
         for(double cap:{-.01,1.01})throws([&]{settings_json(nlohmann::json{{"max_changed_area",cap}});});
         auto fallback=settings_json(nlohmann::json{{"research",{{"topology_fallback",true}}}});
+        for(int mib:{0,3,256}) {
+            auto cached=settings_json(nlohmann::json{{"research",{{"coverage_cache_mib",mib}}}});
+            CHECK(cached.research.coverage_cache_mib==mib&&settings_json(cached)["research"]["coverage_cache_mib"]==mib);
+        }
+        for(auto bad:nlohmann::json::array({-1,257,1.5,"64",true,nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"coverage_cache_mib",bad}}}});});
         CHECK(fallback.research.topology_fallback&&settings_json(fallback)["research"]["topology_fallback"]==true);
         throws([&]{settings_json(nlohmann::json{{"objective","topology_relaxed"},{"research",{{"topology_fallback",true}}}});});
         CHECK(std::filesystem::file_size(dir/"distinct/chain.bin")==storage_stats(r).total());

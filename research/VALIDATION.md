@@ -1,5 +1,29 @@
 # Validation record
 
+## Exact coverage audit caching
+
+The cache preserves outputs and complete audit/result records across all eight
+frozen automatic-coverage pilot assets and all 20 validation assets. Five
+sequential paired repetitions measured 40.35% lower category-balanced geometric
+mean generation time; each asset improved. The old executable also matches the
+cache-disabled implementation on the full pilot. There were no failures or
+unchanged-chain fallbacks in either complete cohort.
+
+Shelves and Quiver tree LOD5–7 passed independent 642+64 rotated-camera checks
+at 8× sampling, refining to 32×. Cached and uncached measurements agree exactly.
+No held-out assets were used; the timing result applies to the frozen small-camera
+coverage scenario, not the default quality audit or the appearance profiles.
+
+The corrected implementation passed 9/9 release and 9/9 ASan+UBSan targets
+before timing and again after enabling the 256 MiB default. All eight pilot
+assets were then replayed with the cache key omitted; their results and cache
+counters exactly match the explicitly enabled measured binary.
+New tests cover tiny/disabled/full budgets, oversized camera
+sweeps, reference/candidate lifetimes, high camera indices, scalar/SIMD results,
+refinement, clipping, cancellation and allocation failure. The first version's
+mutable-callback regression and incomplete timings remain documented separately.
+See the [report and raw evidence](audit-cache/REPORT.md).
+
 ## Single production precision path
 
 The cleaned float32-geometry/RGBA8/double-reducer configuration passed 5/5

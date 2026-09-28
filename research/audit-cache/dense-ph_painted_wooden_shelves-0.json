@@ -1,0 +1,151 @@
+{
+  "audit": {
+    "max_changed_area": 0.5,
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 3665436710,
+    "supersample": 8
+  },
+  "binary_sha256": "28c04372002424e9588effd5fe1085a00309718ee167a555f90b2cf869338c6d",
+  "chain_bin_sha256": "2395ed5e0c7f7fec91bd009e81be832685a748d72843a211db7a9f6002ca2887",
+  "chain_gltf_sha256": "a45edc9ac76185393160aca4540da07fefade2db68e1a6090ea3c0972dde8c4d",
+  "coverage_cache": {
+    "bypasses": 0,
+    "field_hits": 0,
+    "fields": 8462,
+    "mask_hits": 0,
+    "mib": 0,
+    "peak_bytes": 0,
+    "rasters": 8472
+  },
+  "id": "ph_painted_wooden_shelves",
+  "lods": [
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.002325473233803079,
+        "changed_area_worst_view": 379,
+        "complete": true,
+        "coverage_upper_px": 0.8535543905932738,
+        "distance_passed": true,
+        "error_px": 0.8535543905932738,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 230
+      },
+      "level": 5,
+      "max_changed_area": 0.5,
+      "screen_pixels": 43.0688061642354,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.010342823939570018,
+        "changed_area_worst_view": 86,
+        "complete": true,
+        "coverage_upper_px": 1.3055260288262622,
+        "distance_passed": true,
+        "error_px": 1.3055260288262622,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 269
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 281
+    },
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.030864935997128844,
+        "changed_area_worst_view": 157,
+        "complete": true,
+        "coverage_upper_px": 1.3298356000816054,
+        "distance_passed": true,
+        "error_px": 1.3298356000816054,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 183
+      },
+      "level": 6,
+      "max_changed_area": 0.5,
+      "screen_pixels": 26.25073139224442,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.03074530446225625,
+        "changed_area_worst_view": 157,
+        "complete": true,
+        "coverage_upper_px": 1.3535543905932736,
+        "distance_passed": true,
+        "error_px": 1.3535543905932736,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 297
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 140
+    },
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.07596899224806201,
+        "changed_area_worst_view": 161,
+        "complete": true,
+        "coverage_upper_px": 1.237437867076458,
+        "distance_passed": true,
+        "error_px": 1.237437867076458,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 148
+      },
+      "level": 7,
+      "max_changed_area": 0.5,
+      "screen_pixels": 16.0,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.07474600870827286,
+        "changed_area_worst_view": 466,
+        "complete": true,
+        "coverage_upper_px": 1.254942209459271,
+        "distance_passed": true,
+        "error_px": 1.254942209459271,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 148
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 70
+    }
+  ],
+  "passed": true,
+  "profile": "coverage",
+  "purpose": "Dense independent tail check; does not rewrite pilot SCORE or select replacement meshes",
+  "row_sha256": "385f2dc6f64c640569b22f037c8a57dddd9f96f62d959c100dde807c57173076",
+  "run": "pilot-1-256",
+  "run_sha256": "af7f9ff587ecfc8bf87c3cf8e92249286a31cadbc5c1d84eda8575ed402f015c",
+  "seconds": 17.874058697,
+  "stage_seconds": {
+    "distance": 13.273695492000002,
+    "raster": 4.597383433
+  },
+  "version": 2
+}

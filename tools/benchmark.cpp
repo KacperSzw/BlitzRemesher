@@ -208,6 +208,8 @@ int benchmark_main(int argc,char** argv) {
                 row["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
                 row["numerics"]={{"solve_attempts",work.solve_attempts},{"singular_solves",work.singular_solves},{"nonfinite_solves",work.nonfinite_solves},
                   {"position_fallbacks",work.position_fallbacks},{"nonfinite_costs",work.nonfinite_costs}};
+                row["coverage_cache"]={{"rasters",work.coverage_rasters},{"fields",work.coverage_fields},{"mask_hits",work.coverage_mask_hits},
+                  {"field_hits",work.coverage_field_hits},{"bypasses",work.coverage_cache_bypasses},{"peak_bytes",work.coverage_cache_peak_bytes}};
                 row["result"]=result_json(result);
                 row["complete"]=result.status==Status::Complete;
                 double triangles=0;for(size_t i=1;i<result.lods.size();++i)triangles+=result.lods[i].data.indices.size()/3;

@@ -106,7 +106,17 @@ runtime feature dispatch and scalar fallback. Stream raster data and bound
 caches. Parallelize assets/views before topology mutation.
 Coverage-only evaluation uses an exact packed mask and skips attribute/depth
 work. The full public rasterizer remains available, and the per-view sample
-cap and all acceptance/refinement rules are unchanged. Production has one
+cap and all acceptance/refinement rules are unchanged. Coverage generation
+caches those masks and the existing float32 squared distance fields under a
+per-bake allowance. C++/CLI `research.coverage_cache_mib` accepts 0..256 MiB,
+default 256; zero disables caching. Half belongs to references for one scheduled level, half to
+the current candidate. Full stores bypass new entries without evicting retained
+ones. Allocation failure drops optional storage and retries the current view
+without an extra cancellation poll. Charged bytes include retained vector and
+entry capacities, including overlapping entry arrays during growth; ordinary
+evaluator scratch and allocator bookkeeping are outside the cache allowance.
+The cache preserves view order, refinement, float distances and acceptance.
+Public standalone evaluation is uncached. Production has one
 precision path: float32 geometry, double quadric storage/arithmetic/solving,
 and double candidate costs. Float quadric/cost variants are archived research.
 UNORM16 positions are excluded following the feasibility probe; supplied

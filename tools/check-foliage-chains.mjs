@@ -1,10 +1,11 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
-const plan=JSON.parse(await readFile('research/foliage/chains.json','utf8')),root='research/runs/'+plan.run;
+const plan=JSON.parse(await readFile('research/foliage/chains.json','utf8')),root=process.argv[2]||'research/runs/'+plan.run;
 const metadata=JSON.parse(await readFile(root+'/metadata.json','utf8')),hash=b=>createHash('sha256').update(b).digest('hex');
+const jobs=process.argv[2]?metadata.cohort.map(id=>({id,output:metadata.config.output})):plan.examples;
 const report={run_sha256:metadata.run_sha256,scope:'card_geometry_only',scored:false,complete:false,assets:[],geometry_gates:0};
-for(const job of plan.examples){
+for(const job of jobs){
   const row=JSON.parse(await readFile(root+'/rows/'+job.id+'.json','utf8'));
   const text=await readFile(root+'/meshes/'+job.id+'/chain.gltf'),g=JSON.parse(text),binary=await readFile(root+'/meshes/'+job.id+'/chain.bin');
   assert.equal(row.run_sha256,metadata.run_sha256);assert.equal(hash(text),row.gltf_sha256);assert.equal(hash(binary),row.output_sha256);assert.ok(row.complete&&!row.failed);
@@ -22,7 +23,7 @@ for(const job of plan.examples){
     }
     assert.equal(count,lod.triangles);triangles.push(count);shared.push(lod.shared_vertices);
   }
-  assert.equal(triangles[0],row.input.triangles);assert.equal(triangles.length,plan.config.levels);
+  assert.equal(triangles[0],row.input.triangles);assert.equal(triangles.length,metadata.config.levels);
   report.assets.push({id:job.id,triangles,shared_vertices:shared,bake_seconds:row.generation_seconds,output:job.output,runtime_levels:row.result.runtime_lod_count,passed:true});
 }
-report.complete=true;await writeFile('research/foliage/chain-checks.json',JSON.stringify(report,null,2)+'\n');console.log(report.assets.length+' chains, '+report.geometry_gates+' geometry gates, exported indices and shared vertex accessors verified.');
+report.complete=true;await writeFile(process.argv[3]||'research/foliage/chain-checks.json',JSON.stringify(report,null,2)+'\n');console.log(report.assets.length+' chains, '+report.geometry_gates+' geometry gates, exported indices and shared vertex accessors verified.');

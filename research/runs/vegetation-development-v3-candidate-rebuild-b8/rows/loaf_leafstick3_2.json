@@ -1,0 +1,535 @@
+{
+  "id": "loaf_leafstick3_2",
+  "category": "leafy_branch",
+  "run_sha256": "55af18ee000c781e79a9fd3085197049ce8186d3d9d8265bc5a94e55dcde1b0e",
+  "scope": "foliage_card_geometry_only",
+  "scored": false,
+  "complete": true,
+  "failed": false,
+  "config": {
+    "attribute_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 512,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "hybrid",
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16,
+    "levels": 8,
+    "max_lod0_delta_px": 8,
+    "max_supersample": 8,
+    "meters_per_unit": 1,
+    "normal_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "objective": "quadric",
+    "output": "rebuild",
+    "pixels_per_meter": 512,
+    "profile": "coverage",
+    "prune": true,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "weights": {
+      "color": 4,
+      "material": 4,
+      "normal": 5.729577951308232
+    },
+    "research": {
+      "boundary_weight": 10,
+      "boundary_placement": true,
+      "independent_seams": true,
+      "adaptive_targets": true,
+      "trace": false
+    }
+  },
+  "output_mode": "rebuild",
+  "input": {
+    "binary_sha256": "11d621199df7c1ea12a4aa0217738a7b2e6be1fac7db6a8d934119b1fa5a612a",
+    "gltf_sha256": "5da192587b31b81be8863cfd1349901d08b18402f8b6b9c5482a8573571f29e8",
+    "id": "loaf_leafstick3_2",
+    "source_geometry_sha256": "875b8cb962d5f273b353a9fffb5e1957edd3488ffca1ee36687b3d19af92866f",
+    "source_model": "packages/oga_foliage1/content/GLTF/Generic_Foliage.gltf",
+    "source_selector": {
+      "mesh": 32
+    },
+    "triangles": 88,
+    "vertex_contract": "World-transformed imported positions and UV0; reuse refers to this immutable LOD0 buffer, not original file bytes"
+  },
+  "seconds": 8.218691203000024,
+  "stderr": "",
+  "result": {
+    "candidate_evaluations": 56,
+    "export_seconds": 0.000598769,
+    "generation_seconds": 8.211726684,
+    "lods": [
+      {
+        "adjacent": {
+          "changed_area": 0,
+          "complete": true,
+          "coverage_px": 0,
+          "coverage_upper_px": 0,
+          "error_px": 0,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "screen_pixels": 512,
+        "shared_vertices": true,
+        "source": {
+          "changed_area": 0,
+          "complete": true,
+          "coverage_px": 0,
+          "coverage_upper_px": 0,
+          "error_px": 0,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "source_limit": 0,
+        "transition_limit": 0,
+        "triangles": 88,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 14.193296239117853,
+          "max_density": 1.785035112185155,
+          "mean_density": 0.7709962175490507,
+          "negative_winding_faces": 78
+        },
+        "vertices": 165
+      },
+      {
+        "adjacent": {
+          "changed_area": 0,
+          "complete": true,
+          "coverage_px": 0,
+          "coverage_upper_px": 0,
+          "error_px": 0,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "screen_pixels": 312.0674954763457,
+        "shared_vertices": true,
+        "source": {
+          "changed_area": 0,
+          "complete": true,
+          "coverage_px": 0,
+          "coverage_upper_px": 0,
+          "error_px": 0,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "source_limit": 2,
+        "transition_limit": 2,
+        "triangles": 88,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 14.193296239117853,
+          "max_density": 1.785035112185155,
+          "mean_density": 0.7709962175490507,
+          "negative_winding_faces": 78
+        },
+        "vertices": 165
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.002208577045360775,
+          "complete": true,
+          "coverage_px": 1.625,
+          "coverage_upper_px": 2.121321343559643,
+          "error_px": 2.121321343559643,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 10
+        },
+        "screen_pixels": 190.2072690095294,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.002208577045360775,
+          "complete": true,
+          "coverage_px": 1.6770509831248424,
+          "coverage_upper_px": 2.38415876431139,
+          "error_px": 2.38415876431139,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "source_limit": 3.385680320871143,
+        "transition_limit": 2.166666666666667,
+        "triangles": 85,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 14.193296239117853,
+          "max_density": 1.7850372383950863,
+          "mean_density": 0.7352067300161118,
+          "negative_winding_faces": 75
+        },
+        "vertices": 162
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.04388524191587649,
+          "complete": true,
+          "coverage_px": 1.741048534648015,
+          "coverage_upper_px": 2.2882466112707376,
+          "error_px": 2.2882466112707376,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 15
+        },
+        "screen_pixels": 115.93262902578006,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.04411764705882353,
+          "complete": true,
+          "coverage_px": 1.75,
+          "coverage_upper_px": 2.4571077811865476,
+          "error_px": 2.4571077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 2
+        },
+        "source_limit": 4.3969286032899895,
+        "transition_limit": 2.3333333333333335,
+        "triangles": 74,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 14.25399932501587,
+          "max_density": 1.5380648784660522,
+          "mean_density": 0.6793730944036755,
+          "negative_winding_faces": 64
+        },
+        "vertices": 145
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.07918585648492052,
+          "complete": true,
+          "coverage_px": 2.0348525745124633,
+          "coverage_upper_px": 2.3884069651057374,
+          "error_px": 2.3884069651057374,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "screen_pixels": 70.661728875124,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.08300044385264092,
+          "complete": true,
+          "coverage_px": 2.1213203435596424,
+          "coverage_upper_px": 2.82842812474619,
+          "error_px": 2.82842812474619,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 3
+        },
+        "source_limit": 5.179958001986355,
+        "transition_limit": 2.5,
+        "triangles": 55,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 10.778458778558447,
+          "max_density": 1.272360237523673,
+          "mean_density": 0.5653601433858059,
+          "negative_winding_faces": 45
+        },
+        "vertices": 120
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.2920908379013312,
+          "complete": true,
+          "coverage_px": 2,
+          "coverage_upper_px": 2.6110510576525248,
+          "error_px": 2.6110510576525248,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 2
+        },
+        "screen_pixels": 43.0688061642354,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.30877862595419847,
+          "complete": true,
+          "coverage_px": 2,
+          "coverage_upper_px": 2.7071077811865476,
+          "error_px": 2.7071077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 7
+        },
+        "source_limit": 5.823886432980217,
+        "transition_limit": 2.666666666666667,
+        "triangles": 41,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 17.11661871668015,
+          "max_density": 1.2723645826331018,
+          "mean_density": 0.5896023697671536,
+          "negative_winding_faces": 36
+        },
+        "vertices": 108
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.19754768392370572,
+          "complete": true,
+          "coverage_px": 1.75,
+          "coverage_upper_px": 2.4571077811865476,
+          "error_px": 2.4571077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 14
+        },
+        "screen_pixels": 26.25073139224442,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.41057692307692306,
+          "complete": true,
+          "coverage_px": 1.75,
+          "coverage_upper_px": 2.4571077811865476,
+          "error_px": 2.4571077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 14
+        },
+        "source_limit": 6.3830318745028745,
+        "transition_limit": 2.833333333333333,
+        "triangles": 20,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 17.11661871668015,
+          "max_density": 0.551616137747257,
+          "mean_density": 0.27939470995471993,
+          "negative_winding_faces": 15
+        },
+        "vertices": 45
+      },
+      {
+        "adjacent": {
+          "changed_area": 0,
+          "complete": true,
+          "coverage_px": 0,
+          "coverage_upper_px": 0,
+          "error_px": 0,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "screen_pixels": 16,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.3700623700623701,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "source_limit": 6.890501505120695,
+        "transition_limit": 3,
+        "triangles": 20,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 17.11661871668015,
+          "max_density": 0.551616137747257,
+          "mean_density": 0.27939470995471993,
+          "negative_winding_faces": 15
+        },
+        "vertices": 45
+      }
+    ],
+    "output": "research/runs/vegetation-development-v3-candidate-rebuild-b8/meshes/loaf_leafstick3_2",
+    "proposal_diagnostics": {
+      "component_builds": 0,
+      "component_unavailable": 0,
+      "duplicate_proposals": 1
+    },
+    "rejections": {
+      "adjacent_audit": {
+        "count": 2,
+        "worst": {
+          "changed_area": 0.314865392118611,
+          "complete": false,
+          "coverage_px": 2.5155764746872635,
+          "coverage_upper_px": 2.8691308652805376,
+          "error_px": 2.8691308652805376,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 4,
+          "worst_view": 3
+        }
+      },
+      "adjacent_search": {
+        "count": 23,
+        "worst": {
+          "changed_area": 0.4206896551724138,
+          "complete": false,
+          "coverage_px": 5,
+          "coverage_upper_px": 6.414214562373095,
+          "error_px": 6.414214562373095,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 2,
+          "views_evaluated": 1,
+          "worst_view": 0
+        }
+      },
+      "source_audit": {
+        "count": 0,
+        "worst": null
+      },
+      "source_search": {
+        "count": 18,
+        "worst": {
+          "changed_area": 0.9994482927726354,
+          "complete": false,
+          "coverage_px": 307.5406477199396,
+          "coverage_upper_px": 308.9548622823127,
+          "error_px": 308.9548622823127,
+          "nonfinite_error": false,
+          "normal_degrees": 0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 2,
+          "views_evaluated": 1,
+          "worst_view": 0
+        }
+      }
+    },
+    "runtime_levels": [
+      0,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "runtime_lod_count": 6,
+    "seconds": 8.212325453,
+    "stage_seconds": {
+      "distance": 7.496459397000001,
+      "raster": 0.7104603820000001,
+      "reduction": 0.003503373
+    },
+    "status": "complete",
+    "version": 1
+  },
+  "generation_seconds": 8.211726684,
+  "export_seconds": 0.000598769,
+  "peak_rss_kib": 60116,
+  "output_sha256": "56aefbd6bc336ca98536a9d0b05f703eb9cef4f5fcc5500f1a54cb80ce71f4b5",
+  "gltf_sha256": "d9e5358c0537ff3fe7d1a28274945c3d3c3411bcd3e850fefd8bc4d8cc9d7b11",
+  "ratio": 0.6217532467532467,
+  "final_ratio": 0.22727272727272727,
+  "tail_ratio": 0.3068181818181818
+}

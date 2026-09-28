@@ -7,6 +7,11 @@ enum class ChainMode:uint8_t { Direct,Progressive,Hybrid };
 enum class Objective:uint8_t { Quadric,Regularized,Visual,TopologyRelaxed };
 enum class Status:uint8_t { Complete,BudgetLimited,Cancelled };
 struct Curve { std::vector<Vec2> points{{0,2},{1,3}}; double at(double) const; };
+// Opt-in proposal experiments. Acceptance, output ownership and C ABI are unchanged.
+struct ResearchOptions {
+    double boundary_weight{};
+    bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{};
+};
 struct Settings {
     uint8_t levels{8}; OutputMode output{OutputMode::Rebuild};
     ChainMode chain{ChainMode::Hybrid}; Objective objective{Objective::Quadric};
@@ -20,6 +25,7 @@ struct Settings {
     uint16_t candidate_budget{64}; uint8_t beam_width{8};
     bool prune{true},force_scalar{},coupled_wedges{true}; std::function<bool()> cancelled;
     PerformanceStats* performance{}; // Borrowed; reset at the start of generate().
+    ResearchOptions research{};
 };
 struct ScheduleEntry { double pixels{},transition{},source{}; };
 std::vector<ScheduleEntry> schedule(const Bounds&,const Settings&);
@@ -33,12 +39,21 @@ struct Lod {
         source.indices=data.indices; source.materials=data.materials; return source;
     }
 };
+struct ProposalTrace {
+    uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
+    uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
+    double seconds{};
+    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2.
+    // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8.
+};
 struct Result {
     MeshView source; Bounds reference_bounds; std::vector<Lod> lods;
     Status status{Status::Complete}; uint64_t candidate_evaluations{};
     // Source search, adjacent search, source audit, adjacent audit.
     std::array<uint64_t,4> rejected_gates{};
     std::array<Measurement,4> worst_rejected{};
+    std::vector<ProposalTrace> proposals;
+    uint64_t duplicate_proposals{},component_builds{},component_unavailable{};
 };
 // First scheduled slot of each consecutive group with identical render data.
 // Scheduled slots and their independent audit records remain unchanged (at most 32).
@@ -56,6 +71,9 @@ struct ReduceSettings {
     size_t target_triangles{}; double normal_weight{1},regularization{1e-5};
     bool prune{},coupled_wedges{}; std::function<bool()> cancelled;
     ReductionStats* statistics{}; // Optional borrowed diagnostic output, reset per reduction.
+    double boundary_weight{};
+    bool boundary_placement{};
+    bool independent_seams{}; // Collapse within each original chart; never weld attribute vertices.
 };
 Lod reduce(MeshView,const ReduceSettings&);
 using Proposer=std::function<Lod(MeshView,const ReduceSettings&)>;

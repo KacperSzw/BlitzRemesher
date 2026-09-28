@@ -1,0 +1,196 @@
+{
+  "intro": "Six nature assets in both vertex modes. Fern and Broadleaf tree have paired before/after chains. Every tile contains the actual baked geometry; use target scale to inspect the distant LODs.",
+  "audit_note": "The new comparisons use the same eight-proposal budget and sampled pixel gates. Dense tail checks are reported separately and can fail. Coverage change is a filled-geometry diagnostic, not an opacity or shading score. Rows 01–04 are archived opaque examples.",
+  "stats": [
+    {
+      "label": "Shared · tail improvement",
+      "value": "55.8%",
+      "detail": "Lower retained ratio vs control · same six assets, category balance and budget"
+    },
+    {
+      "label": "Rebuilt · tail improvement",
+      "value": "49.4%",
+      "detail": "Lower retained ratio vs control · same six assets, category balance and budget"
+    },
+    {
+      "label": "Nature research collection",
+      "value": "40",
+      "detail": "28 development models · 12 validation models · families kept together"
+    },
+    {
+      "label": "Dense tail checks passed",
+      "value": "16/16",
+      "detail": "706-camera set · source and adjacent checks · 8× to 32× sampling"
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "ph_grass_medium_02_clump_4",
+      "name": "Grass clump",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 1008,
+      "after_final": 382,
+      "before_tail": 4032,
+      "after_tail": 2677,
+      "before_seconds": 2.312982724,
+      "after_seconds": 13.755205806,
+      "before_area": 0.16804407713498623,
+      "after_area": 0.26286509040333794
+    },
+    {
+      "id": "ph_grass_medium_02_clump_4",
+      "name": "Grass clump",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 1008,
+      "after_final": 245,
+      "before_tail": 4032,
+      "after_tail": 2539,
+      "before_seconds": 2.299531325,
+      "after_seconds": 15.417479534,
+      "before_area": 0.15586206896551724,
+      "after_area": 0.35501355013550134
+    },
+    {
+      "id": "ph_fern_02_clump_1",
+      "name": "Fern fronds",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 482,
+      "after_final": 260,
+      "before_tail": 1929,
+      "after_tail": 780,
+      "before_seconds": 3.820789867,
+      "after_seconds": 31.628428689,
+      "before_area": 0.1442495126705653,
+      "after_area": 0.21071428571428572
+    },
+    {
+      "id": "ph_fern_02_clump_1",
+      "name": "Fern fronds",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 48,
+      "after_final": 16,
+      "before_tail": 1495,
+      "after_tail": 178,
+      "before_seconds": 3.754468746,
+      "after_seconds": 31.26194507,
+      "before_area": 0.4253521126760563,
+      "after_area": 0.5911413969335605
+    },
+    {
+      "id": "ph_shrub_02_clump_1",
+      "name": "Leafy shrub",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 343,
+      "after_final": 244,
+      "before_tail": 2647,
+      "after_tail": 2404,
+      "before_seconds": 6.628877459,
+      "after_seconds": 28.889941173,
+      "before_area": 0.7787114845938375,
+      "after_area": 0.7863128491620112
+    },
+    {
+      "id": "ph_shrub_02_clump_1",
+      "name": "Leafy shrub",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 94,
+      "after_final": 136,
+      "before_tail": 2398,
+      "after_tail": 1765,
+      "before_seconds": 6.246017757,
+      "after_seconds": 31.192609953,
+      "before_area": 0.7377049180327869,
+      "after_area": 0.7629009762900977
+    },
+    {
+      "id": "loaf_tree_1",
+      "name": "Broadleaf tree",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 523,
+      "after_final": 110,
+      "before_tail": 2176,
+      "after_tail": 770,
+      "before_seconds": 0.801733649,
+      "after_seconds": 8.302939603,
+      "before_area": 0.23706377858002406,
+      "after_area": 0.40201465201465203
+    },
+    {
+      "id": "loaf_tree_1",
+      "name": "Broadleaf tree",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 704,
+      "after_final": 110,
+      "before_tail": 2357,
+      "after_tail": 1137,
+      "before_seconds": 0.726110015,
+      "after_seconds": 9.908101196,
+      "before_area": 0.042,
+      "after_area": 0.2973621103117506
+    },
+    {
+      "id": "ph_flower_heliophila_clump_3",
+      "name": "Flowering ground cover",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 356,
+      "after_final": 836,
+      "before_tail": 11042,
+      "after_tail": 5845,
+      "before_seconds": 7.046927948,
+      "after_seconds": 28.098972394,
+      "before_area": 0.544,
+      "after_area": 0.42201834862385323
+    },
+    {
+      "id": "ph_flower_heliophila_clump_3",
+      "name": "Flowering ground cover",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 356,
+      "after_final": 664,
+      "before_tail": 11042,
+      "after_tail": 6853,
+      "before_seconds": 13.886628169,
+      "after_seconds": 31.906844999,
+      "before_area": 0.572692793931732,
+      "after_area": 0.47331460674157305
+    },
+    {
+      "id": "loaf_leafstick3_3",
+      "name": "Leafy branch",
+      "mode": "shared vertices",
+      "budget": 8,
+      "before_final": 48,
+      "after_final": 10,
+      "before_tail": 253,
+      "after_tail": 73,
+      "before_seconds": 0.71192134,
+      "after_seconds": 4.083083826,
+      "before_area": 0.442495126705653,
+      "after_area": 0.5444444444444444
+    },
+    {
+      "id": "loaf_leafstick3_3",
+      "name": "Leafy branch",
+      "mode": "rebuilt vertices",
+      "budget": 8,
+      "before_final": 31,
+      "after_final": 10,
+      "before_tail": 155,
+      "after_tail": 74,
+      "before_seconds": 0.934786321,
+      "after_seconds": 8.349491253,
+      "before_area": 0.6003898635477583,
+      "after_area": 0.5244444444444445
+    }
+  ]
+}

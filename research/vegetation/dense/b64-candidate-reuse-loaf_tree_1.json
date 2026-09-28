@@ -1,0 +1,116 @@
+{
+  "audit": {
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 2971082801,
+    "supersample": 8
+  },
+  "binary_sha256": "8dad2d3c7dd340dbb94147ca2e2495017e52752cad4977013f9a30249d25405a",
+  "chain_bin_sha256": "8942e4e67769dc4e2985ee3d83076e9d2459969b3ccd98c19f7900f2ad6124b3",
+  "chain_gltf_sha256": "77b9ec4d90ea5cf6835ef7e6b3e33b645da5457cdc7820bf84d163456cd9c29a",
+  "id": "loaf_tree_1",
+  "lods": [
+    {
+      "adjacent": {
+        "changed_area": 0.11173773684424068,
+        "complete": true,
+        "coverage_upper_px": 2.658440504916496,
+        "error_px": 2.658440504916496,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 65
+      },
+      "level": 5,
+      "screen_pixels": 43.0688061642354,
+      "source": {
+        "changed_area": 0.13512459540615374,
+        "complete": true,
+        "coverage_upper_px": 2.9030641473896663,
+        "error_px": 2.9030641473896663,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 52
+      },
+      "source_limit": 5.823886432980217,
+      "transition_limit": 2.666666666666667,
+      "triangles": 324
+    },
+    {
+      "adjacent": {
+        "changed_area": 0.09630591289979937,
+        "complete": true,
+        "coverage_upper_px": 2.8157688410423,
+        "error_px": 2.8157688410423,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 535
+      },
+      "level": 6,
+      "screen_pixels": 26.25073139224442,
+      "source": {
+        "changed_area": 0.19841437632135306,
+        "complete": true,
+        "coverage_upper_px": 2.9904322793093976,
+        "error_px": 2.9904322793093976,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 44
+      },
+      "source_limit": 6.3830318745028745,
+      "transition_limit": 2.833333333333333,
+      "triangles": 231
+    },
+    {
+      "adjacent": {
+        "changed_area": 0.51510663507109,
+        "complete": true,
+        "coverage_upper_px": 2.9904322793093976,
+        "error_px": 2.9904322793093976,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 117
+      },
+      "level": 7,
+      "screen_pixels": 16.0,
+      "source": {
+        "changed_area": 0.5688701606531472,
+        "complete": true,
+        "coverage_upper_px": 3.129004804490089,
+        "error_px": 3.129004804490089,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 164
+      },
+      "source_limit": 6.890501505120695,
+      "transition_limit": 3.0,
+      "triangles": 65
+    }
+  ],
+  "passed": true,
+  "profile": "coverage",
+  "purpose": "Dense independent tail check; does not rewrite pilot SCORE or select replacement meshes",
+  "row_sha256": "96218d5a020d34bfd63e0284874da10978c9c3b55ff53c005834133d5c7dc380",
+  "run": "vegetation-quality-v3-candidate-reuse-b64",
+  "run_sha256": "1ad6d66666af42e76c1c4fa7d7c962b066fff4f86f6d5457dc9823515979307e",
+  "seconds": 19.297392457,
+  "version": 1
+}

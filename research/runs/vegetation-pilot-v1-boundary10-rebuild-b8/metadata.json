@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "scope": "foliage_card_geometry_only",
+  "scored": false,
+  "config": {
+    "attribute_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 512,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "hybrid",
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16,
+    "levels": 8,
+    "max_lod0_delta_px": 8,
+    "max_supersample": 8,
+    "meters_per_unit": 1,
+    "normal_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "objective": "quadric",
+    "output": "rebuild",
+    "pixels_per_meter": 512,
+    "profile": "coverage",
+    "prune": true,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "weights": {
+      "color": 4,
+      "material": 4,
+      "normal": 5.729577951308232
+    },
+    "research": {
+      "boundary_weight": 10,
+      "boundary_placement": true,
+      "trace": true
+    }
+  },
+  "variant": "boundary10",
+  "cohort": [
+    "ph_fern_02_clump_1",
+    "loaf_tree_1"
+  ],
+  "workers": 2,
+  "plan_sha256": "a8ddddeaf09ae77cba6162c937dee7a212e274a396bb6f43d1b0102c53fd33c5",
+  "binary_sha256": "6ac78559f670fa0ffba936e91c6a62e14aeac3ae3e8c7528d3ef0daf23c56cc5",
+  "source_tree_sha256": "34e1a055115159679313b2080e761cea9f543fb9368969613a4a1d9935c5b162",
+  "git_revision": "26ad36eabbca9fc4b73548e811072bad1ecb1e8e",
+  "protocol_sha256": "0de5d1904b4ccb3f1543eb848b89caf043c6154d3e3f72e8605253162e115aed",
+  "geometry_manifest_sha256": "ab475e77f8debbc87cb0dfd8de657ba1132a95a74c01684cee312a4df424b02a",
+  "source_manifest_sha256": "9a393b4452538e23a6ac1c87bde0e3f28697bd9225cefb8e4de7d1d98c3a868b",
+  "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "compiler": "clang version 21.1.8",
+  "timing_scope": "Generation/search/audit; import and export measured separately; shared workstation",
+  "run_sha256": "1fe17bcb2b720eb3721df496a23b5e6d0ae4b7eadc113f89857312098e60a695"
+}

@@ -57,8 +57,10 @@ try {
   assert.equal(counts.overflow,false,'Desktop layout must fit the viewport');
   const chainMetadata=await page.evaluate(()=>window.blitzBoard.data.assets.every((a,i)=>{
     const row=document.querySelector('.asset[data-asset="'+i+'"]');
+    const shared=a.lods.slice(1).filter(l=>l.shared_vertices).length;
+    const storage=a.output_mode==='reuse'?'shared original buffer':!shared?'rebuilt / new buffers':shared===a.lods.length-1?'shared original buffer (rebuild mode)':'mixed source + new buffers (rebuild mode)';
     return row.querySelector('.chain-metadata').textContent.includes(Number(a.bake_seconds).toFixed(2)+' s')&&
-      row.querySelector('.chain-metadata').textContent.includes(a.output_mode==='reuse'?'shared original buffer':'rebuilt / new buffers')&&
+      row.querySelector('.chain-metadata').textContent.includes(storage)&&
       [...row.querySelectorAll('.vertex-storage')].every((el,l)=>el.textContent===(a.lods[l].shared_vertices?'SOURCE VERTICES':'NEW VERTICES'));
   }));
   assert.ok(chainMetadata,'Every chain needs measured seconds and accurate vertex storage labels');
@@ -66,8 +68,21 @@ try {
   if(counts.foliageChains){
     const correct=await page.evaluate(()=>window.blitzBoard.data.assets.filter(a=>a.audit_scope==='card_geometry_only').every(a=>a.lods.length>1&&a.bake_seconds>0&&a.bake_timing_scope==='generation_and_audit'));
     assert.ok(correct,'Nature rows must contain measured baked chains');
-    await page.locator('.asset').nth(4).screenshot({path:output+'/grass-chain.png'});
-    await page.locator('.asset').nth(5).screenshot({path:output+'/fern-reuse-chain.png'});
+    const vegetation=await page.evaluate(()=>Boolean(window.blitzBoard.data.vegetation));
+    if(vegetation){
+      const checked=await page.evaluate(()=>{
+        const d=window.blitzBoard.data;
+        return document.querySelectorAll('.comparison-table tbody tr').length===d.vegetation.comparisons.length&&
+          d.assets.every((a,i)=>a.dense_passed===undefined||document.querySelector('.asset[data-asset="'+i+'"] .dense-status').textContent.includes(a.dense_passed?'passed':'failed'));
+      });
+      assert.ok(checked,'Matched comparisons and independent dense failures must remain visible');
+      for(const [index,name] of [[5,'fern-shared-candidate'],[7,'fern-rebuilt-candidate'],[9,'tree-shared-candidate'],[11,'tree-rebuilt-candidate']])
+        await page.locator('.asset').nth(index).screenshot({path:output+'/'+name+'.png'});
+      await page.locator('.comparison-scroll').screenshot({path:output+'/matched-comparisons.png'});
+    }else{
+      await page.locator('.asset').nth(4).screenshot({path:output+'/grass-chain.png'});
+      await page.locator('.asset').nth(5).screenshot({path:output+'/fern-reuse-chain.png'});
+    }
   }
   await page.locator('.asset').first().screenshot({path:output+'/chain-metadata.png'});
   await page.screenshot({path:output+'/board.png',fullPage:true});

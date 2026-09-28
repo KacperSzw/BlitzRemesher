@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "scope": "foliage_card_geometry_only",
+  "scored": false,
+  "config": {
+    "attribute_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 512,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "hybrid",
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16,
+    "levels": 8,
+    "max_lod0_delta_px": 8,
+    "max_supersample": 8,
+    "meters_per_unit": 1,
+    "normal_importance": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        1
+      ]
+    ],
+    "objective": "quadric",
+    "output": "rebuild",
+    "pixels_per_meter": 512,
+    "profile": "coverage",
+    "prune": true,
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        3
+      ]
+    ],
+    "weights": {
+      "color": 4,
+      "material": 4,
+      "normal": 5.729577951308232
+    },
+    "research": {
+      "trace": true
+    }
+  },
+  "variant": "legacy",
+  "extra_args": [],
+  "cohort": [
+    "ph_grass_medium_02_clump_4",
+    "ph_fern_02_clump_1",
+    "ph_shrub_02_clump_1",
+    "loaf_tree_1",
+    "ph_flower_heliophila_clump_3",
+    "loaf_leafstick3_3"
+  ],
+  "workers": 2,
+  "plan_sha256": "7aed57cab9907d432febe8d364b1b9f19e22ab522c6ee6574f7928640040f969",
+  "binary_sha256": "8321df79da730d0574f11ae7923ede7b72a3f6e05d3fb3722c608c66ddee8583",
+  "source_tree_sha256": "e1dbc5aa344bbda6409a3dbd7c1dea9f80fae2a37eac14105e4da4289685c350",
+  "cmake_cache_sha256": "0dc2dbd485983ce20feee96551163bcd2adbf3ac3a3ea8fff1dae672acd0c8ff",
+  "runner_sha256": "33163afaf43a784cffe4493d7135074c54dec3d7273a519ee4b2c8a59d9d8cd9",
+  "git_revision": "26ad36eabbca9fc4b73548e811072bad1ecb1e8e",
+  "protocol_sha256": "0de5d1904b4ccb3f1543eb848b89caf043c6154d3e3f72e8605253162e115aed",
+  "geometry_manifest_sha256": "86f7ec842ad1fcb47959f19f1bf08160b01304c40a29ad552dd7e53667ed8de0",
+  "source_manifest_sha256": "9a393b4452538e23a6ac1c87bde0e3f28697bd9225cefb8e4de7d1d98c3a868b",
+  "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "compiler": "clang version 21.1.8",
+  "threads_per_bake": 1,
+  "timing_scope": "Generation/search/audit; import and export measured separately; shared workstation",
+  "run_sha256": "194c9f7e7b39a8d0c66d569e03772460fe831e4921b5dd831a4ce5f48eae0e2f"
+}

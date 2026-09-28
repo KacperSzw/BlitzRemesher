@@ -81,6 +81,12 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        for(double weight:{0.,7.5,100.}){
+            auto experiment=settings_json(nlohmann::json{{"profile","coverage"},{"research",{{"boundary_weight",weight},{"boundary_placement",true},{"adaptive_targets",true},{"independent_seams",true},{"trace",true}}}});
+            CHECK(experiment.research.boundary_weight==weight&&experiment.research.boundary_placement&&experiment.research.adaptive_targets&&experiment.research.independent_seams&&experiment.research.trace);
+            auto encoded=settings_json(experiment);CHECK(settings_json(settings_json(encoded))==encoded);
+        }
+        throws([&]{settings_json(nlohmann::json{{"research",{{"unknown_option",true}}}});});
         bool failed=false;try{settings_json({{"levels",258}});}catch(...){failed=true;}CHECK(failed);
         Mesh colors;
         for(unsigned k=0;k<256;++k){colors.positions.push_back({float(k%16),float(k/16),0});colors.colors.push_back({uint8_t(k),uint8_t(255-k),37,uint8_t(k)});}

@@ -1,5 +1,7 @@
 #include "blitz/remesher.hpp"
 #include "timing.hpp"
+#include "components.hpp"
+#include <chrono>
 #include <memory>
 #include <stdexcept>
 namespace blitz {
@@ -40,6 +42,9 @@ std::string validate(const Settings& s) {
     if(s.max_supersample<std::max(s.search_supersample,s.audit_supersample))return "maximum supersampling is too small";
     if(!s.search_views.orthographic&&!s.search_views.perspective)return "empty search cameras";
     if(!s.audit_views.orthographic&&!s.audit_views.perspective)return "empty audit cameras";
+    if(!std::isfinite(s.research.boundary_weight)||s.research.boundary_weight<0||s.research.boundary_weight>1e6)return "invalid boundary weight";
+    if(s.research.component_candidates&&s.profile!=Profile::Coverage)return "component proposals require coverage profile";
+    if(s.research.independent_seams&&s.profile!=Profile::Coverage)return "independent seam proposals require coverage profile";
     return {};
 }
 std::vector<ScheduleEntry> schedule(const Bounds& b,const Settings& s) {
@@ -108,30 +113,39 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             if(m.error>=result.worst_rejected[stage].error)result.worst_rejected[stage]=m;
             return false;
         };
-        auto offer=[&](Lod candidate,const std::shared_ptr<Node>& parent) {
+        struct Seen {const Node* parent;Lod lod;};std::vector<Seen> seen;size_t seen_bytes=0;
+        auto offer=[&](Lod candidate,const std::shared_ptr<Node>& parent)->uint8_t {
             auto view=candidate.view(source),previous=parent->lod.view(source);
-            if(!validate(view).empty())return;
-            if(view.triangles()>previous.triangles())return;
-            if(!accepted(evaluate(source,view,result.reference_bounds,search_source),0))return;
-            if(!accepted(evaluate(previous,view,result.reference_bounds,search_adj),1))return;
+            if(!validate(view).empty())return 5;
+            if(view.triangles()>previous.triangles())return 6;
+            if(s.research.adaptive_targets) {
+                for(auto& item:seen)if(item.parent==parent.get()&&same_mesh_data(item.lod.view(source),view)){++result.duplicate_proposals;return 7;}
+                size_t bytes=view.indices.size()*4+view.materials.size()*2;
+                if(!candidate.shared_vertices)bytes+=view.positions.count*(sizeof(Vec3)*2+sizeof(Vec2)+sizeof(Vec4)+sizeof(ColorRGBA8));
+                if(bytes<=64u*1024u*1024u-seen_bytes){seen.push_back({parent.get(),candidate});seen_bytes+=bytes;}
+            }
+            if(!accepted(evaluate(source,view,result.reference_bounds,search_source),0))return 1;
+            if(!accepted(evaluate(previous,view,result.reference_bounds,search_adj),1))return 2;
             candidate.source_error=evaluate(source,view,result.reference_bounds,audit_source);
-            if(!accepted(candidate.source_error,2))return;
+            if(!accepted(candidate.source_error,2))return 3;
             candidate.adjacent=evaluate(previous,view,result.reference_bounds,audit_adj);
-            if(!accepted(candidate.adjacent,3))return;
+            if(!accepted(candidate.adjacent,3))return 4;
             candidate.schedule=steps[level];
             auto node=std::make_shared<Node>();node->parent=parent;node->triangles=parent->triangles+view.triangles();
             node->lod=std::move(candidate);next.push_back(std::move(node));
+            return 0;
         };
         // Retaining each incumbent is important: camera-space errors need not decrease monotonically.
         for(auto& parent:beam)offer(parent->lod,parent);
-        struct Slot { std::shared_ptr<Node> parent; bool direct; };
+        struct Slot { std::shared_ptr<Node> parent; bool direct;std::vector<std::pair<size_t,bool>> trials; };
         std::vector<Slot> slots;
         for(auto& parent:beam) {
-            if(s.chain!=ChainMode::Progressive)slots.push_back({parent,true});
+            if(s.chain!=ChainMode::Progressive)slots.push_back({parent,true,{}});
             if(s.chain==ChainMode::Progressive||(s.chain==ChainMode::Hybrid&&!same_mesh_data(source,parent->lod.view(source))))
-                slots.push_back({parent,false});
+                slots.push_back({parent,false,{}});
         }
         const unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/unsigned(slots.size()));
+        struct Components {MeshView input;detail::ComponentOrder order;};std::vector<Components> components;
         unsigned proposals=0;
         for(unsigned r=0;proposals<s.candidate_budget;++r) {
             for(auto& slot:slots) {
@@ -143,28 +157,57 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 // A partial final round probes a deeper reduction instead of discarding the remaining budget.
                 double fraction=r==rounds?.1:rounds==1?.5:.02*std::pow(45.0,double(r)/(rounds-1));
                 size_t target=std::max<size_t>(1,size_t(parent->lod.view(source).triangles()*fraction));
+                if(s.research.adaptive_targets) {
+                    size_t high=parent->lod.view(source).triangles(),low=0;
+                    for(auto [n,ok]:slot.trials)if(ok)high=std::min(high,n);
+                    for(auto [n,ok]:slot.trials)if(!ok&&n<high)low=std::max(low,n);
+                    target=std::max<size_t>(1,(low+high)/2);
+                    // Retain broad exploration; a rejected target is not a proof
+                    // that every smaller target is invalid.
+                    if(r&&r%4==3)target=std::max<size_t>(1,size_t(parent->lod.view(source).triangles()*.02));
+                    if(std::any_of(slot.trials.begin(),slot.trials.end(),[&](auto x){return x.first==target;}))
+                        target=std::max<size_t>(1,size_t(parent->lod.view(source).triangles()*fraction));
+                }
                 ReduceSettings rs;rs.output=s.output;rs.objective=s.objective;rs.target_triangles=target;
                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;
                 rs.prune=s.prune&&r%2==0;
                 rs.coupled_wedges=s.coupled_wedges;
-                ReductionStats stats;rs.statistics=s.performance?&stats:nullptr;
+                rs.boundary_weight=s.research.boundary_weight;rs.boundary_placement=s.research.boundary_placement;
+                rs.independent_seams=s.research.independent_seams;
+                ReductionStats stats;rs.statistics=(s.performance||s.research.trace)?&stats:nullptr;
+                ProposalTrace trace;trace.level=uint8_t(level);trace.origin=!slot.direct;
+                trace.input_triangles=uint32_t(input.triangles());trace.parent_triangles=uint32_t(parent->lod.view(source).triangles());trace.requested=uint32_t(target);
+                if(!proposer&&s.output==OutputMode::Rebuild&&rs.boundary_placement&&proposals%3==1){rs.output=OutputMode::Reuse;trace.strategy=1;}
+                auto begin=std::chrono::steady_clock::now();
                 Lod candidate;
                 {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);
-                 candidate=proposer?proposer(input,rs):reduce(input,rs);}
+                 if(!proposer&&s.research.component_candidates&&steps[level].pixels<=128&&proposals%3==2) {
+                     trace.strategy=2;auto found=std::find_if(components.begin(),components.end(),[&](auto& c){return same_mesh_data(c.input,input);});
+                     if(found==components.end()) {components.push_back({input,detail::component_order(input,result.reference_bounds,search_source)});found=std::prev(components.end());++result.component_builds;}
+                     if(found->order.available)candidate=found->order.select(input,target);
+                     else {++result.component_unavailable;trace.gate=8;candidate=reduce(input,rs);}
+                 }else candidate=proposer?proposer(input,rs):reduce(input,rs);}
                 if(s.performance) {
                     s.performance->solve_attempts+=stats.solve_attempts;s.performance->singular_solves+=stats.singular_solves;
                     s.performance->nonfinite_solves+=stats.nonfinite_solves;s.performance->position_fallbacks+=stats.position_fallbacks;
                     s.performance->nonfinite_costs+=stats.nonfinite_costs;
                 }
                 ++proposals;++result.candidate_evaluations;
+                trace.achieved=uint32_t(candidate.data.indices.size()/3);
+                trace.attempts=stats.attempts;trace.collapsed=stats.collapsed;trace.geometry_rejections=stats.geometry_rejections;
+                trace.uv_rejections=stats.uv_rejections;trace.link_rejections=stats.link_rejections;
                 if(candidate.shared_vertices&&!slot.direct&&!parent->lod.shared_vertices) {
                     // A reducer borrows from its actual input. An owned previous
                     // LOD has different vertex IDs/storage from the original source.
                     auto local=candidate.view(input);
-                    if(same_mesh_data(local,input))continue; // Already offered as the incumbent.
+                    if(same_mesh_data(local,input)) {trace.gate=7;++result.duplicate_proposals;trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();if(s.research.trace)result.proposals.push_back(trace);continue;}
                     candidate.data=copy_mesh(local);candidate.shared_vertices=false;
                 }
-                offer(std::move(candidate),parent);
+                auto gate=offer(std::move(candidate),parent);
+                slot.trials.push_back({target,gate==0});
+                if(trace.gate!=8)trace.gate=gate;
+                trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
+                if(s.research.trace)result.proposals.push_back(trace);
             }
         }
         if(cancelled()){result.status=Status::Cancelled;return result;}

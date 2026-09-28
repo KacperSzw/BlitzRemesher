@@ -40,7 +40,8 @@ ReductionStorage reduction_storage() {return {uint8_t(sizeof(Quadric)),uint8_t(s
 static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* trace) {
     if(auto error=validate(source);!error.empty())throw std::invalid_argument(error);
     if(unsigned(settings.output)>1||unsigned(settings.objective)>3||!std::isfinite(settings.normal_weight)||settings.normal_weight<0
-       ||!std::isfinite(settings.regularization)||settings.regularization<0)throw std::invalid_argument("invalid reduction settings");
+       ||!std::isfinite(settings.regularization)||settings.regularization<0
+       ||!std::isfinite(settings.boundary_weight)||settings.boundary_weight<0||settings.boundary_weight>1e6)throw std::invalid_argument("invalid reduction settings");
     Lod result;result.shared_vertices=settings.output==OutputMode::Reuse;
     auto stats=settings.statistics;
     if(stats){*stats={};stats->initial_triangles=uint32_t(source.triangles());stats->final_triangles=stats->initial_triangles;}
@@ -65,7 +66,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     }
     std::sort(positions.begin(),positions.end(),[](auto& a,auto& z){
         return std::array{a.key.x,a.key.y,a.key.z}<std::array{z.key.x,z.key.y,z.key.z};});
-    for(size_t i=1;i<positions.size();++i)if(positions[i-1].key==positions[i].key)
+    for(size_t i=1;i<positions.size();++i)if(!settings.independent_seams&&positions[i-1].key==positions[i].key)
         flags[positions[i-1].index]=flags[positions[i].index]=Locked; // Preserve attribute wedges without per-vertex allocations.
     for(size_t f=0;f<source.triangles();++f) {
         uint32_t ids[3]={mesh.indices[f*3],mesh.indices[f*3+1],mesh.indices[f*3+2]};
@@ -79,6 +80,28 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     }
     std::vector<PositionEntry>().swap(positions);
     std::vector<uint16_t>().swap(mat);
+    if(settings.boundary_weight>0) {
+        // A face-plane quadric cannot see in-plane silhouette loss on a card.
+        // Boundary planes constrain this direction softly, in area units.
+        struct Edge {uint64_t key;uint32_t face;};
+        std::vector<Edge> boundary;boundary.reserve(mesh.indices.size());
+        for(uint32_t f=0;f<source.triangles();++f)for(unsigned k=0;k<3;++k) {
+            auto a=mesh.indices[3*f+k],z=mesh.indices[3*f+(k+1)%3];if(a>z)std::swap(a,z);
+            if(a!=z)boundary.push_back({(uint64_t(a)<<32)|z,f});
+        }
+        std::sort(boundary.begin(),boundary.end(),[](auto a,auto z){return a.key<z.key;});
+        for(size_t i=0;i<boundary.size();) {
+            size_t j=i+1;while(j<boundary.size()&&boundary[j].key==boundary[i].key)++j;
+            if(j==i+1) {
+                auto a=uint32_t(boundary[i].key>>32),z=uint32_t(boundary[i].key),f=boundary[i].face;
+                auto edge=p[z]-p[a],normal=cross(p[mesh.indices[3*f+1]]-p[mesh.indices[3*f]],p[mesh.indices[3*f+2]]-p[mesh.indices[3*f]]);
+                auto side=cross(normal,edge);double len=length(side);
+                if(len>1e-24) {side=side*(1/len);double weight=settings.boundary_weight*dot(edge,edge),w=-dot(side,p[a]);
+                    q[a].plane(side.x,side.y,side.z,w,weight);q[z].plane(side.x,side.y,side.z,w,weight);}
+            }
+            i=j;
+        }
+    }
     if(mesh.indices.size()/3>settings.target_triangles) {
         // Degenerate faces do not contribute surface area or the live collapse budget.
         // If there is no surface at all, preserve the exact input as the only incumbent.
@@ -149,12 +172,19 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
         }
         for(size_t i=0;i<edges.size();) {
             size_t j=i+1;while(j<edges.size()&&edges[j]==edges[i])++j;
-            auto u=uint32_t(edges[i]>>32),v=uint32_t(edges[i]);i=j;
+            auto u=uint32_t(edges[i]>>32),v=uint32_t(edges[i]);bool boundary_edge=j-i==1;i=j;
             if((flags[u]|flags[v])&Locked){if(stats)++stats->last_locked_edges;continue;}
             Quadric sum=q[u];sum+=q[v];
             if((flags[v]&Boundary)&&!(flags[u]&Boundary))std::swap(u,v);
             Vec3 point=p[u];double cost=sum.cost(point);
-            if(!(flags[u]&Boundary) && sum.cost(p[v])<cost) {std::swap(u,v);point=p[u];cost=sum.cost(point);}
+            if((!(flags[u]&Boundary)||(settings.boundary_placement&&(flags[v]&Boundary))) && sum.cost(p[v])<cost) {std::swap(u,v);point=p[u];cost=sum.cost(point);}
+            if(settings.boundary_placement&&settings.output==OutputMode::Rebuild&&boundary_edge) {
+                // Minimize on the original edge. Never move a border into an interior face.
+                auto d=p[v]-p[u];double c0=sum.cost(p[u]),c1=sum.cost(p[v]),cm=sum.cost((p[u]+p[v])*.5);
+                double a=2*(c0+c1-2*cm),b1=c1-c0-a;
+                double t=a>1e-30?std::clamp(-b1/(2*a),0.0,1.0):.5;
+                auto x=p[u]+d*t;if(sum.cost(x)<cost){point=x;cost=sum.cost(x);}
+            }
             if(settings.output==OutputMode::Rebuild&&!((flags[u]|flags[v])&Boundary)) {
                 Vec3 x;
                 if(sum.solve(x,stats)&&length(x-(p[u]+p[v])*.5)<=2*length(p[u]-p[v])&&sum.cost(x)<cost){point=x;cost=sum.cost(x);}
@@ -206,7 +236,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 Vec3 np[3];for(int j=0;j<3;++j)np[j]=(a[j]==u||a[j]==v)?c.point:p[a[j]];
                 Vec3 newn=cross(np[1]-np[0],np[2]-np[0]);
                 if(length(newn)<1e-15||dot(oldn,newn)<=.05*length(oldn)*length(newn)){valid=false;bad_geometry=true;}
-                if(!mesh.uv.empty()&&settings.output==OutputMode::Rebuild) {
+                if(!mesh.uv.empty()&&(settings.output==OutputMode::Rebuild||settings.independent_seams)) {
                     auto edge=p[v]-p[u];double len2=dot(edge,edge),t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
                     auto ua=mesh.uv[u],va=mesh.uv[v];Vec2 replacement{float(ua.x*(1-t)+va.x*t),float(ua.y*(1-t)+va.y*t)};
                     Vec2 old[3],now[3];for(int j=0;j<3;++j){old[j]=mesh.uv[a[j]];now[j]=(a[j]==u||a[j]==v)?replacement:old[j];}

@@ -11,11 +11,17 @@ view coverage or globally optimal simplification.
 The meshes are enlarged to show each LOD; labels give their target screen sizes.
 [Inspect the chains, audits, and source credits](research/round4/board/README.md).
 
+[Vegetation comparisons](research/vegetation/REPORT.md) add paired fern and tree
+chains in shared and rebuilt vertex modes, measured bake times, and independent
+tail checks. [Open the offline board](research/vegetation/board/index.html).
+These experiments score opaque card geometry; texture opacity and shading remain
+outside their contract.
+
 ## Build
 
 On the supplied NixOS workstation:
 
-    nix develop path:.
+    nix develop .
     cmake --preset release
     cmake --build --preset release
     ctest --preset release
@@ -76,6 +82,15 @@ material graph. Engine integrations retain their own material payloads.
   separate. Reuse uses endpoint reduction.
 - Candidate budget, beam width, camera sets, supersampling, pruning and
   scalar/AVX2 dispatch are explicit settings.
+
+The C++ and CLI `research` settings expose opt-in boundary quadrics, constrained
+boundary placement, independent index-chart contractions, adaptive target
+selection, component subset proposals, and proposal traces. Defaults are
+unchanged. Component and independent-chart experiments require the coverage
+profile; every proposal still passes the existing source and adjacent gates.
+See the [measured preset and limitations](research/vegetation/REPORT.md).
+These options are not added to the stable C descriptor; C++ clients must rebuild
+against the updated header.
 
 LOD0 is always unchanged. Cancellation returns an exact, validated source
 chain with cancelled status; the implementation does not yet preserve a

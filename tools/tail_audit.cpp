@@ -14,13 +14,14 @@ static std::string hash(const fs::path& p){
     for(auto c:d){out+="0123456789abcdef"[c>>4];out+="0123456789abcdef"[c&15];}return out;
 }
 static json measurement(Measurement m) {
-    return {{"passed",m.passed},{"complete",m.complete},{"error_px",std::isfinite(m.error)?json(m.error):json(nullptr)},
+    return {{"passed",m.passed},{"complete",m.complete},{"changed_area",m.changed_area},{"error_px",std::isfinite(m.error)?json(m.error):json(nullptr)},
         {"nonfinite_error",!std::isfinite(m.error)},{"coverage_upper_px",std::isfinite(m.coverage_upper)?json(m.coverage_upper):json(nullptr)},
         {"views",m.views_evaluated},{"worst_view",m.worst_view},{"supersample",m.supersample},{"resource_limited",m.resource_limited}};
 }
 int main(int argc,char** argv){
     try{
-        if(argc!=4)throw std::invalid_argument("blitz-tail-audit RUN_DIRECTORY ASSET_ID OUTPUT.json");
+        if(argc!=4&&argc!=5)throw std::invalid_argument("blitz-tail-audit RUN_DIRECTORY ASSET_ID OUTPUT.json [ROTATION_SEED]");
+        auto seed=argc==5?std::stoull(argv[4],nullptr,0):uint64_t(0xB1172026);if(seed>UINT32_MAX)throw std::invalid_argument("invalid rotation seed");
         fs::path run=argv[1],dir=run/"meshes"/argv[2];auto row=read(run/"rows"/(std::string(argv[2])+".json")),meta=read(run/"metadata.json");
         if(!row.at("complete").get<bool>()||row.value("failed",false)||row.at("run_sha256")!=meta.at("run_sha256"))throw std::runtime_error("invalid audit input");
         auto settings=settings_json(meta.at("config"));auto g=read(dir/"chain.gltf");auto levels=row.at("result").at("lods");
@@ -29,7 +30,7 @@ int main(int argc,char** argv){
             {"chain_gltf_sha256",hash(dir/"chain.gltf")},{"chain_bin_sha256",hash(dir/"chain.bin")},
             {"row_sha256",hash(run/"rows"/(std::string(argv[2])+".json"))},{"profile",meta.at("config").at("profile")},
             {"purpose","Dense independent tail check; does not rewrite pilot SCORE or select replacement meshes"},
-            {"audit",{{"orthographic",642},{"perspective",64},{"seed",uint32_t(0xB1172026)},{"supersample",8},{"max_supersample",32}}},
+            {"audit",{{"orthographic",642},{"perspective",64},{"seed",uint32_t(seed)},{"supersample",8},{"max_supersample",32}}},
             {"lods",json::array()},{"passed",true}};
 #if defined(__linux__)
         report["binary_sha256"]=hash("/proc/self/exe");
@@ -39,7 +40,7 @@ int main(int argc,char** argv){
         for(size_t i=first;i<levels.size();++i) {
             auto current=load_gltf_mesh(dir/"chain.gltf",g.at("nodes").at(i).at("mesh"));
             auto previous=load_gltf_mesh(dir/"chain.gltf",g.at("nodes").at(i-1).at("mesh"));
-            EvalSettings e;e.profile=settings.profile;e.weights=settings.weights;e.screen_size=levels[i].at("screen_pixels");
+            EvalSettings e;e.profile=settings.profile;e.weights=settings.weights;e.screen_size=levels[i].at("screen_pixels");e.views.rotation_seed=uint32_t(seed);
             double t=settings.levels==2?0:double(i-1)/(settings.levels-2);
             e.weights.normal*=settings.normal_importance.at(t);e.weights.color*=settings.attribute_importance.at(t);e.weights.material*=settings.attribute_importance.at(t);
             e.limit=levels[i].at("source_limit");auto src=evaluate(source.view(),current.view(),reference,e);

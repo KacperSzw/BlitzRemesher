@@ -1,0 +1,102 @@
+{
+  "backend": "scalar",
+  "binary_sha256": "8321df79da730d0574f11ae7923ede7b72a3f6e05d3fb3722c608c66ddee8583",
+  "build": {
+    "binary_sha256": "8321df79da730d0574f11ae7923ede7b72a3f6e05d3fb3722c608c66ddee8583",
+    "git_revision": "26ad36eabbca9fc4b73548e811072bad1ecb1e8e",
+    "source_overlay_sha256": "e07ff05ce338b64d3ecd4af8cdf3c75f5cdad09a19b277c437a9c6da09af44dc",
+    "source_tree_sha256": "e1dbc5aa344bbda6409a3dbd7c1dea9f80fae2a37eac14105e4da4289685c350"
+  },
+  "camera_sha256": "b9149c5ce5cfa42a25b234d3f218239937986513cdeb6413d97bdc3b7048071f",
+  "candidate_bytes": 32,
+  "compiler": "Clang 21.1.8",
+  "config": {
+    "attribute_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4,
+      "seed": 2971082790
+    },
+    "base_pixels": 32.0,
+    "beam_width": 2,
+    "candidate_budget": 8,
+    "chain": "direct",
+    "coupled_wedges": false,
+    "force_scalar": true,
+    "last_pixels": 16.0,
+    "levels": 8,
+    "max_lod0_delta_px": null,
+    "max_supersample": 8,
+    "meters_per_unit": 1.0,
+    "normal_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "objective": "quadric",
+    "output": "reuse",
+    "pixels_per_meter": 512.0,
+    "profile": "coverage",
+    "prune": false,
+    "research": {
+      "adaptive_targets": false,
+      "boundary_placement": false,
+      "boundary_weight": 0.0,
+      "component_candidates": false,
+      "independent_seams": false,
+      "trace": false
+    },
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0.0,
+        2.0
+      ],
+      [
+        1.0,
+        3.0
+      ]
+    ],
+    "weights": {
+      "color": 4.0,
+      "material": 4.0,
+      "normal": 5.729577951308232
+    }
+  },
+  "config_sha256": "ee0d8cf8f1e16545ef2540fdf1de01963914be763f4c1b17582b1803695f1e13",
+  "cpu": "model name\t: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "input_format": "linear-rgba8-v2",
+  "limit": 18446744073709551615,
+  "manifest_sha256": "4ae0b74dbe76d7b67453f67efec34c63a0cc0fe3c137ab30817cd52937578ae0",
+  "method": "native",
+  "output_hash_scope": "output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data",
+  "packed_coverage": true,
+  "peak_rss_scope": "process high-water; KiB",
+  "protocol_sha256": "0de5d1904b4ccb3f1543eb848b89caf043c6154d3e3f72e8605253162e115aed",
+  "quadric_bytes": 80,
+  "run_sha256": "c14bd1fa0483c3bdca42a9f5b6788c919e034b7cb2aa7f02ead404c04ac5399b",
+  "split": "development",
+  "stage_timing": true,
+  "threads": 1,
+  "version": 2
+}

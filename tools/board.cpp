@@ -205,6 +205,7 @@ int main(int argc, char** argv) {
             manifest["assets"].push_back(std::move(record));
         }
         board["foliage_chains"]=foliage_chains;
+        if(config.contains("vegetation"))board["vegetation"]=read_json(root/config.at("vegetation").get<std::string>());
         board["scores"] = json::object();
         for (const auto* name : {"round1-qem", "baseline-meshopt", "baseline-fastquadric",
                                 "baseline-cgal-probabilistic", "round2-coupled",

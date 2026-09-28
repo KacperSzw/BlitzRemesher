@@ -250,6 +250,15 @@ json result_json(const Result& r) {
     json j={{"version",1},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable}};
+    if(!r.proposals.empty()) {
+        j["proposals"]=json::array();
+        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components"};
+        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable"};
+        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
+            {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
+            {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
+    }
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
     for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
     for(auto& l:r.lods){auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
@@ -319,7 +328,8 @@ json settings_json(const Settings& s) {
       {"max_lod0_delta_px",s.max_lod0_delta_px?json(*s.max_lod0_delta_px):json(nullptr)},{"transition",curve(s.transition)},
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
-      {"max_supersample",s.max_supersample},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges}};
+      {"max_supersample",s.max_supersample},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
+      {"research",{{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams}}}};
 }
 Settings settings_json(const json& input) {
     Settings s;auto j=settings_json(s);for(auto it=input.begin();it!=input.end();++it){if(!j.contains(it.key()))fail("unknown setting: "+it.key());}
@@ -337,6 +347,11 @@ Settings settings_json(const json& input) {
     s.weights={j["weights"].at("normal"),j["weights"].at("color"),j["weights"].at("material")};
     auto views=[&](const char* key){auto v=j.at(key);int o=v.at("orthographic"),p=v.at("perspective");if(o<0||p<0||o>65535||p>65535)fail("camera count out of range");return ViewSet{uint16_t(o),uint16_t(p),v.at("seed")};};
     s.search_views=views("search_views");s.audit_views=views("audit_views");s.prune=j.at("prune");s.force_scalar=j.at("force_scalar");s.coupled_wedges=j.at("coupled_wedges");
+    auto experimental=j.at("research");
+    for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
+    s.research.boundary_weight=experimental.at("boundary_weight");s.research.boundary_placement=experimental.at("boundary_placement");
+    s.research.adaptive_targets=experimental.at("adaptive_targets");s.research.component_candidates=experimental.at("component_candidates");s.research.trace=experimental.at("trace");
+    s.research.independent_seams=experimental.at("independent_seams");
     if(auto e=validate(s);!e.empty())fail(e);return s;
 }
 }

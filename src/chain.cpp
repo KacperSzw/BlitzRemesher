@@ -25,6 +25,8 @@ std::string validate(const Settings& s) {
     if(s.levels<2||s.levels>32)return "level count must be 2..32";
     if((s.research.output&&unsigned(*s.research.output)>1)||unsigned(s.research.chain)>2||unsigned(s.objective)>3||unsigned(s.profile)>2)return "unknown mode";
     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
+    if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
+        return "maximum changed area must be in [0,1]";
     for(double v:{s.pixels_per_meter,s.meters_per_unit,s.last_pixels})
         if(!std::isfinite(v)||v<=0)return "screen scale must be positive and finite";
     for(auto v:{s.base_pixels,s.max_lod0_delta_px})if(v&&(!std::isfinite(*v)||*v<=0))return "invalid optional pixel limit";
@@ -46,6 +48,7 @@ std::string validate(const Settings& s) {
     if(!std::isfinite(s.research.boundary_weight)||s.research.boundary_weight<0||s.research.boundary_weight>1e6)return "invalid boundary weight";
     if(s.research.component_candidates&&s.profile!=Profile::Coverage)return "component proposals require coverage profile";
     if(s.research.independent_seams&&s.profile!=Profile::Coverage)return "independent seam proposals require coverage profile";
+    if(s.research.topology_fallback&&s.objective!=Objective::Quadric)return "topology fallback requires quadric objective";
     return {};
 }
 std::vector<ScheduleEntry> schedule(const Bounds& b,const Settings& s) {
@@ -88,6 +91,7 @@ bool same_lod(const Lod& a,const Lod& b) {
 }
 EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,bool audit,double limit) {
     EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.screen_size=step.pixels;e.limit=limit;
+    e.max_changed_area=audit?s.max_changed_area:1.0;
     double t=s.levels==2?0:double(level-1)/(s.levels-2);
     e.weights.normal*=s.normal_importance.at(t);
     e.weights.color*=s.attribute_importance.at(t);e.weights.material*=s.attribute_importance.at(t);
@@ -99,6 +103,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
     if(s.performance)*s.performance={};
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
+    result.max_changed_area=s.max_changed_area;
     auto steps=schedule(result.reference_bounds,s);
     // An exact source chain is a valid incumbent even if cancellation precedes the first audit.
     for(auto step:steps)result.lods.push_back(unchanged(source,step));
@@ -120,6 +125,8 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             if(m.resource_limited)result.status=Status::BudgetLimited;
             if(m.passed)return true;
             ++result.rejected_gates[stage];
+            if(stage>=2&&m.error<=(stage==2?audit_source.limit:audit_adj.limit)
+              &&m.changed_area>s.max_changed_area)++result.area_rejected_gates[stage];
             if(m.error>=result.worst_rejected[stage].error)result.worst_rejected[stage]=m;
             return false;
         };
@@ -182,7 +189,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         if(automatic&&level%2==0)std::rotate(slots.begin(),slots.begin()+slots.size()/2,slots.end());
         const unsigned rounds=std::max(1u,unsigned(s.candidate_budget)/unsigned(slots.size()));
         struct Components {MeshView input;detail::ComponentOrder order;};std::vector<Components> components;
-        unsigned proposals=0;
+        unsigned proposals=0;bool topology_fallback_attempted=false;
         for(unsigned r=0;proposals<s.candidate_budget;++r) {
             for(auto& slot:slots) {
                 if(proposals==s.candidate_budget)break;
@@ -217,7 +224,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 rs.coupled_wedges=s.coupled_wedges;
                 rs.boundary_weight=s.research.boundary_weight;rs.boundary_placement=s.research.boundary_placement;
                 rs.independent_seams=s.research.independent_seams;
-                ReductionStats stats;rs.statistics=(s.performance||s.research.trace)?&stats:nullptr;
+                ReductionStats stats;rs.statistics=(s.performance||s.research.trace||s.research.topology_fallback)?&stats:nullptr;
                 ProposalTrace trace;trace.level=uint8_t(level);trace.origin=!slot.direct;trace.strategy=rs.output==OutputMode::Reuse?1:0;
                 trace.input_triangles=uint32_t(input.triangles());trace.parent_triangles=uint32_t(parent->lod.view(source).triangles());trace.requested=uint32_t(target);
                 if(!automatic&&!proposer&&*s.research.output==OutputMode::Rebuild&&rs.boundary_placement&&proposals%3==1){rs.output=OutputMode::Reuse;trace.strategy=1;}
@@ -239,19 +246,54 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 trace.achieved=uint32_t(candidate.data.indices.size()/3);
                 trace.attempts=stats.attempts;trace.collapsed=stats.collapsed;trace.geometry_rejections=stats.geometry_rejections;
                 trace.uv_rejections=stats.uv_rejections;trace.link_rejections=stats.link_rejections;
-                if(candidate.shared_vertices&&!slot.direct&&!parent->lod.shared_vertices) {
+                auto prepare_borrowed=[&](Lod& lod) {
+                    if(!lod.shared_vertices||slot.direct||parent->lod.shared_vertices)return true;
                     // A reducer borrows from its actual input. An owned previous
                     // LOD has different vertex IDs/storage from the original source.
-                    auto local=candidate.view(input);
-                    if(same_mesh_data(local,input)) {trace.gate=7;++result.duplicate_proposals;trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();if(s.research.trace)result.proposals.push_back(trace);continue;}
-                    candidate.data=copy_mesh(local);compact(candidate.data);candidate.shared_vertices=false;
-                }
-                auto gate=offer(std::move(candidate),parent);
-                trials.push_back({target,gate==0});
-                if(automatic)slot.trials.push_back({target,gate==0});
-                if(trace.gate!=8)trace.gate=gate;
+                    auto local=lod.view(input);
+                    if(same_mesh_data(local,input)) {++result.duplicate_proposals;return false;}
+                    lod.data=copy_mesh(local);compact(lod.data);lod.shared_vertices=false;return true;
+                };
+                if(prepare_borrowed(candidate)) {
+                    auto gate=offer(std::move(candidate),parent);
+                    trials.push_back({target,gate==0});
+                    if(automatic)slot.trials.push_back({target,gate==0});
+                    if(trace.gate!=8)trace.gate=gate;
+                }else trace.gate=7;
                 trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
                 if(s.research.trace)result.proposals.push_back(trace);
+                // One extra proposal per level, only after the topology-preserving
+                // reducer misses its requested target by more than 4x with
+                // link-condition rejections. The usual four visual gates decide
+                // whether the topology-changing result is usable.
+                if(s.research.topology_fallback&&!proposer&&s.objective==Objective::Quadric&&
+                   !topology_fallback_attempted&&stats.link_rejections&&uint64_t(trace.achieved)>uint64_t(target)*4) {
+                    if(cancelled()){result.status=Status::Cancelled;return result;}
+                    topology_fallback_attempted=true;
+                    auto relaxed=rs;relaxed.objective=Objective::TopologyRelaxed;
+                    ReductionStats relaxed_stats;relaxed.statistics=&relaxed_stats;
+                    ProposalTrace fallback_trace;fallback_trace.level=uint8_t(level);fallback_trace.origin=trace.origin;
+                    fallback_trace.strategy=3;fallback_trace.input_triangles=trace.input_triangles;
+                    fallback_trace.parent_triangles=trace.parent_triangles;fallback_trace.requested=trace.requested;
+                    auto fallback_begin=std::chrono::steady_clock::now();
+                    Lod alternative;
+                    {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);
+                     alternative=reduce(input,relaxed);}
+                    if(s.performance) {
+                        s.performance->solve_attempts+=relaxed_stats.solve_attempts;s.performance->singular_solves+=relaxed_stats.singular_solves;
+                        s.performance->nonfinite_solves+=relaxed_stats.nonfinite_solves;s.performance->position_fallbacks+=relaxed_stats.position_fallbacks;
+                        s.performance->nonfinite_costs+=relaxed_stats.nonfinite_costs;
+                    }
+                    ++result.candidate_evaluations;++result.topology_fallback_proposals;
+                    fallback_trace.achieved=uint32_t(alternative.data.indices.size()/3);
+                    fallback_trace.attempts=relaxed_stats.attempts;fallback_trace.collapsed=relaxed_stats.collapsed;
+                    fallback_trace.geometry_rejections=relaxed_stats.geometry_rejections;
+                    fallback_trace.uv_rejections=relaxed_stats.uv_rejections;
+                    fallback_trace.link_rejections=relaxed_stats.link_rejections;
+                    fallback_trace.gate=prepare_borrowed(alternative)?offer(std::move(alternative),parent):7;
+                    fallback_trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-fallback_begin).count();
+                    if(s.research.trace)result.proposals.push_back(fallback_trace);
+                }
             }
         }
         if(cancelled()){result.status=Status::Cancelled;return result;}

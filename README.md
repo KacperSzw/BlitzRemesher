@@ -45,6 +45,22 @@ The quality defaults audit 642 orthographic and 64 perspective cameras at
 expensive. [The small automatic configuration](configs/automatic-fast.json)
 is useful for a quick first run; it has a different, much smaller camera
 contract and must not be described as the default quality audit.
+Use [the experimental changed-area preset](configs/quality-area-0.5.json) to cap
+coverage change at 50% on every configured full audit view while retaining the
+default camera and pixel-distance settings. It sets triangle overhead to zero,
+so final selection favors the fewest triangles across the audited LOD chain:
+
+    build/release/blitz simplify model.glb --config configs/quality-area-0.5.json --out output/model
+
+The [pilot report](research/area-v3/REPORT.md) and [interactive board](research/area-v3/board/index.html)
+show the coverage gain and triangle cost. An independent rotated camera audit
+found a 51.29% changed-area view on the pilot tree, so this preset has not
+passed the release promotion check. Finite camera audits do not bound every view.
+The [strict 2 px comparison board](research/area-v3/strict-board/index.html)
+shows the same eight objects with 3 px and 4 px source caps.
+The [opt-in conditional topology fallback](research/area-v3/README.md) explores
+additional triangle reductions when quadric simplification stalls; it remains
+experimental and adds reduction work beyond the configured proposal budget.
 
 Inputs: glTF/GLB, OBJ, triangulated ASCII/binary PLY, ASCII/binary STL.
 glTF scene transforms, mirrored winding, strided/sparse accessors and
@@ -73,8 +89,11 @@ material graph. Engine integrations retain their own material payloads.
 - Both original-source and preceding-LOD proposals undergo source and transition
   audits. Shared levels preserve source vertex bytes and IDs; owned levels are compact.
   The reference and selected candidate costs and a 0/2/5/10% selection sweep are recorded.
-- Profiles: coverage, normals, attributes. Coverage measures maximum
-  foreground displacement, not changed pixel area. Appearance weights
+- Profiles: coverage, normals, attributes. The pixel-distance metric measures
+  foreground displacement. `max_changed_area` independently caps `1 - mask IoU`
+  for conservative, supersampled opaque coverage on each full audit view.
+  `1.0` disables this extra gate; the supplied experimental preset uses `0.5`.
+  Source and preceding-LOD comparisons must each pass. Appearance weights
   support curves and can be zero.
 - Scale: pixels_per_meter × source bounding-sphere diameter × meters_per_unit,
   or explicit base_pixels. Screen sizes decrease geometrically to last_pixels.
@@ -86,6 +105,11 @@ material graph. Engine integrations retain their own material payloads.
   separate. Endpoint proposals preserve source vertices where possible.
 - Candidate budget, beam width, camera sets, supersampling, pruning and
   scalar/AVX2 dispatch are explicit settings.
+
+Per-LOD JSON reports `changed_area` and `changed_area_worst_view` separately for
+source and adjacent audits. Rejection counts include `area_only_count` for
+audited candidates that met the pixel limit but failed the area limit. Search
+views filter proposals by pixel distance; they do not enforce the area cap.
 
 The C++ and CLI `research` settings expose opt-in boundary quadrics, constrained
 boundary placement, independent index-chart contractions, adaptive target
@@ -234,7 +258,10 @@ Installed CMake consumers use find_package(BlitzRemesher CONFIG REQUIRED)
 and link Blitz::remesher. BUILD_SHARED_LIBS=ON builds shared libraries.
 The C++ package propagates its C++20 requirement to consumers.
 
-Version 0.3 uses C ABI 3 and shared-library compatibility version 3. Replace
+Version 0.4 uses C ABI 4 and shared-library compatibility version 4. C callers
+must rebuild and reinitialize the enlarged `blitz_settings` descriptor;
+`blitz_lod_info` now reports both coverage-area measurements and worst views.
+Version 0.3 replaced
 `output_mode`/`chain_mode` with `triangle_overhead_bps`; use
 `blitz_result_storage` and per-LOD `reference_triangles` to inspect the result. C++ colors
 are `ColorRGBA8`; C colors are `blitz_color_rgba8`. Migrate old float colors

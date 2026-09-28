@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "selection": "Two development assets per category: smallest and median among sources at most 150k triangles, selected before reduction measurements. Pilot only.",
+  "assets": [
+    {
+      "archive_sha256": "e794e6d41c68363f0a56a5bd2b8ab84316cd80c9dab27ba3c273079916edbeaa",
+      "bytes": 15990138,
+      "category": "stress",
+      "colors": true,
+      "diameter": 1.1892552655505586,
+      "files": [
+        {
+          "bytes": 15990138,
+          "path": "data/smithsonian/3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7/source.obj",
+          "sha256": "cb01a79e7562420f88899ac2bf252a547d65cbf6c2c02b07da04954e28b7a4f9"
+        }
+      ],
+      "geometry_sha256": "4c76d915bb75372a22e0538fcfd0e9384d464fb183f3ac0561921203da17f5b9",
+      "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_evidence": {
+        "media_rights": "public-domain",
+        "url": "https://3d.si.edu/object/3d/hatch-crew-apollo-11:e7514eea-3f12-490d-a2d0-999f2a1a70f7"
+      },
+      "license_url": "https://www.si.edu/openaccess",
+      "normals": true,
+      "opaque": true,
+      "path": "data/smithsonian/3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7/source.obj",
+      "provider": "smithsonian",
+      "rights_verified_on": "2026-09-27",
+      "source_group": "smithsonian:Hatch, Crew, Apollo",
+      "source_identity": "3d_package:e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+      "source_url": "https://3d-api.si.edu/content/document/3d_package:e7514eea-3f12-490d-a2d0-999f2a1a70f7/resources/apollo-11-command-module-hatch-150k-4096-obj.zip",
+      "split": "development",
+      "title": "Hatch, Crew, Apollo 11",
+      "triangles": 150000,
+      "uv": true,
+      "variant": "Low_resolution",
+      "vertices": 100707,
+      "woody": false
+    }
+  ]
+}

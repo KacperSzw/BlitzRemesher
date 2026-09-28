@@ -54,11 +54,12 @@ int main() {
         color_imports(dir);
         Mesh m;m.positions={{0,0,0},{1,0,0},{0,1,0}};m.normals={{0,0,1},{0,0,1},{0,0,1}};m.uv={{0,0},{1,0},{0,1}};m.indices={0,1,2};
         save_ply(m.view(),dir/"triangle.ply");auto p=load_mesh(dir/"triangle.ply");CHECK(p.indices==m.indices);CHECK(p.uv[1].x==1);CHECK(p.normals[0].z==1);
-        Result r;r.source=m.view();r.reference_bounds=bounds(m.view());
+        Result r;r.source=m.view();r.reference_bounds=bounds(m.view());r.max_changed_area=.5;
         for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;r.lods.push_back(std::move(l));}
         save_chain(r,dir/"gltf");auto g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.indices.size()==3);CHECK(g.positions.size()==3);
         nlohmann::json manifest;std::ifstream(dir/"gltf/lods.json")>>manifest;CHECK(manifest["lods"][2]["gltf_mesh"]==0);
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));
+        CHECK(manifest["max_changed_area"]==.5);
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"].size()==1&&j["nodes"].size()==3&&j["nodes"][2]["mesh"]==0);
         // Collection-only foliage inspection must not relax the production
@@ -87,6 +88,11 @@ int main() {
         CHECK(legacy.research.output==OutputMode::Reuse&&legacy.research.chain==ChainMode::Progressive);
         for(int b:{0,137,10000})CHECK(settings_json(nlohmann::json{{"triangle_overhead_bps",b}}).triangle_overhead_bps==b);
         throws([&]{settings_json(nlohmann::json{{"triangle_overhead_bps",2.5}});});
+        for(double cap:{0.,.5,1.})CHECK(settings_json(nlohmann::json{{"max_changed_area",cap}}).max_changed_area==cap);
+        for(double cap:{-.01,1.01})throws([&]{settings_json(nlohmann::json{{"max_changed_area",cap}});});
+        auto fallback=settings_json(nlohmann::json{{"research",{{"topology_fallback",true}}}});
+        CHECK(fallback.research.topology_fallback&&settings_json(fallback)["research"]["topology_fallback"]==true);
+        throws([&]{settings_json(nlohmann::json{{"objective","topology_relaxed"},{"research",{{"topology_fallback",true}}}});});
         CHECK(std::filesystem::file_size(dir/"distinct/chain.bin")==storage_stats(r).total());
         for(double weight:{0.,7.5,100.}){
             auto experiment=settings_json(nlohmann::json{{"profile","coverage"},{"research",{{"boundary_weight",weight},{"boundary_placement",true},{"adaptive_targets",true},{"independent_seams",true},{"trace",true}}}});

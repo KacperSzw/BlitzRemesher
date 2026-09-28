@@ -32,9 +32,10 @@ int main(int argc,char** argv) {
         if(command=="evaluate") {
             if(argc<4)throw std::invalid_argument("evaluate requires two inputs");auto candidate=load_mesh(argv[3]);
             EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.views=s.audit_views;e.supersample=s.audit_supersample;e.max_supersample=s.max_supersample;
-            e.screen_size=pixels;e.limit=limit;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;
+            e.screen_size=pixels;e.limit=limit;e.max_changed_area=s.max_changed_area;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;
             auto v=evaluate(m.view(),candidate.view(),bounds(m.view()),e);
-            std::cout<<nlohmann::json({{"passed",v.passed},{"complete",v.complete},{"error_px",v.error},{"coverage_upper_px",v.coverage_upper},{"worst_view",v.worst_view},{"views",v.views_evaluated}}).dump(2)<<'\n';return v.passed?0:2;
+            std::cout<<nlohmann::json({{"passed",v.passed},{"complete",v.complete},{"error_px",v.error},{"coverage_upper_px",v.coverage_upper},
+                {"changed_area",v.changed_area},{"changed_area_worst_view",v.changed_area_worst_view},{"worst_view",v.worst_view},{"views",v.views_evaluated}}).dump(2)<<'\n';return v.passed?0:2;
         }
         throw std::invalid_argument("unknown command");
     }catch(const std::exception& e){std::cerr<<"blitz: "<<e.what()<<'\n';return 1;}

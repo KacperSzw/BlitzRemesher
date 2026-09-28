@@ -1,13 +1,34 @@
-# Scoring protocol v2
+# Scoring protocol v3
+
+Version 3 adds an optional per-view opaque-coverage area limit to the visual
+contract. For reference mask A and candidate mask B, changed area is
+`|A xor B| / |A or B|` (`1 - IoU`), with two empty masks defined as zero.
+The maximum over audited views must be at most `max_changed_area` for both
+source-to-LOD and adjacent-LOD comparisons. One empty mask gives changed area
+one. The distance gate still applies independently. The default limit is 1.0
+for compatibility; the first quality preset uses 0.5. The area fraction is
+measured on conservative supersampled opaque-geometry masks. It does not
+measure texture opacity, shading or all-view error. Report both the maximum
+fraction and its camera index for each comparison.
+
+Use separate scenario labels for the 1.0 and 0.5 limits. A lower SCORE under
+the 0.5 contract is a measured cost of tighter quality, not an algorithm
+regression. Compare cap-only and cap-plus-adaptive search only at the same
+0.5 limit, input, cameras, sampling, candidate budget and build conditions.
+Fresh v3 uncapped runs establish the reference; archived v2 rows are context,
+not their baseline. Dense rotated-camera tail checks are independent audits,
+not replacements for the scheduled-chain SCORE. Any failing or incomplete
+view remains visible, including the distance and area limits and worst views.
 
 Version 2 fixes canonical vertex colors to linear RGBA8. Normalized float and
 unsigned-16 file colors are rounded to nearest (ties upward) at import;
 nonfinite/out-of-range colors fail import. Source streams supplied to the
 library are already RGBA8 and remain immutable. All variants and external
 baselines consume the same canonical inputs; record their attribute hashes.
-The SCORE formula and visual gates are unchanged. Historical v1 results are
-archived observations, not comparable baselines for v2. Rerun every baseline
-under v2 before a new comparison; unsupported capabilities remain failures.
+The SCORE formula is unchanged from v2. Historical v1 results are archived
+observations, not comparable baselines for v2 or v3. Rerun every baseline
+under the current protocol before a new comparison; unsupported capabilities
+remain failures.
 
 Precision comparisons record quadric/candidate record sizes, packed/full
 coverage mode, generation and stage timings, numeric rejection counters,

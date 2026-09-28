@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>BlitzRemesher · coverage area pilot</title>
+<style>
+:root{--paper:#f4f2ec;--white:#fffcf7;--ink:#22313b;--muted:#64747c;--line:#d8ded9;--rust:#c95435;--teal:#207a73;--soft:#e6ece7}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}button{font:inherit;cursor:pointer}a{color:inherit;text-underline-offset:3px}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--rust);outline-offset:3px}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.sheet{max-width:1530px;margin:auto;padding:32px 38px 60px}.mast{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:17px;gap:16px}.brand{font-size:14px;font-weight:800;letter-spacing:.15em}.brand span{display:inline-grid;place-items:center;background:var(--rust);color:white;width:27px;height:27px;font-size:23px;font-weight:500;margin-right:9px}.edition{font:10px/1.5 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.13em;text-align:right;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:42px;align-items:end;padding:39px 0 28px}.eyebrow,.minor{font:10px/1.5 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}h1{font-size:clamp(42px,4.6vw,70px);line-height:1.02;letter-spacing:-.055em;font-weight:650;margin:10px 0 14px}h1 em{font-style:normal;color:var(--rust)}.intro{font-size:14px;line-height:1.65;color:var(--muted);max-width:720px;margin:0}.hero-note{border-left:2px solid var(--rust);padding-left:18px;font-size:12px;line-height:1.6;color:var(--muted)}.hero-note strong{display:block;color:var(--ink);font-size:14px;margin-bottom:6px}
+.tabs{position:sticky;top:0;z-index:10;background:var(--paper);display:flex;gap:7px;border-bottom:1px solid var(--line);padding:9px 0 11px;overflow-x:auto;scrollbar-width:thin}.tab{min-width:185px;border:1px solid var(--line);background:#e8ebe6;padding:12px 16px;text-align:left;border-radius:5px;color:var(--ink)}.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:white}.tab-number{font:9px/1.4 ui-monospace,monospace;letter-spacing:.1em;opacity:.68}.tab-name{display:block;font-size:13px;font-weight:700;margin-top:3px;white-space:nowrap}.tab-detail{display:block;font-size:10px;opacity:.75;margin-top:3px}
+.run-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin:27px 0 17px}.run-head h2{font-size:29px;letter-spacing:-.04em;font-weight:650;margin:3px 0}.run-head p{font-size:11px;line-height:1.55;color:var(--muted);max-width:480px;margin:0}.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--white);border:1px solid var(--line)}.stat{padding:19px 20px}.stat+.stat{border-left:1px solid var(--line)}.stat-label{font:10px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.stat-value{font-size:33px;font-weight:650;letter-spacing:-.05em;margin:6px 0 5px;font-variant-numeric:tabular-nums}.stat-value .unit{font-size:13px;letter-spacing:0;color:var(--muted)}.stat-note{font-size:10px;line-height:1.5;color:var(--muted)}.comparison{font-size:12px;line-height:1.6;border-left:3px solid var(--teal);padding:10px 16px;background:#e7efe9;margin:13px 0 15px}.comparison.regression{border-left-color:var(--rust);background:#f6e4d9}.dense-check{border-left:3px solid var(--rust);background:#f6e4d9;padding:12px 16px;margin:0 0 28px;font-size:12px;line-height:1.6}.dense-check strong{color:#963c20}.dense-check a{font-weight:600}
+.score-formula{font-size:12px;line-height:1.6;padding:12px 16px;background:#e9ece6;border:1px solid var(--line);margin-top:11px}.score-formula strong{margin-right:8px}.score-formula code{font:11px ui-monospace,monospace;white-space:normal}.headroom-note{font-size:11px;line-height:1.5;color:var(--muted);margin:10px 0 0}.chain-retention{display:flex;justify-content:space-between;gap:8px;align-items:baseline;border-bottom:1px solid var(--line);padding:2px 0 9px;margin-bottom:9px}.chain-retention strong{font-size:15px;font-variant-numeric:tabular-nums}.chain-retention span{font-size:10px;color:var(--muted)}.chain-retention small{display:block;font:9px/1.4 ui-monospace,monospace;color:var(--muted)}.experiment-check,.fallback-check{border-left:3px solid var(--rust);background:#f6e4d9;padding:12px 16px;margin:0 0 28px;font-size:12px;line-height:1.6}.experiment-check strong,.fallback-check strong{color:#963c20}.experiment-check a,.fallback-check a{font-weight:600}
+.metric-lead small{display:block;font:10px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}.metric-lead strong{display:block}.metric-lead span{text-align:right;font:10px/1.4 ui-monospace,monospace}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-block:1px solid var(--line);padding:12px 0;margin-bottom:5px}.control{display:flex;align-items:center;gap:10px}.control label{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.control input{width:185px;accent-color:var(--rust)}.control output{min-width:57px;font:12px ui-monospace,monospace}.segmented{display:flex;gap:3px;padding:3px;background:var(--soft);border-radius:5px}.segmented button{border:0;background:none;border-radius:4px;padding:7px 10px;font-size:11px}.segmented button[aria-pressed=true]{background:var(--white);box-shadow:0 1px 3px #13242d20;font-weight:700}.control-help{font-size:11px;color:var(--muted)}
+.asset{display:grid;grid-template-columns:minmax(195px,.75fr) minmax(420px,1.8fr) minmax(240px,.95fr);gap:20px;padding:25px 0;border-bottom:1px solid var(--line);align-items:start}.asset-id{font:10px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.asset h3{font-size:21px;letter-spacing:-.035em;margin:6px 0 9px;font-weight:650}.asset-context{font-size:11px;line-height:1.55;color:var(--muted)}.asset-context a{display:inline-block;margin-top:10px}.status{display:inline-block;font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;margin-top:10px;padding:5px 7px;background:#e4eee8;color:var(--teal)}.status.warn{background:#f7e4d9;color:#a24022}.views{display:grid;grid-template-columns:1fr 1fr;gap:9px}.view{margin:0;min-width:0;background:#e6eae5;border:1px solid var(--line);border-radius:4px;overflow:hidden}.view.selected{background:#e5eee9;border-color:#bfd6cb}.view figcaption{height:31px;display:flex;justify-content:space-between;gap:5px;align-items:center;padding:0 10px;font:10px ui-monospace,monospace;white-space:nowrap}.view .frame{height:195px}.view .frame:after{content:"";display:block;position:relative;bottom:13px;width:60%;margin:auto;height:1px;background:linear-gradient(90deg,transparent,#aabbb1,transparent);pointer-events:none}.view-detail{font:10px ui-monospace,monospace;color:var(--muted);padding:0 10px 10px}.metrics{font-size:11px}.metric-lead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:9px;gap:7px}.metric-lead strong{font-size:20px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.metric-lead span{color:var(--muted)}.area-line{margin:10px 0}.area-title{display:flex;justify-content:space-between;gap:8px;line-height:1.35}.area-title strong{font-variant-numeric:tabular-nums}.bar{height:6px;background:#dce2dc;position:relative;margin-top:5px}.bar-fill{height:100%;background:var(--rust)}.bar.adj .bar-fill{background:var(--teal)}.bar-cap{position:absolute;top:-2px;height:10px;width:2px;background:var(--ink)}.metric-note{font:10px/1.55 ui-monospace,monospace;color:var(--muted)}.audit-summary{font-size:10px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);margin-top:10px;padding-top:9px}.audit-summary strong{color:var(--ink)}.costs{font:10px/1.7 ui-monospace,monospace;color:var(--muted);margin-top:10px}.costs b{color:var(--ink);font-weight:600}.graphics-error{padding:12px 16px;border:1px solid var(--rust);background:#f7e3d8;margin:14px 0;font-size:12px}.foot{display:grid;grid-template-columns:1fr 1fr;gap:28px;border-top:1px solid var(--ink);margin-top:28px;padding-top:18px;color:var(--muted);font-size:11px;line-height:1.7}.foot p{margin:0}.foot strong{color:var(--ink)}.foot a{margin-right:14px}
+@media(max-width:1100px){.asset{grid-template-columns:180px 1fr;gap:14px}.metrics{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.metric-lead,.costs,.audit-summary{grid-column:1/-1}.view .frame{height:175px}}
+@media(max-width:760px){.sheet{padding:20px 16px 40px}.hero{grid-template-columns:1fr;gap:18px;padding:30px 0 22px}.hero-note{max-width:620px}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0;border-top:1px solid var(--line)}.stat:nth-child(4){border-top:1px solid var(--line)}.asset{grid-template-columns:1fr}.metrics{grid-column:1}.run-head{display:block}.run-head p{margin-top:6px}.view .frame{height:190px}.foot{grid-template-columns:1fr}}
+@media(max-width:480px){.brand{font-size:11px}.edition{font-size:8px}h1{font-size:43px}.tab{min-width:155px;padding:10px}.tab-name{font-size:11px}.stat{padding:13px}.stat-value{font-size:27px}.view .frame{height:145px}.view figcaption{padding:0 6px;font-size:9px}.view-detail{font-size:9px;padding:0 6px 7px}.metrics{grid-template-columns:1fr}.asset h3{font-size:20px}}
+@media print{.tabs,.controls{position:static}.tab:not([aria-selected=true]){display:none}.sheet{max-width:none}.asset{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header class="mast"><div class="brand"><span aria-hidden="true">ϟ</span>BLITZREMESHER</div><div class="edition">Research / area contract<br>Frozen eight-asset pilot · 2026</div></header>
+  <section class="hero"><div><div class="eyebrow">Opaque geometry / source and adjacent audits</div><h1>Coverage area,<br><em>made explicit.</em></h1><p class="intro">A pixel-distance check can accept a thin object after most of its filled area disappears. Five recorded pilot runs show the uncapped reference, the 50% area limit, adaptive targets, and two post-hoc topology experiments under that same limit.</p></div><aside class="hero-note"><strong>One complete run per tab.</strong>Every tab shows all eight frozen pilot objects in the same order. Source and selected LOD use the same presentation camera and scale. Drag either image to rotate its pair.</aside></section>
+  <nav id="run-tabs" class="tabs" role="tablist" aria-label="Pilot settings and test runs"></nav>
+  <section id="run-panel" role="tabpanel" aria-labelledby="run-tab-0">
+    <div class="run-head"><div><div class="minor">Recorded run / <span id="run-number"></span></div><h2 id="run-title"></h2></div><p id="run-description"></p></div>
+    <div class="stats" id="stats"></div>
+    <div class="score-formula" id="score-formula"><strong>SCORE formula</strong><code>100 × (1 − mean across categories of the mean asset chain retention)</code>. Asset chain retention is the average triangle count of LOD 1–7 divided by LOD 0 triangles; each category has equal weight. Final LOD retention alone does not determine SCORE.</div>
+    <div class="comparison" id="comparison"></div>
+    <aside class="dense-check" id="dense-check" aria-label="Independent dense audit finding" hidden></aside>
+    <aside class="experiment-check" id="topology-check" aria-label="Experimental topology result" hidden></aside>
+    <aside class="fallback-check" id="fallback-check" aria-label="Conditional fallback result" hidden></aside>
+    <div class="controls"><div class="control"><label for="lod">Show the same LOD on all eight objects</label><input id="lod" type="range" min="0" max="7" value="7"><output id="lod-output" for="lod">LOD 7</output></div><div class="control"><span class="control-help">Surface</span><div class="segmented" role="group" aria-label="Surface display"><button type="button" data-mode="clay" aria-pressed="true">Clay</button><button type="button" data-mode="wire" aria-pressed="false">Wireframe</button><button type="button" data-mode="silhouette" aria-pressed="false">Silhouette</button></div></div></div>
+    <p class="headroom-note">Area bars and pixel figures show acceptance headroom. Headroom alone does not prove that a lower-triangle proposal was generated or accepted.</p>
+    <div id="graphics-error" class="graphics-error" role="alert" hidden>WebGL 2 is unavailable. Measured values and run links remain available.</div>
+    <div id="assets"></div>
+  </section>
+  <footer class="foot"><p><strong>Audit meaning.</strong> Changed area is 1 − intersection-over-union of supersampled opaque geometry masks. Source and adjacent areas are separate worst-view checks, as are the pixel-distance gates. “Worst across chain” can occur at another LOD or view. The 112 accepted pairs per run use only the configured 16 audit cameras; independent dense checks are reported separately. Presentation angles are illustrative, not audit cameras; textures and shading are not assessed.</p><p><strong>Provenance.</strong> The images draw actual exported triangle positions and indices from the recorded runs. Identical content hashes share one geometry buffer. Scores at different area limits show the quality–triangle tradeoff. B versus C tests scheduling, B versus D changes the global objective, and the corrected v2 E pilot is compared with a same-binary v2 B control whose eight exports match frozen B. D and E are post-hoc experiments, not promoted presets. Peak RSS is cumulative process high-water, not isolated per asset.<br><a href="../REPORT.md">Measurements</a><a href="manifest.json">Geometry hashes</a><a href="../README.md">Reproduce</a></p></footer>
+</main>
+<script type="application/json" id="board-data">@AREA_BOARD_DATA@</script>
+<script type="x-shader/x-vertex" id="vertex-shader">
+#version 300 es
+precision highp float;
+layout(location=0) in vec3 position;
+uniform vec3 center;
+uniform float radius;
+uniform mat3 rotation;
+uniform vec2 projection;
+out vec3 viewPosition;
+void main(){viewPosition=rotation*((position-center)/radius);gl_Position=vec4(viewPosition.xy*projection,-viewPosition.z*0.25,1.0);}
+</script>
+<script type="x-shader/x-fragment" id="fragment-shader">
+#version 300 es
+precision highp float;
+in vec3 viewPosition;
+uniform vec3 color;
+uniform int mode;
+out vec4 fragment;
+void main(){
+  if(mode==1){fragment=vec4(0.12,0.18,0.20,0.40);return;}
+  if(mode==2){fragment=vec4(0.13,0.18,0.21,1.0);return;}
+  vec3 n=normalize(cross(dFdx(viewPosition),dFdy(viewPosition)));
+  if(n.z<0.0)n=-n;
+  float key=max(0.0,dot(n,normalize(vec3(-0.45,0.65,1.0))));
+  float fill=max(0.0,dot(n,normalize(vec3(0.8,0.0,0.5))));
+  float spec=pow(max(0.0,dot(n,normalize(vec3(-0.2,0.4,1.0)))),28.0);
+  fragment=vec4(color*(0.36+0.59*key+0.17*fill)+vec3(0.10)*spec,1.0);
+}
+</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('board-data').textContent);
+const byId=id=>document.getElementById(id);
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=n=>Number(n).toLocaleString('en-US');
+const fixed=(n,d=2)=>Number(n).toFixed(d);
+const percent=(n,d=1)=>fixed(100*n,d)+'%';
+const state={run:0,level:7,mode:'clay',cameras:data.runs[0].assets.map(a=>({yaw:a.yaw,pitch:a.pitch}))};
+const current=()=>data.runs[state.run];
+byId('run-tabs').innerHTML=data.runs.map((r,i)=>'<button type="button" class="tab" role="tab" id="run-tab-'+i+'" aria-controls="run-panel" aria-selected="'+(i===0)+'" tabindex="'+(i===0?'0':'-1')+'" data-run="'+i+'"><span class="tab-number">RUN 0'+(i+1)+'</span><span class="tab-name">'+escape(r.short)+'</span><span class="tab-detail">Area ≤ '+percent(r.limit,0)+' · '+(r.topology_fallback?'opt-in extra proposal':r.objective==='topology_relaxed'?'topology changing':r.adaptive?'adaptive targets':'fixed targets')+'</span></button>').join('');
+function stat(label,value,note){return '<div class="stat"><div class="stat-label">'+label+'</div><div class="stat-value">'+value+'</div><div class="stat-note">'+note+'</div></div>';}
+function areaLine(label,m,limit,extra){return '<div class="area-line"><div class="area-title"><span>'+label+'</span><strong>'+percent(m.area)+' / '+percent(limit,0)+'</strong></div><div class="bar '+extra+'"><div class="bar-fill" style="width:'+Math.min(100,m.area*100)+'%"></div><div class="bar-cap" style="left:calc('+Math.min(100,limit*100)+'% - 1px)"></div></div><div class="metric-note">area view '+m.area_view+' · pixel '+fixed(m.px)+' / '+fixed(m.px_limit)+' px</div></div>';}
+function card(a,index,run){
+  const selected=a.levels[state.level],source=a.levels[0],retained=selected.triangles/source.triangles;
+  const raw='../../runs/'+encodeURIComponent(run.id)+'/rows/'+encodeURIComponent(a.id)+'.json';
+  const independentFailure=run.id===data.independent_check.run && a.id===data.independent_check.asset_id;
+  const experimentalDense=run.objective==='topology_relaxed'?Object.values(data.experimental_checks).find(check=>check.asset_id===a.id):null;
+  const conditionalTreeFailure=run.topology_fallback && a.id===data.conditional_check.tree.asset_id;
+  const conditionalDense=run.topology_fallback?[data.conditional_check.bell,data.conditional_check.hatch].find(check=>check.asset_id===a.id):null;
+  const badge=independentFailure?'Rotated dense LOD 7 failed':experimentalDense?experimentalDense.passed?'Rotated dense tail passed · experimental':'Rotated dense LOD 7 failed · experimental':conditionalTreeFailure?'Unchanged B tree · rotated dense failed':conditionalDense?'Rotated dense tail passed · extra proposal':a.fallback?'Source fallback':a.levels.at(-1).triangles===source.triangles?'Unreduced':'Configured audits passed';
+  const selectedLabel=state.level===7?'Final retention':'LOD '+state.level+' retention';
+  const retainedHtml='<div class="metric-lead"><div><small>'+selectedLabel+'</small><strong>'+percent(retained,retained<0.001?2:1)+'</strong></div><span>'+num(source.triangles)+' → '+num(selected.triangles)+' tris</span></div>';
+  const chainHtml='<div class="chain-retention"><div><span>Chain retention · LOD 1–7 average / source</span><small>'+fixed(a.chain_ratio*source.triangles,1)+' avg tris / '+num(source.triangles)+' source</small></div><strong>'+percent(a.chain_ratio)+'</strong></div>';
+  const auditHtml=state.level?areaLine('To source',selected.source,run.limit,'source')+areaLine('To previous LOD',selected.adjacent,run.limit,'adj'):'<div class="metric-note">LOD 0 is unchanged; reduction audits begin at LOD 1.</div>';
+  return '<article class="asset" data-asset="'+index+'"><div><div class="asset-id">'+String(index+1).padStart(2,'0')+' / '+escape(a.category)+'</div><h3>'+escape(a.name)+'</h3><div class="asset-context">'+escape(a.id)+'<br><a href="'+escape(a.source_url)+'">Source · '+escape(a.license)+'</a> · <a href="'+raw+'">Raw audit row</a></div><span class="status '+(a.fallback||independentFailure||conditionalTreeFailure||experimentalDense&&!experimentalDense.passed?'warn':'')+'">'+badge+'</span></div><div class="views"><figure class="view"><figcaption><span>LOD 0 · source</span><span>'+num(source.triangles)+' tris</span></figcaption><div class="frame"><canvas data-asset="'+index+'" data-level="0" aria-label="'+escape(a.name)+' source geometry"></canvas></div><div class="view-detail">512 px audit target</div></figure><figure class="view selected"><figcaption><span>LOD '+state.level+' · selected</span><span>'+num(selected.triangles)+' tris</span></figcaption><div class="frame"><canvas data-asset="'+index+'" data-level="'+state.level+'" aria-label="'+escape(a.name)+' LOD '+state.level+' geometry"></canvas></div><div class="view-detail">'+fixed(selected.screen_pixels,1)+' px audit target</div></figure></div><div class="metrics">'+retainedHtml+chainHtml+auditHtml+'<div class="audit-summary">Worst across chain: source <strong>'+percent(a.source_area_worst.area)+'</strong> (LOD '+a.source_area_worst.level+', view '+a.source_area_worst.view+'); adjacent <strong>'+percent(a.adjacent_area_worst.area)+'</strong> (LOD '+a.adjacent_area_worst.level+', view '+a.adjacent_area_worst.view+').</div><div class="costs"><b>'+fixed(a.resident_bytes/1024,1)+' KiB</b> resident · <b>'+fixed(a.bake_seconds)+' s</b> generation + audit · <b>'+fixed(a.peak_rss_kib/1024,1)+' MiB</b> process high-water RSS</div></div></article>';
+}
+function renderPage(){
+  const run=current(),reference=data.runs[0],cap=data.runs[1];
+  document.querySelectorAll('[role="tab"]').forEach((tab,i)=>{tab.setAttribute('aria-selected',i===state.run);tab.tabIndex=i===state.run?0:-1;});
+  byId('run-panel').setAttribute('aria-labelledby','run-tab-'+state.run);
+  byId('run-number').textContent='0'+(state.run+1);
+  byId('run-title').textContent=run.label;
+  byId('run-description').textContent='Hybrid rebuild · eight baseline proposals per LOD · 512→16 px · 12 orthographic + 4 perspective audit cameras · 4× sampling. '+(run.topology_fallback?'Post-hoc opt-in run: one extra topology proposal is allowed after a QEM link stall; five extras were used across Bell and Apollo.':run.objective==='topology_relaxed'?'Compared with cap-only B, only the objective changes to experimental topology relaxed.':'Compare cap and adaptive settings in the tab labels.');
+  const worstFinal=Math.max(...run.assets.map(a=>a.levels.at(-1).source.area));
+  const tree=run.assets.find(a=>a.id==='ph_dead_quiver_trunk');
+  const hatch=run.assets.find(a=>a.id===data.experimental_checks.hatch.asset_id);
+  const focus=run.topology_fallback?stat('Extra topology proposals',num(run.extra_proposals),'Bell X-1: 3 · Apollo hatch: 2; beyond the eight-proposal baseline.'):
+    run.objective==='topology_relaxed'?stat('Apollo hatch / final triangles',num(hatch.levels.at(-1).triangles)+'<span class="unit"> / '+num(hatch.levels[0].triangles)+'</span>','Cap-only B: '+num(cap.assets.find(a=>a.id===hatch.id).levels.at(-1).triangles)+' final triangles; object-level gain.'):
+    stat('Quiver tree / final triangles',num(tree.levels.at(-1).triangles)+'<span class="unit"> / '+num(tree.levels[0].triangles)+'</span>','Retained '+percent(tree.levels.at(-1).triangles/tree.levels[0].triangles,2)+' of source triangles.');
+  byId('stats').innerHTML=stat('SCORE / eight assets',fixed(run.score)+'<span class="unit"> / 100</span>','Category-balanced chain retention across all eight assets and four categories.')+
+    stat('Final source area · worst asset',percent(worstFinal),'Maximum of each final LOD’s worst camera; limit '+percent(run.limit,0)+'.')+
+    focus+
+    stat('Configured audit pairs','112<span class="unit"> / 112</span>','Eight assets × seven reductions × source and adjacent, on 16 fixed views.');
+  byId('comparison').textContent=run.topology_fallback?
+    'Post-hoc opt-in conditional fallback: pilot SCORE rises by '+fixed(run.score-data.conditional_check.control_score,4)+' points versus the same-binary v2 B control ('+fixed(data.conditional_check.control_score)+' → '+fixed(run.score)+') with five extra proposals. The v2 B control reproduces all '+data.conditional_check.control_match_count+'/8 frozen B exports; this remains exploratory, not a promoted preset.':
+    run.objective==='topology_relaxed'?
+    'Experimental topology changing objective: global eight-asset SCORE regresses by '+fixed(cap.score-run.score)+' points versus cap-only B ('+fixed(cap.score)+' → '+fixed(run.score)+'). The hatch gain does not promote D as a general preset.':
+    state.run===0?'Fresh uncapped reference. The area measure is recorded but imposes no useful restriction at a 100% limit.':state.run===1?
+    'With the 50% area contract, SCORE changes by '+fixed(run.score-reference.score)+' points versus uncapped. That is a quality–triangle tradeoff, not an algorithm comparison.':
+    'At the same 50% area contract, adaptive targets change SCORE by '+fixed(run.score-cap.score)+' points versus cap-only. This is the scheduling comparison.';
+  byId('comparison').classList.toggle('regression',run.objective==='topology_relaxed');
+  const dense=data.independent_check;
+  byId('dense-check').hidden=run.id!==dense.run;
+  if(run.id===dense.run)byId('dense-check').innerHTML='<strong>Independent rotated dense audit failed.</strong> The tree’s LOD '+dense.level+' source area reached <strong>'+percent(dense.changed_area,2)+'</strong> at view '+dense.view+' (limit '+percent(dense.area_limit,0)+'); the check stopped after '+dense.views_evaluated+' of '+dense.planned_views+' planned cameras at '+dense.supersample+'×. The configured 16-view audit measured '+percent(run.assets.find(a=>a.id===dense.asset_id).levels[dense.level].source.area,2)+'; a dense recheck with the original seed measured '+percent(dense.same_seed_area,2)+' and passed. The 0.5 preset is not ready for promotion. <a href="../dense-tree-cap-0.5.json">Rotated audit data</a> · <a href="../REPORT.md">Full finding</a>.';
+  const experiment=data.experimental_checks,{tree:dt,rock:dr,bell:db,hatch:dh}=experiment;
+  byId('topology-check').hidden=run.id!==dh.run;
+  if(run.id===dh.run)byId('topology-check').innerHTML='<strong>Experimental topology results: global regression and dense failures.</strong> Apollo hatch '+num(dh.cap_final_triangles)+'→'+num(dh.experimental_final_triangles)+' triangles and Bell X-1 '+num(db.cap_final_triangles)+'→'+num(db.experimental_final_triangles)+' triangles pass all six rotated tail gates each. The tree fails LOD 7 source area at '+percent(dt.source_area,2)+' / '+percent(dt.area_limit,0)+' (view '+dt.source_view+'); rock face fails source and adjacent area at '+percent(dr.source_area,2)+' and '+percent(dr.adjacent_area,2)+' / '+percent(dr.area_limit,0)+'. SCORE regresses by '+fixed(cap.score-run.score)+' points across all eight assets. D is not a promoted preset or validated dispatch rule. <a href="../dense-tree-topology-relaxed.json">Tree audit</a> · <a href="../dense-rock-topology-relaxed.json">Rock audit</a> · <a href="../dense-hatch-topology-relaxed.json">Hatch audit</a> · <a href="../dense-bell-topology-relaxed.json">Bell audit</a> · <a href="../REPORT.md">Full finding</a>.';
+  const conditional=data.conditional_check;
+  byId('fallback-check').hidden=run.id!==conditional.run;
+  if(run.id===conditional.run)byId('fallback-check').innerHTML='<strong>Corrected v2 opt-in pilot; extra work and dense caveat.</strong> Bell X-1 '+num(conditional.bell.cap_final_triangles)+'→'+num(conditional.bell.conditional_final_triangles)+' triangles and Apollo hatch '+num(conditional.hatch.cap_final_triangles)+'→'+num(conditional.hatch.conditional_final_triangles)+' triangles pass all six rotated dense tail gates each ('+percent(conditional.bell.source_area,2)+' and '+percent(conditional.hatch.source_area,2)+' final source area). Six other exports exactly match cap-only B; all '+conditional.corrected_output_match_count+'/8 corrected E exports reproduce the historical E pilot. E’s direct rotated dense check confirms the unchanged tree’s LOD 7 source-area failure at '+percent(conditional.tree.source_area,2)+' / '+percent(conditional.tree.area_limit,0)+' (view '+conditional.tree.source_view+'). E uses the same corrected binary as its v2 B control and '+conditional.extra_proposals+' extra proposals; no global preset promotion follows from this pilot. <a href="../../runs/'+encodeURIComponent(conditional.control_run)+'/summary.json">Same-binary v2 B control</a> · <a href="../dense-bell-topology-fallback-v2.json">Bell audit</a> · <a href="../dense-hatch-topology-fallback-v2.json">Hatch audit</a> · <a href="../dense-tree-topology-fallback-v2.json">Tree audit</a> · <a href="../REPORT.md">Full finding</a>.';
+  byId('assets').innerHTML=run.assets.map((a,i)=>card(a,i,run)).join('');
+  byId('lod-output').textContent='LOD '+state.level;
+  document.querySelectorAll('#assets canvas').forEach(canvas=>makeDraggable(canvas));
+  renderAll();
+}
+function typed(base64,Type){const raw=atob(base64),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;++i)bytes[i]=raw.charCodeAt(i);return new Type(bytes.buffer);}
+function rotation(y,p){const cy=Math.cos(y),sy=Math.sin(y),cp=Math.cos(p),sp=Math.sin(p);return new Float32Array([cy,sp*sy,-cp*sy,0,cp,sp,sy,-sp*cy,cp*cy]);}
+class Renderer{
+  constructor(){
+    this.canvas=document.createElement('canvas');
+    const gl=this.gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,preserveDrawingBuffer:true});
+    if(!gl)throw Error('WebGL 2 is unavailable');
+    const compile=(type,id)=>{const s=gl.createShader(type);gl.shaderSource(s,byId(id).textContent.trim());gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;};
+    this.program=gl.createProgram();gl.attachShader(this.program,compile(gl.VERTEX_SHADER,'vertex-shader'));gl.attachShader(this.program,compile(gl.FRAGMENT_SHADER,'fragment-shader'));gl.linkProgram(this.program);if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
+    gl.useProgram(this.program);this.uniforms={};for(const name of ['center','radius','rotation','projection','color','mode'])this.uniforms[name]=gl.getUniformLocation(this.program,name);
+    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);this.cache=new Map();
+  }
+  mesh(hash){
+    if(this.cache.has(hash)){const value=this.cache.get(hash);this.cache.delete(hash);this.cache.set(hash,value);return value;}
+    const gl=this.gl,g=data.geometries[hash],vertices=typed(g.positions,Float32Array),indices=typed(g.indices,Uint32Array);
+    const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+    const positions=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,positions);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(0);
+    const faces=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,faces);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
+    const mesh={vao,positions,faces,indices,lines:null,count:indices.length};this.cache.set(hash,mesh);
+    if(this.cache.size>32){const [oldKey,old]=this.cache.entries().next().value;this.cache.delete(oldKey);gl.deleteBuffer(old.positions);gl.deleteBuffer(old.faces);if(old.lines)gl.deleteBuffer(old.lines);gl.deleteVertexArray(old.vao);}
+    return mesh;
+  }
+  draw(canvas,asset,level){
+    const w=Math.max(1,Math.round(canvas.clientWidth)),h=Math.max(1,Math.round(canvas.clientHeight)),dpr=Math.min(devicePixelRatio||1,2),W=Math.round(w*dpr),H=Math.round(h*dpr);
+    canvas.width=W;canvas.height=H;this.canvas.width=W;this.canvas.height=H;
+    const gl=this.gl,mesh=this.mesh(asset.levels[level].geometry),u=this.uniforms,camera=state.cameras[data.pilot_ids.indexOf(asset.id)];
+    gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);gl.bindVertexArray(mesh.vao);
+    gl.uniform3fv(u.center,asset.center);gl.uniform1f(u.radius,asset.radius);gl.uniformMatrix3fv(u.rotation,false,rotation(camera.yaw,camera.pitch));
+    gl.uniform3fv(u.color,[1,3,5].map(i=>parseInt(asset.color.slice(i,i+2),16)/255));
+    const scale=0.94*Math.min(w,h)/h;gl.uniform2f(u.projection,scale*h/w,scale);gl.uniform1i(u.mode,state.mode==='silhouette'?2:0);
+    gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.faces);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0);gl.disable(gl.POLYGON_OFFSET_FILL);
+    if(state.mode==='wire'){
+      if(!mesh.lines){const edges=new Uint32Array(mesh.count*2);for(let i=0,j=0;i<mesh.count;i+=3,j+=6){const x=mesh.indices[i],y=mesh.indices[i+1],z=mesh.indices[i+2];edges.set([x,y,y,z,z,x],j);}mesh.lines=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,edges,gl.STATIC_DRAW);}
+      gl.uniform1i(u.mode,1);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.drawElements(gl.LINES,mesh.count*2,gl.UNSIGNED_INT,0);gl.depthMask(true);gl.disable(gl.BLEND);
+    }
+    const context=canvas.getContext('2d');context.clearRect(0,0,W,H);context.drawImage(this.canvas,0,0);
+    const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('WebGL error '+error);
+  }
+}
+let renderer;
+function renderAsset(index){if(!renderer)return;const a=current().assets[index];document.querySelectorAll('#assets canvas[data-asset="'+index+'"]').forEach(c=>renderer.draw(c,a,Number(c.dataset.level)));}
+function renderAll(){if(!renderer)return;current().assets.forEach((_,i)=>renderAsset(i));}
+let pending=new Set(),scheduled=false;
+function schedule(index){pending.add(index);if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;pending.forEach(renderAsset);pending.clear();});}}
+function makeDraggable(canvas){let drag=null;canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!drag)return;const camera=state.cameras[Number(canvas.dataset.asset)];camera.yaw+=(e.clientX-drag.x)*0.012;camera.pitch=Math.max(-1.45,Math.min(1.45,camera.pitch+(e.clientY-drag.y)*0.012));drag.x=e.clientX;drag.y=e.clientY;schedule(Number(canvas.dataset.asset));});for(const kind of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(kind,()=>drag=null);}
+function selectRun(index){state.run=index;renderPage();byId('run-tab-'+index).focus();}
+document.querySelectorAll('[role="tab"]').forEach(tab=>{tab.addEventListener('click',()=>selectRun(Number(tab.dataset.run)));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();let index=Number(tab.dataset.run);if(event.key==='Home')index=0;else if(event.key==='End')index=data.runs.length-1;else index=(index+(event.key==='ArrowRight'?1:-1)+data.runs.length)%data.runs.length;selectRun(index);});});
+byId('lod').addEventListener('input',e=>{state.level=Number(e.target.value);renderPage();});
+document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{state.mode=button.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b===button));renderAll();}));
+window.addEventListener('resize',()=>{clearTimeout(window.areaResize);window.areaResize=setTimeout(renderAll,120);});
+try{renderer=new Renderer();renderPage();document.documentElement.dataset.ready='true';}catch(error){byId('graphics-error').hidden=false;renderPage();document.documentElement.dataset.ready='error';console.error(error);}
+window.areaBoard={data,state,renderAll};
+</script>
+</body>
+</html>

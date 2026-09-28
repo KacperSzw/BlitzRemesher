@@ -1,0 +1,61 @@
+{
+  "desktop_width": 1440,
+  "mobile_width": 390,
+  "runs": [
+    {
+      "run": "area-v3-uncapped",
+      "level": 7,
+      "assets": 8,
+      "stable_order": true,
+      "selected_geometry": true,
+      "min_painted_pixels": 231,
+      "horizontal_overflow": false
+    },
+    {
+      "run": "area-v3-cap-0.5",
+      "level": 7,
+      "assets": 8,
+      "stable_order": true,
+      "selected_geometry": true,
+      "min_painted_pixels": 342,
+      "horizontal_overflow": false
+    },
+    {
+      "run": "area-v3-cap-0.5-adaptive",
+      "level": 7,
+      "assets": 8,
+      "stable_order": true,
+      "selected_geometry": true,
+      "min_painted_pixels": 362,
+      "horizontal_overflow": false
+    },
+    {
+      "run": "area-v3-cap-0.5-topology-relaxed",
+      "level": 7,
+      "assets": 8,
+      "stable_order": true,
+      "selected_geometry": true,
+      "min_painted_pixels": 329,
+      "horizontal_overflow": false
+    },
+    {
+      "run": "area-v3-cap-0.5-fallback-v2-e",
+      "level": 7,
+      "assets": 8,
+      "stable_order": true,
+      "selected_geometry": true,
+      "min_painted_pixels": 342,
+      "horizontal_overflow": false
+    }
+  ],
+  "score_formula_and_chain_retention_checked": true,
+  "experimental_topology_checked": true,
+  "conditional_fallback_checked": true,
+  "lod_selection_checked": true,
+  "wireframe_checked": true,
+  "rotated_dense_failure_visible": true,
+  "mobile_no_horizontal_overflow": true,
+  "browser": "153.0.8010.36",
+  "browser_errors": [],
+  "network_requests": []
+}

@@ -13,14 +13,15 @@ struct PerformanceStats {
 struct EvalSettings {
     Profile profile{Profile::Normals}; Weights weights{}; ViewSet views{};
     uint8_t supersample{8},max_supersample{32};
-    double screen_size{512},limit{2};
+    double screen_size{512},limit{2},max_changed_area{1.0};
     bool force_two_sided{false},force_scalar{false};
     std::function<bool()> cancelled;
     PerformanceStats* performance{}; // Borrowed optional accumulator; evaluate() adds to it.
 };
 struct Measurement {
     double error{},coverage{},coverage_upper{},changed_area{},normal_degrees{};
-    uint32_t worst_view{},views_evaluated{}; uint8_t supersample{};
+    uint32_t worst_view{},changed_area_worst_view{},views_evaluated{};
+    uint8_t supersample{}; // Sampling of worst_view; the area-worst view may refine differently.
     bool complete{true},passed{true},resource_limited{};
 };
 struct Pixel {

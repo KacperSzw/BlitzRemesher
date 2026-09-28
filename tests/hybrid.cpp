@@ -1,4 +1,6 @@
 #include "blitz/remesher.hpp"
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 using namespace blitz;
@@ -30,5 +32,56 @@ int main(){try{
     cfg.cancelled=[]{return true;};auto cancelled=generate(m.view(),cfg);CHECK(cancelled.status==Status::Cancelled);CHECK(cancelled.candidates.size()==1);
     for(auto& lod:cancelled.lods)CHECK(lod.shared_vertices&&lod.data.indices==m.indices);
     cfg.triangle_overhead_bps=10001;CHECK(!validate(cfg).empty());
+    Mesh torus;constexpr unsigned n=4;constexpr double turn=6.2831853071795864769;
+    for(unsigned i=0;i<n;++i)for(unsigned j=0;j<n;++j) {
+        double u=turn*i/n,v=turn*j/n,r=2+.5*std::cos(v);
+        torus.positions.push_back({float(r*std::cos(u)),float(r*std::sin(u)),float(.5*std::sin(v))});
+    }
+    for(unsigned i=0;i<n;++i)for(unsigned j=0;j<n;++j) {
+        auto a=i*n+j,b=((i+1)%n)*n+j,c=((i+1)%n)*n+(j+1)%n,d=i*n+(j+1)%n;
+        torus.indices.insert(torus.indices.end(),{a,b,c,a,c,d});
+    }
+    Settings floor;floor.levels=2;floor.base_pixels=32;floor.last_pixels=16;
+    floor.transition={{{0,100},{1,100}}};floor.max_changed_area=.95;
+    floor.profile=Profile::Coverage;floor.candidate_budget=2;floor.beam_width=2;
+    floor.search_views={4,0,31};floor.audit_views={4,0,73};
+    floor.search_supersample=floor.audit_supersample=floor.max_supersample=2;
+    floor.research.output=OutputMode::Rebuild;floor.research.chain=ChainMode::Direct;floor.research.trace=true;
+    auto preserving=generate(torus.view(),floor);
+    floor.research.topology_fallback=true;auto relaxed=generate(torus.view(),floor);
+    CHECK(relaxed.topology_fallback_proposals==1);
+    CHECK(relaxed.candidate_evaluations==preserving.candidate_evaluations+relaxed.topology_fallback_proposals);
+    CHECK(relaxed.proposals.size()==preserving.proposals.size()+relaxed.topology_fallback_proposals);
+    CHECK(relaxed.lods.back().view(torus.view()).triangles()<preserving.lods.back().view(torus.view()).triangles());
+    for(auto& lod:relaxed.lods) {
+        CHECK(lod.source_error.passed&&lod.adjacent.passed);
+        CHECK(lod.source_error.changed_area<=floor.max_changed_area&&lod.adjacent.changed_area<=floor.max_changed_area);
+    }
+    CHECK(std::any_of(relaxed.proposals.begin(),relaxed.proposals.end(),[](auto& p){return p.strategy==3&&p.gate==0;}));
+    Mesh obj_order;std::vector<uint32_t> remap(torus.positions.size(),uint32_t(-1));
+    for(auto old:torus.indices) {
+        auto& id=remap[old];
+        if(id==uint32_t(-1)) {id=uint32_t(obj_order.positions.size());obj_order.positions.push_back(torus.positions[old]);obj_order.colors.push_back({255,255,255,255});}
+        obj_order.indices.push_back(id);
+    }
+    floor.levels=3;floor.base_pixels=64;floor.transition={{{0,8},{1,100}}};
+    floor.candidate_budget=4;floor.research.chain=ChainMode::Progressive;
+    floor.max_changed_area=1;floor.search_views={6,2,2971082788u};floor.audit_views={12,4,2971082790u};
+    floor.search_supersample=2;floor.audit_supersample=4;floor.max_supersample=8;
+    floor.research.topology_fallback=false;auto progressive_base=generate(obj_order.view(),floor);
+    floor.research.topology_fallback=true;auto progressive=generate(obj_order.view(),floor);
+    CHECK(!progressive.lods[1].shared_vertices);
+    CHECK(progressive.lods.back().view(obj_order.view()).triangles()<progressive_base.lods.back().view(obj_order.view()).triangles());
+    CHECK(std::any_of(progressive.proposals.begin(),progressive.proposals.end(),[](auto& p){
+        return p.level==2&&p.origin==1&&p.gate==7&&p.link_rejections>0;
+    }));
+    CHECK(std::any_of(progressive.proposals.begin(),progressive.proposals.end(),[](auto& p){
+        return p.level==2&&p.origin==1&&p.strategy==3&&p.gate==0;
+    }));
+    CHECK(progressive.candidate_evaluations==progressive_base.candidate_evaluations+progressive.topology_fallback_proposals);
+    for(auto& lod:progressive.lods) {
+        CHECK(lod.source_error.passed&&lod.adjacent.passed);
+        CHECK(lod.source_error.changed_area<=floor.max_changed_area&&lod.adjacent.changed_area<=floor.max_changed_area);
+    }
     std::cout<<"hybrid contracts passed\n";
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

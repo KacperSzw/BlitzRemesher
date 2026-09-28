@@ -28,7 +28,8 @@ blitz_status blitz_settings_init(blitz_settings* out,size_t n) {
     out->search_ortho=s.search_views.orthographic;out->search_perspective=s.search_views.perspective;out->search_seed=s.search_views.rotation_seed;
     out->audit_ortho=s.audit_views.orthographic;out->audit_perspective=s.audit_views.perspective;out->audit_seed=s.audit_views.rotation_seed;
     out->pixels_per_meter=s.pixels_per_meter;out->meters_per_unit=s.meters_per_unit;out->last_pixels=s.last_pixels;
-    out->normal_weight=s.weights.normal;out->color_weight=s.weights.color;out->material_weight=s.weights.material;out->prune=s.prune;out->coupled_wedges=s.coupled_wedges;return BLITZ_OK;
+    out->normal_weight=s.weights.normal;out->color_weight=s.weights.color;out->material_weight=s.weights.material;out->max_changed_area=s.max_changed_area;
+    out->prune=s.prune;out->coupled_wedges=s.coupled_wedges;return BLITZ_OK;
     }catch(const std::bad_alloc&){*out={};return BLITZ_OUT_OF_MEMORY;}
      catch(...){*out={};return BLITZ_INTERNAL_ERROR;}
 }
@@ -46,7 +47,8 @@ blitz_status blitz_generate(const blitz_mesh* m,const blitz_settings* c,blitz_re
         s.search_views={c->search_ortho,c->search_perspective,c->search_seed};s.audit_views={c->audit_ortho,c->audit_perspective,c->audit_seed};
         s.pixels_per_meter=c->pixels_per_meter;s.meters_per_unit=c->meters_per_unit;s.last_pixels=c->last_pixels;
         if(c->base_pixels!=0)s.base_pixels=c->base_pixels;if(c->max_lod0_delta_px!=0)s.max_lod0_delta_px=c->max_lod0_delta_px;
-        s.weights={c->normal_weight,c->color_weight,c->material_weight};s.prune=c->prune;s.force_scalar=c->force_scalar;s.coupled_wedges=c->coupled_wedges;
+        s.weights={c->normal_weight,c->color_weight,c->material_weight};s.max_changed_area=c->max_changed_area;
+        s.prune=c->prune;s.force_scalar=c->force_scalar;s.coupled_wedges=c->coupled_wedges;
         s.transition=curve(c->transition,c->transition_count,s.transition);s.normal_importance=curve(c->normal_importance,c->normal_importance_count,s.normal_importance);
         s.attribute_importance=curve(c->attribute_importance,c->attribute_importance_count,s.attribute_importance);
         if(c->cancelled)s.cancelled=[=]{return c->cancelled(c->user_data)!=0;};
@@ -64,7 +66,8 @@ size_t blitz_result_runtime_lod_index(const blitz_result* r,size_t i){return r&&
 blitz_status blitz_result_lod(const blitz_result* r,size_t i,blitz_lod_info* out) {
     if(!r||!out||out->struct_size!=sizeof(*out)||i>=r->value.lods.size())return BLITZ_INVALID_ARGUMENT;
     const auto& l=r->value.lods[i];*out={sizeof(*out),exported(l.view(r->value.source)),l.schedule.pixels,l.schedule.transition,l.schedule.source,
-        l.adjacent.error,l.source_error.error,l.adjacent.worst_view,l.source_error.worst_view,uint8_t(l.shared_vertices),uint8_t(l.adjacent.passed&&l.source_error.passed),r->value.candidates[r->value.selection.reference].triangles[i]};return BLITZ_OK;
+        l.adjacent.error,l.source_error.error,l.adjacent.worst_view,l.source_error.worst_view,uint8_t(l.shared_vertices),uint8_t(l.adjacent.passed&&l.source_error.passed),r->value.candidates[r->value.selection.reference].triangles[i],
+        l.adjacent.changed_area,l.source_error.changed_area,l.adjacent.changed_area_worst_view,l.source_error.changed_area_worst_view};return BLITZ_OK;
 }
 blitz_status blitz_result_storage(const blitz_result* r,blitz_storage_info* out) {
     if(!r||!out||out->struct_size!=sizeof(*out))return BLITZ_INVALID_ARGUMENT;

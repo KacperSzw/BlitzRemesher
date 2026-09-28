@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>BlitzRemesher · strict progressive pilot</title>
+<style>
+:root{--paper:#f4f2ec;--white:#fffcf7;--ink:#22313b;--muted:#64747c;--line:#d8ded9;--rust:#c95435;--teal:#207a73;--soft:#e6ece7}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}button{font:inherit;cursor:pointer}a{color:inherit;text-underline-offset:3px}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--rust);outline-offset:3px}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.sheet{max-width:1530px;margin:auto;padding:32px 38px 60px}.mast{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ink);padding-bottom:17px;gap:16px}.brand{font-size:14px;font-weight:800;letter-spacing:.15em}.brand span{display:inline-grid;place-items:center;background:var(--rust);color:white;width:27px;height:27px;font-size:23px;font-weight:500;margin-right:9px}.edition{font:10px/1.5 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.13em;text-align:right;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:42px;align-items:end;padding:39px 0 28px}.eyebrow,.minor{font:10px/1.5 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}h1{font-size:clamp(42px,4.6vw,70px);line-height:1.02;letter-spacing:-.055em;font-weight:650;margin:10px 0 14px}h1 em{font-style:normal;color:var(--rust)}.intro{font-size:14px;line-height:1.65;color:var(--muted);max-width:720px;margin:0}.hero-note{border-left:2px solid var(--rust);padding-left:18px;font-size:12px;line-height:1.6;color:var(--muted)}.hero-note strong{display:block;color:var(--ink);font-size:14px;margin-bottom:6px}
+.tabs{position:sticky;top:0;z-index:10;background:var(--paper);display:flex;gap:7px;border-bottom:1px solid var(--line);padding:9px 0 11px;overflow-x:auto;scrollbar-width:thin}.tab{min-width:185px;border:1px solid var(--line);background:#e8ebe6;padding:12px 16px;text-align:left;border-radius:5px;color:var(--ink)}.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:white}.tab-number{font:9px/1.4 ui-monospace,monospace;letter-spacing:.1em;opacity:.68}.tab-name{display:block;font-size:13px;font-weight:700;margin-top:3px;white-space:nowrap}.tab-detail{display:block;font-size:10px;opacity:.75;margin-top:3px}
+.run-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;margin:27px 0 17px}.run-head h2{font-size:29px;letter-spacing:-.04em;font-weight:650;margin:3px 0}.run-head p{font-size:11px;line-height:1.55;color:var(--muted);max-width:480px;margin:0}.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--white);border:1px solid var(--line)}.stat{padding:19px 20px}.stat+.stat{border-left:1px solid var(--line)}.stat-label{font:10px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}.stat-value{font-size:33px;font-weight:650;letter-spacing:-.05em;margin:6px 0 5px;font-variant-numeric:tabular-nums}.stat-value .unit{font-size:13px;letter-spacing:0;color:var(--muted)}.stat-note{font-size:10px;line-height:1.5;color:var(--muted)}.comparison{font-size:12px;line-height:1.6;border-left:3px solid var(--teal);padding:10px 16px;background:#e7efe9;margin:13px 0 15px}.comparison.regression{border-left-color:var(--rust);background:#f6e4d9}.dense-check{border-left:3px solid var(--rust);background:#f6e4d9;padding:12px 16px;margin:0 0 28px;font-size:12px;line-height:1.6}.dense-check strong{color:#963c20}.dense-check a{font-weight:600}.audit-links{margin-top:8px}.audit-links summary{cursor:pointer;font-weight:600;color:#963c20}.audit-links div{margin-top:6px}
+.score-formula{font-size:12px;line-height:1.6;padding:12px 16px;background:#e9ece6;border:1px solid var(--line);margin-top:11px}.score-formula strong{margin-right:8px}.score-formula code{font:11px ui-monospace,monospace;white-space:normal}.headroom-note{font-size:11px;line-height:1.5;color:var(--muted);margin:10px 0 0}.chain-retention{display:flex;justify-content:space-between;gap:8px;align-items:baseline;border-bottom:1px solid var(--line);padding:2px 0 9px;margin-bottom:9px}.chain-retention strong{font-size:15px;font-variant-numeric:tabular-nums}.chain-retention span{font-size:10px;color:var(--muted)}.chain-retention small{display:block;font:9px/1.4 ui-monospace,monospace;color:var(--muted)}.experiment-check,.fallback-check{border-left:3px solid var(--rust);background:#f6e4d9;padding:12px 16px;margin:0 0 28px;font-size:12px;line-height:1.6}.experiment-check strong,.fallback-check strong{color:#963c20}.experiment-check a,.fallback-check a{font-weight:600}
+.metric-lead small{display:block;font:10px/1.4 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}.metric-lead strong{display:block}.metric-lead span{text-align:right;font:10px/1.4 ui-monospace,monospace}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-block:1px solid var(--line);padding:12px 0;margin-bottom:5px}.control{display:flex;align-items:center;gap:10px}.control label{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.control input{width:185px;accent-color:var(--rust)}.control output{min-width:57px;font:12px ui-monospace,monospace}.segmented{display:flex;gap:3px;padding:3px;background:var(--soft);border-radius:5px}.segmented button{border:0;background:none;border-radius:4px;padding:7px 10px;font-size:11px}.segmented button[aria-pressed=true]{background:var(--white);box-shadow:0 1px 3px #13242d20;font-weight:700}.control-help{font-size:11px;color:var(--muted)}
+.asset{display:grid;grid-template-columns:minmax(195px,.75fr) minmax(420px,1.8fr) minmax(240px,.95fr);gap:20px;padding:25px 0;border-bottom:1px solid var(--line);align-items:start}.asset-id{font:10px ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.asset h3{font-size:21px;letter-spacing:-.035em;margin:6px 0 9px;font-weight:650}.asset-context{font-size:11px;line-height:1.55;color:var(--muted)}.asset-context a{display:inline-block;margin-top:10px}.status{display:inline-block;font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;margin-top:10px;padding:5px 7px;background:#e4eee8;color:var(--teal)}.status.warn{background:#f7e4d9;color:#a24022}.views{display:grid;grid-template-columns:1fr 1fr;gap:9px}.view{margin:0;min-width:0;background:#e6eae5;border:1px solid var(--line);border-radius:4px;overflow:hidden}.view.selected{background:#e5eee9;border-color:#bfd6cb}.view figcaption{height:31px;display:flex;justify-content:space-between;gap:5px;align-items:center;padding:0 10px;font:10px ui-monospace,monospace;white-space:nowrap}.view .frame{height:195px}.view .frame:after{content:"";display:block;position:relative;bottom:13px;width:60%;margin:auto;height:1px;background:linear-gradient(90deg,transparent,#aabbb1,transparent);pointer-events:none}.view-detail{font:10px ui-monospace,monospace;color:var(--muted);padding:0 10px 10px}.metrics{font-size:11px}.metric-lead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:9px;gap:7px}.metric-lead strong{font-size:20px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.metric-lead span{color:var(--muted)}.area-line{margin:10px 0}.area-title{display:flex;justify-content:space-between;gap:8px;line-height:1.35}.area-title strong{font-variant-numeric:tabular-nums}.bar{height:6px;background:#dce2dc;position:relative;margin-top:5px}.bar-fill{height:100%;background:var(--rust)}.bar.adj .bar-fill{background:var(--teal)}.bar-cap{position:absolute;top:-2px;height:10px;width:2px;background:var(--ink)}.metric-note{font:10px/1.55 ui-monospace,monospace;color:var(--muted)}.audit-summary{font-size:10px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);margin-top:10px;padding-top:9px}.audit-summary strong{color:var(--ink)}.costs{font:10px/1.7 ui-monospace,monospace;color:var(--muted);margin-top:10px}.costs b{color:var(--ink);font-weight:600}.graphics-error{padding:12px 16px;border:1px solid var(--rust);background:#f7e3d8;margin:14px 0;font-size:12px}.foot{display:grid;grid-template-columns:1fr 1fr;gap:28px;border-top:1px solid var(--ink);margin-top:28px;padding-top:18px;color:var(--muted);font-size:11px;line-height:1.7}.foot p{margin:0}.foot strong{color:var(--ink)}.foot a{margin-right:14px}
+@media(max-width:1100px){.asset{grid-template-columns:180px 1fr;gap:14px}.metrics{grid-column:2;display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.metric-lead,.costs,.audit-summary{grid-column:1/-1}.view .frame{height:175px}}
+@media(max-width:760px){.sheet{padding:20px 16px 40px}.hero{grid-template-columns:1fr;gap:18px;padding:30px 0 22px}.hero-note{max-width:620px}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0;border-top:1px solid var(--line)}.stat:nth-child(4){border-top:1px solid var(--line)}.asset{grid-template-columns:1fr}.metrics{grid-column:1}.run-head{display:block}.run-head p{margin-top:6px}.view .frame{height:190px}.foot{grid-template-columns:1fr}}
+@media(max-width:480px){.brand{font-size:11px}.edition{font-size:8px}h1{font-size:43px}.tab{min-width:155px;padding:10px}.tab-name{font-size:11px}.stat{padding:13px}.stat-value{font-size:27px}.view .frame{height:145px}.view figcaption{padding:0 6px;font-size:9px}.view-detail{font-size:9px;padding:0 6px 7px}.metrics{grid-template-columns:1fr}.asset h3{font-size:20px}}
+@media print{.tabs,.controls{position:static}.tab:not([aria-selected=true]){display:none}.sheet{max-width:none}.asset{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header class="mast"><div class="brand"><span aria-hidden="true">ϟ</span>BLITZREMESHER</div><div class="edition">Research / strict progressive contract<br>Eight-asset exploratory pilot · 2026</div></header>
+  <section class="hero"><div><div class="eyebrow">Opaque geometry / 2 px progressive step / 3 or 4 px source cap</div><h1>Strict steps,<br><em>measured together.</em></h1><p class="intro">Four recorded pilot runs compare quadric B and opt-in conditional fallback E at each source cap. Every LOD transition allows 2 px; the cumulative source limit rises by the schedule and is capped at 3 or 4 px. All runs also use the 50% changed-area limit.</p></div><aside class="hero-note"><strong>One complete run per tab.</strong>Each tab shows all eight frozen pilot objects under one settings set. The meshes share presentation angles and scale across tabs. Drag either image to rotate its pair.</aside></section>
+  <nav id="run-tabs" class="tabs" role="tablist" aria-label="Strict progressive pilot settings"></nav>
+  <section id="run-panel" role="tabpanel" aria-labelledby="run-tab-0">
+    <div class="run-head"><div><div class="minor">Recorded run / <span id="run-number"></span></div><h2 id="run-title"></h2></div><p id="run-description"></p></div>
+    <div class="stats" id="stats"></div>
+    <div class="score-formula" id="score-formula"><strong>SCORE formula</strong><code>100 × (1 − mean across categories of the mean asset chain retention)</code>. Asset chain retention is the average triangle count of LOD 1–7 divided by LOD 0 triangles; each category has equal weight. Final LOD retention alone does not determine SCORE.</div>
+    <div class="comparison" id="comparison"></div>
+    <aside class="fallback-check" id="pilot-note" aria-label="Pilot interpretation"></aside>
+    <aside class="dense-check" id="dense-note" aria-label="Finite rotated dense checks" hidden></aside>
+    <div class="controls"><div class="control"><label for="lod">Show the same LOD on all eight objects</label><input id="lod" type="range" min="0" max="7" value="7"><output id="lod-output" for="lod">LOD 7</output></div><div class="control"><span class="control-help">Surface</span><div class="segmented" role="group" aria-label="Surface display"><button type="button" data-mode="clay" aria-pressed="true">Clay</button><button type="button" data-mode="wire" aria-pressed="false">Wireframe</button><button type="button" data-mode="silhouette" aria-pressed="false">Silhouette</button></div></div></div>
+    <p class="headroom-note">Area bars and pixel figures show acceptance headroom. Headroom alone does not prove that a lower-triangle proposal was generated or accepted.</p>
+    <div id="graphics-error" class="graphics-error" role="alert" hidden>WebGL 2 is unavailable. Measured values and run links remain available.</div>
+    <div id="assets"></div>
+  </section>
+  <footer class="foot"><p><strong>Audit meaning.</strong> Changed area is 1 − intersection-over-union of supersampled opaque geometry masks. The source pixel limit is capped at 3 or 4 px only after the cumulative schedule reaches it; the adjacent limit is 2 px at every reduced LOD. Source and adjacent area limits are each 50%. Configured audits use 16 cameras at 4×; presentation angles are illustrative, not audit cameras. Textures and shading are outside this opaque-geometry contract.</p><p><strong>Provenance and scope.</strong> The images draw actual exported triangle positions and indices from four recorded eight-asset runs using the same corrected v2 executable. Identical hashes share one geometry buffer. The forced research rebuild mode selects the triangle-first chain; the configured 500 basis point overhead is inactive here. Direct rotated checks are linked in their own run tabs with measured coverage; finite camera samples do not establish all-view robustness. These are pilot results, not a promoted preset. Peak RSS is cumulative process high-water, not isolated per asset.<br><a href="../REPORT.md">Measurements</a><a href="manifest.json">Geometry hashes</a><a href="README.md">Reproduce</a></p></footer>
+</main>
+<script type="application/json" id="board-data">@STRICT_BOARD_DATA@</script>
+<script type="x-shader/x-vertex" id="vertex-shader">
+#version 300 es
+precision highp float;
+layout(location=0) in vec3 position;
+uniform vec3 center;
+uniform float radius;
+uniform mat3 rotation;
+uniform vec2 projection;
+out vec3 viewPosition;
+void main(){viewPosition=rotation*((position-center)/radius);gl_Position=vec4(viewPosition.xy*projection,-viewPosition.z*0.25,1.0);}
+</script>
+<script type="x-shader/x-fragment" id="fragment-shader">
+#version 300 es
+precision highp float;
+in vec3 viewPosition;
+uniform vec3 color;
+uniform int mode;
+out vec4 fragment;
+void main(){
+  if(mode==1){fragment=vec4(0.12,0.18,0.20,0.40);return;}
+  if(mode==2){fragment=vec4(0.13,0.18,0.21,1.0);return;}
+  vec3 n=normalize(cross(dFdx(viewPosition),dFdy(viewPosition)));
+  if(n.z<0.0)n=-n;
+  float key=max(0.0,dot(n,normalize(vec3(-0.45,0.65,1.0))));
+  float fill=max(0.0,dot(n,normalize(vec3(0.8,0.0,0.5))));
+  float spec=pow(max(0.0,dot(n,normalize(vec3(-0.2,0.4,1.0)))),28.0);
+  fragment=vec4(color*(0.36+0.59*key+0.17*fill)+vec3(0.10)*spec,1.0);
+}
+</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('board-data').textContent);
+const byId=id=>document.getElementById(id);
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=n=>Number(n).toLocaleString('en-US');
+const fixed=(n,d=2)=>Number(n).toFixed(d);
+const percent=(n,d=1)=>fixed(100*n,d)+'%';
+const state={run:0,level:7,mode:'clay',cameras:data.runs[0].assets.map(a=>({yaw:a.yaw,pitch:a.pitch}))};
+const current=()=>data.runs[state.run];
+byId('run-tabs').innerHTML=data.runs.map((r,i)=>'<button type="button" class="tab" role="tab" id="run-tab-'+i+'" aria-controls="run-panel" aria-selected="'+(i===0)+'" tabindex="'+(i===0?'0':'-1')+'" data-run="'+i+'"><span class="tab-number">RUN 0'+(i+1)+'</span><span class="tab-name">'+escape(r.short)+'</span><span class="tab-detail">Source ≤ '+r.source_cap+' px · step 2 px · '+(r.topology_fallback?'opt-in fallback E':'quadric B')+'</span></button>').join('');
+function stat(label,value,note){return '<div class="stat"><div class="stat-label">'+label+'</div><div class="stat-value">'+value+'</div><div class="stat-note">'+note+'</div></div>';}
+function areaLine(label,m,limit,extra){return '<div class="area-line"><div class="area-title"><span>'+label+'</span><strong>'+percent(m.area)+' / '+percent(limit,0)+'</strong></div><div class="bar '+extra+'"><div class="bar-fill" style="width:'+Math.min(100,m.area*100)+'%"></div><div class="bar-cap" style="left:calc('+Math.min(100,limit*100)+'% - 1px)"></div></div><div class="metric-note">area view '+m.area_view+' · pixel '+fixed(m.px)+' / '+fixed(m.px_limit)+' px</div></div>';}
+function card(a,index,run){
+  const selected=a.levels[state.level],source=a.levels[0],retained=selected.triangles/source.triangles;
+  const raw='../../runs/'+encodeURIComponent(run.id)+'/rows/'+encodeURIComponent(a.id)+'.json';
+  const direct=(data.dense_checks[run.id]??[]).filter(check=>check.asset_id===a.id);
+  const denseFailure=direct.some(check=>!check.passed);
+  const baseBadge=a.extra_proposals?'Opt-in fallback · '+a.extra_proposals+' extra proposal'+(a.extra_proposals===1?'':'s'):a.fallback?'Source fallback':a.levels.at(-1).triangles===source.triangles?'Unreduced':'Configured audits passed';
+  const badge=direct.length?baseBadge+' · rotated tail '+(denseFailure?'failed':'passed')+' ('+direct.length+' seed'+(direct.length===1?'':'s')+')':baseBadge;
+  const selectedLabel=state.level===7?'Final retention':'LOD '+state.level+' retention';
+  const retainedHtml='<div class="metric-lead"><div><small>'+selectedLabel+'</small><strong>'+percent(retained,retained<0.001?2:1)+'</strong></div><span>'+num(source.triangles)+' → '+num(selected.triangles)+' tris</span></div>';
+  const chainHtml='<div class="chain-retention"><div><span>Chain retention · LOD 1–7 average / source</span><small>'+fixed(a.chain_ratio*source.triangles,1)+' avg tris / '+num(source.triangles)+' source</small></div><strong>'+percent(a.chain_ratio)+'</strong></div>';
+  const auditHtml=state.level?areaLine('To source',selected.source,run.area_limit,'source')+areaLine('To previous LOD',selected.adjacent,run.area_limit,'adj'):'<div class="metric-note">LOD 0 is unchanged; reduction audits begin at LOD 1.</div>';
+  return '<article class="asset" data-asset="'+index+'"><div><div class="asset-id">'+String(index+1).padStart(2,'0')+' / '+escape(a.category)+'</div><h3>'+escape(a.name)+'</h3><div class="asset-context">'+escape(a.id)+'<br><a href="'+escape(a.source_url)+'">Source · '+escape(a.license)+'</a> · <a href="'+raw+'">Raw audit row</a></div><span class="status '+(a.fallback||a.extra_proposals||denseFailure?'warn':'')+'">'+badge+'</span></div><div class="views"><figure class="view"><figcaption><span>LOD 0 · source</span><span>'+num(source.triangles)+' tris</span></figcaption><div class="frame"><canvas data-asset="'+index+'" data-level="0" aria-label="'+escape(a.name)+' source geometry"></canvas></div><div class="view-detail">512 px audit target</div></figure><figure class="view selected"><figcaption><span>LOD '+state.level+' · selected</span><span>'+num(selected.triangles)+' tris</span></figcaption><div class="frame"><canvas data-asset="'+index+'" data-level="'+state.level+'" aria-label="'+escape(a.name)+' LOD '+state.level+' geometry"></canvas></div><div class="view-detail">'+fixed(selected.screen_pixels,1)+' px audit target</div></figure></div><div class="metrics">'+retainedHtml+chainHtml+auditHtml+'<div class="audit-summary">Worst across chain: source <strong>'+percent(a.source_area_worst.area)+'</strong> (LOD '+a.source_area_worst.level+', view '+a.source_area_worst.view+'); adjacent <strong>'+percent(a.adjacent_area_worst.area)+'</strong> (LOD '+a.adjacent_area_worst.level+', view '+a.adjacent_area_worst.view+').</div><div class="costs"><b>'+fixed(a.resident_bytes/1024,1)+' KiB</b> resident · <b>'+fixed(a.bake_seconds)+' s</b> generation + audit · <b>'+fixed(a.peak_rss_kib/1024,1)+' MiB</b> process high-water RSS</div></div></article>';
+}
+function renderPage(){
+  const run=current(),paired=data.runs[state.run+(run.topology_fallback?-1:1)];
+  document.querySelectorAll('[role="tab"]').forEach((tab,i)=>{tab.setAttribute('aria-selected',i===state.run);tab.tabIndex=i===state.run?0:-1;});
+  byId('run-panel').setAttribute('aria-labelledby','run-tab-'+state.run);
+  byId('run-number').textContent='0'+(state.run+1);
+  byId('run-title').textContent=run.label;
+  byId('run-description').textContent='Forced research rebuild · triangle-first chain selection · eight baseline proposals per LOD · 512→16 px · 12 orthographic + 4 perspective audit cameras at 4×. Source limit starts at 2 px and rises to the '+run.source_cap+' px cap; each adjacent step allows 2 px.';
+  const worstFinal=Math.max(...run.assets.map(a=>a.levels.at(-1).source.area));
+  byId('stats').innerHTML=stat('SCORE / eight assets',fixed(run.score)+'<span class="unit"> / 100</span>','Category-balanced chain retention across all eight assets and four categories.')+
+    stat('Source pixel cap',run.source_cap+'<span class="unit"> px</span>','LOD 1 starts at 2 px; later source limits rise to this cap.')+
+    stat('Final source area · worst asset',percent(worstFinal),'Maximum final worst camera; configured limit 50%.')+
+    stat('Extra topology proposals',num(run.extra_proposals),'Outside the eight-proposal-per-LOD baseline; B uses zero.');
+  const difference=run.topology_fallback?run.score-paired.score:paired.score-run.score;
+  byId('comparison').textContent=run.topology_fallback?
+    'E versus B under the same '+run.source_cap+' px source cap: SCORE '+fixed(paired.score)+' → '+fixed(run.score)+' ('+(difference>=0?'+':'')+fixed(difference,4)+' points); '+num(run.extra_proposals)+' extra topology proposals. '+run.identical_assets+'/8 exports are byte-identical between this pair.':
+    'B control at the '+run.source_cap+' px source cap. Its paired E run scores '+fixed(paired.score)+' versus '+fixed(run.score)+' here ('+(difference>=0?'+':'')+fixed(difference,4)+' points for E); '+run.identical_assets+'/8 exports match. Both use the same executable and configured audit protocol.';
+  byId('comparison').classList.toggle('regression',difference<0);
+  byId('pilot-note').innerHTML='<strong>Pilot-only configured results.</strong> All eight assets in this tab passed the recorded source and adjacent pixel and 50% area audits on 16 cameras at each reduction. At the same '+(run.topology_fallback?'E':'B')+' mode, the 3 px and 4 px source-cap exports match for '+run.other_cap_identical_assets+'/8 assets; this cap change did not alter those pilot exports. The selected chain is triangle-first because forced research rebuild mode ignores the configured 500-basis-point overhead. The configured checks alone do not establish independent dense robustness or a promoted preset. <a href="../../runs/'+encodeURIComponent(run.id)+'/summary.json">This run summary</a> · <a href="../../runs/'+encodeURIComponent(paired.id)+'/summary.json">Paired '+(run.topology_fallback?'B':'E')+' summary</a> · <a href="../REPORT.md">Full report</a>.';
+  const direct=data.dense_checks[run.id]??[];
+  byId('dense-note').hidden=!direct.length;
+  if(direct.length){
+    const passed=direct.filter(check=>check.passed).length;
+    const tested=new Set(direct.map(check=>check.asset_id)).size;
+    const firstSeed=direct.filter(check=>check.seed===3665436710);
+    const firstSeedCovered=new Set(firstSeed.map(check=>check.asset_id)).size;
+    const firstSeedPassed=firstSeed.filter(check=>check.passed).length;
+    const tightest=direct.reduce((best,check)=>check.tightest.margin<best.tightest.margin?check:best);
+    const misses=direct.flatMap(check=>check.failures.map(failure=>check.asset_name+' LOD '+failure.level+' '+failure.kind+' '+fixed(failure.error_px,3)+' / '+fixed(failure.pixel_limit,3)+' px, area '+percent(failure.area,2)+' / 50%'));
+    const links=direct.map(check=>'<a href="../'+escape(check.file)+'">'+escape(check.asset_name)+' · seed 0x'+check.seed.toString(16)+' · '+(check.passed?'pass':'fail')+'</a>').join(' · ');
+    const inherited=run.topology_fallback?'':' For '+run.inherited_dense_assets.length+' B exports, byte-identical paired E geometry supplies passing first-seed measurements under the same contract. Together with '+run.direct_dense_first_seed_assets+' directly audited B assets, finite first-seed evidence covers '+run.finite_first_seed_assets+'/8 B assets.';
+    byId('dense-note').innerHTML='<strong>Finite rotated dense tail checks for this run.</strong> '+direct.length+' direct '+direct[0].views+'-view, '+direct[0].supersample+'× audit runs cover '+tested+'/8 pilot assets at LOD 5–7; '+passed+' pass all six source/adjacent pixel and area gates. The first rotated seed covers '+firstSeedCovered+'/8 assets with '+firstSeedPassed+' passing audits.'+inherited+(misses.length?' Failed gates: '+escape(misses.join('; '))+'.':'')+' The tightest measured pixel margin is '+fixed(tightest.tightest.margin,5)+' px on '+escape(tightest.asset_name)+' LOD '+tightest.tightest.level+' '+tightest.tightest.kind+' ('+fixed(tightest.tightest.error_px,5)+' / '+fixed(tightest.tightest.limit,0)+' px). These finite camera seeds do not establish all-view robustness.<details class="audit-links"><summary>Raw rotated audits ('+direct.length+')</summary><div>'+links+'</div></details>';
+  }
+  byId('assets').innerHTML=run.assets.map((a,i)=>card(a,i,run)).join('');
+  byId('lod-output').textContent='LOD '+state.level;
+  document.querySelectorAll('#assets canvas').forEach(canvas=>makeDraggable(canvas));
+  renderAll();
+}
+function typed(base64,Type){const raw=atob(base64),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;++i)bytes[i]=raw.charCodeAt(i);return new Type(bytes.buffer);}
+function rotation(y,p){const cy=Math.cos(y),sy=Math.sin(y),cp=Math.cos(p),sp=Math.sin(p);return new Float32Array([cy,sp*sy,-cp*sy,0,cp,sp,sy,-sp*cy,cp*cy]);}
+class Renderer{
+  constructor(){
+    this.canvas=document.createElement('canvas');
+    const gl=this.gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,preserveDrawingBuffer:true});
+    if(!gl)throw Error('WebGL 2 is unavailable');
+    const compile=(type,id)=>{const s=gl.createShader(type);gl.shaderSource(s,byId(id).textContent.trim());gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;};
+    this.program=gl.createProgram();gl.attachShader(this.program,compile(gl.VERTEX_SHADER,'vertex-shader'));gl.attachShader(this.program,compile(gl.FRAGMENT_SHADER,'fragment-shader'));gl.linkProgram(this.program);if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(this.program));
+    gl.useProgram(this.program);this.uniforms={};for(const name of ['center','radius','rotation','projection','color','mode'])this.uniforms[name]=gl.getUniformLocation(this.program,name);
+    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);this.cache=new Map();
+  }
+  mesh(hash){
+    if(this.cache.has(hash)){const value=this.cache.get(hash);this.cache.delete(hash);this.cache.set(hash,value);return value;}
+    const gl=this.gl,g=data.geometries[hash],vertices=typed(g.positions,Float32Array),indices=typed(g.indices,Uint32Array);
+    const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+    const positions=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,positions);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(0);
+    const faces=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,faces);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
+    const mesh={vao,positions,faces,indices,lines:null,count:indices.length};this.cache.set(hash,mesh);
+    if(this.cache.size>32){const [oldKey,old]=this.cache.entries().next().value;this.cache.delete(oldKey);gl.deleteBuffer(old.positions);gl.deleteBuffer(old.faces);if(old.lines)gl.deleteBuffer(old.lines);gl.deleteVertexArray(old.vao);}
+    return mesh;
+  }
+  draw(canvas,asset,level){
+    const w=Math.max(1,Math.round(canvas.clientWidth)),h=Math.max(1,Math.round(canvas.clientHeight)),dpr=Math.min(devicePixelRatio||1,2),W=Math.round(w*dpr),H=Math.round(h*dpr);
+    canvas.width=W;canvas.height=H;this.canvas.width=W;this.canvas.height=H;
+    const gl=this.gl,mesh=this.mesh(asset.levels[level].geometry),u=this.uniforms,camera=state.cameras[data.pilot_ids.indexOf(asset.id)];
+    gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);gl.bindVertexArray(mesh.vao);
+    gl.uniform3fv(u.center,asset.center);gl.uniform1f(u.radius,asset.radius);gl.uniformMatrix3fv(u.rotation,false,rotation(camera.yaw,camera.pitch));
+    gl.uniform3fv(u.color,[1,3,5].map(i=>parseInt(asset.color.slice(i,i+2),16)/255));
+    const scale=0.94*Math.min(w,h)/h;gl.uniform2f(u.projection,scale*h/w,scale);gl.uniform1i(u.mode,state.mode==='silhouette'?2:0);
+    gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.faces);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0);gl.disable(gl.POLYGON_OFFSET_FILL);
+    if(state.mode==='wire'){
+      if(!mesh.lines){const edges=new Uint32Array(mesh.count*2);for(let i=0,j=0;i<mesh.count;i+=3,j+=6){const x=mesh.indices[i],y=mesh.indices[i+1],z=mesh.indices[i+2];edges.set([x,y,y,z,z,x],j);}mesh.lines=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,edges,gl.STATIC_DRAW);}
+      gl.uniform1i(u.mode,1);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.drawElements(gl.LINES,mesh.count*2,gl.UNSIGNED_INT,0);gl.depthMask(true);gl.disable(gl.BLEND);
+    }
+    const context=canvas.getContext('2d');context.clearRect(0,0,W,H);context.drawImage(this.canvas,0,0);
+    const error=gl.getError();if(error!==gl.NO_ERROR)throw Error('WebGL error '+error);
+  }
+}
+let renderer;
+function renderAsset(index){if(!renderer)return;const a=current().assets[index];document.querySelectorAll('#assets canvas[data-asset="'+index+'"]').forEach(c=>renderer.draw(c,a,Number(c.dataset.level)));}
+function renderAll(){if(!renderer)return;current().assets.forEach((_,i)=>renderAsset(i));}
+let pending=new Set(),scheduled=false;
+function schedule(index){pending.add(index);if(!scheduled){scheduled=true;requestAnimationFrame(()=>{scheduled=false;pending.forEach(renderAsset);pending.clear();});}}
+function makeDraggable(canvas){let drag=null;canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!drag)return;const camera=state.cameras[Number(canvas.dataset.asset)];camera.yaw+=(e.clientX-drag.x)*0.012;camera.pitch=Math.max(-1.45,Math.min(1.45,camera.pitch+(e.clientY-drag.y)*0.012));drag.x=e.clientX;drag.y=e.clientY;schedule(Number(canvas.dataset.asset));});for(const kind of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(kind,()=>drag=null);}
+function selectRun(index){state.run=index;renderPage();byId('run-tab-'+index).focus();}
+document.querySelectorAll('[role="tab"]').forEach(tab=>{tab.addEventListener('click',()=>selectRun(Number(tab.dataset.run)));tab.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();let index=Number(tab.dataset.run);if(event.key==='Home')index=0;else if(event.key==='End')index=data.runs.length-1;else index=(index+(event.key==='ArrowRight'?1:-1)+data.runs.length)%data.runs.length;selectRun(index);});});
+byId('lod').addEventListener('input',e=>{state.level=Number(e.target.value);renderPage();});
+document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{state.mode=button.dataset.mode;document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b===button));renderAll();}));
+window.addEventListener('resize',()=>{clearTimeout(window.areaResize);window.areaResize=setTimeout(renderAll,120);});
+try{renderer=new Renderer();renderPage();document.documentElement.dataset.ready='true';}catch(error){byId('graphics-error').hidden=false;renderPage();document.documentElement.dataset.ready='error';console.error(error);}
+window.areaBoard={data,state,renderAll};
+</script>
+</body>
+</html>

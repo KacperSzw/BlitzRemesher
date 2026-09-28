@@ -12,7 +12,7 @@ struct ResearchOptions {
     std::optional<OutputMode> output;
     ChainMode chain{ChainMode::Hybrid};
     double boundary_weight{};
-    bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{};
+    bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
 };
 struct Settings {
     uint8_t levels{8}; Objective objective{Objective::Quadric};
@@ -24,6 +24,7 @@ struct Settings {
     Profile profile{Profile::Normals}; Weights weights{};
     ViewSet search_views{42,12,0xB1172024},audit_views{};
     uint8_t search_supersample{4},audit_supersample{8},max_supersample{32};
+    double max_changed_area{1.0}; // Maximum 1 - mask IoU on both source and adjacent full audits.
     uint16_t candidate_budget{64}; uint8_t beam_width{8};
     bool prune{true},force_scalar{},coupled_wedges{true}; std::function<bool()> cancelled;
     PerformanceStats* performance{}; // Borrowed; reset at the start of generate().
@@ -45,7 +46,7 @@ struct ProposalTrace {
     uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     double seconds{};
-    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2.
+    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2, topology fallback=3.
     // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8.
 };
 struct StorageStats {
@@ -65,11 +66,13 @@ struct Result {
     Status status{Status::Complete}; uint64_t candidate_evaluations{};
     // Source search, adjacent search, source audit, adjacent audit.
     std::array<uint64_t,4> rejected_gates{};
+    std::array<uint64_t,4> area_rejected_gates{}; // Audit-only subset: pixel limit passed, area limit failed.
     std::array<Measurement,4> worst_rejected{};
     std::vector<ProposalTrace> proposals;
-    uint64_t duplicate_proposals{},component_builds{},component_unavailable{};
+    uint64_t duplicate_proposals{},component_builds{},component_unavailable{},topology_fallback_proposals{};
     uint64_t transition_reconnections{}; // Extra audited edges, not reduction proposals.
     uint16_t triangle_overhead_bps{};
+    double max_changed_area{1.0}; // Audit contract used for this result.
     ChainSelection selection;
     std::vector<ChainCost> candidates; // Final audited pool; no duplicate geometry payloads.
 };

@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define BLITZ_ABI_VERSION 3u
+#define BLITZ_ABI_VERSION 4u
 typedef enum blitz_status { BLITZ_OK=0, BLITZ_INVALID_ARGUMENT=1, BLITZ_OUT_OF_MEMORY=2, BLITZ_INTERNAL_ERROR=3, BLITZ_CANCELLED=4, BLITZ_BUDGET_LIMITED=5 } blitz_status;
 typedef struct blitz_stream { const void* data; size_t count, stride; } blitz_stream;
 typedef struct blitz_color_rgba8 { uint8_t r,g,b,a; } blitz_color_rgba8;
@@ -30,6 +30,7 @@ typedef struct blitz_settings {
     uint32_t search_seed, audit_seed;
     double pixels_per_meter, meters_per_unit, base_pixels, last_pixels, max_lod0_delta_px; /* optional values: zero disables */
     double normal_weight, color_weight, material_weight;
+    double max_changed_area; /* 0..1; 1 disables the coverage-area gate */
     const blitz_curve_point* transition; size_t transition_count;
     const blitz_curve_point* normal_importance; size_t normal_importance_count;
     const blitz_curve_point* attribute_importance; size_t attribute_importance_count;
@@ -42,6 +43,8 @@ typedef struct blitz_lod_info {
     uint32_t transition_worst_view, source_worst_view;
     uint8_t shared_vertices, passed;
     uint32_t reference_triangles;
+    double transition_changed_area, source_changed_area; /* 1 - conservative mask IoU */
+    uint32_t transition_changed_area_worst_view, source_changed_area_worst_view;
 } blitz_lod_info;
 typedef struct blitz_result blitz_result;
 typedef struct blitz_storage_info {

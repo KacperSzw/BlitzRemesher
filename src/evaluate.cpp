@@ -265,7 +265,7 @@ template<class R> void measure_view(Measurement& current,MeshView reference,Mesh
         current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit));
     }
     current.changed_area=total?double(changed)/total:0;
-    current.passed=current.error<=s.limit;
+    current.passed=current.error<=s.limit&&current.changed_area<=s.max_changed_area;
 }
 bool packed_coverage_enabled() {return true;}
 Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s) {
@@ -274,7 +274,8 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
       ||!(s.limit>=0)||!std::isfinite(s.limit)||!s.supersample||s.max_supersample<s.supersample||s.max_supersample>32
       ||!std::isfinite(s.weights.normal)||!std::isfinite(s.weights.color)||!std::isfinite(s.weights.material)
       ||s.weights.normal<0||s.weights.color<0||s.weights.material<0
-      ||s.weights.normal>1e12||s.weights.color>1e12||s.weights.material>1e12)throw std::invalid_argument("invalid evaluation settings");
+      ||s.weights.normal>1e12||s.weights.color>1e12||s.weights.material>1e12
+      ||!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)throw std::invalid_argument("invalid evaluation settings");
     auto views=cameras(b,s.screen_size,s.views);
     if(views.empty())throw std::invalid_argument("at least one camera required");
     if(identical(reference,candidate))return result;
@@ -295,7 +296,10 @@ Measurement evaluate(MeshView reference,MeshView candidate,const Bounds& b,const
         if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}
         result.coverage=std::max(result.coverage,current.coverage);
         result.coverage_upper=std::max(result.coverage_upper,current.coverage_upper);
-        result.changed_area=std::max(result.changed_area,current.changed_area);
+        if(current.changed_area>result.changed_area) {
+            result.changed_area=current.changed_area;
+            result.changed_area_worst_view=v;
+        }
         result.normal_degrees=std::max(result.normal_degrees,current.normal_degrees);
         if(!current.passed){result.passed=false;result.complete=false;return result;}
     }

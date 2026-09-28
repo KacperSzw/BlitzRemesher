@@ -215,7 +215,7 @@ Mesh stl(const fs::path& path) {
 }
 json measurement(const Measurement& m) {
     return {{"error_px",m.error},{"coverage_px",m.coverage},{"coverage_upper_px",m.coverage_upper},{"changed_area",m.changed_area},
-      {"normal_degrees",m.normal_degrees},{"worst_view",m.worst_view},{"views_evaluated",m.views_evaluated},
+      {"normal_degrees",m.normal_degrees},{"worst_view",m.worst_view},{"changed_area_worst_view",m.changed_area_worst_view},{"views_evaluated",m.views_evaluated},
       {"supersample",m.supersample},{"complete",m.complete},{"passed",m.passed},{"resource_limited",m.resource_limited},{"nonfinite_error",!std::isfinite(m.error)}};
 }
 }
@@ -251,21 +251,22 @@ json result_json(const Result& r) {
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
     auto storage=[](StorageStats s){return json{{"source_vertex_bytes",s.source_vertex_bytes},{"added_vertex_bytes",s.added_vertex_bytes},{"index_bytes",s.index_bytes},{"total_bytes",s.total()}};};
     j["storage"]=storage(storage_stats(r));j["triangle_overhead_bps"]=r.triangle_overhead_bps;
+    j["max_changed_area"]=r.max_changed_area;
     j["reference_candidate"]=r.selection.reference;j["selected_candidate"]=r.selection.selected;
     j["candidates"]=json::array();for(auto& c:r.candidates)j["candidates"].push_back({{"triangles",c.triangles},{"storage",storage(c.storage)}});
     if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
-    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"transition_reconnections",r.transition_reconnections}};
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
-        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components"};
+        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
         const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable"};
         for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
             {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
     }
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
-    for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
+    for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"area_only_count",r.area_rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
     for(size_t index=0;index<r.lods.size();++index){auto& l=r.lods[index];auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
       {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},
       {"screen_pixels",l.schedule.pixels},{"transition_limit",l.schedule.transition},{"source_limit",l.schedule.source},
@@ -333,13 +334,13 @@ json settings_json(const Settings& s) {
       {"max_lod0_delta_px",s.max_lod0_delta_px?json(*s.max_lod0_delta_px):json(nullptr)},{"transition",curve(s.transition)},
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
-      {"max_supersample",s.max_supersample},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams}}}};
+      {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
+      {"research",{{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
     if(input.contains("output")||input.contains("chain")) {
-        if(!legacy_research)fail("output/chain are research controls in ABI 3; move them under research or use --legacy-config for archived experiments");
+        if(!legacy_research)fail("output/chain are research controls in ABI 4; move them under research or use --legacy-config for archived experiments");
         for(auto key:{"output","chain"})if(input.contains(key)){input["research"][key]=input[key];input.erase(key);}
     }
     Settings s;auto j=settings_json(s);for(auto it=input.begin();it!=input.end();++it){if(!j.contains(it.key()))fail("unknown setting: "+it.key());}
@@ -351,7 +352,7 @@ Settings settings_json(const json& original,bool legacy_research) {
     if(!j.at("triangle_overhead_bps").is_number_integer())fail("triangle overhead must be integer basis points");
     int overhead=j.at("triangle_overhead_bps");if(overhead<0||overhead>10000)fail("triangle overhead out of range");s.triangle_overhead_bps=uint16_t(overhead);
     int budget=j.at("candidate_budget");if(budget<1||budget>65535)fail("invalid candidate budget");s.candidate_budget=uint16_t(budget);
-    s.pixels_per_meter=j.at("pixels_per_meter");s.meters_per_unit=j.at("meters_per_unit");s.last_pixels=j.at("last_pixels");
+    s.pixels_per_meter=j.at("pixels_per_meter");s.meters_per_unit=j.at("meters_per_unit");s.last_pixels=j.at("last_pixels");s.max_changed_area=j.at("max_changed_area");
     if(j.contains("base_pixels")&&!j["base_pixels"].is_null())s.base_pixels=j["base_pixels"];
     if(j.contains("max_lod0_delta_px")&&!j["max_lod0_delta_px"].is_null())s.max_lod0_delta_px=j["max_lod0_delta_px"];
     auto curve=[&](const char* k,Curve& c){c.points.clear();for(auto& p:j.at(k)){if(p.size()!=2)fail("invalid curve point");c.points.push_back({p.at(0),p.at(1)});}};
@@ -366,7 +367,7 @@ Settings settings_json(const json& original,bool legacy_research) {
     s.research.chain=ChainMode(research_mode("chain",{"direct","progressive","hybrid"}));
     s.research.boundary_weight=experimental.at("boundary_weight");s.research.boundary_placement=experimental.at("boundary_placement");
     s.research.adaptive_targets=experimental.at("adaptive_targets");s.research.component_candidates=experimental.at("component_candidates");s.research.trace=experimental.at("trace");
-    s.research.independent_seams=experimental.at("independent_seams");
+    s.research.independent_seams=experimental.at("independent_seams");s.research.topology_fallback=experimental.at("topology_fallback");
     if(auto e=validate(s);!e.empty())fail(e);return s;
 }
 }

@@ -30,6 +30,13 @@ appearance, rasterization or perspective errors compose under rescaling.
 An inactive source cap leaves the cumulative policy unchanged.
 
 Coverage is symmetric Hausdorff distance of filled foreground, not contours.
+An optional independent coverage-area audit limits `1 - mask IoU` for
+conservative supersampled opaque geometry in each configured full audit view.
+It applies to both source and preceding-LOD comparisons. The default maximum
+is 1.0 for compatibility; the supplied experimental preset uses 0.5. Pixel error
+remains separately bounded. Search views filter by pixel error but do not
+reject candidates for area, because their coarse samples cannot establish
+full-audit area validity.
 Appearance uses Hausdorff in the product metric:
 sqrt(pixel_distance^2+(normal_weight*angle)^2+
 color_weight^2*linear_rgb_distance^2+material_weight^2*(id_mismatch)).
@@ -51,6 +58,14 @@ reserves half the bounded beam for triangles and fills the rest by resident byte
 with an exact source fallback. Counts
 must not increase with level. Cancellation returns a validated incumbent with
 an explicit completion status. Benchmarks use deterministic work budgets.
+The opt-in research setting `topology_fallback` applies only to the quadric
+objective. If a quadric proposal stops more than four times above its requested
+triangle count with link-condition rejections, it tries at most one additional
+topology-relaxed proposal per LOD. This work is in addition to `candidate_budget`
+and is counted in `candidate_evaluations` and `topology_fallback_proposals`.
+The candidate must pass the same source and adjacent pixel and area audits.
+The reducer still checks face orientation, UV foldovers and attribute/material
+locks, but it does not guarantee manifold topology or prevent new intersections.
 
 Public C ABI: strided borrowed streams, versioned descriptors, explicit status,
 opaque result ownership, read-only views and destruction inside the library.
@@ -75,7 +90,9 @@ do not affect the visual gates or SCORE.
 
 Vertex colors use linear RGBA8 (0..255 per channel, 256 levels), including
 the strided C++ and C API streams. The C ABI version and shared-library
-compatibility version are 3; older descriptors are unsupported.
+compatibility version are 4; older descriptors are unsupported. The C settings
+descriptor includes `max_changed_area`; each C LOD record includes source and
+adjacent area errors and their worst-view indices.
 Import rounds normalized float/unsigned-16 colors to nearest with ties upward,
 rejects nonfinite/out-of-range channels, and defaults missing alpha to 255.
 Reuse preserves the imported/supplied bytes. Rebuild rounds interpolated RGB

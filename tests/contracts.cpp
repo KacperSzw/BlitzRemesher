@@ -31,6 +31,29 @@ static Mesh torus() {
     }
     return m;
 }
+static Mesh four_tiles() {
+    Mesh m;
+    for(float y:{0.f,2.f})for(float x:{0.f,2.f}) {
+        uint32_t base=uint32_t(m.positions.size());
+        m.positions.insert(m.positions.end(),{{x,y,0},{x+1,y,0},{x+1,y+1,0},{x,y+1,0}});
+        m.indices.insert(m.indices.end(),{base,base+1,base+2,base,base+2,base+3});
+    }
+    m.double_sided={1};return m;
+}
+static Mesh without_tile(const Mesh& source,unsigned tile) {
+    Mesh m=source;
+    m.indices.erase(m.indices.begin()+tile*6,m.indices.begin()+(tile+1)*6);
+    return m;
+}
+static double mask_difference(const Raster& a,const Raster& b) {
+    CHECK(a.width==b.width&&a.height==b.height&&a.pixels.size()==b.pixels.size());
+    size_t changed=0,united=0;
+    for(size_t i=0;i<a.pixels.size();++i) {
+        changed+=bool(a.pixels[i].covered)!=bool(b.pixels[i].covered);
+        united+=bool(a.pixels[i].covered)||bool(b.pixels[i].covered);
+    }
+    return united?double(changed)/double(united):0;
+}
 static bool no_overshared_edges(MeshView m) {
     std::map<std::pair<uint32_t,uint32_t>,unsigned> edges;
     for(size_t f=0;f<m.indices.size();f+=3)for(unsigned k=0;k<3;++k) {
@@ -112,6 +135,88 @@ int main() {
         auto moved=m;for(auto& p:moved.positions)p.x+=2;CHECK(!evaluate(m.view(),moved.view(),bounds(m.view()),e).passed);
         e.screen_size=4096;e.supersample=e.max_supersample=8;
         auto limited=evaluate(m.view(),moved.view(),bounds(m.view()),e);CHECK(!limited.passed&&limited.resource_limited);
+        // Compare the packed coverage evaluator with an independent count of
+        // the full raster's XOR and union masks on a fixed near-frontal view.
+        auto tiles=four_tiles(),minus_first=without_tile(tiles,0),minus_last=without_tile(tiles,3);
+        auto tile_bounds=bounds(tiles.view());
+        EvalSettings area_eval;area_eval.profile=Profile::Coverage;area_eval.views={1,0,460796};
+        area_eval.screen_size=64;area_eval.supersample=area_eval.max_supersample=4;
+        area_eval.force_two_sided=true;area_eval.limit=1000;area_eval.weights={0,0,0};
+        auto camera=cameras(tile_bounds,area_eval.screen_size,area_eval.views).front();
+        auto source_mask=rasterize(tiles.view(),tile_bounds,camera,area_eval.screen_size,area_eval.supersample,true);
+        auto first_mask=rasterize(minus_first.view(),tile_bounds,camera,area_eval.screen_size,area_eval.supersample,true);
+        double expected_area=mask_difference(source_mask,first_mask);
+        CHECK(expected_area>.2&&expected_area<.35);
+        CHECK(mask_difference(source_mask,source_mask)==0);
+        auto area_unlimited=evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval);
+        CHECK(area_unlimited.passed&&area_unlimited.error<area_eval.limit);
+        CHECK(std::abs(area_unlimited.changed_area-expected_area)<1e-12);
+        CHECK(area_unlimited.changed_area_worst_view==0);
+        area_eval.views={4,0,460796};
+        auto many_views=evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval);
+        double largest_area=0;uint32_t largest_view=0;
+        auto audit_cameras=cameras(tile_bounds,area_eval.screen_size,area_eval.views);
+        for(uint32_t i=0;i<audit_cameras.size();++i) {
+            auto full=rasterize(tiles.view(),tile_bounds,audit_cameras[i],area_eval.screen_size,area_eval.supersample,true);
+            auto sparse=rasterize(minus_first.view(),tile_bounds,audit_cameras[i],area_eval.screen_size,area_eval.supersample,true);
+            double area=mask_difference(full,sparse);
+            if(area>largest_area){largest_area=area;largest_view=i;}
+        }
+        CHECK(many_views.passed&&many_views.views_evaluated==audit_cameras.size());
+        CHECK(std::abs(many_views.changed_area-largest_area)<1e-12);
+        CHECK(many_views.changed_area_worst_view==largest_view);
+        area_eval.views={1,0,460796};
+        for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes}) {
+            area_eval.profile=profile;area_eval.max_changed_area=.1;
+            auto blocked=evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval);
+            CHECK(!blocked.passed&&blocked.error<area_eval.limit);
+            CHECK(std::abs(blocked.changed_area-expected_area)<1e-12);
+            area_eval.max_changed_area=1;
+            CHECK(evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval).passed);
+        }
+        area_eval.profile=Profile::Coverage;area_eval.max_changed_area=0;
+        CHECK(evaluate(tiles.view(),tiles.view(),tile_bounds,area_eval).passed);
+        auto empty=tiles;empty.indices.clear();auto other_empty=empty;
+        for(auto& p:other_empty.positions)p.x+=.125f;
+        auto empty_area=evaluate(empty.view(),other_empty.view(),tile_bounds,area_eval);
+        CHECK(empty_area.passed&&empty_area.changed_area==0);
+        auto lost_all=evaluate(tiles.view(),empty.view(),tile_bounds,area_eval);
+        CHECK(!lost_all.passed&&lost_all.changed_area==1);
+        CHECK(mask_difference(source_mask,rasterize(empty.view(),tile_bounds,camera,area_eval.screen_size,area_eval.supersample,true))==1);
+        for(double bad_area:{-0.01,1.01,std::numeric_limits<double>::quiet_NaN()}) {
+            area_eval.max_changed_area=bad_area;
+            throws([&]{evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval);});
+        }
+        // The first reduction drops one tile. The second proposal drops a
+        // different tile: each source audit changes about 1/4 of the mask,
+        // while the predecessor audit changes about 1/2.
+        area_eval.max_changed_area=.35;
+        CHECK(evaluate(tiles.view(),minus_first.view(),tile_bounds,area_eval).passed);
+        CHECK(evaluate(tiles.view(),minus_last.view(),tile_bounds,area_eval).passed);
+        auto changed_parent=evaluate(minus_first.view(),minus_last.view(),tile_bounds,area_eval);
+        CHECK(!changed_parent.passed&&changed_parent.error<area_eval.limit&&changed_parent.changed_area>.4);
+        Settings area_chain=small();area_chain.levels=3;area_chain.base_pixels=64;area_chain.last_pixels=64;
+        area_chain.max_changed_area=.35;area_chain.transition={{{0,1000},{1,1000}}};
+        area_chain.search_views=area_chain.audit_views=area_eval.views;
+        area_chain.search_supersample=area_chain.audit_supersample=area_chain.max_supersample=4;
+        area_chain.candidate_budget=1;area_chain.research.output=OutputMode::Reuse;
+        area_chain.research.chain=ChainMode::Progressive;
+        Proposer swap_missing_tile=[&](MeshView input,const ReduceSettings&){
+            Lod l;l.data.indices=input.triangles()==tiles.view().triangles()?minus_first.indices:minus_last.indices;
+            return l;
+        };
+        auto chain_result=generate(tiles.view(),area_chain,swap_missing_tile);
+        CHECK(chain_result.status==Status::Complete&&chain_result.lods.size()==3);
+        CHECK(chain_result.lods[1].view(tiles.view()).triangles()==minus_first.view().triangles());
+        CHECK(chain_result.area_rejected_gates[3]>0&&chain_result.rejected_gates[3]>0);
+        CHECK(same_mesh_data(chain_result.lods[2].view(tiles.view()),minus_first.view()));
+        area_chain.levels=2;area_chain.max_changed_area=.1;
+        auto source_rejected=generate(tiles.view(),area_chain,swap_missing_tile);
+        CHECK(source_rejected.area_rejected_gates[2]>0&&source_rejected.rejected_gates[2]>0);
+        CHECK(same_mesh_data(source_rejected.lods.back().view(tiles.view()),tiles.view()));
+        for(double bad_area:{-0.01,1.01,std::numeric_limits<double>::quiet_NaN()}) {
+            area_chain.max_changed_area=bad_area;CHECK(!validate(area_chain).empty());
+        }
         for(auto mode:{OutputMode::Reuse,OutputMode::Rebuild})for(auto chain:{ChainMode::Direct,ChainMode::Progressive,ChainMode::Hybrid}) {
             s=small();s.research.output=mode;s.research.chain=chain;
             auto r=generate(m.view(),s);CHECK(r.status==Status::Complete);CHECK(r.lods.size()==s.levels);

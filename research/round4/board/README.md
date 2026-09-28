@@ -38,3 +38,20 @@ mapping, including shared meshes. Browser checks cover the runtime toggle,
 source comparison, rotation, rendering modes, target scale, mobile layout
 and absence of network requests. [manifest.json](manifest.json) contains
 source credits, CC0 rights links and geometry hashes.
+
+## README animation
+
+The repository's [README GIF](../../../docs/media/lod-chain-showcase.gif) and
+[still frame](../../../docs/media/lod-chain-showcase.png) are captured from this
+checked-in board. Regenerate them from the repository root with Node.js,
+Playwright, Chromium and FFmpeg available:
+
+    BLITZ_PLAYWRIGHT_MODULE=/path/to/node_modules/playwright \
+    BLITZ_CHROMIUM=/path/to/chromium \
+    BLITZ_FFMPEG=/path/to/ffmpeg \
+      node tools/capture-readme-demo.mjs .
+
+The three `BLITZ_*` variables are optional when the tools are on the usual
+module or executable paths. Capture uses fixed frames and validates the board
+run, source attribution, triangle counts, geometry and audit acceptance before
+encoding. It does not rerun simplification or download assets.

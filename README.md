@@ -6,6 +6,16 @@ LOD0 error limits. Every returned reduction passes the configured camera
 audit. This is an early research implementation, not a claim of universal
 view coverage or globally optimal simplification.
 
+![Recorded Moon Rock, Metal Stool, and Bell X-1 meshes progressing through audited LOD chains with their actual triangle counts.](docs/media/lod-chain-showcase.gif)
+
+[Still image](docs/media/lod-chain-showcase.png) · [Explore the interactive chains](research/round4/board/index.html) · [Source credits](research/round4/board/manifest.json)
+
+These recorded hybrid/rebuild examples run from 512 to 16 screen pixels. Every
+shown reduction passed this run's 12 orthographic and 4 perspective camera
+audit against both the previous level and the source. The neutral, untextured
+presentation views are not audit cameras; see the [board notes](research/round4/board/README.md)
+for the visual contract and its limits.
+
 ## Build
 
 On the supplied NixOS workstation:

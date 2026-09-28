@@ -142,6 +142,11 @@ Read [the algorithm review](research/ALGORITHMS.md),
 [the accepted specification](docs/SPEC.md) before modifying research rules.
 Measured runs, including negative findings, are in
 [RESULTS.md](research/RESULTS.md) and [EXPERIMENTS.md](research/EXPERIMENTS.md).
+The [visual board](research/board/index.html) shows four actual eight-level
+LOD chains with rotation, wireframe, silhouette and source/LOD comparison.
+It opens offline without a server. [PNG](research/board/board.png) and
+[PDF](research/board/board.pdf) versions are available for sharing.
+See [board reproduction and provenance](research/board/README.md).
 
 ## Validation
 

@@ -1,0 +1,217 @@
+// Build a portable visual board from recorded outputs. This is a presentation
+// exporter, not a renderer or a substitute for the benchmark's visual gates.
+#include <nlohmann/json.hpp>
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cmath>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+using json = nlohmann::json;
+namespace fs = std::filesystem;
+using Bytes = std::vector<uint8_t>;
+
+static std::string read_text(const fs::path& path) {
+    std::ifstream input(path, std::ios::binary);
+    if (!input) throw std::runtime_error("Cannot read " + path.string());
+    return {std::istreambuf_iterator<char>(input), {}};
+}
+static json read_json(const fs::path& path) { return json::parse(read_text(path)); }
+static std::string sha256(std::span<const uint8_t> bytes) {
+    std::array<unsigned char, SHA256_DIGEST_LENGTH> hash{};
+    SHA256(bytes.data(), bytes.size(), hash.data());
+    constexpr char hex[] = "0123456789abcdef";
+    std::string out;
+    for (auto c : hash) { out += hex[c >> 4]; out += hex[c & 15]; }
+    return out;
+}
+static std::string base64(std::span<const uint8_t> bytes) {
+    if (bytes.size() > 512u * 1024u * 1024u) throw std::runtime_error("Board buffer too large");
+    std::string out(4 * ((bytes.size() + 2) / 3) + 1, '\0');
+    auto count = EVP_EncodeBlock(reinterpret_cast<unsigned char*>(out.data()),
+                                bytes.data(), static_cast<int>(bytes.size()));
+    out.resize(static_cast<size_t>(count));
+    return out;
+}
+static uint32_t u32(const uint8_t* p) {
+    return uint32_t(p[0]) | uint32_t(p[1]) << 8 | uint32_t(p[2]) << 16 | uint32_t(p[3]) << 24;
+}
+static void append_u32(Bytes& out, uint32_t n) {
+    for (unsigned shift = 0; shift != 32; shift += 8) out.push_back(uint8_t(n >> shift));
+}
+// Accept the uncompressed float/u32 accessors emitted by our own glTF exporter.
+static Bytes accessor(const json& gltf, std::span<const uint8_t> binary,
+                      size_t index, unsigned component, const char* type, size_t element) {
+    const auto& a = gltf.at("accessors").at(index);
+    if (a.at("componentType") != component || a.at("type") != type || a.contains("sparse"))
+        throw std::runtime_error("Unexpected board accessor format");
+    const auto& view = gltf.at("bufferViews").at(a.at("bufferView").get<size_t>());
+    const size_t count = a.at("count"), length = view.at("byteLength");
+    const size_t offset = a.value("byteOffset", size_t(0));
+    const size_t start = view.value("byteOffset", size_t(0));
+    const size_t stride = view.value("byteStride", element);
+    if (view.at("buffer") != 0 || stride < element || start > binary.size() ||
+        length > binary.size() - start || offset > length ||
+        (count && (element > length - offset || count - 1 > (length - offset - element) / stride)))
+        throw std::runtime_error("Board accessor exceeds buffer");
+    Bytes out;
+    out.reserve(count * element);
+    for (size_t i = 0; i != count; ++i) {
+        auto p = binary.begin() + static_cast<ptrdiff_t>(start + offset + i * stride);
+        out.insert(out.end(), p, p + static_cast<ptrdiff_t>(element));
+    }
+    return out;
+}
+struct Geometry {
+    Bytes positions, indices;
+    std::array<float, 3> low{
+        std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    std::array<float, 3> high{
+        std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
+};
+static Geometry geometry(const json& gltf, std::span<const uint8_t> binary, size_t lod) {
+    Geometry out;
+    for (const auto& primitive : gltf.at("meshes").at(lod).at("primitives")) {
+        if (primitive.value("mode", 4) != 4) throw std::runtime_error("Board requires triangles");
+        auto p = accessor(gltf, binary, primitive.at("attributes").at("POSITION"), 5126, "VEC3", 12);
+        auto ix = accessor(gltf, binary, primitive.at("indices"), 5125, "SCALAR", 4);
+        if (ix.size() % 12) throw std::runtime_error("Incomplete board triangle");
+        const size_t count = p.size() / 12, base = out.positions.size() / 12;
+        if (base + count > UINT32_MAX) throw std::runtime_error("Board vertex range overflow");
+        for (size_t i = 0; i < ix.size(); i += 4) {
+            uint32_t index = u32(ix.data() + i);
+            if (index >= count) throw std::runtime_error("Invalid board vertex index");
+            append_u32(out.indices, static_cast<uint32_t>(base + index));
+        }
+        for (size_t i = 0; i < p.size(); i += 4) {
+            float f = std::bit_cast<float>(u32(p.data() + i));
+            if (!std::isfinite(f)) throw std::runtime_error("Nonfinite board position");
+            size_t axis = (i / 4) % 3;
+            out.low[axis] = std::min(out.low[axis], f);
+            out.high[axis] = std::max(out.high[axis], f);
+        }
+        out.positions.insert(out.positions.end(), p.begin(), p.end());
+    }
+    return out;
+}
+int main(int argc, char** argv) {
+    try {
+        if (argc != 2) throw std::invalid_argument("blitz-board REPOSITORY_ROOT");
+        const fs::path root = fs::absolute(argv[1]);
+        auto config = read_json(root / "research/board/examples.json");
+        auto corpus = read_json(root / "research/corpus.json");
+        auto scan_rights = read_json(root / "research/scan-rights.json").at("items");
+        const auto run = config.at("run").get<std::string>();
+        const auto run_dir = root / "research/runs" / run;
+        auto meta = read_json(run_dir / "metadata.json");
+        json board{{"date", config.at("date")}, {"run", run}, {"settings", meta.at("config")},
+                   {"run_sha256", meta.at("run_sha256")}, {"assets", json::array()},
+                   {"corpus_count", corpus.at("assets").size()}};
+        json manifest{{"version", 1}, {"run", run}, {"run_sha256", meta.at("run_sha256")},
+                      {"rendering", "Untextured geometric face normals; presentation views are not audit cameras"},
+                      {"assets", json::array()}};
+        for (auto example : config.at("examples")) {
+            const auto id = example.at("id").get<std::string>();
+            auto row = read_json(run_dir / "rows" / (id + ".json"));
+            if (!row.at("complete").get<bool>() || row.value("failed", false) ||
+                row.at("run_sha256") != meta.at("run_sha256"))
+                throw std::runtime_error("Incomplete or mismatched example row: " + id);
+            auto gltf = read_json(run_dir / "meshes" / id / "chain.gltf");
+            auto storage = read_text(run_dir / "meshes" / id / "chain.bin");
+            std::span<const uint8_t> binary(reinterpret_cast<const uint8_t*>(storage.data()), storage.size());
+            auto source = std::find_if(corpus.at("assets").begin(), corpus.at("assets").end(),
+                                      [&](const auto& a) { return a.at("id") == id; });
+            if (source == corpus.at("assets").end()) throw std::runtime_error("Missing provenance: " + id);
+            example["source_url"] = source->at("source_url");
+            const auto identity = source->at("source_identity").get<std::string>();
+            if (scan_rights.contains(identity)) example["source_url"] = scan_rights.at(identity).at("url");
+            example["license"] = source->at("license");
+            example["license_url"] = source->at("license_url");
+            example["ratio"] = row.at("ratio");
+            example["lods"] = json::array();
+            auto rows = row.at("result").at("lods");
+            if (gltf.at("meshes").size() != rows.size()) throw std::runtime_error("LOD count mismatch");
+            json record{{"id", id}, {"chain_bin_sha256", sha256(binary)},
+                        {"source_url", example.at("source_url")}, {"license", example.at("license")},
+                        {"license_url", example.at("license_url")}, {"credit", example.at("credit")},
+                        {"output_sha256", row.at("output_sha256")}, {"triangles", json::array()}};
+            size_t previous = SIZE_MAX;
+            for (size_t i = 0; i < rows.size(); ++i) {
+                auto g = geometry(gltf, binary, i);
+                size_t triangles = g.indices.size() / 12;
+                if (triangles != rows[i].at("triangles") || triangles > previous ||
+                    !rows[i].at("source").at("passed").get<bool>() ||
+                    !rows[i].at("adjacent").at("passed").get<bool>())
+                    throw std::runtime_error("Geometry or acceptance mismatch: " + id);
+                previous = triangles;
+                record["triangles"].push_back(triangles);
+                if (!i) {
+                    example["low"] = g.low;
+                    example["high"] = g.high;
+                    // Match the evaluator's source frame: rounded AABB center,
+                    // then the furthest source position, not the box diagonal.
+                    std::array<float, 3> center{};
+                    for (size_t axis = 0; axis != 3; ++axis)
+                        center[axis] = float((double(g.low[axis]) + g.high[axis]) * .5);
+                    double radius_sq = 0;
+                    for (size_t p = 0; p < g.positions.size(); p += 12) {
+                        double distance_sq = 0;
+                        for (size_t axis = 0; axis != 3; ++axis) {
+                            double d = double(std::bit_cast<float>(u32(g.positions.data() + p + axis * 4))) - center[axis];
+                            distance_sq += d * d;
+                        }
+                        radius_sq = std::max(radius_sq, distance_sq);
+                    }
+                    example["center"] = center;
+                    example["radius"] = std::sqrt(radius_sq);
+                }
+                auto level = rows[i];
+                level["positions"] = base64(g.positions);
+                level["indices"] = base64(g.indices);
+                example["lods"].push_back(std::move(level));
+            }
+            board["assets"].push_back(std::move(example));
+            manifest["assets"].push_back(std::move(record));
+        }
+        board["scores"] = json::object();
+        for (const auto* name : {"round1-qem", "baseline-meshopt", "baseline-fastquadric",
+                                "baseline-cgal-probabilistic", "round2-coupled",
+                                "round2-hybrid", "profile-normals", "corpus-smoke"}) {
+            auto summary = read_json(root / "research/runs" / name / "summary.json");
+            if (!summary.at("complete").get<bool>()) throw std::runtime_error("Incomplete score");
+            board["scores"][name] = summary;
+        }
+        board["microbench"] = read_json(root / "research/microbench-optimized.json");
+        auto text = read_text(root / "tools/board.html");
+        auto data = board.dump();
+        // Protect the script element even if a future caption contains HTML.
+        for (size_t p = 0; (p = data.find('<', p)) != std::string::npos; p += 6) data.replace(p, 1, "\\u003c");
+        constexpr auto token = "@BOARD_DATA@";
+        auto position = text.find(token);
+        if (position == std::string::npos) throw std::runtime_error("Missing board data token");
+        text.replace(position, std::char_traits<char>::length(token), data);
+        auto output = root / "research/board/index.html";
+        std::ofstream html(output, std::ios::binary);
+        html << text;
+        if (!html) throw std::runtime_error("Cannot write board");
+        std::ofstream manifest_file(root / "research/board/manifest.json");
+        manifest_file << manifest.dump(2) << '\n';
+        if (!manifest_file) throw std::runtime_error("Cannot write board manifest");
+        std::cout << output << " (" << text.size() << " bytes; " << board["assets"].size()
+                  << " examples, " << meta.at("config").at("levels") << " levels each)\n";
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << error.what() << '\n';
+        return 1;
+    }
+}

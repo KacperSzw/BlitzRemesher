@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>BlitzRemesher — LOD research board</title>
+<style>
+:root{--paper:#f4f2ed;--ink:#202e37;--muted:#647078;--line:#dcded9;--orange:#d85732;--teal:#267c79;--white:#fffefa}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}button,select{color:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:4px}
+a{color:inherit;text-underline-offset:4px}button{border:0}canvas{display:block;width:100%;height:100%}
+.sheet{max-width:1720px;padding:42px 56px 34px;margin:auto}.masthead{display:flex;align-items:center;justify-content:space-between;padding-bottom:22px;border-bottom:1px solid var(--ink)}
+.brand{font-size:17px;font-weight:800;letter-spacing:.14em;display:flex;align-items:center;gap:12px}.brand-icon{display:grid;place-items:center;background:var(--orange);color:white;width:31px;height:31px;font-size:26px;line-height:1;font-weight:500}.edition{text-align:right;font:11px/1.7 ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase}
+.hero{display:grid;grid-template-columns:1fr 320px;gap:50px;padding:37px 0 30px;align-items:end}.eyebrow,.section-index{font:11px/1.5 ui-monospace,monospace;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+h1{font-size:clamp(44px,4.3vw,72px);line-height:1.02;letter-spacing:-.055em;margin:13px 0 18px;font-weight:650}h1 span{color:var(--orange)}.intro{max-width:680px;font-size:15px;line-height:1.6;color:var(--muted);margin:0}
+.hero-note{border-left:2px solid var(--orange);padding:0 0 0 21px;line-height:1.6;font-size:14px}.hero-note strong{display:block;font-size:16px;letter-spacing:-.02em;margin-bottom:8px}.hero-note p{margin:0;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--white);margin-bottom:32px}.stat{padding:21px 24px 19px}.stat+.stat{border-left:1px solid var(--line)}.stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--muted)}.stat-number{font-size:46px;line-height:1.2;letter-spacing:-.06em;font-weight:600;margin:8px 0}.stat-number .unit{font-size:16px;letter-spacing:-.02em;color:var(--muted);margin-left:7px}.stat-detail{font-size:11px;line-height:1.55;color:var(--muted)}.stat-detail b{font-weight:600;color:var(--ink)}
+.section-heading{display:flex;justify-content:space-between;gap:30px;align-items:end;margin:0 0 17px}h2{font-size:29px;letter-spacing:-.04em;margin:7px 0 0;font-weight:600}.section-side{font-size:12px;line-height:1.6;color:var(--muted);text-align:right;max-width:410px}.controls{display:flex;justify-content:space-between;gap:20px;align-items:center;border-block:1px solid var(--line);padding:12px 0;flex-wrap:wrap}.control-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.control-label{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-right:4px}.segmented{display:flex;gap:3px;padding:3px;background:#e6e8e2;border-radius:7px}.segmented button{padding:7px 12px;background:none;border-radius:5px;font-size:11px;line-height:1.2}.segmented button[aria-pressed=true]{background:var(--white);box-shadow:0 1px 3px #202e3715;font-weight:650}.text-button{background:none;font-size:11px;color:var(--muted);text-decoration:underline;text-underline-offset:4px;padding:7px}
+.scale-note{font-size:11px;color:var(--muted);line-height:1.6;margin:10px 0 4px}.scale-note strong{color:var(--ink);font-weight:600}.status-error{background:#fbe4d6;border:1px solid var(--orange);padding:20px}
+.asset{padding:24px 0 23px;border-bottom:1px solid var(--line)}.asset-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:20px}.asset-name{display:flex;align-items:baseline;gap:15px;flex-wrap:wrap}.asset-category{font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);min-width:104px}.asset h3{font-size:21px;letter-spacing:-.035em;margin:0;font-weight:600}.asset-note{font-size:11px;color:var(--muted);margin-top:5px}.asset-reduction{text-align:right;white-space:nowrap;font-size:12px}.asset-reduction strong{color:var(--teal);font-size:19px;font-weight:600;letter-spacing:-.03em;margin-right:8px}.asset-reduction small{display:block;font:10px/1.8 ui-monospace,monospace;color:var(--muted)}
+.chain{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}.lod-card{display:block;text-align:left;padding:0;background:transparent;border:1px solid transparent;border-radius:6px;overflow:hidden;position:relative;transition:border-color .15s,background .15s}.lod-card:hover,.lod-card:focus-visible{border-color:#b9c7c2;background:#fff9}.lod-card:first-child{background:#e9eae4;border-color:#dce0d8}.lod-card:last-child{background:#e6efeb;border-color:#c6d8ce}.lod-head{padding:9px 10px 0;display:flex;justify-content:space-between;align-items:center;font:10px ui-monospace,monospace;letter-spacing:.03em}.lod-head .screen-px{color:var(--muted);font-size:9px}.viewport{height:158px;position:relative;touch-action:none;cursor:grab}.viewport:active{cursor:grabbing}.viewport::after{content:"";height:1px;position:absolute;bottom:8px;left:15%;right:15%;background:linear-gradient(90deg,transparent,#b8c4bf90,transparent)}.lod-footer{padding:3px 10px 10px}.triangle-count{font-size:18px;font-weight:650;letter-spacing:-.035em;font-variant-numeric:tabular-nums}.triangle-count span{font-size:9px;margin-left:4px;font-weight:500;letter-spacing:0;color:var(--muted)}.lod-error{font:9px/1.6 ui-monospace,monospace;color:var(--muted);margin-top:5px;white-space:nowrap}.lod-error .check{color:var(--teal)}
+.gallery-foot{display:flex;justify-content:space-between;gap:20px;font-size:10px;line-height:1.65;color:var(--muted);padding:12px 0 28px}.gallery-foot p{margin:0;max-width:700px}
+.lower{display:grid;grid-template-columns:1.08fr 1fr;gap:28px}.panel{background:var(--white);border:1px solid var(--line);padding:25px 26px}.panel h2{font-size:24px;margin-bottom:10px}.panel-intro{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 23px}.bar-row{display:grid;grid-template-columns:145px 1fr 44px;align-items:center;gap:12px;margin:13px 0;font-size:11px}.bar-track{height:10px;background:#edf0eb;border-radius:1px}.bar-fill{height:100%;background:#8b9d9f}.bar-row.emphasis .bar-fill{background:var(--orange)}.bar-row.emphasis .bar-label{font-weight:700}.bar-value{text-align:right;font:12px ui-monospace,monospace}.chart-axis{display:flex;justify-content:space-between;margin:9px 56px 0 157px;font:9px ui-monospace,monospace;color:var(--muted)}.chart-note{font-size:10px;line-height:1.65;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;margin-top:21px}
+.finding{display:grid;grid-template-columns:92px 1fr;gap:18px;padding:14px 0}.finding+.finding{border-top:1px solid var(--line)}.finding-number{font-size:33px;letter-spacing:-.05em;font-weight:600;line-height:1.2}.finding-number small{display:block;font:9px/1.5 ui-monospace,monospace;letter-spacing:0;color:var(--muted);margin-top:5px}.finding strong{font-size:12px;display:block;margin-bottom:5px}.finding p{font-size:11px;line-height:1.6;color:var(--muted);margin:0}.finding.warn .finding-number{color:var(--orange)}.finding.good .finding-number{color:var(--teal)}
+.contract{margin-top:28px;padding:22px 24px;background:var(--ink);color:#f3f4ee;display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:32px}.contract .section-index{color:#a6b7bd}.contract strong{display:block;font-size:15px;margin:7px 0 9px}.contract p{font-size:11px;line-height:1.7;color:#bec9cb;margin:0}.credits{display:flex;justify-content:space-between;gap:24px;font-size:10px;color:var(--muted);line-height:1.8;padding:22px 0 0}.credits strong{color:var(--ink);font-weight:600}.credit-links a{margin-right:14px}.footer-brand{font-weight:700;letter-spacing:.12em;margin-bottom:4px;font-size:10px;color:var(--ink)}
+dialog{width:min(1120px,94vw);max-height:94vh;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);padding:26px;box-shadow:0 25px 100px #12212a55}dialog::backdrop{background:#16252dab;backdrop-filter:blur(5px)}.dialog-head{display:flex;justify-content:space-between;gap:20px;align-items:center}.dialog-head h2{font-size:28px;margin:3px 0}.close{width:35px;height:35px;border-radius:50%;background:#e3e7df;font-size:23px}.inspect-views{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.inspect-figure{margin:0;background:var(--white);border:1px solid var(--line);border-radius:6px;overflow:hidden}.inspect-figure figcaption{display:flex;justify-content:space-between;font-size:12px;padding:12px 15px}.inspect-viewport{height:310px;touch-action:none;cursor:grab}.inspect-controls{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;font-size:12px}.inspect-controls input{width:100%;accent-color:var(--orange)}.inspect-levels{display:flex;justify-content:space-between;gap:5px;margin-top:11px}.inspect-levels button{flex:1;background:#e5e9e2;padding:7px;border-radius:4px;font:11px ui-monospace,monospace}.inspect-levels button[aria-pressed=true]{background:var(--ink);color:white}.inspect-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0;font-size:11px}.inspect-metrics>div{padding:12px;background:#e6ebe3;border-radius:4px}.inspect-metrics strong{display:block;margin-top:7px;font-size:16px;font-weight:600}.inspect-note{font-size:11px;line-height:1.65;color:var(--muted);margin:14px 0 0}.inspector-tools{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-top:15px}
+@media(min-width:1650px){.viewport{height:176px}}
+@media(max-width:1150px){.sheet{padding:28px}.hero{grid-template-columns:1fr 250px;gap:30px}.chain{gap:4px}.viewport{height:132px}.lod-head,.lod-footer{padding-left:6px;padding-right:6px}.lod-error{font-size:8px}.lod-head{font-size:9px}.lower{gap:16px}.panel{padding:20px}.bar-row{grid-template-columns:122px 1fr 36px;gap:9px}.chart-axis{margin-left:131px;margin-right:45px}}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-note{max-width:550px}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0;border-top:1px solid var(--line)}.stat:nth-child(4){border-top:1px solid var(--line)}.section-heading{display:block}.section-side{text-align:left;margin-top:12px}.chain{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.viewport{height:150px}.lod-error{font-size:9px}.lower{grid-template-columns:1fr}.contract{grid-template-columns:1fr;gap:18px}.gallery-foot,.credits{display:block}.gallery-foot p+p{margin-top:8px}.credits>div+div{margin-top:12px}.inspect-viewport{height:230px}}
+@media(max-width:500px){.sheet{padding:20px 16px}.brand{font-size:12px;letter-spacing:.1em;gap:8px}.brand-icon{width:27px;height:27px;font-size:22px}.edition{font-size:9px;letter-spacing:0}.hero{padding:27px 0;gap:24px}h1{font-size:44px}.intro{font-size:13px}.stat{padding:16px}.stat-number{font-size:35px}.stat-detail{font-size:10px}.section-heading h2{font-size:26px}.asset-header{align-items:start;gap:8px}.asset-name{display:block}.asset-category{font-size:9px}.asset h3{font-size:19px;margin-top:5px}.asset-note{font-size:10px;max-width:215px}.asset-reduction{font-size:9px}.asset-reduction strong{font-size:17px;display:block;margin-right:0}.asset-reduction small{font-size:9px}.chain{gap:4px}.viewport{height:100px}.lod-head{font-size:8px;padding:7px 4px 0}.lod-head .screen-px{font-size:8px}.lod-footer{padding:2px 4px 7px}.triangle-count{font-size:15px}.triangle-count span{font-size:8px;margin-left:2px}.lod-error{font-size:7px;letter-spacing:-.03em}.panel{padding:19px}.finding{grid-template-columns:76px 1fr;gap:12px}.finding-number{font-size:29px}.bar-row{grid-template-columns:116px 1fr 33px;gap:8px;font-size:10px}.chart-axis{margin-left:124px;margin-right:41px}.contract{padding:20px}.control-group{gap:4px}.segmented button{padding:7px 9px}.scale-note{font-size:10px}.inspect-views{gap:6px}.inspect-viewport{height:170px}.inspect-figure figcaption{font-size:10px;padding:9px}.inspect-metrics{gap:5px}.inspect-metrics>div{padding:9px;font-size:9px}.inspect-metrics strong{font-size:12px}dialog{padding:16px}.inspect-levels button{font-size:9px;padding:7px 2px}}
+@media print{.sheet{max-width:none}.controls,.scale-note .interactive-tip,.text-button{display:none}.lod-card{break-inside:avoid}.asset,.panel,.contract{break-inside:avoid}body{-webkit-print-color-adjust:exact;print-color-adjust:exact}a{text-decoration:none}dialog{display:none}}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header class="masthead">
+    <div class="brand"><span class="brand-icon" aria-hidden="true">ϟ</span> BLITZREMESHER</div>
+    <div class="edition">Research board / 001<br><span id="date"></span></div>
+  </header>
+  <section class="hero" aria-labelledby="title">
+    <div>
+      <div class="eyebrow">C++20 mesh reduction · game-engine import pipelines</div>
+      <h1 id="title">Fewer triangles.<br><span>Measured transitions.</span></h1>
+      <p class="intro">An independent visual audit turns mesh reduction into a measurable search. This board follows real meshes through all eight levels of their recorded LOD chains.</p>
+    </div>
+    <aside class="hero-note">
+      <strong>Geometry, with an error budget.</strong>
+      <p>Propose a simpler mesh. Check it against the previous level and the original. Keep the smallest valid chain found.</p>
+    </aside>
+  </section>
+  <section class="stats" aria-label="Research snapshot">
+    <div class="stat"><div class="stat-label">Frozen mesh corpus</div><div class="stat-number" id="corpus-count"></div><div class="stat-detail">30 rocks · 30 organics<br>40 manufactured · 20 complex scans</div></div>
+    <div class="stat"><div class="stat-label">Direct coverage / pilot</div><div class="stat-number"><span id="pilot-score"></span><span class="unit">SCORE</span></div><div class="stat-detail"><b id="pilot-gain"></b> points over native QEM<br>8 development assets · unchanged gates</div></div>
+    <div class="stat"><div class="stat-label">Full corpus / smoke</div><div class="stat-number"><span id="smoke-score"></span><span class="unit">SCORE</span></div><div class="stat-detail"><b>120 / 120</b> completed · zero failures<br>Progressive coverage · smaller work budget</div></div>
+    <div class="stat"><div class="stat-label">Integration paths</div><div class="stat-number">3<span class="unit">chain modes</span></div><div class="stat-detail">Direct · progressive · hybrid<br>Rebuild vertices or reuse source buffers</div></div>
+  </section>
+  <section aria-labelledby="chains-title">
+    <div class="section-heading">
+      <div><div class="section-index">01 / Actual output geometry</div><h2 id="chains-title">From source to 16 pixels.</h2></div>
+      <div class="section-side">Four examples from the same direct coverage run.<br>Every tile is an exported mesh, with its recorded triangle count.</div>
+    </div>
+    <div class="controls">
+      <div class="control-group"><span class="control-label">Display</span><div class="segmented" role="group" aria-label="Surface display">
+        <button type="button" data-mode="clay" aria-pressed="true">Clay</button>
+        <button type="button" data-mode="wire" aria-pressed="false">Wireframe</button>
+        <button type="button" data-mode="silhouette" aria-pressed="false">Silhouette</button>
+      </div></div>
+      <div class="control-group"><span class="control-label">Scale</span><div class="segmented" role="group" aria-label="Viewing scale">
+        <button type="button" data-scale="enlarged" aria-pressed="true">Enlarged</button>
+        <button type="button" data-scale="target" aria-pressed="false">Target px</button>
+      </div><button type="button" class="text-button" id="reset">Reset views ↺</button></div>
+    </div>
+    <p class="scale-note"><strong id="scale-caption">Enlarged for inspection.</strong> Same camera and source scale across each row. <span class="interactive-tip">Drag a mesh to rotate its chain; click a tile to inspect it.</span></p>
+    <div id="graphics-error" class="status-error" role="alert" hidden>WebGL 2 is unavailable. Open <a href="board.png">the static board image</a> to see the rendered chains.</div>
+    <noscript><p class="status-error">This interactive board needs JavaScript. Open <a href="board.png">the static board image</a>.</p></noscript>
+    <div id="chains"></div>
+    <div class="gallery-foot">
+      <p><strong>Reading the tiles:</strong> Δ is the audited upper error against the previous LOD, followed by its pixel limit. Each reduced mesh also passed its direct-to-source limit. LOD 0 is unchanged.</p>
+      <p>Neutral clay uses geometric face normals, with no textures. Presentation angles are not the audit cameras. Enlargement exposes detail that was never required at 16–32 pixels.</p>
+    </div>
+  </section>
+  <div class="lower">
+    <section class="panel" aria-labelledby="results-title">
+      <div class="section-index">02 / Comparable coverage scores</div>
+      <h2 id="results-title">The gain came from shared positions.</h2>
+      <p class="panel-intro">Simplifying duplicated positions together unlocked large reductions in meshes with separate attribute wedges. UVs and other vertex attributes remain separate.</p>
+      <div id="score-bars" role="img" aria-label="Direct coverage pilot score comparison; exact scores follow"></div>
+      <div class="chart-axis"><span>0</span><span>50</span><span>100</span></div>
+      <div class="chart-note">Same 8-asset development pilot, direct chain policy and visual gates. External adapters propose geometry; our evaluator accepts or rejects it. CGAL rejected one nonmanifold asset, which remains in its score denominator.<br><br><strong>SCORE = 100 × (1 − category-balanced mean retained triangle ratio).</strong> LOD 0 is excluded. A score of zero means no reduction. Scores from different profiles or scenarios are not a ranking.</div>
+    </section>
+    <section class="panel" aria-labelledby="findings-title">
+      <div class="section-index">03 / What the experiments say</div>
+      <h2 id="findings-title">Progress, and the next hard problem.</h2>
+      <div class="finding good"><div class="finding-number">120/120<small>CORPUS SMOKE</small></div><div><strong>The pipeline runs across the corpus.</strong><p>All assets completed in <span id="smoke-minutes"></span> minutes with no failures or unchanged-chain fallbacks. This uses a progressive policy and the small camera set.</p></div></div>
+      <div class="finding"><div class="finding-number"><span id="simd-speedup"></span>×<small>SIMD KERNEL</small></div><div><strong>Faster in isolation; little change end to end.</strong><p>The distance-transform fixture improved about 8%. Full pilot timing changed about 0.5%, which does not establish a useful speed gain. Output hashes stayed identical.</p></div></div>
+      <div class="finding warn"><div class="finding-number"><span id="normal-score"></span><small>NORMALS SCORE</small></div><div><strong>Attribute-aware reduction is the priority.</strong><p>Strict normal preservation allows little reduction: three of eight chains stayed unchanged. Strong coverage results do not establish strong shading fidelity.</p></div></div>
+    </section>
+  </div>
+  <section class="contract" aria-label="Scope and limits">
+    <div><div class="section-index">The visual contract</div><strong>32 → 16 px · 8 levels</strong><p>Examples use a 2 → 3 px transition curve. Source-error budgets are checked separately. The same bounds and scale are used throughout each chain.</p></div>
+    <div><div class="section-index">The audit behind these examples</div><strong>12 orthographic + 4 perspective views</strong><p>Coverage is checked at 4× sampling with refinement to 8×. Search uses a separate camera set. These are finite sampled views, not a universal error guarantee.</p></div>
+    <div><div class="section-index">What remains outside this board</div><strong>Full-quality corpus audit</strong><p>The default 642 + 64 camera preset has not been run across the full corpus. Texture images, opacity, skinning and morph targets are outside this version.</p></div>
+  </section>
+  <footer class="credits">
+    <div><div class="footer-brand">BLITZREMESHER / RESEARCH SNAPSHOT</div>C++20 · versioned C API · static opaque meshes<br><a href="../RESULTS.md">All results</a> · <a href="../EXPERIMENTS.md">Experiment log</a> · <a href="../VALIDATION.md">Validation</a> · <a href="manifest.json">Example provenance</a></div>
+    <div><strong>Actual meshes. CC0 source assets.</strong><br><span class="credit-links" id="source-credits"></span><br>Four illustrative development examples; summary scores include the complete stated cohort.</div>
+  </footer>
+</main>
+<dialog id="inspector" aria-labelledby="inspect-title">
+  <div class="dialog-head"><div><div class="section-index">Chain inspector / source versus selected LOD</div><h2 id="inspect-title"></h2></div><button type="button" class="close" id="close-inspector" aria-label="Close inspector">×</button></div>
+  <div class="inspect-views">
+    <figure class="inspect-figure"><figcaption><strong>LOD 0 · source</strong><span id="source-triangles"></span></figcaption><div class="inspect-viewport"><canvas id="source-view" aria-label="Original source mesh"></canvas></div></figure>
+    <figure class="inspect-figure"><figcaption><strong id="selected-label"></strong><span id="selected-triangles"></span></figcaption><div class="inspect-viewport"><canvas id="selected-view" aria-label="Selected LOD mesh"></canvas></div></figure>
+  </div>
+  <div class="inspect-controls"><label for="lod-slider">Selected level</label><input id="lod-slider" type="range" min="0" max="7" value="7" step="1"><output id="lod-output" for="lod-slider">LOD 7</output></div>
+  <div class="inspect-levels" id="level-buttons" role="group" aria-label="Select LOD"></div>
+  <div class="inspect-metrics"><div>Target screen size<strong id="inspect-screen"></strong></div><div>Previous LOD · upper / limit<strong id="inspect-adjacent"></strong></div><div>LOD 0 · upper / limit<strong id="inspect-source"></strong></div></div>
+  <div class="inspector-tools"><div class="segmented" role="group" aria-label="Inspector surface display"><button type="button" data-mode="clay" aria-pressed="true">Clay</button><button type="button" data-mode="wire" aria-pressed="false">Wireframe</button><button type="button" data-mode="silhouette" aria-pressed="false">Silhouette</button></div><div><button type="button" class="text-button" id="rotate-left" aria-label="Rotate view left">← Rotate</button><button type="button" class="text-button" id="rotate-right" aria-label="Rotate view right">Rotate →</button><button type="button" class="text-button" id="inspect-reset">Reset view ↺</button></div></div>
+  <p class="inspect-note">Both meshes use the same orthographic view and source scale. Drag either mesh to rotate both. The controls change this illustration, not the saved audit results. Rendering uses geometric face normals; the coverage run did not constrain shading or texture appearance.</p>
+</dialog>
+<script type="application/json" id="board-data">@BOARD_DATA@</script>
+<script type="x-shader/x-vertex" id="vertex-shader">
+#version 300 es
+precision highp float;
+layout(location=0) in vec3 position;
+uniform vec3 center;
+uniform float radius;
+uniform mat3 rotation;
+uniform vec2 projection;
+out vec3 viewPosition;
+void main(){
+  viewPosition=rotation*((position-center)/radius);
+  gl_Position=vec4(viewPosition.xy*projection,-viewPosition.z*0.25,1.0);
+}
+</script>
+<script type="x-shader/x-fragment" id="fragment-shader">
+#version 300 es
+precision highp float;
+in vec3 viewPosition;
+uniform vec3 color;
+uniform int mode;
+out vec4 fragment;
+void main(){
+  if(mode==1){fragment=vec4(0.12,0.18,0.20,0.40);return;}
+  if(mode==2){fragment=vec4(0.13,0.18,0.21,1.0);return;}
+  vec3 n=normalize(cross(dFdx(viewPosition),dFdy(viewPosition)));
+  if(n.z<0.0)n=-n;
+  float key=max(0.0,dot(n,normalize(vec3(-0.45,0.65,1.0))));
+  float fill=max(0.0,dot(n,normalize(vec3(0.8,0.0,0.5))));
+  float spec=pow(max(0.0,dot(n,normalize(vec3(-0.2,0.4,1.0)))),28.0);
+  fragment=vec4(color*(0.36+0.59*key+0.17*fill)+vec3(0.10)*spec,1.0);
+}
+</script>
+<script>
+'use strict';
+const data=JSON.parse(document.getElementById('board-data').textContent);
+const byId=id=>document.getElementById(id);
+const number=n=>Number(n).toLocaleString('en-US');
+const fixed=(n,d=2)=>Number(n).toFixed(d);
+const set=(id,value)=>{byId(id).textContent=value;};
+const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+set('date',data.date);set('corpus-count',data.corpus_count);
+set('pilot-score',fixed(data.scores['round2-coupled'].score));set('smoke-score',fixed(data.scores['corpus-smoke'].score));
+set('pilot-gain','+'+fixed(data.scores['round2-coupled'].score-data.scores['round1-qem'].score));
+set('smoke-minutes',fixed(data.scores['corpus-smoke'].seconds/60,1));
+set('simd-speedup',fixed(data.microbench.speedup));set('normal-score',fixed(data.scores['profile-normals'].score));
+const comparisons=[['round1-qem','Native QEM'],['baseline-meshopt','meshoptimizer'],['baseline-fastquadric','Fast Quadric'],['baseline-cgal-probabilistic','CGAL probabilistic *'],['round2-coupled','Coupled positions']];
+byId('score-bars').innerHTML=comparisons.map(([id,label])=>'<div class="bar-row '+(id==='round2-coupled'?'emphasis':'')+'"><span class="bar-label">'+label+'</span><div class="bar-track"><div class="bar-fill" style="width:'+data.scores[id].score+'%"></div></div><span class="bar-value">'+fixed(data.scores[id].score)+'</span></div>').join('');
+byId('source-credits').innerHTML=data.assets.map(a=>'<a href="'+escape(a.source_url)+'" title="'+escape(a.credit+' · '+a.license)+'">'+escape(a.name)+'</a>').join('');
+const state={mode:'clay',scale:'enlarged',asset:0,lod:7,cameras:data.assets.map(a=>({yaw:a.yaw,pitch:a.pitch})),suppressClickUntil:0};
+byId('chains').innerHTML=data.assets.map((a,ai)=>{
+  const first=a.lods[0].triangles,last=a.lods.at(-1).triangles;
+  return '<article class="asset" data-asset="'+ai+'" aria-labelledby="asset-'+ai+'"><div class="asset-header"><div><div class="asset-name"><span class="asset-category">'+String(ai+1).padStart(2,'0')+' / '+escape(a.category)+'</span><h3 id="asset-'+ai+'">'+escape(a.name)+'</h3></div><div class="asset-note">'+escape(a.note)+'</div></div><div class="asset-reduction"><strong>−'+fixed(100*(1-last/first),1)+'%</strong> at LOD 7<small>'+number(first)+' → '+number(last)+' tris</small></div></div><div class="chain">'+a.lods.map((l,li)=>'<button type="button" class="lod-card" data-asset="'+ai+'" data-lod="'+li+'" aria-label="Inspect '+escape(a.name)+', LOD '+li+', '+number(l.triangles)+' triangles"><div class="lod-head"><span>LOD '+li+'</span><span class="screen-px">'+fixed(l.screen_pixels,1)+' px</span></div><div class="viewport"><canvas data-asset="'+ai+'" data-lod="'+li+'" aria-hidden="true"></canvas></div><div class="lod-footer"><div class="triangle-count">'+number(l.triangles)+'<span>tris</span></div><div class="lod-error">'+(li?'<span class="check">✓</span> Δ '+fixed(l.adjacent.error_px)+' / '+fixed(l.transition_limit):'UNCHANGED SOURCE')+'</div></div></button>').join('')+'</div></article>';
+}).join('');
+byId('level-buttons').innerHTML=Array.from({length:8},(_,i)=>'<button type="button" data-level="'+i+'" aria-pressed="false">LOD '+i+'</button>').join('');
+function typed(text,Type){const raw=atob(text),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;++i)bytes[i]=raw.charCodeAt(i);return new Type(bytes.buffer);}
+function rotation(y,p){const cy=Math.cos(y),sy=Math.sin(y),cp=Math.cos(p),sp=Math.sin(p);return new Float32Array([cy,sp*sy,-cp*sy,0,cp,sp,sy,-sp*cy,cp*cy]);}
+class MeshRenderer{
+  constructor(){
+    this.canvas=document.createElement('canvas');
+    const gl=this.gl=this.canvas.getContext('webgl2',{alpha:true,antialias:true,premultipliedAlpha:true,preserveDrawingBuffer:true});
+    if(!gl)throw new Error('WebGL 2 is unavailable');
+    const compile=(type,id)=>{const s=gl.createShader(type);gl.shaderSource(s,byId(id).textContent.trim());gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;};
+    this.program=gl.createProgram();gl.attachShader(this.program,compile(gl.VERTEX_SHADER,'vertex-shader'));gl.attachShader(this.program,compile(gl.FRAGMENT_SHADER,'fragment-shader'));gl.linkProgram(this.program);
+    if(!gl.getProgramParameter(this.program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(this.program));
+    gl.useProgram(this.program);this.uniforms={};for(const name of ['center','radius','rotation','projection','color','mode'])this.uniforms[name]=gl.getUniformLocation(this.program,name);
+    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
+    this.meshes=data.assets.map(a=>{
+      a.rgb=[1,3,5].map(i=>parseInt(a.color.slice(i,i+2),16)/255);
+      return a.lods.map(l=>{
+        const vertices=typed(l.positions,Float32Array),indices=typed(l.indices,Uint32Array);
+        const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+        const positions=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,positions);gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.enableVertexAttribArray(0);
+        const faces=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,faces);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);
+        return {vao,faces,indices,lines:null,count:indices.length};
+      });
+    });
+  }
+  draw(canvas,ai,li){
+    const w=Math.max(1,Math.round(canvas.clientWidth)),h=Math.max(1,Math.round(canvas.clientHeight));
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const W=Math.round(w*dpr),H=Math.round(h*dpr);
+    canvas.width=W;canvas.height=H;
+    this.canvas.width=W;this.canvas.height=H;
+    const gl=this.gl,a=data.assets[ai],mesh=this.meshes[ai][li],camera=state.cameras[ai],u=this.uniforms;
+    gl.viewport(0,0,W,H);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(this.program);gl.bindVertexArray(mesh.vao);
+    gl.uniform3fv(u.center,a.center);gl.uniform1f(u.radius,a.radius);gl.uniformMatrix3fv(u.rotation,false,rotation(camera.yaw,camera.pitch));gl.uniform3fv(u.color,a.rgb);
+    const scale=state.scale==='target'?a.lods[li].screen_pixels/h:0.94*Math.min(w,h)/h;
+    gl.uniform2f(u.projection,scale*h/w,scale);
+    gl.uniform1i(u.mode,state.mode==='silhouette'?2:0);
+    gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(1,1);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.faces);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_INT,0);gl.disable(gl.POLYGON_OFFSET_FILL);
+    if(state.mode==='wire'){
+      if(!mesh.lines){const lineIndices=new Uint32Array(mesh.count*2);for(let i=0,j=0;i<mesh.count;i+=3){const x=mesh.indices[i],y=mesh.indices[i+1],z=mesh.indices[i+2];lineIndices.set([x,y,y,z,z,x],j);j+=6;}mesh.lines=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,lineIndices,gl.STATIC_DRAW);}
+      gl.uniform1i(u.mode,1);gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.lines);gl.drawElements(gl.LINES,mesh.count*2,gl.UNSIGNED_INT,0);gl.depthMask(true);gl.disable(gl.BLEND);
+    }
+    const ctx=canvas.getContext('2d');ctx.clearRect(0,0,W,H);ctx.drawImage(this.canvas,0,0);
+    const error=gl.getError();if(error!==gl.NO_ERROR)throw new Error('WebGL error '+error);
+  }
+}
+let renderer;
+const dirty=new Set();let framePending=false;
+function renderRow(ai){if(!renderer)return;document.querySelectorAll('.chain canvas[data-asset="'+ai+'"]').forEach(c=>renderer.draw(c,ai,Number(c.dataset.lod)));}
+function renderInspector(){if(!renderer||!byId('inspector').open)return;renderer.draw(byId('source-view'),state.asset,0);renderer.draw(byId('selected-view'),state.asset,state.lod);}
+function renderAll(){data.assets.forEach((_,ai)=>renderRow(ai));renderInspector();}
+function schedule(ai){dirty.add(ai);if(!framePending){framePending=true;requestAnimationFrame(()=>{framePending=false;dirty.forEach(renderRow);dirty.clear();renderInspector();});}}
+function updateInspector(){
+  const a=data.assets[state.asset],l=a.lods[state.lod];
+  set('inspect-title',a.name);set('source-triangles',number(a.lods[0].triangles)+' triangles');
+  set('selected-label','LOD '+state.lod+(state.lod?' · reduced':' · source'));set('selected-triangles',number(l.triangles)+' triangles');
+  set('lod-output','LOD '+state.lod);byId('lod-slider').value=state.lod;
+  set('inspect-screen',fixed(l.screen_pixels,2)+' px');
+  set('inspect-adjacent',state.lod?fixed(l.adjacent.error_px)+' / '+fixed(l.transition_limit)+' px':'Unchanged source');
+  set('inspect-source',state.lod?fixed(l.source.error_px)+' / '+fixed(l.source_limit)+' px':'Unchanged source');
+  document.querySelectorAll('[data-level]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.level)===state.lod));
+  renderInspector();
+}
+function openInspector(ai,li){state.asset=ai;state.lod=li;byId('inspector').showModal();updateInspector();}
+document.querySelectorAll('.lod-card').forEach(b=>b.addEventListener('click',()=>{if(performance.now()>=state.suppressClickUntil)openInspector(Number(b.dataset.asset),Number(b.dataset.lod));}));
+byId('close-inspector').addEventListener('click',()=>byId('inspector').close());
+byId('inspector').addEventListener('click',e=>{if(e.target===byId('inspector')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.target.close();}});
+byId('lod-slider').addEventListener('input',e=>{state.lod=Number(e.target.value);updateInspector();});
+document.querySelectorAll('[data-level]').forEach(b=>b.addEventListener('click',()=>{state.lod=Number(b.dataset.level);updateInspector();}));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{state.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(v=>v.setAttribute('aria-pressed',v.dataset.mode===state.mode));renderAll();}));
+document.querySelectorAll('[data-scale]').forEach(b=>b.addEventListener('click',()=>{state.scale=b.dataset.scale;document.querySelectorAll('[data-scale]').forEach(v=>v.setAttribute('aria-pressed',v.dataset.scale===state.scale));set('scale-caption',state.scale==='target'?'Target size in CSS pixels · illustrative orthographic view.':'Enlarged for inspection.');renderAll();}));
+function reset(ai){state.cameras[ai]={yaw:data.assets[ai].yaw,pitch:data.assets[ai].pitch};schedule(ai);}
+byId('reset').addEventListener('click',()=>data.assets.forEach((_,i)=>reset(i)));
+byId('inspect-reset').addEventListener('click',()=>reset(state.asset));
+byId('rotate-left').addEventListener('click',()=>{state.cameras[state.asset].yaw-=Math.PI/8;schedule(state.asset);});
+byId('rotate-right').addEventListener('click',()=>{state.cameras[state.asset].yaw+=Math.PI/8;schedule(state.asset);});
+function makeDraggable(canvas,getAsset){
+  let drag=null;
+  canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;const ai=getAsset();drag={ai,x:e.clientX,y:e.clientY,moved:false};canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>1)drag.moved=true;const c=state.cameras[drag.ai];c.yaw+=dx*.012;c.pitch=Math.max(-1.45,Math.min(1.45,c.pitch+dy*.012));drag.x=e.clientX;drag.y=e.clientY;schedule(drag.ai);});
+  const finish=()=>{if(drag?.moved)state.suppressClickUntil=performance.now()+200;drag=null;};
+  canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);canvas.addEventListener('lostpointercapture',finish);
+}
+document.querySelectorAll('.chain canvas').forEach(c=>makeDraggable(c,()=>Number(c.dataset.asset)));
+makeDraggable(byId('source-view'),()=>state.asset);makeDraggable(byId('selected-view'),()=>state.asset);
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(renderAll,100);});
+try{renderer=new MeshRenderer();document.fonts.ready.then(()=>{renderAll();document.documentElement.dataset.ready='true';});}
+catch(error){byId('graphics-error').hidden=false;console.error(error);document.documentElement.dataset.ready='error';}
+window.blitzBoard={data,state,renderAll,renderer};
+</script>
+</body>
+</html>

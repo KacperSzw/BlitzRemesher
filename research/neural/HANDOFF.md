@@ -7,14 +7,14 @@ and tests. The rental state records its exact source revision.
 
 ## Current experiment
 
-Local durable state: `runs/neural/runpod-action-pilot-02/rental.json`.
+Local durable state: `runs/neural/runpod-action-pilot-03/rental.json`.
 The continuation uses one RTX PRO 6000 Blackwell Server Edition (96 GB),
 last quoted at $2.09/hour. The initial rental limit is 90 minutes; the controller
 shortens it after setup to the actual 50-minute experiment deadline plus
 collection time. Read the state file for the effective cutoff and resource status.
 
 ```sh
-node research/neural/runpod.mjs status runs/neural/runpod-action-pilot-02
+node research/neural/runpod.mjs status runs/neural/runpod-action-pilot-03
 ```
 
 The controller and independent watchdog run as user systemd services. Their
@@ -44,6 +44,11 @@ seeds reached 8,192 updates with healthy numeric/restore checks and 98.78–99.3
 queried preferred membership. The pilot failed at a missing CLI option; that
 interface is repaired and tested. Evidence was collected and both resources
 deleted. Saved curriculum/model evidence is under `evidence/action-curriculum-v2`.
+
+The second allocation (`runpod-action-pilot-02`) exposed no public IP/direct
+TCP mapping despite a running container and requested port 22. It was stopped
+before any upload; the newly created unused volume was verified and removed.
+The third allocation uses another data center and the same tested source.
 
 ## Established evidence
 

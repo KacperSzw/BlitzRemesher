@@ -1,5 +1,14 @@
 # Neural LOD path
 
+**Current implementation:** architecture 2 learns directed, current-state endpoint
+actions. Three cloud seeds passed the one-mesh proof at two checkpoints. A
+two-mesh smoke shows 6.94% mean triangle reduction versus 1.43% for constant
+ranking; full-pilot superiority remains unproven. See [V2.md](V2.md) for the
+current staged implementation, bounded cloud continuation and
+[committed model evidence](evidence/action-v2/README.md). No local training runs.
+
+## Retained v1 documentation
+
 Status, 2026-09-29: local training is stopped. The audit failure
 is fixed and the saved 25,000-update model completes the eight-asset pilot, with
 eight unreduced fallbacks (SCORE 0). No release-quality model is claimed. See

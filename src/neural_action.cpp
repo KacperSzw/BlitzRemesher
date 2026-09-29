@@ -8,6 +8,10 @@ auto key(Vec3 p) {return std::array{std::bit_cast<uint32_t>(p.x==0?0.f:p.x),std:
 double area(Vec2 a,Vec2 b,Vec2 c) {return (double(b.x)-a.x)*(double(c.y)-a.y)-(double(b.y)-a.y)*(double(c.x)-a.x);}
 template<class T> void unique(std::vector<T>& a) {std::sort(a.begin(),a.end());a.erase(std::unique(a.begin(),a.end()),a.end());}
 }
+bool action_audit_known(const Measurement& m,const EvalSettings& e) {
+    if(m.resource_limited||std::isnan(m.error)||std::isnan(m.changed_area))return false;
+    return (m.complete&&m.passed)||(m.views_evaluated&&!m.passed&&(m.error>e.limit||m.changed_area>e.max_changed_area));
+}
 ActionState::ActionState(MeshView m):input_(m) {
     if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);
     diameter_=std::max(1e-20,bounds(m).diameter());
@@ -90,15 +94,39 @@ bool ActionState::mapping(Action a,std::vector<std::pair<uint32_t,uint32_t>>& re
     return true;
 }
 bool ActionState::legal(Action a) const {std::vector<std::pair<uint32_t,uint32_t>> map;return mapping(a,map);}
-Lod ActionState::trial(Action a) const {
-    std::vector<std::pair<uint32_t,uint32_t>> remap;if(!mapping(a,remap))throw std::invalid_argument("illegal or stale endpoint action");
+bool ActionState::claim_footprint(Action a,std::span<uint8_t> used) const {
+    if(a.revision!=revision_||a.from>=geometry_.size()||a.to>=geometry_.size())throw std::invalid_argument("stale batch action");
+    // CSR is on geometric equivalence classes: these footprints already include
+    // every coupled wedge and all incident faces, not just one indexed chart.
+    for(auto u:{a.from,a.to}){if(used[u])return false;for(auto k=offsets_[u];k<offsets_[u+1];++k)if(used[neighbors_[k]])return false;}
+    for(auto u:{a.from,a.to}){used[u]=1;for(auto k=offsets_[u];k<offsets_[u+1];++k)used[neighbors_[k]]=1;}return true;
+}
+std::vector<Action> ActionState::independent(std::span<const ActionRecord> rows,std::span<const uint32_t> order,uint32_t maximum,size_t maximum_removed) const {
+    if(!maximum||maximum>64)throw std::invalid_argument("action batch outside 1..64");
+    std::vector<uint8_t> used(geometry_.size());std::vector<Action> selected;
+    for(auto index:order){if(index>=rows.size())throw std::invalid_argument("action order index outside rows");auto a=rows[index].action;
+        auto lo=std::min(a.from,a.to),hi=std::max(a.from,a.to);
+        auto edge=std::lower_bound(edges_.begin(),edges_.end(),std::pair{lo,hi},[](const Edge& e,auto p){return std::pair{e.a,e.b}<p;});
+        if(edge==edges_.end()||edge->a!=lo||edge->b!=hi||a.revision!=revision_)throw std::invalid_argument("stale batch edge");
+        if(edge->count>maximum_removed||!claim_footprint(a,used))continue;selected.push_back(a);maximum_removed-=edge->count;
+        if(selected.size()==maximum||!maximum_removed)break;
+    }
+    return selected;
+}
+Lod ActionState::trial(Action a) const {return trial({&a,1});}
+Lod ActionState::trial(std::span<const Action> actions) const {
+    if(actions.empty()||actions.size()>64)throw std::invalid_argument("invalid action batch");
+    std::vector<uint32_t> remap(geometry_.size(),UINT32_MAX);std::vector<uint8_t> used(geometry_.size());std::vector<std::pair<uint32_t,uint32_t>> pairs;
+    for(auto a:actions){if(!mapping(a,pairs)||!claim_footprint(a,used))throw std::invalid_argument("illegal, stale or overlapping endpoint actions");for(auto [u,v]:pairs)remap[u]=v;}
     auto m=view();Lod candidate;candidate.data.indices.reserve(m.indices.size());candidate.data.materials.reserve(m.materials.size());
-    for(uint32_t f=0;f<m.triangles();++f){uint32_t ids[3];bool changed=false;for(unsigned j=0;j<3;++j){ids[j]=m.indices[f*3+j];for(auto [u,v]:remap)if(ids[j]==u){ids[j]=v;changed=true;break;}}
+    for(uint32_t f=0;f<m.triangles();++f){uint32_t ids[3];bool changed=false;for(unsigned j=0;j<3;++j){ids[j]=m.indices[f*3+j];if(remap[ids[j]]!=UINT32_MAX){ids[j]=remap[ids[j]];changed=true;}}
         if(changed&&(geometry_[ids[0]]==geometry_[ids[1]]||geometry_[ids[1]]==geometry_[ids[2]]||geometry_[ids[0]]==geometry_[ids[2]]))continue;
         candidate.data.indices.insert(candidate.data.indices.end(),ids,ids+3);if(!m.materials.empty())candidate.data.materials.push_back(m.material(f));}
+    if(candidate.data.indices.empty())throw std::invalid_argument("batch would remove the entire mesh");
     return candidate;
 }
-void ActionState::commit(Action a) {auto candidate=trial(a);current_=std::move(candidate);++revision_;rebuild();}
+void ActionState::commit(Action a) {commit({&a,1});}
+void ActionState::commit(std::span<const Action> actions) {auto candidate=trial(actions);current_=std::move(candidate);++revision_;rebuild();}
 double ActionState::teacher_cost(Action a) const {
     if(a.revision!=revision_||a.from>=geometry_.size()||a.to>=geometry_.size())throw std::invalid_argument("stale teacher action");
     auto m=view();double cost=0,scale=diameter_;
@@ -131,15 +159,25 @@ std::vector<ActionRecord> ActionState::actions(const std::array<float,conditions
     return result;
 }
 Lod execute_actions(MeshView input,const std::array<float,conditions>& c,size_t target,uint32_t budget,
-    const ActionRanker& rank,const ActionGate& gate,ActionStats* statistics,const std::function<bool()>& cancel) {
+    const ActionRanker& rank,const ActionGate& gate,ActionStats* statistics,const std::function<bool()>& cancel,uint32_t batch_size) {
+    if(!batch_size||batch_size>64)throw std::invalid_argument("action batch outside 1..64");
     ActionStats local;auto& stats=statistics?*statistics:local;stats={};ActionState state(input);target=std::max<size_t>(1,target);
     while(state.view().triangles()>target&&stats.trials<budget){if(cancel&&cancel())break;auto actions=state.actions(c);if(actions.empty())break;
         auto scores=rank(state,actions);stats.ranked+=actions.size();if(scores.size()!=actions.size())throw std::invalid_argument("action rank shape mismatch");
         for(auto x:scores)if(!std::isfinite(x))throw std::invalid_argument("nonfinite action rank");
         std::vector<uint32_t> order(actions.size());std::iota(order.begin(),order.end(),0);std::stable_sort(order.begin(),order.end(),[&](auto a,auto b){return scores[a]>scores[b];});bool accepted=false;
-        for(auto i:order){if(stats.trials==budget||(cancel&&cancel()))break;auto candidate=state.trial(actions[i].action);
-            if(candidate.data.indices.size()/3<target)continue;++stats.trials;
-            if(gate(candidate.view(input))){state.commit(actions[i].action);++stats.accepted;accepted=true;break;}++stats.rejected;}
+        for(size_t position=0;position<order.size()&&stats.trials<budget&&!accepted;){
+            if(cancel&&cancel())break;
+            auto batch=state.independent(actions,std::span(order).subspan(position),batch_size,state.view().triangles()-target);if(batch.empty())break;
+            const auto first=batch.front();
+            for(;;){if(stats.trials==budget||(cancel&&cancel()))break;auto candidate=state.trial(batch);++stats.trials;
+                if(gate(candidate.view(input))){state.commit(batch);stats.accepted+=batch.size();accepted=true;break;}
+                stats.rejected+=batch.size();if(batch.size()==1)break;batch.resize(batch.size()/2);
+            }
+            // A rejected singleton must not be retried because an earlier edge
+            // could not fit the remaining triangle budget.
+            while(position<order.size()&&actions[order[position]].action!=first)++position;++position;
+        }
         if(!accepted)break;
     }
     return state.lod();

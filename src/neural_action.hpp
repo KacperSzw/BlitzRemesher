@@ -6,8 +6,11 @@ constexpr uint32_t action_schema=2, action_features=80, action_outputs=3;
 constexpr uint32_t action_layer_in[3]={action_features,hidden,hidden};
 constexpr uint32_t action_layer_out[3]={hidden,hidden,action_outputs};
 constexpr size_t action_weight_count=hidden*(action_features+1)+hidden*(hidden+1)+action_outputs*(hidden+1);
-struct Action {uint32_t from{},to{},revision{};};
+struct Action {uint32_t from{},to{},revision{};bool operator==(const Action&) const=default;};
 struct ActionRecord {Action action;std::array<float,action_features> x{};};
+// A witnessed failure is a known negative even when later views were skipped.
+// Cancellation before a verdict and resource failures remain unlabelled.
+bool action_audit_known(const Measurement&,const EvalSettings&);
 
 // Borrows immutable input streams; owns indices and topology. Each accepted edit
 // invalidates actions from the preceding revision. Trials cannot modify the state.
@@ -20,6 +23,9 @@ public:
     bool legal(Action) const;
     Lod trial(Action) const;
     void commit(Action);
+    Lod trial(std::span<const Action>) const;
+    void commit(std::span<const Action>);
+    std::vector<Action> independent(std::span<const ActionRecord>,std::span<const uint32_t> order,uint32_t maximum,size_t maximum_removed) const;
     double teacher_cost(Action) const; // Offline control only; never called by inference.
 private:
     struct Edge {uint32_t a,b;uint8_t count;};
@@ -33,6 +39,7 @@ private:
     std::vector<uint8_t> boundary_,invalid_;
     void rebuild();
     bool mapping(Action,std::vector<std::pair<uint32_t,uint32_t>>&) const;
+    bool claim_footprint(Action,std::span<uint8_t>) const;
 };
 struct ActionStats {uint64_t ranked{},trials{},accepted{},rejected{};};
 using ActionRanker=std::function<std::vector<float>(const ActionState&,std::span<const ActionRecord>)>;
@@ -51,5 +58,5 @@ private:
 };
 Lod execute_actions(MeshView,const std::array<float,conditions>&,size_t target,
     uint32_t trial_budget,const ActionRanker&,const ActionGate&,ActionStats* = nullptr,
-    const std::function<bool()>& cancelled={});
+    const std::function<bool()>& cancelled={},uint32_t batch_size=1);
 }

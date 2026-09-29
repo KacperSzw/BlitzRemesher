@@ -1,3 +1,10 @@
+export function actionHealth(h){
+  return !!h?.complete&&h.finite===true&&h.restored===true&&h.optimizer_restored===true&&
+    [h.native_max_abs,h.fp64_max_abs,h.first_loss,h.last_loss,h.gradient_norm,h.parameter_change,h.preferred_membership].every(Number.isFinite)&&
+    h.native_max_abs>=0&&h.native_max_abs<=2e-4&&h.fp64_max_abs>=0&&h.fp64_max_abs<=2e-4&&
+    h.first_loss>=0&&h.last_loss>=0&&h.gradient_norm>=0&&h.parameter_change>0&&
+    h.preferred_membership>=0&&h.preferred_membership<=1;
+}
 export function endpointDecision(history){
   if(!history.length)return {stop:false,passed:false};
   for(const row of history)if(!row.health?.finite||!row.health.restored||!row.health.optimizer_restored||!row.proof?.complete)

@@ -22,6 +22,7 @@ Dataset dataset(const fs::path& directory) {
             out.labels.insert(out.labels.end(),data.labels.begin()+data.offsets[s],data.labels.begin()+data.offsets[s+1]);out.labels.resize(size_t(out.states)*action_pool);
             out.valid.insert(out.valid.end(),count,1);out.valid.resize(size_t(out.states)*action_pool);}
     }
+    if(!out.states)throw std::invalid_argument("action dataset collection is empty");
     if(out.x.size()*sizeof(float)>8ull*1024*1024*1024)throw std::length_error("resident action dataset exceeds 8 GiB");return out;
 }
 void save_state(const fs::path& path,ActionNetwork& model,torch::optim::AdamW& optimizer,uint64_t step) {
@@ -70,7 +71,10 @@ int main(int argc,char** argv){try{
     std::ofstream log(run/"metrics.jsonl",std::ios::app);std::vector<int64_t> ids(batch);
     auto checkpoint=[&]{torch::NoGradGuard guard;auto name="step-"+std::to_string(step);auto bundle=run/"forensic"/name;fs::create_directories(bundle);
         auto w=export_actions(model,{{"schema",action_schema},{"step",step},{"contract",file_sha256(run/"contract.json")}});save_state(bundle/"checkpoint.pt",model,optimizer,step);save_weights(bundle/"model.blzn",w);
-        auto input=x.slice(0,0,std::min<int64_t>(data.states,32)).flatten(0,1);torch::save(input.cpu(),bundle/"input.pt");auto expected=model->forward(input);torch::save(expected.cpu(),bundle/"expected.pt");
+        auto probe_count=std::min<uint32_t>(data.states,32);std::array<int64_t,32> probe{};
+        for(uint32_t i=0;i<probe_count;++i)probe[i]=uint64_t(i)*(data.states-1)/std::max(1u,probe_count-1);
+        auto probe_ids=torch::from_blob(probe.data(),{probe_count},torch::kInt64).clone().to(device);
+        auto input=x.index_select(0,probe_ids).flatten(0,1);torch::save(input.cpu(),bundle/"input.pt");auto expected=model->forward(input);torch::save(expected.cpu(),bundle/"expected.pt");
         auto cpu=input.cpu().contiguous();std::span<const float> features{cpu.data_ptr<float>(),size_t(cpu.numel())};ActionCuda native(w,{});auto predicted=native.predict(features);std::vector<double> actual(predicted.begin(),predicted.end());
         torch::save(torch::from_blob(predicted.data(),{input.size(0),action_outputs},torch::kFloat32).clone(),bundle/"native.pt");
         auto difference=numeric_difference(doubles(expected),actual),oracle=numeric_difference(actual,action_oracle(features,w));

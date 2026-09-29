@@ -10,7 +10,7 @@ import {deployment} from './runpod-profile.mjs';
 import {actionBudget,actionAccrued} from './action-budget.mjs';
 
 const [command,directory]=process.argv.slice(2);
-if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
+if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|prepare-action-pilot|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
 const dir=path.resolve(directory),root=process.cwd(),statePath=dir+'/rental.json';
 const keyFile=path.join(os.homedir(),'.config/blitz/runpod-api-key');
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -34,7 +34,7 @@ async function prepare(){
     fs.copyFileSync(source,target,fs.constants.COPYFILE_FICLONE);
     files.push({path:destination,sha256:actual,bytes:fs.statSync(target).size});
   };
-  const actions=command==='prepare-actions';
+  const actions=['prepare-actions','prepare-action-pilot'].includes(command);
   if(!actions){const dataset=root+'/runs/neural/first-pass/data',index=read(dataset+'/index.json');
   if(!index.complete||index.assets.length!==66||await sha(dataset+'/index.json')!=='4faabd8f7411e6dfbc1fd0357e143f6627a6248e73b5c2421a947396cad1e5d7')
     throw new Error('Expected the approved original 66-asset teacher dataset');
@@ -58,7 +58,7 @@ async function prepare(){
   sync('tar',['-cf',dir+'/input.tar','-C',stage,'.']);
   fs.mkdirSync(dir+'/control',{recursive:true});
   for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs','action-budget.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
-  write(dir+'/prepared.json',{revision,branch,deployment,experiment:actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
+  write(dir+'/prepared.json',{revision,branch,deployment,experiment:command==='prepare-action-pilot'?'action-v2-pilot':actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
   fs.rmSync(stage,{recursive:true});
   console.log('Prepared checksummed '+(actions?'action proof source/training meshes and development pilot':'source, original training shards, pilot and validation assets')+': '+dir);
 }
@@ -74,18 +74,18 @@ async function launch(){
   if(await sha(dir+'/input.tar')!==prepared.archive_sha256)throw new Error('Prepared archive changed');
   const api=new Api(apiKey(keyFile)),quote=await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER);
   let budget;
-  if(prepared.experiment==='action-v2'){
+  if(['action-v2','action-v2-pilot'].includes(prepared.experiment)){
     const [pods,volumes,bill]=await Promise.all([api.pods(),api.request('GET','/network-volumes'),api.request('GET','/billing')]);
     if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
     const ledger=fs.readdirSync(root+'/runs/neural',{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>root+'/runs/neural/'+e.name+'/rental.json').filter(f=>fs.existsSync(f)).map(read);
-    budget=actionBudget({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap});write(dir+'/billing-before.json',bill);
+    budget=actionBudget({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:prepared.experiment==='action-v2-pilot'?90:60});write(dir+'/billing-before.json',bill);
   }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
   const requested=process.argv[4]===undefined?undefined:Number(process.argv[4]);
   const deadlines=rentalDeadlines(started,budget?Math.min(requested??Infinity,started+budget.minutes*60000):requested);
-  if(budget)deadlines.training_minutes=20;
+  if(budget)deadlines.training_minutes=prepared.experiment==='action-v2-pilot'?50:20;
   write(statePath,{name,quote,deployment,experiment:prepared.experiment,budget,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);
@@ -211,7 +211,7 @@ async function watchdog(){
     await sleep(5000);
   }
 }
-if(command==='prepare'||command==='prepare-actions')await prepare();
+if(['prepare','prepare-actions','prepare-action-pilot'].includes(command))await prepare();
 else if(command==='launch')await launch();
 else if(command==='control')await control();
 else if(command==='watchdog')await watchdog();

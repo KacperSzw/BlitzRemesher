@@ -3,9 +3,11 @@ import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
 import {endpointDecision} from './action-gates.mjs';
-const [setup,latest,minutes]=process.argv.slice(2).map(Number);
-if(![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>20)throw new Error('Invalid action experiment deadline');
-const started=Date.now(),deadline=Math.min(latest,started+minutes*60000),results='/workspace/results',root=results+'/action-v2';
+import {generalize} from './action-generalize.mjs';
+const [setup,latest,minutes]=process.argv.slice(2,5).map(Number),experiment=process.argv[5]??'action-v2';
+const pilot=experiment==='action-v2-pilot';
+if(!['action-v2','action-v2-pilot'].includes(experiment)||![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>(pilot?50:20))throw new Error('Invalid action experiment deadline');
+const started=Date.now(),deadline=Math.min(latest,started+minutes*60000),results='/workspace/results',root=results+'/'+experiment;
 fs.mkdirSync(root,{recursive:true});write(results+'/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
 let active,cancelled=false,phase='preparation';
 for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{cancelled=true;if(active)process.kill(-active.pid,'SIGTERM');});
@@ -15,7 +17,7 @@ monitor.on('error',e=>{monitorError=String(e);});monitor.stdout.on('data',chunk=
 async function execute(name,args,log,maximumMinutes){
   if(cancelled||Date.now()+15000>=deadline)throw new Error('Action experiment deadline/cancellation');
   const fd=fs.openSync(log,'a'),end=Math.min(deadline-10000,Date.now()+maximumMinutes*60000);let hard,timedOut=false,memoryExceeded=false;
-  active=spawn('build/neural/'+name,args,{stdio:['ignore',fd,fd],detached:true});
+  active=spawn(name==='node'?process.execPath:'build/neural/'+name,args,{stdio:['ignore',fd,fd],detached:true});
   const stop=()=>{if(active){process.kill(-active.pid,'SIGTERM');hard=setTimeout(()=>{if(active)process.kill(-active.pid,'SIGKILL');},5000);}};
   const timer=setTimeout(()=>{timedOut=true;stop();},Math.max(1,end-Date.now()));
   const memory=setInterval(()=>{let kib=0;for(const pid of fs.readdirSync('/proc').filter(p=>/^\d+$/.test(p))){try{const stat=fs.readFileSync(`/proc/${pid}/stat`,'utf8'),fields=stat.slice(stat.lastIndexOf(')')+2).split(' ');if(Number(fields[2])!==active?.pid)continue;kib+=Number(fs.readFileSync(`/proc/${pid}/status`,'utf8').match(/^VmRSS:\s+(\d+)/m)?.[1]??0);}catch{}}
@@ -25,6 +27,8 @@ async function execute(name,args,log,maximumMinutes){
 }
 const result={schema:2,started,deadline,complete:false,endpoint_gate_passed:false,seeds:[],quality_proven:false};
 try{
+  if(pilot){Object.assign(result,await generalize({root,execute,deadline,phase:value=>{phase=value;}}));}
+  else {
   const data=root+'/proof-data';await execute('blitz-neural-action-prepare',['ph_sweet_potato',data,'--states','64','--pixels','32','--minutes','4'],root+'/prepare.log',4.5);
   if(!read(data+'/index.json').complete)throw new Error('Endpoint teacher preparation incomplete');
   for(const seed of [101,202,303]){
@@ -40,6 +44,7 @@ try{
   }
   result.endpoint_gate_passed=result.seeds.length===3&&result.seeds.every(s=>s.passed);
   result.complete=true;result.next_phase=result.endpoint_gate_passed?'matched_development_generalization':'diagnose_endpoint_proof';
+  }
   if(monitorError)throw new Error(monitorError);
 }catch(error){result.error=String(error);process.exitCode=1;}
-finally{result.finished=Date.now();write(root+'/result.json',result);write(results+'/job.json',{code:process.exitCode??0,experiment:'action-v2',result:root+'/result.json'});monitor.kill('SIGTERM');telemetry.end();}
+finally{result.finished=Date.now();write(root+'/result.json',result);write(results+'/job.json',{code:process.exitCode??0,experiment,result:root+'/result.json'});monitor.kill('SIGTERM');telemetry.end();}

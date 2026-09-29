@@ -9,6 +9,7 @@ int main(int argc,char** argv){try{
     double minutes=5;if(argc==6&&std::string_view(argv[4])=="--minutes")minutes=std::stod(argv[5]);else if(argc!=4)throw std::invalid_argument("invalid proof options");
     if(!std::isfinite(minutes)||minutes<=0||minutes>50)throw std::invalid_argument("invalid proof deadline");std::signal(SIGINT,stop);std::signal(SIGTERM,stop);
     fs::path directory=argv[2],report=argv[3];auto index=read_json(directory/"index.json"),contract=read_json(directory/"contract.json");
+    if(contract.value("previous_steps",0)!=0||contract.at("source_limit")!=3||contract.at("adjacent_limit")!=3)throw std::invalid_argument("endpoint proof requires its single-transition 3px teacher contract");
     if(!index.at("complete").get<bool>()||index.at("sha256")!=file_sha256(directory/"actions.bin")||index.at("contract_sha256")!=file_sha256(directory/"contract.json"))throw std::invalid_argument("incomplete or changed proof dataset");
     auto data=load_actions(directory/"actions.bin");auto [mesh,metadata]=training_mesh(index.at("asset"));if(metadata!=contract.at("asset"))throw std::invalid_argument("proof source manifest differs");
     auto weights=load_weights(argv[1]);ActionCuda model(weights,{});auto output=model.predict(data.x);uint32_t correct=0,eligible=0;

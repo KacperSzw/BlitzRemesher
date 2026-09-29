@@ -1,7 +1,7 @@
 // Cumulative authorization for the action-learning experiment, in USD.
 export function actionAccrued(states,now=Date.now(),hourlyCap=2.51){
   let total=0;const seen=new Set();
-  for(const s of states){if(s.experiment!=='action-v2'||seen.has(s.name))continue;seen.add(s.name);
+  for(const s of states){if(!['action-v2','action-v2-pilot'].includes(s.experiment)||seen.has(s.name))continue;seen.add(s.name);
     const end=s.compute_terminated?s.terminated_at:now;
     if(!s.name||!Number.isFinite(s.started_at)||!Number.isFinite(end)||end<s.started_at)throw new Error('Reconcile incomplete action rental ledger');
     total+=(end-s.started_at)/3600000*hourlyCap;

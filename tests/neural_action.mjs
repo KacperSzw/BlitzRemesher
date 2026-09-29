@@ -1,7 +1,12 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {generalize} from '../research/neural/action-generalize.mjs';
+import {write} from '../research/neural/runpod-api.mjs';
 import {actionBudget,actionAccrued} from '../research/neural/action-budget.mjs';
-import {endpointDecision,pilotDecision} from '../research/neural/action-gates.mjs';
+import {endpointDecision,pilotDecision,actionHealth} from '../research/neural/action-gates.mjs';
 test('cumulative rental cap includes previous spend, storage allowance and reserve',()=>{
   for(const rate of [1.8,2.1,2.5])for(const billed of [1.9,2.75,4.2]){
     const b=actionBudget({rate,billed,minutes:60});assert.ok(b.maximum_total_usd<=10);assert.ok(b.prior_assumed_usd>=billed);assert.ok(b.reserve_usd>=1);
@@ -13,6 +18,33 @@ test('cumulative rental cap includes previous spend, storage allowance and reser
   assert.equal(accrued,1);assert.equal(actionBudget({billed:2,rate:2,priorEstimate:3,additionalAccrued:accrued}).prior_assumed_usd,4);
   assert.equal(actionBudget({billed:5,rate:2,priorEstimate:3,additionalAccrued:accrued}).prior_assumed_usd,5);
   assert.throws(()=>actionBudget({billed:2,rate:2,additionalAccrued:6}));
+  const pilot={...stopped,name:'pilot',experiment:'action-v2-pilot',compute_terminated:false};
+  assert.equal(actionAccrued([stopped,pilot,pilot],3601000,2),3);
+  assert.throws(()=>actionBudget({billed:2,rate:2.5,minutes:90,additionalAccrued:3}));
+});
+test('action health rejects unverified updates and unchanged or nonfinite parameters',()=>{
+  const health={complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9};
+  assert.equal(actionHealth(health),true);
+  for(const field of ['complete','finite','restored','optimizer_restored'])assert.equal(actionHealth({...health,[field]:false}),false);
+  for(const field of ['native_max_abs','fp64_max_abs','first_loss','last_loss','gradient_norm','parameter_change','preferred_membership'])assert.equal(actionHealth({...health,[field]:NaN}),false);
+  for(const field of ['native_max_abs','fp64_max_abs'])assert.equal(actionHealth({...health,[field]:.000201}),false);
+  assert.equal(actionHealth({...health,parameter_change:0}),false);
+  assert.equal(actionHealth({...health,preferred_membership:1.01}),false);
+});
+test('cloud continuation stops before training when the preceding LOD is unverified',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let calls=0;
+  try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},execute:async(name,args)=>{
+    ++calls;assert.equal(name,'blitz-neural-action-prepare');write(args[1]+'/index.json',{complete:true,reference_confirmed:false});
+  }}),/audited preceding LOD/);assert.equal(calls,1);}finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('an incomplete matched pilot prevents a second cloud training stage',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let updates=0,audits=0;
+  try{const result=await generalize({root,deadline:Date.now()+120000,phase:()=>{},execute:async(name,args)=>{
+    if(name==='blitz-neural-action-prepare')write(args[1]+'/index.json',{complete:true,reference_confirmed:true,preceding_lod_emitted:true,source_triangles:100,previous_triangles:90});
+    else if(name==='blitz-neural-action-train'){++updates;write(args[1]+'/latest.json',{complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn'});}
+    else{assert.equal(name,'node');++audits;write(args[1]+'/report.json',{complete:false,gate:{passed:false,reason:'incomplete'},persisted:false});}
+  }});assert.equal(updates,3);assert.equal(audits,1);assert.equal(result.complete,false);assert.equal(result.generalization_gate_passed,false);assert.equal(result.stop_reason,'incomplete_matched_pilot');
+  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
 test('matched pilot requires three seeds, all controls, complete assets and measured advantage',()=>{
   const methods=['learned','learned','learned','constant','shuffled','shuffled','shuffled','shortest','current-plane'];

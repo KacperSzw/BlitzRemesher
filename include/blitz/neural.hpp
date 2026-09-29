@@ -12,6 +12,7 @@ struct NeuralOptions {
     uint32_t action_trials{64}; // Per v2 proposal; additional measured visual trials.
     NeuralRanking ranking{NeuralRanking::Learned}; // Explicit experimental controls only.
     uint32_t ranking_seed{0xB1172026};
+    uint8_t action_batch{32}; // Disjoint geometric footprints per combined audit.
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {
@@ -29,6 +30,7 @@ struct NeuralStats {
     uint64_t gpu_peak_bytes{};
     NeuralAuditFailure first_resource_failure{};
     uint64_t action_ranked{},action_trials{};
+    uint64_t action_audit_cache_hits{};
 };
 // Immutable weights. Calls use private CUDA workspaces and preserve the caller's device.
 // Source streams must outlive the returned Result, as for generate().

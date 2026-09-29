@@ -1,0 +1,30 @@
+{
+  "schema": 2,
+  "started": 1790679488877,
+  "deadline": 1790680688877,
+  "complete": true,
+  "endpoint_gate_passed": true,
+  "seeds": [
+    {
+      "seed": 101,
+      "stop": true,
+      "passed": true,
+      "reason": "endpoint_gate_persisted"
+    },
+    {
+      "seed": 202,
+      "stop": true,
+      "passed": true,
+      "reason": "endpoint_gate_persisted"
+    },
+    {
+      "seed": 303,
+      "stop": true,
+      "passed": true,
+      "reason": "endpoint_gate_persisted"
+    }
+  ],
+  "quality_proven": false,
+  "next_phase": "matched_development_generalization",
+  "finished": 1790679684338
+}

@@ -25,6 +25,7 @@ int main(int argc,char** argv) {
             if(k=="--config"||k=="--legacy-config"){nlohmann::json j;std::ifstream f(argv[i+1]);f>>j;s=settings_json(j,k=="--legacy-config");}
             else if(k=="--neural-model")neural_file=argv[i+1];else if(k=="--device")neural_options.device=std::stoi(argv[i+1]);else if(k=="--gpu-memory-mib")neural_options.memory_mib=std::stoul(argv[i+1]);
             else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
+            else if(k=="--action-batch")neural_options.action_batch=neural_batch(argv[i+1]);
             else if(k=="--out")out=argv[i+1];else if(k=="--pixels")pixels=std::stod(argv[i+1]);else if(k=="--limit")limit=std::stod(argv[i+1]);else throw std::invalid_argument("unknown option "+k);}
         if(!neural_file.empty())s.research.chain=ChainMode::Direct;
         s.cancelled=[]{return stopped!=0;};auto m=load_mesh(argv[2]);

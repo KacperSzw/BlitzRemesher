@@ -1,0 +1,48 @@
+{
+  "source_revision": "ffbf34e",
+  "archive_sha256": "ce9570e3a4ef71f64c4f3ee1b10dd81da19a944ece51ef7ac4c2d3a8e628da6c",
+  "training_asset": "ph_sweet_potato",
+  "training_data_sha256": "e58ac5a8c1a6859420093f7c3e21b08efe29cb15315a0f40336e403c73a7ff3d",
+  "files": [
+    {
+      "path": "seed-101-step-4096.blzn",
+      "sha256": "c4c0434f0701f88628ec61406a9724c5c3bc664f2fcedb9cca2d6e8454f123d6",
+      "seed": 101,
+      "step": 4096
+    },
+    {
+      "path": "seed-101-step-8192.blzn",
+      "sha256": "044257e58b612172aaac15b6e0f1f45c1cbba53a3f6b7bf88464f1db237461bb",
+      "seed": 101,
+      "step": 8192
+    },
+    {
+      "path": "seed-202-step-4096.blzn",
+      "sha256": "667a93131ff608ee298b7029e0bc14aa3f1c93a457cd8b29b2431dc4e896bd9e",
+      "seed": 202,
+      "step": 4096
+    },
+    {
+      "path": "seed-202-step-8192.blzn",
+      "sha256": "f913fe7030573d841dca62c78eebea024d3af4958aa86a43890ce2e05e1d1307",
+      "seed": 202,
+      "step": 8192
+    },
+    {
+      "path": "seed-303-step-4096.blzn",
+      "sha256": "4463416ed5ad6fbdd8069201365b96afad06a22d07d0a97630af11d49c8552bc",
+      "seed": 303,
+      "step": 4096
+    },
+    {
+      "path": "seed-303-step-8192.blzn",
+      "sha256": "2b7b8e66229d5709dabbdc90fecf74e34462b349734a74d3c6dc39fd10cfd084",
+      "seed": 303,
+      "step": 8192
+    }
+  ],
+  "endpoint_gate_passed": true,
+  "generalization_proven": false,
+  "training_mean_gpu_percent": 38.2,
+  "training_gpu_samples": 30
+}

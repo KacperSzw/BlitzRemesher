@@ -1,0 +1,112 @@
+{
+  "backend": "cuda+reference-confirmation",
+  "binary_sha256": "d6d3ed66ff85a5de7a954ac3174c17dc474204bedc0e216647c7354e137dd793",
+  "camera_sha256": "404ae5d13c2f5fd9765c9a7f2b0b5ecad96d8609dde6c82d2faee249535891c6",
+  "candidate_bytes": 32,
+  "candidate_refinement": "original sampling sequence bounded by 64000000 samples; uncertain bounds reject; unchanged CPU confirmation",
+  "compiler": "14.4.0",
+  "config": {
+    "attribute_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "audit_supersample": 4,
+    "audit_views": {
+      "orthographic": 6,
+      "perspective": 2,
+      "seed": 2971082790
+    },
+    "base_pixels": 32.0,
+    "beam_width": 2,
+    "candidate_budget": 4,
+    "coupled_wedges": true,
+    "force_scalar": false,
+    "last_pixels": 16.0,
+    "levels": 4,
+    "max_changed_area": 0.5,
+    "max_lod0_delta_px": null,
+    "max_supersample": 8,
+    "meters_per_unit": 1.0,
+    "normal_importance": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "objective": "quadric",
+    "pixels_per_meter": 512.0,
+    "profile": "attributes",
+    "prune": false,
+    "research": {
+      "adaptive_targets": false,
+      "boundary_placement": false,
+      "boundary_weight": 0.0,
+      "chain": "direct",
+      "component_candidates": false,
+      "coverage_cache_mib": 256,
+      "independent_seams": false,
+      "output": null,
+      "topology_fallback": false,
+      "trace": false
+    },
+    "search_supersample": 2,
+    "search_views": {
+      "orthographic": 3,
+      "perspective": 1,
+      "seed": 2971082788
+    },
+    "transition": [
+      [
+        0.0,
+        2.0
+      ],
+      [
+        1.0,
+        3.0
+      ]
+    ],
+    "triangle_overhead_bps": 0,
+    "weights": {
+      "color": 4.0,
+      "material": 4.0,
+      "normal": 5.729577951308232
+    }
+  },
+  "config_sha256": "e02129d734ac265f49d8b593fd6878b795a5a5e99e60230af522ff9bce30b6a9",
+  "cpu": "model name\t: Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+  "cuda_device": 0,
+  "input_format": "linear-rgba8-v2",
+  "limit": 18446744073709551615,
+  "manifest_sha256": "5a3efac5c027bd1aefcf082ffd945e422d44d87a588347d3dc6406aa55168cfd",
+  "method": "neural-control-constant",
+  "model_sha256": "044257e58b612172aaac15b6e0f1f45c1cbba53a3f6b7bf88464f1db237461bb",
+  "neural_options": {
+    "action_batch": 32,
+    "action_trial_budget": 8,
+    "device": 0,
+    "memory_mib": 6144,
+    "overdraw_tiebreak": true,
+    "ranking": "constant",
+    "ranking_seed": 2971082790
+  },
+  "output_hash_scope": "output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data",
+  "packed_coverage": true,
+  "peak_rss_scope": "process high-water; KiB",
+  "protocol_sha256": "71e7a71e508f400140f99fff10ba248c0d89cabe95e32329cf8a968f204dd42b",
+  "quadric_bytes": 80,
+  "run_sha256": "74b44f93c45e9d178c323bd8195147edb3137f519fae33ed0ee0253b86b347ec",
+  "split": "development",
+  "stage_timing": true,
+  "threads": 1,
+  "version": 2
+}

@@ -1,5 +1,42 @@
 # Implementation and first experiment — updated 2026-09-29
 
+## Current action-model evidence
+
+The v2 endpoint experiment completed on an RTX PRO 6000 with all three seeds
+passing the one-mesh gate at 4,096 and 8,192 updates. The six portable models,
+raw proof histories, queried labels and telemetry are committed under
+[evidence/action-v2](evidence/action-v2/README.md). Final preferred memberships
+were 100%, 98.4375% and 100%; every control also met the same 128-triangle quota.
+This establishes learning and a working executor, not superior full-pilot LODs.
+
+The later batch executor passed topology, rollback, source-ownership and target
+floor tests. A matched two-mesh smoke produced 6.9404% mean triangle reduction
+versus 1.4261% for constant ranking with the same eight-trial/32-action limits.
+The five-minute full pilot completed no assets and retains null SCORE. GPU
+auditing accounted for 299.685 seconds; inference used 0.045 seconds. A bounded
+exact-rejection cache addresses repeated source queries, but its short local
+probe ended during the first proposal and established no speedup.
+
+Multi-level label preparation now freezes an audited preceding LOD and varies
+pixels, limits and target ratio. A regression fix distinguishes known failed
+views from cancellation/resource failures, preserving negative training labels.
+The tight-limit smoke retained 16 negatives without a false preparation error.
+Numerical checkpoint probes now cover the full dataset collection.
+
+Verification: eight neural CTests passed, including CUDA/LibTorch inference and
+loss-gradient checks without optimizer steps. ASan/UBSan neural and action
+contracts passed. All 20 cloud/action Node tests passed. No local training was
+run. Full cloud setup repeats all CTests before training.
+
+Continuation follows [V2.md](V2.md): two allowed training assets, three seeds,
+two checkpoints and nine matched full-pilot methods, under fixed visual limits.
+It reserves at most 90 rental minutes and 50 experiment minutes. The preflight
+budget upper estimate was $8.3185 cumulative including earlier action rentals
+and a $1 reserve, below the authorized $10 cap. Generalization, full GPU
+utilization, BF16 and segment placement remain unproven or gated.
+
+## Archived v1 execution history
+
 Implemented on `research/neural-lod-gpu` in the sibling worktree
 `/home/kacper/Projects/BlitzRemesher-neural`. The primary checkout remains separate.
 Training is stopped at the user's request. The original sustained run failed

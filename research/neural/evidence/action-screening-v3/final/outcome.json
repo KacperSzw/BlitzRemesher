@@ -1,0 +1,102 @@
+{
+  "revision": "46ba98369e0d3c59c249c6d51d5ced43f6a15ec2",
+  "finished_utc": "2026-09-29T16:11:51.342Z",
+  "complete": true,
+  "compute_terminated": true,
+  "volume_deleted": true,
+  "provider_cleanup": {
+    "at": 1790699287599,
+    "pods": 0,
+    "volumes": 0,
+    "verified": true
+  },
+  "archive_sha256": "31ec87a785d4777c93f7e175d1a545df0d30df120ff67c233dbf2d05bb6e3cba",
+  "rental_minutes": 45.93825,
+  "quoted_compute_usd": 3.514276125,
+  "conservative_new_grant_spend_usd": 5.746591797222223,
+  "authorization_additional_usd": 8,
+  "remote_optimizer_steps": 49152,
+  "local_optimizer_steps": 0,
+  "quality_proven": false,
+  "score": null,
+  "seeds": [
+    {
+      "seed": 101,
+      "step": 16384,
+      "loss": 0.009885984472930431,
+      "seconds": 40.606344593,
+      "preferred_membership": 0.9915254237288136
+    },
+    {
+      "seed": 202,
+      "step": 16384,
+      "loss": 0.012313097715377808,
+      "seconds": 50.350135754,
+      "preferred_membership": 0.9957627118644068
+    },
+    {
+      "seed": 303,
+      "step": 16384,
+      "loss": 0.00863610114902258,
+      "seconds": 52.059033531,
+      "preferred_membership": 1
+    }
+  ],
+  "comparisons": [
+    {
+      "stage": 1,
+      "step": 8192,
+      "constant_seconds": 105.53,
+      "learned_seconds": 429.066,
+      "runtime_ratio": 4.065820145930067,
+      "rows": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "constant_mean_reduction_percent": 0.16357688113413094,
+          "learned_mean_reduction_percent": 0.4362050163576936
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "constant_mean_reduction_percent": 0.19024558976132866,
+          "learned_mean_reduction_percent": 1.2798339674852999
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "step": 16384,
+      "constant_seconds": 104.756,
+      "learned_seconds": 584.066,
+      "runtime_ratio": 5.575489709419986,
+      "rows": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "constant_mean_reduction_percent": 0.16357688113413094,
+          "learned_mean_reduction_percent": 0.4907306434024039
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "constant_mean_reduction_percent": 0.19024558976132866,
+          "learned_mean_reduction_percent": 2.369422345209271
+        }
+      ]
+    }
+  ],
+  "phases": {
+    "audit": {
+      "samples": 1673,
+      "mean_gpu_busy_percent": 95.3789599521817,
+      "peak_memory_mib": 2175
+    },
+    "preparation": {
+      "samples": 57,
+      "mean_gpu_busy_percent": 53.175438596491226,
+      "peak_memory_mib": 769
+    },
+    "training": {
+      "samples": 281,
+      "mean_gpu_busy_percent": 10.170818505338078,
+      "peak_memory_mib": 917
+    }
+  }
+}

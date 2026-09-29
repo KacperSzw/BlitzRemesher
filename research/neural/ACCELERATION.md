@@ -200,3 +200,20 @@ and only 10.77% in the small trainer. This leaves trainer launch/synchronization
 overhead as a profiling target; it does not justify claiming full saturation or
 enlarging the network without quality evidence. The hard rental cutoff remains
 18:25:55 Warsaw time, with automatic collection and cleanup.
+
+## Completed screening and cleanup
+
+Both checkpoints and matched screenings finished successfully. All three seeds
+reached 16,384 updates; seed 101's mean LOD-chain triangle reduction improved
+from 0.436% to 0.491% on shelves and from 1.280% to 2.369% on moon rock 02.
+Constant ranking repeated at 0.164% and 0.190% respectively, with identical
+control outputs at both stages. The second learned comparison took 584.066
+seconds against the control's 104.756 seconds. This single-seed, two-mesh
+screening is an early signal; the full pilot gate remains unproven and unscored.
+
+The archive and all saved model/checkpoint hashes were verified. The rental
+ended early at 18:11:51 Warsaw time on 2026-09-29; provider verification confirms
+zero Pods and volumes. Conservative spending across this additional grant is
+$5.746592 of $8. Final training GPU busy time was 10.17%, versus 95.38% for
+audits. Preserve these limitations when reporting the positive reduction signal.
+See [complete raw evidence](evidence/action-screening-v3/README.md).

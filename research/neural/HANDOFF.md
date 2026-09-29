@@ -5,6 +5,29 @@ Branch: `research/neural-lod-gpu`. The primary worktree is separate.
 
 ## Current milestone
 
+**The staged run is complete and cloud resources are deleted.** All three seeds
+reached 16,384 updates (49,152 total); both full-settings screening comparisons
+completed with clean health. The final archive and checkpoint hashes were
+verified locally. Provider verification found zero Pods and network volumes.
+See [final evidence](evidence/action-screening-v3/README.md).
+
+Seed 101 beat constant ranking on both diagnostic meshes at both checkpoints.
+Mean triangle reduction across generated LODs at the second checkpoint was
+0.491% versus 0.164% for shelves, and 2.369% versus 0.190% for moon rock 02.
+The learned comparison took 584.066 seconds versus 104.756 seconds (5.58x).
+These two meshes and one evaluated seed establish an early signal, not the
+full pilot superiority gate or release quality; there is no aggregate SCORE.
+
+The rental ended at **18:11:51 Warsaw / 16:11:51 UTC on 2026-09-29**. Conservative
+spending across the new $8 grant is **$5.747**, including prior attempts and
+storage/rate allowances. Recalculate the ledger before any further paid work.
+Training averaged only 10.17% GPU busy time, while audits averaged 95.38%.
+Next priorities are profiling trainer launch/synchronization and audit cost,
+then a budgeted full comparison if the measured improvements justify it.
+No new rental or training was started while collecting this final result.
+
+### Earlier milestone while the comparison was running
+
 **Healthy remote training reached.** On H200, all three seeds completed 8,192
 updates on the expanded 236-state curriculum (24,576 updates total). Loss fell
 from about 1.35 to 0.0153–0.0212. All numerical, export and optimizer restore

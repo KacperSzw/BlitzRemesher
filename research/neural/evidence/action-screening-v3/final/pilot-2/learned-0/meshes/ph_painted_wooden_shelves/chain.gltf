@@ -1,0 +1,187 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 548,
+      "max": [
+        0.25550732016563416,
+        1.1241090297698975,
+        0.36709490418434143
+      ],
+      "min": [
+        -0.25560837984085083,
+        -0.000963064085226506,
+        -1.1169147384748612e-08
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 548,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 548,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 1572,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5125,
+      "count": 1566,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5125,
+      "count": 1560,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "BlitzRemesher",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 6576,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6576,
+      "byteOffset": 6576
+    },
+    {
+      "buffer": 0,
+      "byteLength": 4384,
+      "byteOffset": 13152
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6288,
+      "byteOffset": 17536
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6264,
+      "byteOffset": 23824
+    },
+    {
+      "buffer": 0,
+      "byteLength": 6240,
+      "byteOffset": 30088
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 36328,
+      "uri": "chain.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "material_0"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "LOD0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD6",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "LOD0"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD1"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD2"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD3"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD4"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD5"
+    },
+    {
+      "mesh": 2,
+      "name": "LOD6"
+    },
+    {
+      "mesh": 2,
+      "name": "LOD7"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

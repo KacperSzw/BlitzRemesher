@@ -1,4 +1,45 @@
-# Expanded curriculum: healthy first checkpoints
+# Expanded curriculum: completed screening
+
+The H200 run **completed both checkpoints and comparisons** and was terminated
+at **18:11:51 Warsaw / 16:11:51 UTC on 2026-09-29**. The final archive was
+collected and its SHA-256 independently rechecked. The provider reports zero
+Pods and zero network volumes. See [final outcome](final/outcome.json),
+[raw reports and models](final/) and [file hashes](final/manifest.json).
+
+All three seeds reached **16,384 updates**, for 49,152 total remote optimizer
+updates. Their final losses are 0.009886, 0.012313 and 0.008636. Every checkpoint
+passed finite-value, native/FP64 export and exact model/AdamW restore checks.
+No local optimizer updates ran.
+
+The fixed screened seed (101) improved mean triangle reduction across generated
+LODs on both assets, under identical visual settings and action budgets:
+
+| Asset | Constant control | Learned at 8,192 | Learned at 16,384 |
+| --- | ---: | ---: | ---: |
+| Painted shelves | 0.164% | 0.436% | 0.491% |
+| Moon rock 02 | 0.190% | 1.280% | 2.369% |
+
+All methods completed with clean resource/numerical/confirmation health. The
+constant control's meshes and complete per-LOD measurements repeat exactly
+between stages. This is an early positive signal for **one seed on two meshes**;
+the full three-seed, nine-method pilot and its superiority gate remain unproven.
+Neither screening has an aggregate SCORE.
+
+The learned comparison also cost more time: **584.066 seconds versus 104.756
+seconds** for constant at the second checkpoint (5.58x). Final GPU telemetry
+averaged **95.38% busy time in audits and 10.17% in training**. Trainer saturation
+has not been achieved. Further work should profile trainer launch/synchronization
+and audit cost before another paid comparison; broader quality evidence is still
+needed before production use.
+
+The rental lasted 45.938 minutes, about $3.514 quoted compute before storage.
+The conservative ledger, including both preceding attempts in this grant, is
+**$5.747 of the additional $8**. This estimate uses rate caps and storage
+allowances; it is not the provider's final invoice. No cloud resources remain.
+
+The original first-checkpoint snapshot below is retained unchanged for provenance.
+
+## Earlier first-checkpoint snapshot
 
 Snapshot of the active H200 run at revision `46ba983`, 2026-09-29. This is
 training-health evidence, not a completed LOD comparison or a SCORE.
@@ -36,7 +77,7 @@ Full-pilot superiority and generalization remain unproven. The controller may
 attempt a second checkpoint only after a complete comparison and sufficient
 remaining measured time.
 
-## Recovery and next step
+### Recovery information at snapshot time
 
 Local rental directory: `runs/neural/runpod-action-screening-h200-01`.
 Hard cutoff: **2026-09-29 16:25:55 UTC / 18:25:55 Europe/Warsaw**.

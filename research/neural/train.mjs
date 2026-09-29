@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {auditProgress} from './audit.mjs';
-import {initialization,trainerArguments,checkpointHealthy,trainingWindow} from './training.mjs';
+import {initialization,trainerArguments,checkpointHealthy,trainingWindow,shouldTrainStage} from './training.mjs';
 
 if(process.argv.length<5)throw new Error('train.mjs RUN DATASET {--from-scratch|INITIAL_MODEL} [DEADLINE_MS]');
 const root=process.cwd(), run=path.resolve(process.argv[2]);
@@ -119,14 +119,13 @@ try{
     stamp('healthy',{health:'health.json',checkpoint:path.join('training',health.checkpoint)});
   }
   const candidates=[];let best=0,stalled=0;
-  for(let target=config.stage_steps;target<=config.max_steps;target+=config.stage_steps){
+  for(let target=config.stage_steps;shouldTrainStage(config,target,stalled);target+=config.stage_steps){
     const health=await train(target), model=path.join(training,`step-${target}.blzn`);
     // Each fixed-budget stage is audited before committing more training time.
     const pilot=hash(model)===readinessHash?readiness:await audit('research/pilot.json','development',model,`pilot-${target}`);
     candidates.push({step:target,model,pilot});
     if(pilot.score>best){best=pilot.score;stalled=0;}else ++stalled;
     write(path.join(run,'progress.json'),{candidates,best_pilot_score:best,stalled,latest_training:health});
-    if(stalled>=config.max_stalled_pilots)break;
   }
   candidates.sort((a,b)=>b.pilot.score-a.pilot.score);
   const viable=candidates.filter(c=>c.pilot.fallbacks<c.pilot.expected).slice(0,2);
@@ -137,8 +136,9 @@ try{
   if(viable.length){fs.copyFileSync(viable[0].model,path.join(run,'selected.blzn'));report.selected_model='selected.blzn';report.model_sha256=hash(path.join(run,'selected.blzn'));}
   write(path.join(run,'report.json'),report);stamp(viable.length?'complete':'no-quality-signal',{report:'report.json'});
 }catch(error){
-  const report={complete:false,release_approved:false,error:String(error),audit:error.audit??null,timings:status.timings};
+  const windowEnded=config.train_until_deadline&&remaining()<60000&&/^Experiment (deadline|interrupted)/.test(error.message);
+  const report={complete:false,training_window_exhausted:!!windowEnded,release_approved:false,error:String(error),audit:error.audit??null,timings:status.timings};
   write(path.join(run,'report.json'),report);
-  stamp(stopping||remaining()<60000?'incomplete':error.audit?.blocked_assets?.length?'audit-resource-limited':'failed',{error:String(error),release_approved:false,report:'report.json'});process.exitCode=1;
+  stamp(windowEnded?'window-complete':stopping||remaining()<60000?'incomplete':error.audit?.blocked_assets?.length?'audit-resource-limited':'failed',{error:String(error),release_approved:false,report:'report.json'});process.exitCode=windowEnded?0:1;
 }
 finally{monitor.kill('SIGTERM');telemetry.end();}

@@ -38,19 +38,19 @@ export class Api {
     }while(cursor);
     return pods;
   }
-  async quote(){
+  async quote(dataCenter){
     const [catalog,centers]=await Promise.all([
       this.request('GET','/catalog/gpus?include=AVAILABILITY&product=POD&count=1&cloud=SECURE&minCudaVersion='+deployment.minimum_cuda),
       this.request('GET','/catalog/datacenters?networkVolumeTypes=STANDARD')]);
-    return chooseQuote(catalog.gpus,centers.dataCenters);
+    return chooseQuote(catalog.gpus,centers.dataCenters,dataCenter);
   }
 }
-export function chooseQuote(gpus,centers){
+export function chooseQuote(gpus,centers,dataCenter){
   const gpu=gpus.find(g=>g.id===GPU);
   if(!gpu?.secure||!(gpu.memory>=deployment.catalog_vram_gb)||!(gpu.price?.secure>0&&gpu.price.secure<=deployment.gpu_hourly_usd_cap))
     throw new Error(`Secure ${GPU} unavailable within $${deployment.gpu_hourly_usd_cap}/GPU-hour cap`);
   const levels={HIGH:3,MEDIUM:2,LOW:1};
-  const available=(gpu.dataCenters??[]).filter(d=>levels[d.availability]&&centers.some(c=>c.id===d.id&&c.networkVolumeTypes.includes('STANDARD')));
+  const available=(gpu.dataCenters??[]).filter(d=>(!dataCenter||d.id===dataCenter)&&levels[d.availability]&&centers.some(c=>c.id===d.id&&c.networkVolumeTypes.includes('STANDARD')));
   available.sort((a,b)=>levels[b.availability]-levels[a.availability]||a.id.localeCompare(b.id));
   if(!available.length)throw new Error(`No Secure ${GPU} location with standard network storage is available`);
   return {gpu:gpu.id,gpu_hourly_usd:gpu.price.secure,data_center:available[0].id,quoted_at:new Date().toISOString()};

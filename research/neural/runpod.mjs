@@ -63,7 +63,7 @@ async function launch(){
   const prepared=read(dir+'/prepared.json');
   if(JSON.stringify(prepared.deployment)!==JSON.stringify(deployment))throw new Error('Prepared GPU profile differs; prepare a new bundle');
   if(await sha(dir+'/input.tar')!==prepared.archive_sha256)throw new Error('Prepared archive changed');
-  const api=new Api(apiKey(keyFile)),quote=await api.quote();
+  const api=new Api(apiKey(keyFile)),quote=await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER);
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();

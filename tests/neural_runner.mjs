@@ -1,7 +1,15 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {auditProgress} from '../research/neural/audit.mjs';
-import {initialization,trainerArguments,checkpointHealthy,trainingWindow,selectCalibration,trainingDeadline} from '../research/neural/training.mjs';
+import {initialization,trainerArguments,checkpointHealthy,trainingWindow,selectCalibration,trainingDeadline,shouldTrainStage} from '../research/neural/training.mjs';
+test('the requested full window continues past stalled audits and the step cap',()=>{
+  const config={max_steps:60,max_stalled_pilots:3};
+  assert.equal(shouldTrainStage(config,20,1),true);
+  assert.equal(shouldTrainStage(config,80,1),false);
+  assert.equal(shouldTrainStage(config,40,3),false);
+  for(const [step,stalled] of [[20,0],[80,3],[120,7]])
+    assert.equal(shouldTrainStage({...config,train_until_deadline:true},step,stalled),true);
+});
 test('training gets its requested window after setup within the reserved absolute cutoff',()=>{
   const started=1234567;
   for(const minutes of [15,120]){

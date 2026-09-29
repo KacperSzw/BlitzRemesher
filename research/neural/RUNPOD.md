@@ -28,8 +28,11 @@ the curriculum, decoder, quality limits, or release status.
    100 updates, complete all eight readiness assets, then require decreasing
    moving-average loss and at least 60 seconds of training telemetry (mean GPU
    utilization >=90%, p10 >=85%). Each 25,000-update stage gets the frozen pilot.
-   Stop at 100,000 updates or two stages without score improvement. Select at
-   most two viable checkpoints using validation; never tune against held-out.
+   The requested full window continues past stalled pilot scores and the former
+   100,000-update cap; numerical/health failures still stop it. Checkpoints and
+   complete pilot rows are retained. A deadline-interrupted stage stays unscored;
+   final checkpoint selection/validation can follow after collection. Never tune
+   against held-out assets.
 5. **Collect and terminate.** Allow two hours after setup/calibration, download the immutable
    results archive and verify SHA-256. Delete the Pod, confirm termination, then
    delete the volume only after verified collection. Failure to collect retains
@@ -42,7 +45,7 @@ The user extended the budget to a two-hour training window after setup on
 The initial maximum rental is 160 minutes. Once setup finishes, the controller
 shortens the final cutoff to the actual training deadline plus collection time.
 The training window includes bootstrap, readiness and periodic quality audits;
-existing failure and stalled-quality gates can stop early. Both the local controller and an
+health failures can stop early. Both the local controller and an
 independent user systemd watchdog request termination. Durable create intents,
 unique resource names and reconciliation prevent blind duplicate provisioning
 after a timeout. Unknown create outcomes stay unresolved until reconciled.
@@ -92,6 +95,10 @@ The account needs sufficient credit and permission to read catalog resources and
 create/read/delete Pods and network volumes. A dedicated SSH identity is created
 locally; only its public key reaches the Pod. No manual template deployment or
 SSH setup is needed after onboarding.
+
+Set `BLITZ_RUNPOD_DATA_CENTER` for a specific catalog location when recovering
+from a provider startup failure. It must still offer the approved GPU, price
+and STANDARD storage; the launcher does not substitute another location.
 
 `rental.json` records IDs, quote, absolute deadlines and termination confirmation;
 `watchdog.json` records independent cleanup attempts; `collection.json` confirms

@@ -346,3 +346,11 @@ deadline accordingly. The maximum new allocation is 160 minutes; at the observed
 $2.09/hour that is $5.57 before storage/tax, plus the earlier failed allocations.
 All **20 Node contracts** pass, including the delayed training start and shortened
 absolute limit. Numerical health and final LOD quality remain separate gates.
+
+The requested full training window continues through unchanged pilot scores and
+the previous step cap, while retaining numerical-health failures and the hard
+deadline. Deadline-interrupted stages stay unscored; final validation/selection
+can follow collection. The Netherlands allocation produced no runtime/SSH
+readiness for over 12 minutes, before any source upload. It was terminated and
+its known-empty volume deleted. A catalog-validated location override permits
+returning to the already exercised Iceland location. **21 Node tests** pass.

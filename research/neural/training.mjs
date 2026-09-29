@@ -4,6 +4,9 @@ export function trainingDeadline(started,latest,minutes){
     throw new Error('Invalid training window');
   return Math.min(latest,started+minutes*60000);
 }
+export function shouldTrainStage(config,step,stalled){
+  return config.train_until_deadline===true||(step<=config.max_steps&&stalled<config.max_stalled_pilots);
+}
 export function initialization(argument) {
   if(!argument)throw new Error('Specify --from-scratch or an initial model');
   return argument==='--from-scratch'?null:argument;

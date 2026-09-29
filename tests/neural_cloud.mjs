@@ -66,6 +66,8 @@ test('reject wrong GPUs, unknown prices, insufficient VRAM and unavailable stora
     {...gpu,price:{secure:2.51}},{...gpu,price:{secure:NaN}},{...gpu,dataCenters:[{id:'EU-1',availability:'NONE'}]}])
     assert.throws(()=>chooseQuote([invalid],centers));
   assert.throws(()=>chooseQuote([gpu],[]));
+  assert.throws(()=>chooseQuote([gpu],centers,'unavailable-location'));
+  assert.equal(chooseQuote([gpu],centers,'EU-1').data_center,'EU-1');
   for(const rate of [1.9,2.09,2.5])assert.equal(chooseQuote([{...gpu,price:{secure:rate}}],centers).gpu_hourly_usd,rate);
 });
 test('Pod request is pinned and forwards only the public key',()=>{

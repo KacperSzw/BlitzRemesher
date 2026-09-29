@@ -9,7 +9,7 @@ if(!Number.isFinite(setupDeadline)||!Number.isFinite(latestTrainingDeadline)||!N
   throw new Error('Missing absolute deadlines or training duration');
 const results='/workspace/results',dataset='/workspace/dataset',run=results+'/experiment';
 const base={core:4096,bootstrap_steps:100,health_steps:4096,checkpoint_every:1024,
-  stage_steps:25000,max_steps:100000,max_stalled_pilots:2,hours:2,gpu_memory_mib:12288};
+  stage_steps:25000,max_steps:100000,max_stalled_pilots:2,train_until_deadline:true,hours:2,gpu_memory_mib:12288};
 let active,cancelled=false;
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{cancelled=true;if(active)process.kill(-active.pid,'SIGTERM');});
 

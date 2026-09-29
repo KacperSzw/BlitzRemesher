@@ -14,7 +14,7 @@ const sleep=()=>new Promise(resolve=>setTimeout(resolve,30000));
 function pending(s){fs.writeFileSync(report,`# GPU refactor run\n\nStatus: ${s.phase??'starting'}.\n\nThe controller owns validation, the two-hour learning cycle, checksum-verified collection and GPU termination. This report is replaced after collection. The live architecture and measurements are in [ARCHITECTURE.md](live/ARCHITECTURE.md).\n\nHard rental deadline: ${new Date(s.deadline_ms).toISOString()}. Additional authorization: $${s.budget.authorization.additional_usd}.\n`);}
 try{
   for(;;){const s=read(dir+'/rental.json');
-    if(fs.existsSync(dir+'/collection.json')&&s.compute_terminated){
+    if(fs.existsSync(dir+'/collection.json')&&s.compute_terminated&&(s.volume_deleted||s.phase==='stopped_uncollected')){
       const collection=read(dir+'/collection.json'),archive=dir+'/results.tar.gz';
       if(!collection.verified||await hash(archive)!==collection.sha256)throw new Error('Collected archive checksum mismatch');
       const entries=execFileSync('tar',['-tzf',archive],{encoding:'utf8',maxBuffer:16*1024*1024}).trim().split('\n');
@@ -40,7 +40,7 @@ try{
       break;
     }
     pending(s);
-    if(s.compute_terminated){fs.appendFileSync(report,'\nCompute stopped before verified collection. The controller preserves uncollected recovery storage.\n');break;}
+    if(s.compute_terminated&&!fs.existsSync(dir+'/collection.json')){fs.appendFileSync(report,'\nCompute stopped before verified collection. The controller preserves uncollected recovery storage.\n');break;}
     if(mode!=='--watch')break;
     await sleep();
   }

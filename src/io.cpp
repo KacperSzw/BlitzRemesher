@@ -216,7 +216,7 @@ Mesh stl(const fs::path& path) {
 json measurement(const Measurement& m) {
     return {{"error_px",m.error},{"coverage_px",m.coverage},{"coverage_upper_px",m.coverage_upper},{"changed_area",m.changed_area},
       {"normal_degrees",m.normal_degrees},{"worst_view",m.worst_view},{"changed_area_worst_view",m.changed_area_worst_view},{"views_evaluated",m.views_evaluated},
-      {"supersample",m.supersample},{"complete",m.complete},{"passed",m.passed},{"resource_limited",m.resource_limited},{"nonfinite_error",!std::isfinite(m.error)}};
+      {"supersample",m.supersample},{"complete",m.complete},{"passed",m.passed},{"resource_limited",m.resource_limited},{"cancelled",m.cancelled},{"nonfinite_error",!std::isfinite(m.error)}};
 }
 }
 Mesh load_mesh(const fs::path& p) {
@@ -358,7 +358,7 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+      {"research",{{"conservative_screen",s.research.conservative_screen},{"appearance_stage",unsigned(s.research.appearance_stage)},{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
@@ -396,6 +396,10 @@ Settings settings_json(const json& original,bool legacy_research) {
     const auto& passes=experimental.at("graph_passes");
     if(!passes.is_number_integer()||passes<0||passes>3)fail("graph passes must be an integer in 0..3");
     s.research.graph_passes=passes.get<uint8_t>();
+    const auto& stage=experimental.at("appearance_stage");
+    if(!stage.is_number_integer()||stage<0||stage>3)fail("appearance stage must be an integer in 0..3");
+    s.research.appearance_stage=AppearanceStage(stage.get<uint8_t>());
+    s.research.conservative_screen=experimental.at("conservative_screen").get<bool>();
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));

@@ -19,12 +19,12 @@ static json measurement(Measurement m,double pixel_limit,double area_limit) {
         {"nonfinite_error",!std::isfinite(m.error)},{"coverage_upper_px",std::isfinite(m.coverage_upper)?json(m.coverage_upper):json(nullptr)},
         {"distance_passed",m.error<=pixel_limit},{"area_passed",m.changed_area<=area_limit},
         {"views",m.views_evaluated},{"worst_view",m.worst_view},{"changed_area_worst_view",m.changed_area_worst_view},
-        {"supersample",m.supersample},{"resource_limited",m.resource_limited}};
+        {"supersample",m.supersample},{"resource_limited",m.resource_limited},{"cancelled",m.cancelled}};
 }
 // Evaluator complete=false also means it stopped at a failing witness. That
 // resolves this comparison, unlike cancellation or a resource interruption.
 static bool decided(const json& m,double pixel_limit,double area_limit) {
-    if(m.at("resource_limited")==true)return false;
+    if(m.at("resource_limited")==true||m.value("cancelled",false))return false;
     if(m.at("passed")==true)return m.at("complete")==true;
     return m.at("views").get<uint32_t>()>0&&(m.at("nonfinite_error")==true||
         m.at("error_px").get<double>()>pixel_limit||m.at("changed_area").get<double>()>area_limit);

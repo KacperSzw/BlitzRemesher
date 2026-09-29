@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root=resolve(import.meta.dirname,'..');
+const [board='examples/reduction-board',experiment='research/chain-search']=process.argv.slice(2);
 const {chromium}=await import(process.env.BLITZ_PLAYWRIGHT_MODULE??'playwright');
 const browser=await chromium.launch({executablePath:process.env.BLITZ_CHROMIUM,headless:true,
  args:['--enable-unsafe-swiftshader','--use-angle=swiftshader','--renderer-process-limit=2','--num-raster-threads=2']});
@@ -13,12 +14,12 @@ try {
  const context=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
  await context.route(/^https?:/,route=>{requests.push(route.request().url());return route.abort();});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- await page.goto(pathToFileURL(resolve(root,'examples/reduction-board/index.html')).href);
+ await page.goto(pathToFileURL(resolve(root,board,'index.html')).href);
  const ready=()=>page.waitForFunction(()=>document.documentElement.dataset.ready==='true');await ready();
- const manifest=JSON.parse(await fs.readFile(resolve(root,'examples/reduction-board/manifest.json'),'utf8'));
+ const manifest=JSON.parse(await fs.readFile(resolve(root,board,'manifest.json'),'utf8'));
  const observations=await page.evaluate(async()=>{
   const {data,state,redraw,selectPreset,payload}=window.blitzReductionBoard,checks=[];
-  for(const preset of ['coverage','appearance','strict']) {
+  for(const preset of [...new Set(data.runs.map(r=>r.preset))]) {
    state.preset=preset;document.getElementById('preset').value=preset;await selectPreset();
    for(const [index,r] of data.runs.entries())if(r.preset===preset) {
     state.run=index;document.getElementById('run').value=index;await redraw();
@@ -41,7 +42,7 @@ try {
     checks.push({run:r.id,rows:rows.length});
    }
   }
-  state.preset='coverage';document.getElementById('preset').value='coverage';await selectPreset();
+  state.preset=data.initial_preset??'coverage';document.getElementById('preset').value=state.preset;await selectPreset();
   return checks;
  });
  assert.equal(observations.length,manifest.runs.length);
@@ -63,11 +64,11 @@ try {
  await page.locator('#scale').click();await ready();await page.locator('#runtime').click();await ready();
  assert.ok(await page.evaluate(()=>[...document.querySelectorAll('.slot.duplicate')].every(e=>e.hidden)));
  await page.locator('#runtime').click();await ready();
- await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:resolve(root,'examples/reduction-board/preview.png')});
+ await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:resolve(root,board,'preview.png')});
  await page.setViewportSize({width:390,height:844});await ready();
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile overflow');
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);
  const report={complete:true,offline:true,runs:observations,checks:['geometry counts and bounds','stored normal streams','stable row order','scheduled and runtime slots','matched rotation','four display modes','five camera modes','actual target pixel size','mobile layout'],page_errors:errors,network_requests:requests,browser:browser.version()};
- await fs.writeFile(resolve(root,'research/chain-search/board-check.json'),JSON.stringify(report,null,2)+'\n');
+ await fs.writeFile(resolve(root,experiment,'board-check.json'),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify(report));
 }finally{await browser.close();}

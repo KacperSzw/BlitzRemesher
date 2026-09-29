@@ -7,6 +7,7 @@ enum class ChainMode:uint8_t { Direct,Progressive,Hybrid };
 enum class Objective:uint8_t { Quadric,Regularized,Visual,TopologyRelaxed };
 enum class Status:uint8_t { Complete,BudgetLimited,Cancelled };
 enum class ChainObjective:uint8_t { WholeChain,TailFirst };
+enum class AppearanceStage:uint8_t { Off,Ordering,Attributes,Position };
 struct Curve { std::vector<Vec2> points{{0,2},{1,3}}; double at(double) const; };
 // Forced whole-chain modes are research controls, not production policies.
 struct ResearchOptions {
@@ -15,6 +16,8 @@ struct ResearchOptions {
     double boundary_weight{};
     uint16_t coverage_cache_mib{256}; // 0 disables; 0..256 MiB, split equally between references and candidate.
     uint8_t graph_passes{}; // 0: incumbent search; 1..3: bounded whole-chain improvement passes.
+    AppearanceStage appearance_stage{};
+    bool conservative_screen{};
     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
 };
 struct Settings {
@@ -115,6 +118,7 @@ struct RuntimeLevelStorage {
 };
 std::vector<RuntimeLevelStorage> runtime_storage(const Result&);
 struct ReductionStats {
+    uint64_t appearance_bytes{}; // Coefficients, wedge lists and active attribute storage.
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};
     uint32_t initial_triangles{},final_triangles{},last_candidates{},last_locked_edges{},first_locked_edges{};
@@ -130,6 +134,9 @@ struct ReduceSettings {
     double boundary_weight{};
     bool boundary_placement{};
     bool independent_seams{}; // Collapse within each original chart; never weld attribute vertices.
+    AppearanceStage appearance_stage{};
+    Weights appearance_weights{};
+    double screen_size{1}; // Pixels per source bounding-sphere diameter.
 };
 Lod reduce(MeshView,const ReduceSettings&);
 using Proposer=std::function<Lod(MeshView,const ReduceSettings&)>;

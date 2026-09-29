@@ -30,6 +30,8 @@ std::string validate(const Settings& s) {
     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
     if(s.max_added_vertex_bytes_bps&&*s.max_added_vertex_bytes_bps==UINT32_MAX)return "added vertex budget must be below UINT32_MAX basis points";
     if(s.research.coverage_cache_mib>256)return "coverage cache must be 0..256 MiB";
+    if(unsigned(s.research.appearance_stage)>3)return "appearance stage must be 0..3";
+    if(s.research.appearance_stage!=AppearanceStage::Off&&s.profile==Profile::Coverage)return "appearance proposals require an appearance profile";
     if(s.research.graph_passes>3)return "graph passes must be 0..3";
     if(s.research.graph_passes&&(s.research.output||s.research.chain!=ChainMode::Hybrid))return "graph search requires automatic hybrid output";
     if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
@@ -102,6 +104,7 @@ bool same_lod(const Lod& a,const Lod& b) {
 }
 EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,bool audit,double limit) {
     EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.screen_size=step.pixels;e.limit=limit;
+    e.conservative_screen=!audit&&s.research.conservative_screen;
     e.max_changed_area=audit?s.max_changed_area:1.0;
     double t=s.levels==2?0:double(level-1)/(s.levels-2);
     e.weights.normal*=s.normal_importance.at(t);
@@ -131,7 +134,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
     root->storage={vertex_bytes(source),0,uint64_t(source.indices.size())*4};
     auto source_path=root;
     std::vector<std::shared_ptr<Node>> beam{root},finalists;
-    auto cancelled=[&]{return s.cancelled&&s.cancelled();};
+    auto cancelled=[&]{return result.status==Status::Cancelled||(s.cancelled&&s.cancelled());};
     std::optional<Lod> tail_seed;
     uint64_t tail_reserved=0;
     if(automatic&&result.added_vertex_budget_bytes&&*result.added_vertex_budget_bytes&&!proposer) {
@@ -151,6 +154,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
             if(target==previous_target)continue;
             previous_target=target;
             ReduceSettings rs;rs.output=OutputMode::Rebuild;rs.objective=s.objective;rs.target_triangles=target;
+            rs.appearance_stage=s.research.appearance_stage;rs.appearance_weights=search.weights;if(s.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=search.screen_size;
             rs.normal_weight=search.weights.normal;rs.cancelled=s.cancelled;rs.prune=s.prune;
             rs.coupled_wedges=s.coupled_wedges;rs.boundary_weight=s.research.boundary_weight;
             rs.boundary_placement=s.research.boundary_placement;rs.independent_seams=s.research.independent_seams;
@@ -161,7 +165,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
             if(s.performance) {
                 s.performance->solve_attempts+=stats.solve_attempts;s.performance->singular_solves+=stats.singular_solves;
                 s.performance->nonfinite_solves+=stats.nonfinite_solves;s.performance->position_fallbacks+=stats.position_fallbacks;
-                s.performance->nonfinite_costs+=stats.nonfinite_costs;
+                s.performance->nonfinite_costs+=stats.nonfinite_costs;s.performance->appearance_peak_bytes=std::max(s.performance->appearance_peak_bytes,stats.appearance_bytes);
             }
             ++result.candidate_evaluations;++result.tail_probe_evaluations;
             auto view=candidate.view(source);
@@ -175,10 +179,12 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                 coverage.begin_candidate();
                 ++result.audit_evaluations[0];auto measured=coverage.evaluate(source,view,search,0,false);
                 if(measured.resource_limited)result.status=Status::BudgetLimited;
+                if(measured.cancelled)result.status=Status::Cancelled;
                 if(!measured.passed)gate=1;
                 else {
                     ++result.audit_evaluations[2];measured=coverage.evaluate(source,view,audit,0,true);
                     if(measured.resource_limited)result.status=Status::BudgetLimited;
+                    if(measured.cancelled)result.status=Status::Cancelled;
                     if(!measured.passed)gate=3;
                 }
                 coverage.begin_candidate();
@@ -215,6 +221,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
         auto accepted=[&](const Measurement& m,size_t stage) {
             ++result.audit_evaluations[stage];
             if(m.resource_limited)result.status=Status::BudgetLimited;
+            if(m.cancelled){result.status=Status::Cancelled;return false;}
             if(m.passed)return true;
             ++result.rejected_gates[stage];
             if(stage>=2&&m.error<=(stage==2?audit_source.limit:audit_adj.limit)
@@ -338,6 +345,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                     if(stride&&remaining/stride>=3)target=std::min(target,size_t(remaining/stride/3));
                 }
                 ReduceSettings rs;rs.output=slot.output;rs.objective=s.objective;rs.target_triangles=target;
+                rs.appearance_stage=s.research.appearance_stage;rs.appearance_weights=search_source.weights;if(s.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=search_source.screen_size*bounds(input).diameter()/result.reference_bounds.diameter();
                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;
                 rs.prune=s.prune&&r%2==0;
                 if(result.added_vertex_budget_bytes) {
@@ -366,7 +374,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                 if(s.performance) {
                     s.performance->solve_attempts+=stats.solve_attempts;s.performance->singular_solves+=stats.singular_solves;
                     s.performance->nonfinite_solves+=stats.nonfinite_solves;s.performance->position_fallbacks+=stats.position_fallbacks;
-                    s.performance->nonfinite_costs+=stats.nonfinite_costs;
+                    s.performance->nonfinite_costs+=stats.nonfinite_costs;s.performance->appearance_peak_bytes=std::max(s.performance->appearance_peak_bytes,stats.appearance_bytes);
                 }
                 ++proposals;++result.candidate_evaluations;
                 trace.achieved=uint32_t(candidate.data.indices.size()/3);
@@ -408,7 +416,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                     if(s.performance) {
                         s.performance->solve_attempts+=relaxed_stats.solve_attempts;s.performance->singular_solves+=relaxed_stats.singular_solves;
                         s.performance->nonfinite_solves+=relaxed_stats.nonfinite_solves;s.performance->position_fallbacks+=relaxed_stats.position_fallbacks;
-                        s.performance->nonfinite_costs+=relaxed_stats.nonfinite_costs;
+                        s.performance->nonfinite_costs+=relaxed_stats.nonfinite_costs;s.performance->appearance_peak_bytes=std::max(s.performance->appearance_peak_bytes,relaxed_stats.appearance_bytes);
                     }
                     ++result.candidate_evaluations;++result.topology_fallback_proposals;
                     fallback_trace.achieved=uint32_t(alternative.data.indices.size()/3);

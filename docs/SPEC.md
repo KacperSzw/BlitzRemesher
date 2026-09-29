@@ -185,3 +185,28 @@ research executables and never dependencies of the shipped core.
 
 Complete when all interfaces/modes, corpus, reproducible reports and three
 recorded experiment rounds work end-to-end. Report limitations honestly.
+
+Experimental appearance proposals use C++/CLI research.appearance_stage 0..3:
+off, collapse ordering, wedge attribute fitting, and joint position fitting.
+All default to off. Affine original-face normal/RGB fields accumulate
+area-weighted double coefficients in contiguous per-wedge storage; only present,
+nonzero-weight channels allocate coefficients (11+4m doubles per wedge, m<=6).
+Geometry cost uses the scheduled pixels per input diameter and effective normal
+and color weights. This is a proposal surrogate, not a max-pixel error bound.
+Materials remain discrete. The coupled positional path retains original
+attribute wedges separately; it does not merge wedges across discontinuities.
+Ordinary vertex contractions accumulate their endpoint field coefficients.
+Ordering evaluates the existing emitted attributes. Fitting normalizes normals,
+rounds clamped linear RGB to RGBA8, retains alpha and tangent handedness, and
+orthogonalizes tangents to fitted normals. Position fitting eliminates the
+independent attribute variables before a 3x3 solve, retaining bounded geometric
+and boundary fallbacks. Reuse never writes source streams. Existing topology,
+orientation, UV and full source/transition acceptance gates continue to apply.
+
+research.conservative_screen defaults false. When enabled, only a coverage lower
+bound above the limit rejects a candidate at search cameras; clipped/uncertain
+views defer to the full configured audit. The screen does not certify appearance
+or area. Final audits and their sampling/refinement policy remain unchanged.
+An optional borrowed EvaluationWitness captures the first failing appearance
+sample and the best visible correspondence inside the spatial search radius;
+its squared metric components are diagnostics, not continuous error bounds.

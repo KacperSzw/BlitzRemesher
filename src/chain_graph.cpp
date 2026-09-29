@@ -37,7 +37,8 @@ uint64_t triangle_total(const Result& r) {
 }
 EvalSettings evaluation(const Settings& s,ScheduleEntry step,unsigned level,bool audit,bool source) {
     EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.screen_size=step.pixels;
-    e.limit=source?step.source:step.transition;e.max_changed_area=audit?s.max_changed_area:1;
+    e.limit=source?step.source:step.transition;e.conservative_screen=!audit&&s.research.conservative_screen;
+    e.max_changed_area=audit?s.max_changed_area:1;
     const double t=s.levels==2?0:double(level-1)/(s.levels-2);
     e.weights.normal*=s.normal_importance.at(t);e.weights.color*=s.attribute_importance.at(t);e.weights.material*=s.attribute_importance.at(t);
     e.views=audit?s.audit_views:s.search_views;e.supersample=audit?s.audit_supersample:s.search_supersample;
@@ -85,6 +86,7 @@ class Graph {
                  uint8_t id,unsigned stage,Measurement& m) {
         poll();++result.audit_evaluations[stage];m=cache.evaluate(reference,candidate,e,id,stage>=2);
         if(m.resource_limited){result.status=Status::BudgetLimited;throw Interrupted{};}
+        if(m.cancelled){result.status=Status::Cancelled;throw Interrupted{};}
         poll();
         if(m.passed&&m.complete)return true;
         ++result.rejected_gates[stage];
@@ -204,6 +206,7 @@ public:
                     if(std::none_of(slot.trials.begin(),slot.trials.end(),[&](auto t){return t.target==midpoint;}))target=midpoint;
                 }
                 ReduceSettings rs;rs.output=slot.output;rs.objective=settings.objective;rs.target_triangles=target;
+                rs.appearance_stage=settings.research.appearance_stage;rs.appearance_weights=ss.weights;if(settings.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=ss.screen_size;
                 rs.normal_weight=ss.weights.normal;rs.cancelled=settings.cancelled;rs.prune=settings.prune&&((attempt/slots.size()+pass)%2==0);
                 rs.coupled_wedges=settings.coupled_wedges;rs.boundary_weight=settings.research.boundary_weight;
                 rs.boundary_placement=settings.research.boundary_placement;rs.independent_seams=settings.research.independent_seams;
@@ -213,12 +216,13 @@ public:
                     const auto stride=vertex_bytes(result.source)/result.source.positions.count;
                     if(stride&&*result.added_vertex_budget_bytes/stride>=3)rs.target_triangles=std::min(rs.target_triangles,size_t(*result.added_vertex_budget_bytes/stride/3));
                 }
+                rs.screen_size=ss.screen_size*bounds(view(input_id)).diameter()/result.reference_bounds.diameter();
                 ReductionStats stats;rs.statistics=&stats;Lod lod;const auto start=std::chrono::steady_clock::now();
                 {ScopedTime timer(settings.performance?&settings.performance->reduction_ns:nullptr);lod=proposer?proposer(view(input_id),rs):reduce(view(input_id),rs);}
                 ++result.candidate_evaluations;if(topology)++result.topology_fallback_proposals;
                 if(auto p=settings.performance) {
                     p->solve_attempts+=stats.solve_attempts;p->singular_solves+=stats.singular_solves;p->nonfinite_solves+=stats.nonfinite_solves;
-                    p->position_fallbacks+=stats.position_fallbacks;p->nonfinite_costs+=stats.nonfinite_costs;
+                    p->position_fallbacks+=stats.position_fallbacks;p->nonfinite_costs+=stats.nonfinite_costs;p->appearance_peak_bytes=std::max(p->appearance_peak_bytes,stats.appearance_bytes);
                 }
                 poll();const auto achieved=lod.data.indices.size()/3;
                 // Borrowed indices from a rebuilt predecessor address that input,

@@ -101,6 +101,15 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        for(int stage:{0,1,2,3})for(bool screen:{false,true}) {
+            auto parsed=settings_json(nlohmann::json{{"research",{{"appearance_stage",stage},{"conservative_screen",screen}}}});
+            CHECK(unsigned(parsed.research.appearance_stage)==unsigned(stage)&&parsed.research.conservative_screen==screen);
+            CHECK(settings_json(parsed)["research"]["appearance_stage"]==stage);
+        }
+        for(auto bad:nlohmann::json::array({-1,4,1.5,"1",true,nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"appearance_stage",bad}}}});});
+        for(auto bad:nlohmann::json::array({1,"true",nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"conservative_screen",bad}}}});});
         for(int passes:{0,1,3}) {
             auto graph=settings_json(nlohmann::json{{"research",{{"graph_passes",passes}}}});
             CHECK(graph.research.graph_passes==passes&&settings_json(graph)["research"]["graph_passes"]==passes);

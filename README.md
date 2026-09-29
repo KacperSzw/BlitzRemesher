@@ -17,6 +17,10 @@ bytes and triangle counts, with measured bake times and independent tail checks.
 fixed eight-asset rows, coverage/appearance/strict presets, recorded settings,
 triangle and bake-progress curves, independent-audit status, and engine exports.
 [Results and promotion decision](research/chain-search/DECISION.md).
+[Appearance experiment board](examples/appearance-board/index.html) compares
+conservative screening, appearance ordering, wedge fitting and position fitting
+under the same quality limits. [Measurements](research/appearance/REPORT.md) and
+[qualification](research/appearance/DECISION.md) keep failed results visible.
 [Earlier 13-model vertex-budget gallery](examples/current-board/index.html).
 [Open the algorithm and LOD chain example](examples/lod-chains.html).
 The [earlier hybrid board](research/hybrid/board/index.html) records uncapped

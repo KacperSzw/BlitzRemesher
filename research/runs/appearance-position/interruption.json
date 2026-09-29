@@ -1,0 +1,16 @@
+{
+  "complete": false,
+  "reason": "Stopped a noncompetitive experiment. The first six assets match the cheaper stages; neither manufactured asset meets the required final-LOD improvement, so remaining stress assets cannot satisfy the frozen four-category usefulness gate. Bell generation also exceeded the observed fourfold bake allowance. No aggregate score or paired timing claim is assigned.",
+  "stopped_asset": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+  "elapsed_batch_seconds": 1402,
+  "completed_rows": [
+    "ph_dead_quiver_trunk",
+    "ph_grass_bermuda_01",
+    "ph_metal_stool_02",
+    "ph_moon_rock_02",
+    "ph_painted_wooden_shelves",
+    "ph_rock_face_02"
+  ],
+  "unscored": true,
+  "signal": "SIGKILL: bench does not consume main CLI signal flag; completed rows are already atomically checkpointed"
+}

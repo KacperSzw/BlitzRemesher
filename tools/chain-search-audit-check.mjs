@@ -16,14 +16,16 @@ assert.equal(audit.complete,true);assert.equal(audit.passed,false);assert.equal(
 assert.equal(audit.lods[0].source.passed,true);assert.equal(audit.lods[1].source.passed,false);
 // Simulate an interrupted earlier slot while retaining a resolved later one.
 const marker='f'.repeat(64);audit.lods[1].binary_sha256=marker;
-for(const kind of ['source','adjacent'])Object.assign(audit.lods[0][kind],{passed:false,complete:false,resource_limited:true,error_px:null,nonfinite_error:true,views:0});
+for(const reason of ['resource_limited','cancelled']) {
+for(const kind of ['source','adjacent'])Object.assign(audit.lods[0][kind],{passed:false,complete:false,resource_limited:false,cancelled:false,[reason]:true,error_px:null,nonfinite_error:true,views:reason==='cancelled'?1:0});
 audit.complete=audit.passed=false;await fs.writeFile(output,JSON.stringify(audit));
 run();audit=JSON.parse(await fs.readFile(output,'utf8'));
 assert.equal(audit.complete,true);assert.equal(audit.passed,false);assert.equal(audit.lods[0].source.passed,true);
 assert.equal(audit.lods[1].binary_sha256,marker);assert.equal(audit.stage_seconds.raster,0);
+}
 const valid=await fs.readFile(output,'utf8');audit.chain_bin_sha256='wrong';await fs.writeFile(output,JSON.stringify(audit));
 assert.throws(run,/audit resume provenance mismatch/);
 await fs.writeFile(output,valid);
-const checks={complete:true,sanitized:true,checks:['failure witness resolves a comparison','all scheduled levels attempted','resume resolved levels across an interrupted slot','preserve per-level auditor provenance','reject mismatched export hashes']};
-await fs.writeFile(resolve(root,'research/chain-search/audit-check.json'),JSON.stringify(checks,null,2)+'\n');
+const checks={complete:true,sanitized:true,checks:['cancellation is not a rejection witness','failure witness resolves a comparison','all scheduled levels attempted','resume resolved levels across an interrupted slot','preserve per-level auditor provenance','reject mismatched export hashes']};
+await fs.writeFile(resolve(root,process.argv[2]??'research/chain-search/audit-check.json'),JSON.stringify(checks,null,2)+'\n');
 console.log(JSON.stringify(checks));

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
+import {auditProgress} from './audit.mjs';
 const root=process.cwd(), run=path.resolve(process.argv[2]??'runs/neural/first-pass');
 fs.mkdirSync(run,{recursive:true});
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
@@ -23,7 +24,7 @@ const execute=async(executable,args,label)=>{
   const code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});
   clearTimeout(deadline);fs.closeSync(output);child=undefined;
   status.timings??=[];status.timings.push({label,seconds:(Date.now()-started)/1000,code});
-  if(code!==0&&code!==2)throw new Error(`${label} failed with exit ${code}; see ${label}.log`);
+  if(code!==0&&code!==2&&code!==3)throw new Error(`${label} failed with exit ${code}; see ${label}.log`);
   return code;
 };
 const binaries=path.join(run,'bin');fs.mkdirSync(binaries,{recursive:true});
@@ -55,8 +56,10 @@ async function train(dataset,directory,steps,initialize){
   }
 }
 async function benchmark(manifest,split,model,directory,label){
-  for(;;){const summary=path.join(directory,'summary.json');if(fs.existsSync(summary)&&read(summary).complete)return read(summary);
+  let previous=-1;
+  for(;;){const summary=path.join(directory,'summary.json');if(fs.existsSync(summary)){const saved=read(summary);auditProgress(saved);if(saved.complete)return saved;}
     await execute(path.join(binaries,'blitz'),['bench',manifest,'research/neural/first-pass.json',directory,'--split',split,'--neural-model',model,'--minutes',minutes()],label);
+    previous=auditProgress(read(summary),previous);
   }
 }
 try {
@@ -66,6 +69,8 @@ try {
   const metrics=fs.readFileSync(path.join(training,'metrics.jsonl'),'utf8').trim().split('\n').map(JSON.parse);
   const mean=a=>a.reduce((n,m)=>n+m.loss,0)/a.length;
   if(!health.finite||!health.restored||health.native_max_abs_error>2e-4||health.parameter_change<=0||mean(metrics.slice(-25))>=mean(metrics.slice(0,25)))throw new Error('training health gate failed');
+  const readinessModel=path.join(training,health.model), readinessLabel='pilot-readiness-'+hash(readinessModel);
+  await benchmark('research/pilot.json','development',readinessModel,path.join(run,readinessLabel),readinessLabel);
   write(path.join(run,'health.json'),{...health,mean_first_25:mean(metrics.slice(0,25)),mean_last_25:mean(metrics.slice(-25)),full_run_steps:5120,full_run_eta_seconds:health.seconds_per_step*5120});
   stamp('healthy',{health:'health.json',checkpoint:path.join('bootstrap',health.checkpoint),training_eta_seconds:health.seconds_per_step*(5120-health.step)});
   const initial=await train(data,training,5120);const initialModel=path.join(training,initial.model);
@@ -82,4 +87,7 @@ try {
   fs.copyFileSync(best.model,path.join(run,'selected.blzn'));
   const report={complete:true,release_approved:false,selection:'Highest complete validation SCORE under the frozen first-pass configuration; no CPU performance threshold.',selected_model:'selected.blzn',model_sha256:hash(path.join(run,'selected.blzn')),training_assets:read(path.join(data,'index.json')).assets.length,candidates,health:read(path.join(run,'health.json')),timings:status.timings,held_out_used:false};
   write(path.join(run,'report.json'),report);stamp('complete',{report:'report.json',model:'selected.blzn'});
-}catch(error){stamp(stopping||remaining()<60000?'incomplete':'failed',{error:String(error),release_approved:false});process.exitCode=1;}
+}catch(error){
+  write(path.join(run,'report.json'),{complete:false,error:String(error),audit:error.audit??null,release_approved:false,timings:status.timings});
+  stamp(stopping||remaining()<60000?'incomplete':error.audit?.blocked_assets?.length?'audit-resource-limited':'failed',{error:String(error),release_approved:false,report:'report.json'});process.exitCode=1;
+}

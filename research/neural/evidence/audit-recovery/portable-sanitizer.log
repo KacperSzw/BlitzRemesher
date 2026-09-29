@@ -1,0 +1,91 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher-neural/build/cpu
+[1/24] Building CXX object CMakeFiles/blitzremesher.dir/src/c_api.cpp.o
+[2/24] Building CXX object CMakeFiles/blitzremesher.dir/src/simplify.cpp.o
+[3/24] Building CXX object CMakeFiles/blitzremesher.dir/src/neural_graph.cpp.o
+[4/24] Building CXX object CMakeFiles/blitzremesher.dir/src/neural.cpp.o
+[5/24] Linking CXX static library libblitzremesher.a
+[6/24] Building CXX object CMakeFiles/blitz.dir/tools/main.cpp.o
+[7/24] Building CXX object CMakeFiles/blitz-neural-tests.dir/tests/neural.cpp.o
+[8/24] Linking CXX executable blitz-microbench
+[9/24] Linking CXX executable blitz-precision-bench
+[10/24] Linking CXX executable blitz-probe
+[11/24] Linking CXX executable blitz-lod-report
+[12/24] Linking CXX executable blitz-tail-audit
+[13/24] Linking CXX executable blitz-neural-tests
+[14/24] Linking CXX executable blitz-coverage-cache-tests
+[15/24] Linking CXX executable blitz-hybrid-tests
+[16/24] Linking CXX executable blitz-vegetation-tests
+[17/24] Linking CXX executable blitz-tests
+[18/24] Linking CXX executable blitz-precision-tests
+[19/24] Linking CXX executable blitz-render-cost-tests
+[20/24] Linking CXX executable blitz-c-smoke
+[21/24] Linking CXX executable blitz-io-tests
+[22/24] Building CXX object CMakeFiles/blitz.dir/tools/benchmark.cpp.o
+[23/24] Linking CXX executable blitz
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/cpu
+      Start  1: neural-contracts
+ 1/10 Test  #1: neural-contracts .................   Passed    0.00 sec
+      Start  2: coverage-cache-contracts
+ 2/10 Test  #2: coverage-cache-contracts .........   Passed    0.46 sec
+      Start  3: hybrid-contracts
+ 3/10 Test  #3: hybrid-contracts .................   Passed    0.15 sec
+      Start  4: vegetation-contracts
+ 4/10 Test  #4: vegetation-contracts .............   Passed    0.06 sec
+      Start  5: contracts
+ 5/10 Test  #5: contracts ........................   Passed    0.17 sec
+      Start  6: precision-contracts
+ 6/10 Test  #6: precision-contracts ..............   Passed    0.04 sec
+      Start  7: render-cost-contracts
+ 7/10 Test  #7: render-cost-contracts ............   Passed    0.00 sec
+      Start  8: c-abi
+ 8/10 Test  #8: c-abi ............................   Passed    0.00 sec
+      Start  9: foliage-contracts
+ 9/10 Test  #9: foliage-contracts ................   Passed    0.01 sec
+      Start 10: io-contracts
+10/10 Test #10: io-contracts .....................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 10
+
+Total Test time (real) =   0.92 sec
+[0/1] Re-running CMake...
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+[1/15] Building CXX object CMakeFiles/blitzremesher.dir/src/c_api.cpp.o
+[2/15] Building CXX object CMakeFiles/blitzremesher.dir/src/simplify.cpp.o
+[3/15] Building CXX object CMakeFiles/blitzremesher.dir/src/neural_graph.cpp.o
+[4/15] Building CXX object CMakeFiles/blitzremesher.dir/src/neural.cpp.o
+[5/15] Linking CXX static library libblitzremesher.a
+[6/15] Linking CXX executable blitz-coverage-cache-tests
+[7/15] Linking CXX executable blitz-hybrid-tests
+[8/15] Linking CXX executable blitz-vegetation-tests
+[9/15] Linking CXX executable blitz-tests
+[10/15] Linking CXX executable blitz-precision-tests
+[11/15] Building CXX object CMakeFiles/blitz-neural-tests.dir/tests/neural.cpp.o
+[12/15] Linking CXX executable blitz-render-cost-tests
+[13/15] Linking CXX executable blitz-neural-tests
+[14/15] Linking CXX executable blitz-c-smoke
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+    Start 1: neural-contracts
+1/8 Test #1: neural-contracts .................   Passed    0.01 sec
+    Start 2: coverage-cache-contracts
+2/8 Test #2: coverage-cache-contracts .........   Passed    2.54 sec
+    Start 3: hybrid-contracts
+3/8 Test #3: hybrid-contracts .................   Passed    0.69 sec
+    Start 4: vegetation-contracts
+4/8 Test #4: vegetation-contracts .............   Passed    0.35 sec
+    Start 5: contracts
+5/8 Test #5: contracts ........................   Passed    0.80 sec
+    Start 6: precision-contracts
+6/8 Test #6: precision-contracts ..............   Passed    0.18 sec
+    Start 7: render-cost-contracts
+7/8 Test #7: render-cost-contracts ............   Passed    0.01 sec
+    Start 8: c-abi
+8/8 Test #8: c-abi ............................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 8
+
+Total Test time (real) =   4.58 sec

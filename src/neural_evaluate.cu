@@ -80,7 +80,7 @@ struct Image {Buffer<Pixel> pixels;uint32_t size;bool clipped;};
 Image render(Device& device,MeshView m,const Bounds& b,const Camera& camera,double screen,uint8_t ss,bool two,Summary* summary=nullptr) {
     if(!ss||!std::isfinite(screen)||screen<=0||screen>16384)throw std::invalid_argument("invalid raster extent");
     uint32_t size=summary?(uint32_t(std::ceil(screen+8))+1)&~1u:uint32_t(std::ceil(screen+8))*ss;
-    if(uint64_t(size)*size>64000000)throw std::length_error("raster exceeds per-view sample cap");
+    if(uint64_t(size)*size>max_raster_samples)throw ResourceError(NeuralResourceLimit::SampleCount,uint64_t(size)*size,max_raster_samples,"raster exceeds per-view sample cap");
     auto position=upload(device,m.positions),normals=upload(device,m.normals);auto colors=upload(device,m.colors);
     Buffer<uint32_t> indices(device,m.indices.size());indices.upload(m.indices);Buffer<uint16_t> materials(device,m.materials.size());materials.upload(m.materials);
     Buffer<uint8_t> double_sided(device,m.double_sided.size());double_sided.upload(m.double_sided);
@@ -91,7 +91,7 @@ Image render(Device& device,MeshView m,const Bounds& b,const Camera& camera,doub
     // Bound all bin entries before the 32-bit scan. Counts are copied only once per view;
     // projected attributes, binning, sort and samples remain on the device.
     auto host_counts=counts.download();uint64_t entries=0;for(auto c:host_counts)entries+=c;
-    if(entries>INT32_MAX)throw std::length_error("CUDA tile list exceeds 31-bit sort bound");
+    if(entries>INT32_MAX)throw ResourceError(NeuralResourceLimit::TileEntries,entries,INT32_MAX,"CUDA tile list exceeds 31-bit sort bound");
     size_t bytes=0;check(cub::DeviceScan::ExclusiveSum(nullptr,bytes,counts.p,offsets.p,nf+1));
     {Buffer<std::byte> temp(device,bytes);check(cub::DeviceScan::ExclusiveSum(temp.p,bytes,counts.p,offsets.p,nf+1));}
     uint32_t tile_width=(size+15)/16,ntiles=tile_width*tile_width;
@@ -167,7 +167,7 @@ Raster raster_cuda(MeshView m,const Bounds& b,const Camera& c,double screen,uint
 }
 }
 namespace blitz {
-Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options) {
+Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats) {
     if(auto e=validate(a);!e.empty())throw std::invalid_argument(e);if(auto e=validate(b);!e.empty())throw std::invalid_argument(e);
     // Validate evaluator settings through the identical-input fast path of the reference.
     (void)evaluate(a,a,bounds,config);Measurement result;result.supersample=config.supersample;if(same_mesh_data(a,b))return result;
@@ -177,7 +177,12 @@ Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalS
         Measurement current;
         for(unsigned ss=config.supersample;;ss=std::min<unsigned>(config.max_supersample,ss*2)) {
             try{current=neural::measure(device,a,b,bounds,views[v],config,uint8_t(ss));}
-            catch(const std::length_error&){result.complete=false;result.passed=false;result.resource_limited=true;result.error=std::numeric_limits<double>::infinity();return result;}
+            catch(const neural::gpu::ResourceError& error){
+                if(stats){stats->gpu_peak_bytes=std::max<uint64_t>(stats->gpu_peak_bytes,device.peak);
+                    if(!stats->resource_failures++)stats->first_resource_failure={config.screen_size,error.requested,error.limit,v,uint8_t(ss),error.kind};}
+                result.complete=false;result.passed=false;result.resource_limited=true;result.error=std::numeric_limits<double>::infinity();result.worst_view=v;result.supersample=uint8_t(ss);return result;
+            }
+            if(stats)stats->gpu_peak_bytes=std::max<uint64_t>(stats->gpu_peak_bytes,device.peak);
             if(current.passed||ss>=config.max_supersample||current.coverage-2*std::sqrt(2.)/ss>config.limit||!std::isfinite(current.error)||current.coverage_upper<=config.limit)break;
         }
         ++result.views_evaluated;if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}

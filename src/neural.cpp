@@ -16,7 +16,7 @@ NeuralModel& NeuralModel::operator=(NeuralModel&&) noexcept=default;
 const std::string& NeuralModel::sha256() const {if(!impl_)throw std::invalid_argument("moved-from neural model");return impl_->hash;}
 #ifndef BLITZ_CUDA
 bool neural_available(int32_t) noexcept {return false;}
-Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&) {throw NeuralUnavailable("CUDA evaluator was not built");}
+Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*) {throw NeuralUnavailable("CUDA evaluator was not built");}
 double overlap_cuda(MeshView,const Bounds&,double,ViewSet,const NeuralOptions&) {throw NeuralUnavailable("CUDA evaluator was not built");}
 #endif
 #ifdef BLITZ_CUDA
@@ -58,7 +58,9 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
         auto candidate=neural::decode(source,g,prediction,rs.target_triangles,rs.output,&decoded,s.cancelled);
         counters.decode_ns+=nanos(begin);++counters.decoded;counters.legal_collapses+=decoded.accepted;counters.rejected_collapses+=decoded.rejected;return candidate;
     };
-    hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto m=evaluate_cuda(a,b,bounds,e,options);counters.gpu_audit_ns+=nanos(begin);return m;};
+    hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
+        bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
+        auto m=evaluate_cuda(a,b,bounds,bounded,options,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
     hooks.confirm=[&](Result& r){auto begin=Clock::now();bool good=true;
         for(size_t i=1;i<r.lods.size()&&good;++i) {
             auto& lod=r.lods[i];EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.views=s.audit_views;e.supersample=s.audit_supersample;e.max_supersample=s.max_supersample;

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
+import {auditProgress} from './audit.mjs';
 
 if(process.argv.length<5)throw new Error('train.mjs RUN DATASET INITIAL_MODEL [DEADLINE_MS]');
 const root=process.cwd(), run=path.resolve(process.argv[2]);
@@ -70,7 +71,7 @@ async function execute(executable,args,label){
   finally{clearTimeout(timer);fs.closeSync(output);child=undefined;}
   status.timings.push({label,seconds:(Date.now()-start)/1000,code});
   if(stopping)throw new Error('Experiment interrupted; saved checkpoints and audit rows can resume');
-  if(code!==0&&code!==2)throw new Error(`${label} failed with exit ${code}; see ${label}.log`);
+  if(code!==0&&code!==2&&code!==3)throw new Error(`${label} failed with exit ${code}; see ${label}.log`);
 }
 async function train(steps){
   let previous=-1;
@@ -85,13 +86,19 @@ async function train(steps){
 async function audit(manifest,split,model,label){
   const directory=path.join(run,label), summary=path.join(directory,'summary.json');let previous=-1;
   for(;;){
-    if(fs.existsSync(summary)&&read(summary).complete)return read(summary);
+    if(fs.existsSync(summary)){const saved=read(summary);auditProgress(saved);if(saved.complete)return saved;}
     await execute(path.join(bin,'blitz'),['bench',manifest,auditPath,directory,'--split',split,'--neural-model',model,'--minutes',minutes()],label);
     if(!fs.existsSync(summary))throw new Error('Audit ended without a summary');
-    const progress=read(summary);if(!progress.complete&&progress.completed<=previous)throw new Error('Audit made no progress');previous=progress.completed;
+    const progress=read(summary);previous=auditProgress(progress,previous);
   }
 }
 try{
+  // Test the full frozen audit path before reporting a training run as ready.
+  const latestPath=path.join(training,'latest.json'), prior=fs.existsSync(latestPath)?read(latestPath):null;
+  const readinessModel=prior?path.join(training,prior.model):initialize;
+  const readinessHash=hash(readinessModel), readinessLabel='audit-readiness-'+readinessHash;
+  const readiness=await audit('research/pilot.json','development',readinessModel,readinessLabel);
+  write(path.join(run,'audit-readiness.json'),{complete:true,model_sha256:readinessHash,directory:readinessLabel,summary:readiness});
   const healthPath=path.join(run,'health.json');
   if(!fs.existsSync(healthPath)){
     const health=await train(config.health_steps);
@@ -111,7 +118,7 @@ try{
   for(let target=config.stage_steps;target<=config.max_steps;target+=config.stage_steps){
     const health=await train(target), model=path.join(training,`step-${target}.blzn`);
     // Each fixed-budget stage is audited before committing more training time.
-    const pilot=await audit('research/pilot.json','development',model,`pilot-${target}`);
+    const pilot=hash(model)===readinessHash?readiness:await audit('research/pilot.json','development',model,`pilot-${target}`);
     candidates.push({step:target,model,pilot});
     if(pilot.score>best){best=pilot.score;stalled=0;}else ++stalled;
     write(path.join(run,'progress.json'),{candidates,best_pilot_score:best,stalled,latest_training:health});
@@ -125,5 +132,9 @@ try{
     reason:viable.length?'Selected using complete validation SCORE.':'Repeated development pilots returned only unreduced fallbacks; retain results for a new curriculum/decoder experiment.'};
   if(viable.length){fs.copyFileSync(viable[0].model,path.join(run,'selected.blzn'));report.selected_model='selected.blzn';report.model_sha256=hash(path.join(run,'selected.blzn'));}
   write(path.join(run,'report.json'),report);stamp(viable.length?'complete':'no-quality-signal',{report:'report.json'});
-}catch(error){stamp(stopping||remaining()<60000?'incomplete':'failed',{error:String(error),release_approved:false});process.exitCode=1;}
+}catch(error){
+  const report={complete:false,release_approved:false,error:String(error),audit:error.audit??null,timings:status.timings};
+  write(path.join(run,'report.json'),report);
+  stamp(stopping||remaining()<60000?'incomplete':error.audit?.blocked_assets?.length?'audit-resource-limited':'failed',{error:String(error),release_approved:false,report:'report.json'});process.exitCode=1;
+}
 finally{monitor.kill('SIGTERM');telemetry.end();}

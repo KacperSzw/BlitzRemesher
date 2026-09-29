@@ -2,6 +2,13 @@
 #include <numeric>
 #include <bit>
 namespace blitz::neural {
+uint8_t bounded_refinement(const EvalSettings& e) {
+    if(!std::isfinite(e.screen_size)||e.screen_size<=0||e.screen_size>16384||!e.supersample||e.max_supersample<e.supersample)throw std::invalid_argument("invalid bounded refinement settings");
+    uint64_t side=uint64_t(std::ceil(e.screen_size+8));unsigned ss=e.supersample;
+    while(ss<e.max_supersample){auto next=std::min<unsigned>(ss*2,e.max_supersample);
+        if(side*side*next*next>max_raster_samples)break;ss=next;}
+    return uint8_t(ss);
+}
 namespace {
 template<class T> int compare(Stream<T> s,uint32_t a,uint32_t b) {
     if(!s)return 0;auto x=s[a],y=s[b];return std::memcmp(&x,&y,sizeof(T));

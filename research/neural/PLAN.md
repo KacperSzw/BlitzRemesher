@@ -4,6 +4,11 @@ Branch: `research/neural-lod-gpu`, based on `7466a9e`. The sibling worktree
 leaves the primary checkout available to other agents. Implementation precedes
 the ten-hour experiment budget. No held-out asset is used for training or tuning.
 
+Current status (2026-09-29): implementation and audit recovery are validated;
+training is stopped by explicit user request. The saved-model pilot returns
+eight unreduced fallbacks. The numbered implementation steps below are completed
+except for establishing useful LOD quality. Future training needs a new request.
+
 1. Establish CPU tests; add deterministic graph/decoder fixtures and explicit
    unavailable behavior. Verify source stream immutability and endpoint IDs.
 2. Add optional CUDA raster, exact distance transform, product metric and overlap
@@ -32,6 +37,17 @@ the ten-hour experiment budget. No held-out asset is used for training or tuning
    and AdamW moment restoration, and native export error <=2e-4. Continue the
    detached service after the health gate. Audit each 25,000-update stage and
    stop after two stages without a better complete development pilot score.
+8. Exercise the full frozen eight-asset audit before declaring the experiment
+   ready. Bound only optional candidate refinement to fitting raster sizes;
+   reject uncertain bounds and preserve final CPU confirmation. Record resource
+   causes, visit remaining assets, stop fixed-limit retries, retain null SCORE
+   for incomplete audits, and prevent reuse across different model hashes.
+
+Next research steps, after a request to resume work: diagnose why the audited
+25,000-update model produces no reduction; test one curriculum/decoder hypothesis
+on deterministic fixtures and the development pilot. Remote GPU migration and
+cost options are in CLOUD_GPU.md. Buying more compute alone does not establish
+the missing quality signal.
 
 Runtime objectives: pass both source and adjacent visual gates; minimize triangles
 within the existing storage tradeoff; use pre-depth geometric overlap only to

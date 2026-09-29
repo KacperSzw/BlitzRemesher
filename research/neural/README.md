@@ -1,5 +1,12 @@
 # Neural LOD path
 
+Status, 2026-09-29: training is stopped at the user's request. The audit failure
+is fixed and the saved 25,000-update model completes the eight-asset pilot, with
+eight unreduced fallbacks (SCORE 0). No release-quality model is claimed. See
+[the incident report](REPORT.md#audit-failure-and-repair--2026-09-29) and
+[remote GPU options and costs](CLOUD_GPU.md). Commands below are for a future
+explicitly requested experiment.
+
 This is an experimental, separately selected generator. A compact three-layer
 graph network predicts retention logits and representative displacements. A
 deterministic decoder contracts legal edges toward existing source vertices.
@@ -12,6 +19,14 @@ transforms, visible-normal/color/material comparisons and geometric overlap.
 Final selected chains and the minimum-triangle reference receive CPU audits.
 Import, graph assembly, decoding and teacher generation run on CPU. Finite
 camera audits do not establish an all-view or globally optimal guarantee.
+
+Candidate CUDA audits follow the configured refinement sequence only while the
+next raster fits the 64,000,000-sample per-view cap. Initial sampling is never
+lowered; uncertain upper bounds reject candidates. Pixel limits and final CPU
+confirmation remain unchanged. This can reject candidates that a larger audit
+budget might accept. Standalone `evaluate_cuda` honors the literal settings.
+`NeuralStats` reports bounded audits, peak owned scratch bytes and the first
+resource failure's kind, request, limit, view and sampling resolution.
 
 Overdraw breaks equal per-level triangle-count/equal resident-byte ties only.
 The diagnostic counts geometry before depth testing, not shader execution.
@@ -82,12 +97,14 @@ systemd-run --user --unit=blitz-neural-first-pass --collect \
 The runner snapshots binaries, records source/input/model/hardware hashes, uses
 segments no longer than 50 minutes, checks finite loss/gradients, parameter
 updates, decreasing pilot loss, restored checkpoints and native inference
-agreement before continuing. It then refines, audits the development pilot and
+agreement and a complete eight-asset readiness audit before continuing. It then
+refines, audits the development pilot and
 selects between checkpoints on validation. Every unsuccessful/incomplete run is
 retained. No automatic release promotion or held-out tuning occurs.
 
 Watch `status.json`, `health.json`, stage logs and `*/latest.json` inside the run
-directory. `report.json` appears only after complete validation. Stop with
+directory. `report.json` records completion or failure, including resource
+diagnostics; check its `complete` field. Stop with
 `systemctl --user stop blitz-neural-first-pass`; resume by rerunning the same
 command before the recorded deadline. Use a new directory for changed inputs,
 executable, schema or optimizer settings. Completed audit rows resume only with
@@ -121,9 +138,9 @@ systemd-run --user --unit=blitz-neural-training --collect \
 ```
 
 An optional final argument supplies an earlier absolute deadline in milliseconds.
-The current service retains the original experiment deadline, 2026-09-29
-06:19:33 UTC. The runner freezes executables, training/audit settings and a source
-archive. It first verifies 4096 updates, then continues in 25,000-update stages,
+The runner freezes executables, training/audit settings and a source archive.
+It first audits the current saved model on the full pilot, then verifies 4096
+updates and continues in 25,000-update stages,
 up to 100,000 updates or the deadline. Each stage receives the full development
 pilot audit; two stages without score improvement stop further training.
 Validation selects among at most two viable stage checkpoints. Held-out assets
@@ -140,6 +157,15 @@ quality: the initial full eight-asset pilot returned unreduced fallbacks.
 
 Stop with `systemctl --user stop blitz-neural-training`. Resume before the stored
 deadline using the same run/data/model arguments and matching runner source.
-The current run also preserves its exact runner as `runs/neural/sustained/bin/train.mjs`;
-use that path if the working source has changed. Inputs and executable hashes
-must still match. Retain incomplete measurements; do not assign them a SCORE.
+The original failed run is preserved in `runs/neural/sustained`; the repaired
+audit and interrupted continuation are in `runs/neural/recovered`. Both are
+inactive. The latter saved model and AdamW state at update 26,459. Its historical
+deadline remains 2026-09-29 06:19:33 UTC. Use a new run directory for a new budget.
+When snapshotting runners, include `audit.mjs` beside `train.mjs` or `run.mjs`.
+Inputs and executable hashes must still match on resume.
+
+Benchmark exit 2 denotes an incomplete time segment. Exit 3 reports fixed
+resource limits, preserving all blocked asset IDs and null SCORE. The runner
+stops immediately on those limits or bake exceptions and writes a failure report.
+Readiness directories include the model hash so resuming with a later checkpoint
+cannot inherit another model's audit. Retain incomplete measurements unscored.

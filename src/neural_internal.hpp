@@ -4,6 +4,10 @@
 #include <filesystem>
 namespace blitz::neural {
 constexpr uint32_t features=24, hidden=64, conditions=8, outputs=4, schema=1;
+constexpr uint64_t max_raster_samples=64000000;
+// Retain the original refinement sequence and initial sampling. Uncertain bounds
+// at the last fitting resolution reject the candidate; no limit is relaxed.
+uint8_t bounded_refinement(const EvalSettings&);
 constexpr uint8_t Locked=1, Boundary=2, Seam=4, Material=8, Used=16;
 struct Graph {
     std::vector<uint32_t> offsets,neighbors,canonical;

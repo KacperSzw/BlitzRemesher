@@ -1,13 +1,75 @@
-# Implementation and first experiment — 2026-09-28
+# Implementation and first experiment — updated 2026-09-29
 
 Implemented on `research/neural-lod-gpu` in the sibling worktree
 `/home/kacper/Projects/BlitzRemesher-neural`. The primary checkout remains separate.
-The active sustained experiment runs as `blitz-neural-training.service`.
-Its durable state is `runs/neural/sustained/status.json`; inspect that file for
-current progress. The earlier `blitz-neural-first-pass.service` was stopped after
+Training is stopped at the user's request. The original sustained run failed
+during its 25,000-update audit. The repaired audit completes; a briefly resumed
+continuation saved update 26,459 when stopped at 05:44 UTC on September 29.
+No validation or release-quality model has been completed. The earlier
+`blitz-neural-first-pass.service` was stopped after
 preparation, bootstrap/refinement training and the first full pilot. All its
 checkpoints, rows and partial audits remain in `runs/neural/first-pass`.
-This report records the handoff, not completed validation.
+Historical training measurements below remain valid for their recorded runs.
+
+## Audit failure and repair — 2026-09-29
+
+The original run's tensor training reached update 25,000 with finite gradients
+and successful model/AdamW restoration. At 20:59:37 UTC on September 28 it exited
+after retrying an audit that made no progress. Three of eight pilot assets had
+completed. `ph_dead_quiver_trunk` requested a raster at 312.0674954763457 pixels
+and 32x supersampling: `ceil(312.0674954763457 + 8) * 32 = 10272` per side,
+or **105,513,984 samples**, exceeding the fixed **64,000,000** per-view cap.
+An exception trace against the frozen original executable and model confirmed
+`raster exceeds per-view sample cap`. Training VRAM exhaustion was not the cause.
+
+The runner's health gate verified training without exercising a complete audit
+cycle. The benchmark stopped at the first resource-limited asset, while its
+generic BudgetLimited result concealed the underlying sample limit. Retrying
+the unchanged request could never succeed. The earlier handoff consequently
+overstated readiness of the complete experiment.
+
+The repair bounds candidate refinement to the last fitting member of the
+original sampling sequence. Required initial sampling, pixel limits, views,
+metric and final source/adjacent CPU confirmation are preserved. Uncertain
+upper bounds reject a proposal, so this may sacrifice reductions that a larger
+budget could verify. It does not make an uncertain candidate acceptable.
+Standalone CUDA evaluation retains literal resource refusal. Diagnostics record
+the first resource kind, request, limit, view, screen size and supersampling.
+
+The benchmark now visits subsequent assets after fixed resource failures and
+returns exit 3 with named blocked assets and null SCORE. Both runners stop on
+resource limits or bake exceptions, write an incomplete report, and require a
+complete pilot before declaring readiness. Readiness caches are keyed by model
+hash. Protocol v3 SCORE is unchanged; benchmark metadata records the new
+candidate-refinement policy.
+
+Quick verification, without starting another training run:
+
+- CUDA build: **12/12 CTests**; portable release: **10/10**; CPU ASan/UBSan:
+  **8/8**. Node contracts cover immediate resource refusal, time-segment
+  progress/stagnation and bake exceptions. Runner syntax was checked after the
+  model-hash readiness adjustment.
+- Saved 25,000-update model: **8/8 pilot assets complete in 47.27 seconds**,
+  no blocked assets or bake exceptions. The formerly blocked trunk reports
+  zero resource failures and peak owned audit scratch of 2,532,376,776 bytes.
+- Quality remains **eight unreduced fallbacks, SCORE 0**. The successful audit
+  establishes recovery of the pipeline, not an improvement in mesh quality.
+- An intentionally oversized initial raster refused both selected smoke assets,
+  reported 270,536,704 requested samples versus 64,000,000, returned exit 3 and
+  retained null SCORE. Initial sampling was not silently reduced.
+
+Before the user's stop request, the repaired service completed the saved-model
+readiness audit and briefly resumed from update 25,000. SIGTERM saved model and
+AdamW state at **26,459**, with finite gradients, verified optimizer restoration
+and native export error `9.54e-6`. No training was restarted after that request.
+The last checkpoint itself has not received a new full mesh audit. The original
+failed run and its incomplete measurements remain unchanged.
+
+Raw evidence and checksums are in [evidence/audit-recovery](evidence/audit-recovery/manifest.json).
+The saved-model audit binary is identified separately from the frozen trainer
+binary in `recovery.json`. Later readiness path naming changes do not alter that
+audit's measurements. See [CLOUD_GPU.md](CLOUD_GPU.md) for external training
+options, cost calculations and the remaining checkpoint migration requirement.
 
 ## What works
 
@@ -135,7 +197,7 @@ model/optimizer restoration checks passed. The service then resumed from update
 4096 and passed another checkpoint at update 6144 while continuing training.
 `evidence/sustained-health.json` and `sustained-resumed.json` retain those records.
 
-## Handoff and remaining evidence
+## Historical handoff and remaining evidence
 
 The bootstrap stage completed all 5,120 updates in approximately 48 seconds
 including both process launches and checkpoint verification. Its final sampled
@@ -160,13 +222,13 @@ within ten hours; completion and quality remain measured outcomes.
 
 Use `research/neural/README.md` for commands and API behavior. Inspect:
 
-- `runs/neural/sustained/status.json`, `gpu.jsonl` and stage logs for live progress;
+- `runs/neural/sustained/status.json`, `gpu.jsonl` and stage logs for the failed run;
 - `runs/neural/sustained/health.json` for the sustained utilization/health gate;
 - `runs/neural/sustained/training/latest.json` and `metrics.jsonl` for
   model/checkpoint paths, hashes, loss, timing and memory;
 - `runs/neural/sustained/progress.json` for complete stage pilot results;
-- `runs/neural/sustained/report.json` at the end, and `selected.blzn` only after
-  completed validation. No model is marked release approved automatically.
+- `runs/neural/recovered/report.json` for the interrupted continuation; no
+  selected or release-approved model has been produced by this experiment.
 
 The first curriculum covers 16/32/64 pixels and fixed 3 px limits. Other pixel
 sizes/weights rely on generalization plus independent audits. Strict seam and

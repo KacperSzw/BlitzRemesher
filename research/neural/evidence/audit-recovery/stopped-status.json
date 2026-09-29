@@ -1,0 +1,41 @@
+{
+  "started_at": "2026-09-29T05:42:07.769Z",
+  "deadline_ms": 1790662773233,
+  "timings": [
+    {
+      "label": "audit-readiness",
+      "seconds": 47.455,
+      "code": 0
+    },
+    {
+      "label": "training",
+      "seconds": 64.842,
+      "code": 2
+    }
+  ],
+  "command": [
+    "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/recovered/bin/blitz-neural-train",
+    "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/first-pass/refined-data",
+    "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/recovered/training",
+    "--initialize",
+    "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/first-pass/refined/step-5120.blzn",
+    "--steps",
+    "50000",
+    "--segment-minutes",
+    "36",
+    "--checkpoint-every",
+    "1024",
+    "--core",
+    "4096",
+    "--batch",
+    "64"
+  ],
+  "child_pid": 496306,
+  "phase": "incomplete",
+  "pid": 495087,
+  "updated_at": "2026-09-29T05:44:00.135Z",
+  "signal": "SIGTERM",
+  "error": "Error: Experiment interrupted; saved checkpoints and audit rows can resume",
+  "release_approved": false,
+  "report": "report.json"
+}

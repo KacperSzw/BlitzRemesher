@@ -12,6 +12,11 @@ Mesh grid(unsigned side=9) {
     for(unsigned y=0;y+1<side;++y)for(unsigned x=0;x+1<side;++x){uint32_t a=y*side+x;m.indices.insert(m.indices.end(),{a,a+1,a+side,a+1,a+side+1,a+side});}m.double_sided={1};return m;
 }
 void graph_contracts() {
+    for(auto [screen,initial,maximum,expected]:{std::tuple{312.0674954763457,4,32,16},std::tuple{242.,8,32,32},std::tuple{242.01,8,32,16},std::tuple{350.,3,32,12},std::tuple{200.,3,23,23},std::tuple{1024.,8,32,8}}) {
+        EvalSettings e;e.screen_size=screen;e.supersample=uint8_t(initial);e.max_supersample=uint8_t(maximum);
+        require(neural::bounded_refinement(e)==expected,"bounded refinement lost sequence, sample boundary or initial resolution");
+        require(e.max_supersample==maximum,"bounded refinement mutated settings");
+    }
     auto m=grid();auto original=copy_mesh(m.view());auto g=neural::graph(m.view());neural::Prediction p;p.values.resize(g.size()*neural::outputs);
     for(size_t i=0;i<g.size();++i){p.values[i*4]=float(i);p.values[i*4+1]=float(1./(9*bounds(m.view()).diameter()));}
     for(size_t target:{size_t(40),size_t(80)}){
@@ -74,7 +79,9 @@ void cuda_contracts() {
     auto single=overlap_cuda(m.view(),b,24,{1,0,0xB1172026},options);auto twice=m;twice.indices.insert(twice.indices.end(),m.indices.begin(),m.indices.end());auto doubled=overlap_cuda(twice.view(),b,24,{1,0,0xB1172026},options);require(std::abs(doubled-2*single)<1e-8,"overdraw counts do not scale");
     for(double screen:{16.,25.}){auto costs=render_cost(twice.view(),b,ViewSet{1,0,0xB1172026},screen);auto cuda=overlap_cuda(twice.view(),b,screen,{1,0,0xB1172026},options);require(costs.covered_pixels&&std::abs(cuda-double(costs.covered_samples)/costs.covered_pixels)<1e-8,"overdraw differs from CPU proxy");}
     EvalSettings stopped;stopped.cancelled=[]{return true;};auto cancelled=evaluate_cuda(m.view(),altered.view(),b,stopped,options);require(!cancelled.complete&&!cancelled.passed,"CUDA cancellation ignored");
-    EvalSettings huge;huge.screen_size=1024;huge.supersample=8;huge.max_supersample=8;huge.views={1,0,42};auto limited=evaluate_cuda(m.view(),altered.view(),b,huge,options);require(limited.resource_limited&&!limited.passed&&!limited.complete,"CUDA resource failure became acceptance");
+    EvalSettings huge;huge.screen_size=1024;huge.supersample=8;huge.max_supersample=8;huge.views={1,0,42};NeuralStats diagnostic;
+    auto limited=evaluate_cuda(m.view(),altered.view(),b,huge,options,&diagnostic);require(limited.resource_limited&&!limited.passed&&!limited.complete,"CUDA resource failure became acceptance");
+    auto& failure=diagnostic.first_resource_failure;require(diagnostic.resource_failures==1&&failure.kind==NeuralResourceLimit::SampleCount&&failure.requested>failure.limit&&failure.supersample==8&&failure.view==0,"CUDA resource failure lost its cause or location");
 }
 #endif
 int main(int argc,char**) {try {

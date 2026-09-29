@@ -9,10 +9,21 @@ struct NeuralOptions {
     uint32_t memory_mib{6144}; // Includes library-owned CUDA scratch; minimum 128.
     bool overdraw_tiebreak{true};
 };
+enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
+struct NeuralAuditFailure {
+    double screen_pixels{};
+    uint64_t requested{},limit{}; // Samples, bytes or tile entries according to kind.
+    uint32_t view{};
+    uint8_t supersample{};
+    NeuralResourceLimit kind{};
+};
 struct NeuralStats {
     uint64_t encode_ns{},inference_ns{},decode_ns{},gpu_audit_ns{},reference_audit_ns{};
     uint64_t decoded{},legal_collapses{},rejected_collapses{},reference_rejections{};
     uint32_t fallback_levels{};
+    uint32_t bounded_audits{},resource_failures{};
+    uint64_t gpu_peak_bytes{};
+    NeuralAuditFailure first_resource_failure{};
 };
 // Immutable weights. Calls use private CUDA workspaces and preserve the caller's device.
 // Source streams must outlive the returned Result, as for generate().
@@ -33,7 +44,7 @@ private:
 bool neural_available(int32_t device=0) noexcept;
 Result generate_neural(MeshView,const Settings&,const NeuralModel&,NeuralStats* = nullptr);
 // Same sampled metric/refinement as evaluate(); final CPU confirmation is used in generation.
-Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions& = {});
+Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions& = {},NeuralStats* = nullptr);
 // Pre-depth geometric overlap using fixed centers and top-left fill, averaged over views.
 double overlap_cuda(MeshView,const Bounds&,double,ViewSet,const NeuralOptions& = {});
 }

@@ -4,7 +4,11 @@
 #include <cublas_v2.h>
 #include <utility>
 namespace blitz::neural::gpu {
-inline void check(cudaError_t e) {if(e==cudaErrorMemoryAllocation)throw std::length_error("CUDA allocation exceeds available device memory");if(e!=cudaSuccess)throw std::runtime_error(std::string("CUDA: ")+cudaGetErrorString(e));}
+struct ResourceError:std::length_error {
+    NeuralResourceLimit kind;uint64_t requested,limit;
+    ResourceError(NeuralResourceLimit k,uint64_t r,uint64_t l,const char* message):std::length_error(message),kind(k),requested(r),limit(l){}
+};
+inline void check(cudaError_t e) {if(e==cudaErrorMemoryAllocation)throw ResourceError(NeuralResourceLimit::DeviceMemory,0,0,"CUDA allocation exceeds available device memory");if(e!=cudaSuccess)throw std::runtime_error(std::string("CUDA: ")+cudaGetErrorString(e));}
 inline void check(cublasStatus_t e) {if(e!=CUBLAS_STATUS_SUCCESS)throw std::runtime_error("cuBLAS failure "+std::to_string(int(e)));}
 struct Device {
     int previous{};size_t limit{},live{},peak{};
@@ -19,7 +23,7 @@ template<class T> struct Buffer {
     Device* device{};T* p{};size_t n{};
     Buffer()=default;
     Buffer(Device& d,size_t count):device(&d),n(count) {
-        if(n>SIZE_MAX/sizeof(T)||n*sizeof(T)>d.limit-d.live)throw std::length_error("CUDA workspace exceeds configured memory cap");
+        if(n>SIZE_MAX/sizeof(T)||n*sizeof(T)>d.limit-d.live)throw ResourceError(NeuralResourceLimit::WorkspaceMemory,n>SIZE_MAX/sizeof(T)?UINT64_MAX:d.live+n*sizeof(T),d.limit,"CUDA workspace exceeds configured memory cap");
         if(n)check(cudaMalloc(&p,n*sizeof(T)));d.live+=n*sizeof(T);d.peak=std::max(d.peak,d.live);
     }
     ~Buffer(){if(p){cudaFree(p);device->live-=n*sizeof(T);}}

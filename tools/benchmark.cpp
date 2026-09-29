@@ -145,6 +145,7 @@ int benchmark_main(int argc,char** argv) {
     fs::path baseline;
     std::unique_ptr<NeuralModel> model;if(!neural_file.empty()){if(method!="native")throw std::invalid_argument("neural model cannot be combined with an external baseline");model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);method="neural";metadata["model_sha256"]=model->sha256();metadata["cuda_device"]=neural_options.device;metadata["backend"]="cuda+reference-confirmation";}
     metadata["method"]=method;
+    if(model)metadata["candidate_refinement"]="original sampling sequence bounded by 64000000 samples; uncertain bounds reject; unchanged CPU confirmation";
     metadata["output_hash_scope"]="output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data";
     if(method!="native"&&method!="neural") {
         if(method!="meshopt"&&method!="fastquadric"&&method!="cgal-lt"&&method!="cgal-qem"&&method!="cgal-probabilistic")throw std::invalid_argument("unknown baseline");
@@ -168,7 +169,7 @@ int benchmark_main(int argc,char** argv) {
     std::vector<json> assets;
     for(auto a:corpus["assets"])if(split=="all"||a.at("split")==split){if(assets.size()<limit)assets.push_back(a);}
     if(assets.empty())throw std::invalid_argument("empty benchmark selection");
-    size_t done=0;std::map<std::string,std::vector<double>> categories;double seconds=0;size_t fallbacks=0;
+    size_t done=0;std::map<std::string,std::vector<double>> categories;double seconds=0;size_t fallbacks=0;json blocked=json::array(),failed=json::array();
     for(auto asset:assets) {
         std::string id=asset.at("id");auto path=output/"rows"/(id+".json");json row;
         // Completed rows are reusable only while the actual bytes still match the frozen inputs.
@@ -230,13 +231,21 @@ int benchmark_main(int argc,char** argv) {
             }catch(const std::exception& e){row["failure"]=e.what();row["ratio"]=1;row["fallback"]=true;row["complete"]=std::chrono::steady_clock::now()<deadline;row["failed"]=true;}
             row["seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();row["peak_rss_kib"]=rss();write(path,row);
         }
-        if(!row.value("complete",false))break;
+        if(!row.value("complete",false)) {
+            if(row.contains("result")&&row["result"].value("status","")=="budget_limited") {
+                json failure={{"id",id},{"reason","evaluation_resource_limit"},{"row",path.string()}};
+                if(row.contains("neural"))failure["diagnostic"]=row["neural"].value("first_resource_failure",json(nullptr));
+                blocked.push_back(failure);std::cerr<<id<<" blocked: "<<failure.dump()<<'\n';continue;
+            }
+            break;
+        }
         if(row.at("run_sha256")!=runhash)throw std::runtime_error("row hash mismatch");
+        if(row.value("failed",false))failed.push_back({{"id",id},{"failure",row.value("failure","unknown failure")}});
         categories[row.at("category")].push_back(row.at("ratio"));seconds+=row.at("seconds").get<double>();fallbacks+=row.value("fallback",false);++done;
         std::cerr<<done<<"/"<<assets.size()<<" "<<id<<" ratio="<<row.at("ratio")<<" seconds="<<row.at("seconds")<<'\n';
     }
-    json summary={{"run_sha256",runhash},{"complete",done==assets.size()},{"expected",assets.size()},{"completed",done},{"seconds",seconds},{"fallbacks",fallbacks},{"categories",json::object()}};
+    json summary={{"run_sha256",runhash},{"complete",done==assets.size()},{"expected",assets.size()},{"completed",done},{"blocked_assets",blocked},{"failed_assets",failed},{"seconds",seconds},{"fallbacks",fallbacks},{"categories",json::object()}};
     double mean=0;for(auto& [name,values]:categories){double sum=0;for(auto v:values)sum+=v;double avg=sum/values.size();mean+=avg;summary["categories"][name]={{"count",values.size()},{"mean_ratio",avg}};}
     summary["score"]=done==assets.size()?json(100*(1-mean/categories.size())):json(nullptr);
-    write(output/"summary.json",summary);std::cout<<summary.dump(2)<<'\n';return done==assets.size()?0:2;
+    write(output/"summary.json",summary);std::cout<<summary.dump(2)<<'\n';return done==assets.size()?0:blocked.empty()?2:3;
 }

@@ -1,0 +1,58 @@
+{
+  "from": "runs/neural/sustained",
+  "checkpoint_sha256": "c57169c6e0bbd11ed8551fd502c8cfbae607192fb6de47960012193b0318db11",
+  "resumed_step": 25000,
+  "optimizer_preserved": true,
+  "health_origin": "runs/neural/sustained/health.json",
+  "previous_status": {
+    "started_at": "2026-09-28T20:41:30.355Z",
+    "deadline_ms": 1790662773233,
+    "timings": [
+      {
+        "label": "training",
+        "seconds": 177.013,
+        "code": 0
+      },
+      {
+        "label": "training",
+        "seconds": 893.516,
+        "code": 0
+      },
+      {
+        "label": "pilot-25000",
+        "seconds": 11.843,
+        "code": 2
+      },
+      {
+        "label": "pilot-25000",
+        "seconds": 4.203,
+        "code": 2
+      }
+    ],
+    "command": [
+      "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/sustained/bin/blitz",
+      "bench",
+      "research/pilot.json",
+      "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/sustained/audit.json",
+      "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/sustained/pilot-25000",
+      "--split",
+      "development",
+      "--neural-model",
+      "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/sustained/training/step-25000.blzn",
+      "--minutes",
+      "50"
+    ],
+    "child_pid": 261217,
+    "phase": "failed",
+    "pid": 251923,
+    "updated_at": "2026-09-28T20:59:37.003Z",
+    "health": "health.json",
+    "checkpoint": "training/step-4096.pt",
+    "error": "Error: Audit made no progress",
+    "release_approved": false
+  },
+  "deadline_ms": 1790662773233,
+  "changes": "Bound candidate refinement to fitting sample counts; retain original pixel limits and CPU confirmation. Run full audit readiness before continuing.",
+  "audit_binary_sha256": "0c5b59d4ddf195a58c65b6f762347143ea43c9d26976c5b0effae425e81c81d1",
+  "training_binary_sha256": "9fb8fc8c4fea1f19e2d3a4e884f73daa64d5ec9d8bf41cd279877e47e4e61381"
+}

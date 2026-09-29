@@ -227,6 +227,19 @@ byId('chains').innerHTML=data.assets.map((a,ai)=>{
 }).join('');
 data.assets.forEach((a,i)=>{
   if(!a.runtime_levels?.length)a.runtime_levels=a.lods.map((_,l)=>l);
+  if(a.added_vertex_budget_bytes!==undefined){
+    const note=document.querySelector('.asset[data-asset="'+i+'"] .chain-metadata');
+    note.append(' · vertex cap '+(a.max_added_vertex_bytes_bps===null?'off':fixed(a.max_added_vertex_bytes_bps/100,1)+'%')+
+      (a.added_vertex_budget_bytes===null?'':' / '+fixed(a.added_vertex_budget_bytes/1024,1)+' KiB'));
+  }
+  if(a.runtime_storage?.length){
+    const cards=document.querySelectorAll('.asset[data-asset="'+i+'"] .lod-card');
+    for(const cost of a.runtime_storage){
+      const line=document.createElement('div');line.className='lod-error runtime-storage';
+      line.textContent='+'+fixed(cost.added_vertex_bytes/1024,1)+' KiB vertices · '+fixed(cost.index_bytes/1024,1)+' KiB indices';
+      cards[cost.scheduled_index].querySelector('.lod-footer').append(line);
+    }
+  }
   if(data.round4)document.querySelector('.asset[data-asset="'+i+'"] .asset-note').append(' · '+a.runtime_levels.length+' runtime levels / '+a.lods.length+' audit slots');
   if(data.vegetation&&a.audit_scope==='card_geometry_only'){
     const row=document.querySelector('.asset[data-asset="'+i+'"]');

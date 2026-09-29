@@ -247,20 +247,23 @@ void save_ply(MeshView m,const fs::path& path) {
     if(!f)fail("cannot write PLY");
 }
 json result_json(const Result& r) {
-    json j={{"version",2},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
+    json j={{"version",3},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
     auto storage=[](StorageStats s){return json{{"source_vertex_bytes",s.source_vertex_bytes},{"added_vertex_bytes",s.added_vertex_bytes},{"index_bytes",s.index_bytes},{"total_bytes",s.total()}};};
     j["storage"]=storage(storage_stats(r));j["triangle_overhead_bps"]=r.triangle_overhead_bps;
+    j["max_added_vertex_bytes_bps"]=r.max_added_vertex_bytes_bps?json(*r.max_added_vertex_bytes_bps):json(nullptr);
+    j["added_vertex_budget_bytes"]=r.added_vertex_budget_bytes?json(*r.added_vertex_budget_bytes):json(nullptr);
     j["max_changed_area"]=r.max_changed_area;
     j["reference_candidate"]=r.selection.reference;j["selected_candidate"]=r.selection.selected;
     j["candidates"]=json::array();for(auto& c:r.candidates)j["candidates"].push_back({{"triangles",c.triangles},{"storage",storage(c.storage)}});
-    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
+    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b,r.added_vertex_budget_bytes);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
-    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections}};
+    j["runtime_storage"]=json::array();for(auto level:runtime_storage(r))j["runtime_storage"].push_back({{"scheduled_index",level.scheduled_index},{"added_vertex_bytes",level.added_vertex_bytes},{"index_bytes",level.index_bytes},{"cumulative_added_vertex_bytes",level.cumulative_added_vertex_bytes}});
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections},{"vertex_budget_rejections",r.vertex_budget_rejections},{"tail_probe_evaluations",r.tail_probe_evaluations},{"tail_reserved_vertex_bytes",r.tail_reserved_vertex_bytes}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
-        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
-        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable"};
+        const char* origins[]={"direct","progressive","tail_probe"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
+        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable","vertex_budget"};
         for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
             {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
@@ -327,7 +330,7 @@ void save_chain(const Result& r,const fs::path& directory) {
 json settings_json(const Settings& s) {
     auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
     auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
-    return {{"levels",s.levels},{"triangle_overhead_bps",s.triangle_overhead_bps},
+    return {{"levels",s.levels},{"triangle_overhead_bps",s.triangle_overhead_bps},{"max_added_vertex_bytes_bps",s.max_added_vertex_bytes_bps?json(*s.max_added_vertex_bytes_bps):json(nullptr)},
       {"objective",s.objective==Objective::Quadric?"quadric":s.objective==Objective::Regularized?"regularized":s.objective==Objective::Visual?"visual":"topology_relaxed"},
       {"profile",s.profile==Profile::Coverage?"coverage":s.profile==Profile::Normals?"normals":"attributes"},{"pixels_per_meter",s.pixels_per_meter},
       {"meters_per_unit",s.meters_per_unit},{"base_pixels",s.base_pixels?json(*s.base_pixels):json(nullptr)},{"last_pixels",s.last_pixels},
@@ -351,6 +354,12 @@ Settings settings_json(const json& original,bool legacy_research) {
     s.levels=byte("levels");s.beam_width=byte("beam_width");s.search_supersample=byte("search_supersample");s.audit_supersample=byte("audit_supersample");s.max_supersample=byte("max_supersample");
     if(!j.at("triangle_overhead_bps").is_number_integer())fail("triangle overhead must be integer basis points");
     int overhead=j.at("triangle_overhead_bps");if(overhead<0||overhead>10000)fail("triangle overhead out of range");s.triangle_overhead_bps=uint16_t(overhead);
+    if(!j.contains("max_added_vertex_bytes_bps"))s.max_added_vertex_bytes_bps=std::nullopt;
+    else {
+        const auto& cap=j.at("max_added_vertex_bytes_bps");
+        if(!cap.is_number_integer()||cap<0||cap>=UINT32_MAX)fail("added vertex budget must be integer basis points below UINT32_MAX or null");
+        s.max_added_vertex_bytes_bps=cap.get<uint32_t>();
+    }
     int budget=j.at("candidate_budget");if(budget<1||budget>65535)fail("invalid candidate budget");s.candidate_budget=uint16_t(budget);
     s.pixels_per_meter=j.at("pixels_per_meter");s.meters_per_unit=j.at("meters_per_unit");s.last_pixels=j.at("last_pixels");s.max_changed_area=j.at("max_changed_area");
     if(j.contains("base_pixels")&&!j["base_pixels"].is_null())s.base_pixels=j["base_pixels"];

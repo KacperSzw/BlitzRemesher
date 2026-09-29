@@ -13,7 +13,11 @@ The meshes are enlarged to show each LOD; labels give their target screen sizes.
 
 [Automatic hybrid research](research/hybrid/REPORT.md) compares resident buffer
 bytes and triangle counts, with measured bake times and independent tail checks.
-[Open the current offline board](research/hybrid/board/index.html).
+[Open the current 20% vertex-budget board](examples/current-board/index.html).
+[Open the algorithm and LOD chain example](examples/lod-chains.html).
+The [earlier hybrid board](research/hybrid/board/index.html) records uncapped
+and forced-placement research runs; its Moon rock chain is rebuilt at every
+level after LOD0.
 [Previous shared/rebuilt comparisons](research/vegetation/REPORT.md) remain archived.
 These experiments score opaque card geometry; texture opacity and shading remain
 outside their contract.
@@ -48,7 +52,7 @@ contract and must not be described as the default quality audit.
 Use [the experimental changed-area preset](configs/quality-area-0.5.json) to cap
 coverage change at 50% on every configured full audit view while retaining the
 default camera and pixel-distance settings. It sets triangle overhead to zero,
-so final selection favors the fewest triangles across the audited LOD chain:
+so final selection uses the capped tail-first priority described below:
 
     build/release/blitz simplify model.glb --config configs/quality-area-0.5.json --out output/model
 
@@ -82,13 +86,22 @@ material graph. Engine integrations retain their own material payloads.
 
 ## Controls
 
-- Automatic hybrid chooses the smallest resident vertex/index payload within
-  `triangle_overhead_bps` of a triangle-minimizing reference chain found by the
-  search. Default 500 means 5%; each LOD must satisfy its own integer bound.
-  Set 0 for no per-level triangle overhead. This is a bounded search, not a global optimum.
+- Automatic hybrid limits newly allocated vertex streams to
+  `max_added_vertex_bytes_bps` of the packed source vertex streams. Default
+  2000 means 20%; 0 permits only source vertex storage and `null` disables the
+  cap. The cap applies to distinct runtime LOD meshes across the complete chain.
+  With a cap, the default `triangle_overhead_bps=0` prioritizes the final audited
+  LOD's triangle count, then each earlier LOD in reverse order. The search first
+  reserves the bytes of an audited compact final mesh, then lets earlier LODs
+  spend the remainder. Up to eight tail probes add work beyond the per-level
+  candidate budget. With the cap disabled, selection minimizes total chain
+  triangles. Nonzero overhead permits a smaller resident payload when every
+  scheduled LOD stays within its integer triangle allowance. This is a bounded search.
 - Both original-source and preceding-LOD proposals undergo source and transition
   audits. Shared levels preserve source vertex bytes and IDs; owned levels are compact.
-  The reference and selected candidate costs and a 0/2/5/10% selection sweep are recorded.
+  The reference and selected candidate costs, budget rejections, per-runtime-level
+  storage, and a 0/2/5/10% selection sweep are recorded. Set the vertex cap to
+  `null` and triangle overhead to 500 to restore the previous automatic policy.
 - Profiles: coverage, normals, attributes. The pixel-distance metric measures
   foreground displacement. `max_changed_area` independently caps `1 - mask IoU`
   for conservative, supersampled opaque coverage on each full audit view.
@@ -152,6 +165,9 @@ Scheduled slots retain their source and transition audit records. For engine
 runtime selection, use `blitz_result_runtime_lod_count` and
 `blitz_result_runtime_lod_index` (C++: `runtime_levels`) to skip exact
 consecutive duplicates. The returned indices address the scheduled slots;
+`blitz_result_runtime_lod_storage` (C++: `runtime_storage`) reports added
+vertex bytes, index bytes and cumulative added vertex bytes at each runtime
+level. `blitz_result_storage` also reports the chain's added vertex budget.
 use each retained slot's original screen threshold. Equal triangle counts
 alone never cause a merge. glTF export shares one mesh and buffer payload for
 each identical consecutive group, while `lods.json` preserves every audit.
@@ -264,9 +280,11 @@ Installed CMake consumers use find_package(BlitzRemesher CONFIG REQUIRED)
 and link Blitz::remesher. BUILD_SHARED_LIBS=ON builds shared libraries.
 The C++ package propagates its C++20 requirement to consumers.
 
-Version 0.4 uses C ABI 4 and shared-library compatibility version 4. C callers
-must rebuild and reinitialize the enlarged `blitz_settings` descriptor;
-`blitz_lod_info` now reports both coverage-area measurements and worst views.
+Version 0.5 uses C ABI 5 and shared-library compatibility version 5. C callers
+must rebuild and reinitialize the enlarged `blitz_settings` descriptor. Its
+vertex budget uses `UINT32_MAX` to disable the cap. The enlarged storage record
+and new runtime storage query report the budget and per-mesh costs.
+Version 0.4 added coverage-area measurements and worst views to `blitz_lod_info`.
 Version 0.3 replaced
 `output_mode`/`chain_mode` with `triangle_overhead_bps`; use
 `blitz_result_storage` and per-LOD `reference_triangles` to inspect the result. C++ colors

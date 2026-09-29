@@ -1,0 +1,239 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 5882,
+      "max": [
+        0.08394316583871841,
+        0.26783305406570435,
+        0.1008082702755928
+      ],
+      "min": [
+        -0.08394315838813782,
+        0.0003753884811885655,
+        -0.08394315838813782
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 5882,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 5882,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 26787,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5125,
+      "count": 24108,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5125,
+      "count": 6948,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5125,
+      "count": 6828,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5125,
+      "count": 6774,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "BlitzRemesher",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 70584,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 70584,
+      "byteOffset": 70584
+    },
+    {
+      "buffer": 0,
+      "byteLength": 47056,
+      "byteOffset": 141168
+    },
+    {
+      "buffer": 0,
+      "byteLength": 107148,
+      "byteOffset": 188224
+    },
+    {
+      "buffer": 0,
+      "byteLength": 96432,
+      "byteOffset": 295372
+    },
+    {
+      "buffer": 0,
+      "byteLength": 27792,
+      "byteOffset": 391804
+    },
+    {
+      "buffer": 0,
+      "byteLength": 27312,
+      "byteOffset": 419596
+    },
+    {
+      "buffer": 0,
+      "byteLength": 27096,
+      "byteOffset": 446908
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 474004,
+      "uri": "chain.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "material_0"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "LOD0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD4",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD5",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 6,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD6",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 7,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "LOD0"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD1"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD2"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD3"
+    },
+    {
+      "mesh": 2,
+      "name": "LOD4"
+    },
+    {
+      "mesh": 3,
+      "name": "LOD5"
+    },
+    {
+      "mesh": 4,
+      "name": "LOD6"
+    },
+    {
+      "mesh": 4,
+      "name": "LOD7"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

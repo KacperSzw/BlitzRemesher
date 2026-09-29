@@ -26,6 +26,7 @@ std::string validate(const Settings& s) {
     if(s.levels<2||s.levels>32)return "level count must be 2..32";
     if((s.research.output&&unsigned(*s.research.output)>1)||unsigned(s.research.chain)>2||unsigned(s.objective)>3||unsigned(s.profile)>2)return "unknown mode";
     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
+    if(s.max_added_vertex_bytes_bps&&*s.max_added_vertex_bytes_bps==UINT32_MAX)return "added vertex budget must be below UINT32_MAX basis points";
     if(s.research.coverage_cache_mib>256)return "coverage cache must be 0..256 MiB";
     if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
         return "maximum changed area must be in [0,1]";
@@ -104,7 +105,14 @@ EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,boo
 Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
     if(s.performance)*s.performance={};
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
+    const bool automatic=!s.research.output;
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
+    result.max_added_vertex_bytes_bps=automatic?s.max_added_vertex_bytes_bps:std::nullopt;
+    if(result.max_added_vertex_bytes_bps) {
+        auto bytes=vertex_bytes(source),bps=uint64_t(*result.max_added_vertex_bytes_bps);
+        auto whole=bytes/10000,part=(bytes%10000)*bps/10000;
+        result.added_vertex_budget_bytes=bps&&whole>(UINT64_MAX-part)/bps?UINT64_MAX:whole*bps+part;
+    }
     result.max_changed_area=s.max_changed_area;
     auto steps=schedule(result.reference_bounds,s);
     // An exact source chain is a valid incumbent even if cancellation precedes the first audit.
@@ -114,8 +122,74 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
     root->storage={vertex_bytes(source),0,uint64_t(source.indices.size())*4};
     auto source_path=root;
     std::vector<std::shared_ptr<Node>> beam{root},finalists;
-    const bool automatic=!s.research.output;
     auto cancelled=[&]{return s.cancelled&&s.cancelled();};
+    std::optional<Lod> tail_seed;
+    uint64_t tail_reserved=0;
+    if(automatic&&result.added_vertex_budget_bytes&&*result.added_vertex_budget_bytes&&!proposer) {
+        // Find an audited compact tail first. Earlier levels may use only the
+        // remaining bytes; the final level can connect this mesh to any prefix.
+        const size_t last=s.levels-1,base=std::max<size_t>(1,source.triangles()/100);
+        const std::array<size_t,8> targets{1,std::max<size_t>(1,base/16),std::max<size_t>(1,base/4),
+            std::max<size_t>(1,base/2),base,std::min(source.triangles(),base*2),
+            std::min(source.triangles(),base*4),std::min(source.triangles(),base*8)};
+        auto search=eval_config(s,steps[last],last,false,std::min(steps[last].source,steps[last].transition));
+        auto audit=eval_config(s,steps[last],last,true,std::min(steps[last].source,steps[last].transition));
+        detail::CoverageCache coverage(s.profile==Profile::Coverage?uint32_t(s.research.coverage_cache_mib)*1024*1024:0,
+            result.reference_bounds);
+        size_t previous_target=0;
+        for(auto target:targets) {
+            if(cancelled()){result.status=Status::Cancelled;return result;}
+            if(target==previous_target)continue;
+            previous_target=target;
+            ReduceSettings rs;rs.output=OutputMode::Rebuild;rs.objective=s.objective;rs.target_triangles=target;
+            rs.normal_weight=search.weights.normal;rs.cancelled=s.cancelled;rs.prune=s.prune;
+            rs.coupled_wedges=s.coupled_wedges;rs.boundary_weight=s.research.boundary_weight;
+            rs.boundary_placement=s.research.boundary_placement;rs.independent_seams=s.research.independent_seams;
+            ReductionStats stats;rs.statistics=(s.performance||s.research.trace)?&stats:nullptr;
+            const auto begin=std::chrono::steady_clock::now();
+            Lod candidate;
+            {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);candidate=reduce(source,rs);}
+            if(s.performance) {
+                s.performance->solve_attempts+=stats.solve_attempts;s.performance->singular_solves+=stats.singular_solves;
+                s.performance->nonfinite_solves+=stats.nonfinite_solves;s.performance->position_fallbacks+=stats.position_fallbacks;
+                s.performance->nonfinite_costs+=stats.nonfinite_costs;
+            }
+            ++result.candidate_evaluations;++result.tail_probe_evaluations;
+            auto view=candidate.view(source);
+            const auto achieved=view.triangles();
+            uint8_t gate=0;
+            const auto bytes=vertex_bytes(view);
+            if(!validate(view).empty())gate=5;
+            else if(same_mesh_data(view,source))gate=7;
+            else if(bytes>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;gate=9;}
+            else {
+                coverage.begin_candidate();
+                auto measured=coverage.evaluate(source,view,search,0,false);
+                if(measured.resource_limited)result.status=Status::BudgetLimited;
+                if(!measured.passed)gate=1;
+                else {
+                    measured=coverage.evaluate(source,view,audit,0,true);
+                    if(measured.resource_limited)result.status=Status::BudgetLimited;
+                    if(!measured.passed)gate=3;
+                }
+                coverage.begin_candidate();
+            }
+            if(!gate&&(!tail_seed||view.triangles()<tail_seed->view(source).triangles()||
+                (view.triangles()==tail_seed->view(source).triangles()&&bytes<tail_reserved))) {
+                tail_reserved=bytes;tail_seed=std::move(candidate);
+            }
+            if(s.research.trace) {
+                ProposalTrace trace;trace.level=uint8_t(last);trace.origin=2;trace.strategy=0;
+                trace.input_triangles=trace.parent_triangles=uint32_t(source.triangles());
+                trace.requested=uint32_t(target);trace.achieved=uint32_t(achieved);trace.gate=gate;
+                trace.attempts=stats.attempts;trace.collapsed=stats.collapsed;trace.geometry_rejections=stats.geometry_rejections;
+                trace.uv_rejections=stats.uv_rejections;trace.link_rejections=stats.link_rejections;
+                trace.seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
+                result.proposals.push_back(trace);
+            }
+        }
+        result.tail_reserved_vertex_bytes=tail_reserved;
+    }
     for(unsigned level=1;level<s.levels;++level) {
         if(cancelled()){result.status=Status::Cancelled;return result;}
         std::vector<std::shared_ptr<Node>> next;
@@ -143,6 +217,14 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             auto view=candidate.view(source),previous=parent->lod.view(source);
             if(!validate(view).empty())return 5;
             if(view.triangles()>previous.triangles())return 6;
+            const bool changed=!same_mesh_data(view,previous);
+            if(result.added_vertex_budget_bytes&&changed&&!candidate.shared_vertices) {
+                auto added=vertex_bytes(view);
+                auto allowed=*result.added_vertex_budget_bytes-(level+1<s.levels?tail_reserved:0);
+                if(parent->storage.added_vertex_bytes>allowed||added>allowed-parent->storage.added_vertex_bytes) {
+                    ++result.vertex_budget_rejections;return 9;
+                }
+            }
             bool cached=false;uint8_t gate=0;
             if(automatic||s.research.adaptive_targets) {
                 for(auto& item:seen)if((item.parent==parent.get()||(automatic&&same_mesh_data(item.parent->lod.view(source),previous)))&&same_mesh_data(item.lod.view(source),view)) {
@@ -173,7 +255,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             candidate.schedule=steps[level];
             auto node=std::make_shared<Node>();node->parent=parent;node->triangles=parent->triangles+view.triangles();
             node->storage=parent->storage;
-            if(!same_mesh_data(view,previous)) {
+            if(changed) {
                 node->storage.index_bytes+=uint64_t(view.indices.size())*4;
                 if(!candidate.shared_vertices)node->storage.added_vertex_bytes+=vertex_bytes(view);
             }
@@ -182,19 +264,24 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         };
         // Retaining each incumbent is important: camera-space errors need not decrease monotonically.
         for(auto& parent:beam)offer(parent->lod,parent);
-        struct Slot { std::shared_ptr<Node> parent; bool direct;OutputMode output;std::vector<std::pair<size_t,bool>> trials; };
+        struct Slot {
+            std::shared_ptr<Node> parent;bool direct;OutputMode output;
+            std::vector<std::pair<size_t,bool>> trials,requested; // requested: target and prune flag.
+        };
         std::vector<Slot> slots;
         struct Trials {const Node* parent;std::vector<std::pair<size_t,bool>> values;};std::vector<Trials> parent_trials;
         // Strategy-major traversal gives both placements/origins a turn even at small budgets.
         for(auto output:{OutputMode::Rebuild,OutputMode::Reuse}) {
             if(!automatic&&output!=*s.research.output)continue;
             for(bool direct:{true,false})for(auto& parent:beam) {
-                if(automatic&&beam.size()>1&&parent==source_path)continue;
+                // Under a vertex cap, a direct compact tail may only fit after
+                // retaining the source through earlier scheduled levels.
+                if(automatic&&!result.added_vertex_budget_bytes&&beam.size()>1&&parent==source_path)continue;
                 if(direct&&s.research.chain==ChainMode::Progressive)continue;
                 if(!direct&&(s.research.chain==ChainMode::Direct ||
                     (s.research.chain==ChainMode::Hybrid&&same_mesh_data(source,parent->lod.view(source)))))continue;
                 if(automatic&&std::any_of(slots.begin(),slots.end(),[&](auto& slot){return slot.direct==direct&&slot.output==output&&same_mesh_data(slot.parent->lod.view(source),parent->lod.view(source));}))continue;
-                slots.push_back({parent,direct,output,{}});
+                slots.push_back({parent,direct,output,{},{}});
             }
         }
         // Alternate placement priority across levels; work remains deterministic.
@@ -230,9 +317,26 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                     if(automatic&&slot.direct&&slot.output==OutputMode::Reuse&&high<parent->lod.view(source).triangles()&&
                        std::none_of(slot.trials.begin(),slot.trials.end(),[&](auto x){return x.first==high;}))target=high;
                 }
+                if(automatic&&result.added_vertex_budget_bytes&&slot.output==OutputMode::Rebuild) {
+                    // A compact triangle references at most three vertices.
+                    // Probe a target that can fit the remaining budget even
+                    // when a narrow beam gives this slot just one attempt.
+                    const auto allowed=*result.added_vertex_budget_bytes-(level+1<s.levels?tail_reserved:0);
+                    const auto remaining=parent->storage.added_vertex_bytes<=allowed?
+                        allowed-parent->storage.added_vertex_bytes:0;
+                    const auto stride=vertex_bytes(source)/source.positions.count;
+                    if(stride&&remaining/stride>=3)target=std::min(target,size_t(remaining/stride/3));
+                }
                 ReduceSettings rs;rs.output=slot.output;rs.objective=s.objective;rs.target_triangles=target;
                 rs.normal_weight=search_source.weights.normal;rs.cancelled=s.cancelled;
                 rs.prune=s.prune&&r%2==0;
+                if(result.added_vertex_budget_bytes) {
+                    auto request=std::pair{target,rs.prune};
+                    if(std::find(slot.requested.begin(),slot.requested.end(),request)!=slot.requested.end()) {
+                        ++proposals;continue;
+                    }
+                    slot.requested.push_back(request);
+                }
                 rs.coupled_wedges=s.coupled_wedges;
                 rs.boundary_weight=s.research.boundary_weight;rs.boundary_placement=s.research.boundary_placement;
                 rs.independent_seams=s.research.independent_seams;
@@ -309,6 +413,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             }
         }
         if(cancelled()){result.status=Status::Cancelled;return result;}
+        if(level+1==s.levels&&tail_seed)for(auto& parent:beam)offer(*tail_seed,parent);
         if(automatic&&!next.empty()) {
             // Reconnect the current triangle leader to cheaper histories. Sharing a
             // prefix does not require its descendants to keep the same reduction path.
@@ -332,13 +437,19 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         if(automatic) {
             auto all=next;const auto prefix_reference=cost(next.front()).triangles;
             if(next.size()>(s.beam_width+1u)/2)next.resize((s.beam_width+1u)/2);
-            std::stable_sort(all.begin(),all.end(),[](auto& a,auto& b){return a->storage.total()!=b->storage.total()?a->storage.total()<b->storage.total():a->triangles<b->triangles;});
+            std::stable_sort(all.begin(),all.end(),[&](auto& a,auto& b){
+                auto ac=result.added_vertex_budget_bytes?a->storage.added_vertex_bytes:a->storage.total();
+                auto bc=result.added_vertex_budget_bytes?b->storage.added_vertex_bytes:b->storage.total();
+                return ac!=bc?ac<bc:a->triangles!=b->triangles?a->triangles<b->triangles:a->storage.total()<b->storage.total();
+            });
             for(auto& node:all) {
                 if(next.size()>=s.beam_width)break;
-                auto counts=cost(node).triangles;bool near=true;
+                bool near=true;
+                auto counts=cost(node).triangles;
                 // Fixed search envelope, independent of the user's selection allowance.
                 // Histories far outside it cannot buy useful memory savings at the tested 0..10% settings.
-                for(size_t i=1;i<counts.size();++i)if(uint64_t(counts[i])*10000>uint64_t(prefix_reference[i])*11000){near=false;break;}
+                if(!result.added_vertex_budget_bytes)
+                    for(size_t i=1;i<counts.size();++i)if(uint64_t(counts[i])*10000>uint64_t(prefix_reference[i])*11000){near=false;break;}
                 if(near&&node!=source_path&&std::find(next.begin(),next.end(),node)==next.end())next.push_back(node);
             }
             std::stable_sort(all.begin(),all.end(),[](auto& a,auto& b){return a->triangles<b->triangles;});
@@ -349,7 +460,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         beam=std::move(next);
     }
     result.candidates.clear();for(auto& node:finalists)result.candidates.push_back(cost(node));
-    result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0);
+    result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0,result.added_vertex_budget_bytes);
     if(!automatic)result.selection={0,0}; // Historical triangle-first research controls.
     auto best=finalists[result.selection.selected];
     for(size_t i=result.lods.size();i-->0;) {result.lods[i]=std::move(best->lod);best=best->parent;}

@@ -17,7 +17,8 @@ struct ResearchOptions {
 };
 struct Settings {
     uint8_t levels{8}; Objective objective{Objective::Quadric};
-    uint16_t triangle_overhead_bps{500}; // 100 basis points = 1%; range 0..10000.
+    uint16_t triangle_overhead_bps{}; // 100 basis points = 1%; range 0..10000.
+    std::optional<uint32_t> max_added_vertex_bytes_bps{2000}; // Relative to packed source vertex bytes; null disables.
     double pixels_per_meter{512},meters_per_unit{1};
     std::optional<double> base_pixels{},max_lod0_delta_px{};
     double last_pixels{16}; Curve transition{};
@@ -47,8 +48,8 @@ struct ProposalTrace {
     uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     double seconds{};
-    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0; strategy: QEM=0, endpoint=1, components=2, topology fallback=3.
-    // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8.
+    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0, progressive=1, tail probe=2; strategy: QEM=0, endpoint=1, components=2, topology fallback=3.
+    // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8, vertex budget=9.
 };
 struct StorageStats {
     uint64_t source_vertex_bytes{},added_vertex_bytes{},index_bytes{};
@@ -60,7 +61,7 @@ struct ChainCost {
 };
 struct ChainSelection { size_t reference{},selected{}; };
 // Deterministic selection from an already audited pool. Does not establish validity.
-ChainSelection select_chain(std::span<const ChainCost>,uint16_t overhead_bps);
+ChainSelection select_chain(std::span<const ChainCost>,uint16_t overhead_bps,std::optional<uint64_t> added_vertex_budget_bytes={});
 uint64_t vertex_bytes(MeshView); // Canonical packed attributes, excluding borrowed stride padding.
 struct Result {
     MeshView source; Bounds reference_bounds; std::vector<Lod> lods;
@@ -70,9 +71,13 @@ struct Result {
     std::array<uint64_t,4> area_rejected_gates{}; // Audit-only subset: pixel limit passed, area limit failed.
     std::array<Measurement,4> worst_rejected{};
     std::vector<ProposalTrace> proposals;
-    uint64_t duplicate_proposals{},component_builds{},component_unavailable{},topology_fallback_proposals{};
+    uint64_t duplicate_proposals{},component_builds{},component_unavailable{},topology_fallback_proposals{},vertex_budget_rejections{};
+    uint8_t tail_probe_evaluations{}; // At most eight direct tail probes.
+    uint64_t tail_reserved_vertex_bytes{};
     uint64_t transition_reconnections{}; // Extra audited edges, not reduction proposals.
     uint16_t triangle_overhead_bps{};
+    std::optional<uint32_t> max_added_vertex_bytes_bps;
+    std::optional<uint64_t> added_vertex_budget_bytes;
     double max_changed_area{1.0}; // Audit contract used for this result.
     ChainSelection selection;
     std::vector<ChainCost> candidates; // Final audited pool; no duplicate geometry payloads.
@@ -81,6 +86,11 @@ StorageStats storage_stats(const Result&); // Same buffer layout and duplicate p
 // First scheduled slot of each consecutive group with identical render data.
 // Scheduled slots and their independent audit records remain unchanged (at most 32).
 std::vector<uint8_t> runtime_levels(const Result&);
+struct RuntimeLevelStorage {
+    uint8_t scheduled_index{};
+    uint64_t added_vertex_bytes{},index_bytes{},cumulative_added_vertex_bytes{};
+};
+std::vector<RuntimeLevelStorage> runtime_storage(const Result&);
 struct ReductionStats {
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};

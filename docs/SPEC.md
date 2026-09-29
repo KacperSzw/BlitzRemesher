@@ -7,14 +7,23 @@ engine-specific plugins are deferred.
 
 Production uses automatic hybrid generation. Both source and predecessor inputs,
 and both endpoint and repositioning reductions, propose audited candidates.
-The selected complete chain minimizes packed resident vertex/index bytes while
-each scheduled LOD uses at most floor(reference_triangles*(1+overhead)) triangles.
-The reference is one complete minimum-total-triangle path found by this run;
-it is not a global optimum. Default overhead is 500 basis points (5%), with
-0..10000 supported. The proposal pool is independent of overhead. Source vertex
+The selected complete chain obeys a cap on added packed vertex bytes. The default
+cap is 2000 basis points (20%) of the packed source vertex streams; zero forbids
+added vertex storage and null disables the cap. The cap counts each distinct
+consecutive runtime mesh once. With a cap, the reference is the audited path
+found by this run with the fewest triangles at the final LOD, breaking ties at
+each preceding LOD in reverse order, then by resident bytes. With the cap
+disabled, the reference minimizes total chain triangles. Neither is a global
+optimum. The default triangle overhead is zero, so the selected chain is this
+reference. With nonzero overhead, selection minimizes
+resident bytes subject to each scheduled LOD using at most
+floor(reference_triangles*(1+overhead)) triangles. Overhead supports 0..10000
+basis points. The proposal pool is independent of overhead. Source vertex
 streams remain immutable; owned levels are compact. Source buffers count once,
 exact consecutive runtime duplicates once, and all present attributes/u32 indices
 count. Forced output/origin modes remain research controls. See research/hybrid/PLAN.md.
+Forced output research controls bypass the production vertex cap and report it
+as disabled so archived placement experiments keep their original meaning.
 Borrowed reducer/proposer outputs address the input passed to that call. In
 progressive rebuild, compact IDs from the preceding LOD must not be interpreted
 against LOD0; preserve the referenced input for as long as the output needs it.
@@ -54,10 +63,24 @@ Normals are sampled visible interpolated normals, or face normals when absent.
 These are audited-camera/sample guarantees, never universal appearance bounds.
 
 Quality preset allows 64 candidate evaluations/level, fast eight. Automatic search
-reserves half the bounded beam for triangles and fills the rest by resident bytes,
+reserves half the bounded beam for triangles and fills the rest by least added
+vertex bytes when a cap is active, or resident bytes when disabled,
 with an exact source fallback. Counts
 must not increase with level. Cancellation returns a validated incumbent with
 an explicit completion status. Benchmarks use deterministic work budgets.
+With a positive vertex cap and the default reducer, up to eight deterministic
+compact tail probes run before the scheduled search. A probe must fit the cap
+and pass source and source-path transition audits at the final scheduled size.
+The smallest accepted tail reserves its actual packed vertex bytes for the
+last LOD; earlier levels can use only the remainder. At the last level, the
+reserved mesh is offered to every retained prefix and receives the usual
+source and adjacent audits. Probe work is additional to `candidate_budget`
+and included in `candidate_evaluations`; diagnostics record its count and
+reserved bytes. If no probe passes, no bytes are reserved. The source fallback
+also remains eligible for direct tail proposals. Rebuild requests are bounded
+by the remaining budget divided by three times the packed source vertex
+stride, so even a single proposal can probe a compact tail. Actual emitted
+bytes decide admission; target counts are only search hints.
 The opt-in research setting `topology_fallback` applies only to the quadric
 objective. If a quadric proposal stops more than four times above its requested
 triangle count with link-condition rejections, it tries at most one additional
@@ -74,8 +97,10 @@ Initial file formats: glTF/GLB, OBJ, PLY, STL. glTF output defaults to LOD0
 and includes a JSON LOD manifest; reuse output shares source accessors.
 
 Scheduled and runtime LOD counts are separate. Exact consecutive duplicates
-share a runtime mesh, exposed through C++ runtime_levels and additive C ABI
-queries. Scheduled nodes/manifest rows retain their original thresholds,
+share a runtime mesh, exposed through C++ runtime_levels and C ABI queries.
+Per-runtime-level added vertex and index bytes, and cumulative added vertex
+bytes, are exposed through C++ runtime_storage, JSON and the C ABI.
+Scheduled nodes/manifest rows retain their original thresholds,
 source checks and adjacent checks. No score denominator changes. No merge
 based only on triangle count or approximate visual similarity.
 
@@ -90,7 +115,7 @@ do not affect the visual gates or SCORE.
 
 Vertex colors use linear RGBA8 (0..255 per channel, 256 levels), including
 the strided C++ and C API streams. The C ABI version and shared-library
-compatibility version are 4; older descriptors are unsupported. The C settings
+compatibility version are 5; older descriptors are unsupported. The C settings
 descriptor includes `max_changed_area`; each C LOD record includes source and
 adjacent area errors and their worst-view indices.
 Import rounds normalized float/unsigned-16 colors to nearest with ties upward,

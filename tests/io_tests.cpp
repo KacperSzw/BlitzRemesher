@@ -59,6 +59,7 @@ int main() {
         save_chain(r,dir/"gltf");auto g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.indices.size()==3);CHECK(g.positions.size()==3);
         nlohmann::json manifest;std::ifstream(dir/"gltf/lods.json")>>manifest;CHECK(manifest["lods"][2]["gltf_mesh"]==0);
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));
+        CHECK(manifest["runtime_storage"].size()==1&&manifest["runtime_storage"][0]["index_bytes"]==12);
         CHECK(manifest["max_changed_area"]==.5);
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"].size()==1&&j["nodes"].size()==3&&j["nodes"][2]["mesh"]==0);
@@ -82,6 +83,13 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        CHECK(config["max_added_vertex_bytes_bps"]==2000&&config["triangle_overhead_bps"]==0);
+        for(auto cap:nlohmann::json::array({0,1000,2000,10000,nullptr})) {
+            auto decoded=settings_json(nlohmann::json{{"max_added_vertex_bytes_bps",cap}});
+            CHECK(settings_json(decoded)["max_added_vertex_bytes_bps"]==cap);
+        }
+        for(auto cap:nlohmann::json::array({-1,1.5,"2000",true,4294967295ull}))
+            throws([&]{settings_json(nlohmann::json{{"max_added_vertex_bytes_bps",cap}});});
         CHECK(!config.contains("output")&&!config.contains("chain"));
         throws([&]{settings_json(nlohmann::json{{"output","reuse"}});});
         auto legacy=settings_json(nlohmann::json{{"output","reuse"},{"chain","progressive"}},true);

@@ -271,6 +271,7 @@ int main() {
         s=small();s.transition={{{0,0},{1,0}}};r=generate(m.view(),s);
         for(auto& l:r.lods)CHECK(l.data.indices==m.indices);
         s=small();s.levels=2;s.base_pixels=s.last_pixels=4096;s.search_supersample=s.audit_supersample=s.max_supersample=8;s.candidate_budget=1;s.research.chain=ChainMode::Direct;
+        s.max_added_vertex_bytes_bps=std::nullopt; // Reach the evaluator's resource limit before any storage gate.
         r=generate(m.view(),s);CHECK(r.status==Status::BudgetLimited);CHECK(r.lods.back().data.indices==m.indices);
         std::cout<<checks<<" contract checks passed ("<<evaluator_backend()<<")\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}

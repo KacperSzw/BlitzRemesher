@@ -15,6 +15,13 @@ int main(){try{
     for(uint16_t b:{0,200,500,1000}){auto c=select_chain(pool,b);CHECK(c.reference==0);auto bytes=pool[c.selected].storage.total();CHECK(bytes<=last);last=bytes;}
     pool.push_back(pool[1]);CHECK(select_chain(pool,500).selected==1);
     bool threw=false;try{select_chain({},0);}catch(const std::invalid_argument&){threw=true;}CHECK(threw);
+    CHECK(select_chain(pool,500,100).reference==1);
+    CHECK(select_chain(pool,500,0).selected==3);
+    std::vector<ChainCost> tail_pool={{{100,20,20,20},{100,80,0}},{{100,60,60,4},{100,96,0}}};
+    CHECK(select_chain(tail_pool,0,96).reference==1);
+    CHECK(select_chain(tail_pool,0,80).reference==0);
+    CHECK(select_chain(tail_pool,0).reference==0);
+    threw=false;try{select_chain(std::span<const ChainCost>(pool.data(),2),0,0);}catch(const std::invalid_argument&){threw=true;}CHECK(threw);
     Mesh m;m.positions={{0,0,0},{1,0,0},{0,1,0}};m.indices={0,1,2};m.normals.resize(3);m.uv.resize(3);m.colors.resize(3);m.tangents.resize(3);
     CHECK(vertex_bytes(m.view())==3*(12+12+8+4+16));
     Result r;r.source=m.view();Lod l;l.data.indices=m.indices;r.lods={l,l,l};
@@ -23,6 +30,11 @@ int main(){try{
     CHECK(storage_stats(r).total()==168); // Exact render duplicate despite different ownership.
     r.lods[1].data.positions[0].x=.1f;
     s=storage_stats(r);CHECK(s.source_vertex_bytes==156&&s.added_vertex_bytes==156&&s.index_bytes==36);
+    auto runtime=runtime_storage(r);CHECK(runtime.size()==3);
+    CHECK(runtime[0].scheduled_index==0&&runtime[0].added_vertex_bytes==0&&runtime[0].index_bytes==12);
+    CHECK(runtime[1].scheduled_index==1&&runtime[1].added_vertex_bytes==156&&runtime[1].cumulative_added_vertex_bytes==156);
+    CHECK(runtime[2].scheduled_index==2&&runtime[2].added_vertex_bytes==0&&runtime[2].cumulative_added_vertex_bytes==156);
+    CHECK(Settings{}.triangle_overhead_bps==0&&Settings{}.max_added_vertex_bytes_bps==2000);
     Settings cfg;cfg.triangle_overhead_bps=200;cfg.levels=3;cfg.base_pixels=16;cfg.last_pixels=8;cfg.profile=Profile::Coverage;cfg.candidate_budget=8;cfg.beam_width=2;
     cfg.search_views={4,0,31};cfg.audit_views={4,0,73};cfg.search_supersample=cfg.audit_supersample=cfg.max_supersample=2;
     auto source=m;auto a=generate(m.view(),cfg);cfg.triangle_overhead_bps=1000;auto b=generate(m.view(),cfg);
@@ -46,8 +58,47 @@ int main(){try{
     floor.profile=Profile::Coverage;floor.candidate_budget=2;floor.beam_width=2;
     floor.search_views={4,0,31};floor.audit_views={4,0,73};
     floor.search_supersample=floor.audit_supersample=floor.max_supersample=2;
+    auto capped=floor;capped.max_added_vertex_bytes_bps=0;capped.candidate_budget=4;capped.research.trace=true;
+    auto constrained=generate(torus.view(),capped);
+    CHECK(constrained.added_vertex_budget_bytes==0&&storage_stats(constrained).added_vertex_bytes==0);
+    CHECK(constrained.vertex_budget_rejections>0);
+    CHECK(std::any_of(constrained.proposals.begin(),constrained.proposals.end(),[](auto& p){return p.gate==9;}));
+    CHECK(constrained.selection.reference==constrained.selection.selected);
+    Settings tail=capped;tail.levels=3;tail.candidate_budget=1;tail.max_added_vertex_bytes_bps=3000;
+    tail.max_changed_area=1;tail.transition={{{0,100},{1,100}}};
+    unsigned calls=0;
+    auto tail_proposer=[&](MeshView input,const ReduceSettings&) {
+        Lod l;
+        if(++calls==1){l.data.indices.assign(input.indices.begin(),input.indices.end());return l;}
+        l.shared_vertices=false;
+        for(auto id:{input.indices[0],input.indices[1],input.indices[2],input.indices[5]})l.data.positions.push_back(input.positions[id]);
+        l.data.indices={0,1,2,0,2,3,0,3,1,1,3,2};l.data.double_sided={1};return l;
+    };
+    auto tail_chain=generate(torus.view(),tail,tail_proposer);
+    CHECK(calls==2&&tail_chain.added_vertex_budget_bytes==57);
+    CHECK(tail_chain.lods[1].shared_vertices&&!tail_chain.lods[2].shared_vertices);
+    CHECK(storage_stats(tail_chain).added_vertex_bytes==48);
+    auto tail_cost=runtime_storage(tail_chain);
+    CHECK(tail_cost.back().scheduled_index==2&&tail_cost.back().cumulative_added_vertex_bytes==48);
+    tail.max_added_vertex_bytes_bps=2000;calls=0;
+    auto blocked_tail=generate(torus.view(),tail,tail_proposer);
+    CHECK(blocked_tail.added_vertex_budget_bytes==38&&blocked_tail.vertex_budget_rejections>0);
+    CHECK(storage_stats(blocked_tail).added_vertex_bytes==0);
+    tail.max_added_vertex_bytes_bps=10000;
+    auto reserved_tail=generate(torus.view(),tail);
+    CHECK(reserved_tail.tail_probe_evaluations>0&&reserved_tail.tail_reserved_vertex_bytes>0);
+    CHECK(reserved_tail.tail_reserved_vertex_bytes<=*reserved_tail.added_vertex_budget_bytes);
+    CHECK(reserved_tail.lods.back().view(torus.view()).triangles()<torus.view().triangles());
+    CHECK(storage_stats(reserved_tail).added_vertex_bytes<=*reserved_tail.added_vertex_budget_bytes);
+    uint64_t before_tail=0;
+    for(auto level:runtime_storage(reserved_tail))if(level.scheduled_index+1<tail.levels)before_tail+=level.added_vertex_bytes;
+    CHECK(before_tail+reserved_tail.tail_reserved_vertex_bytes<=*reserved_tail.added_vertex_budget_bytes);
+    tail.max_added_vertex_bytes_bps=std::nullopt;calls=0;
+    auto unbounded_tail=generate(torus.view(),tail,tail_proposer);
+    CHECK(!unbounded_tail.added_vertex_budget_bytes&&storage_stats(unbounded_tail).added_vertex_bytes==48);
     floor.research.output=OutputMode::Rebuild;floor.research.chain=ChainMode::Direct;floor.research.trace=true;
     auto preserving=generate(torus.view(),floor);
+    CHECK(!preserving.added_vertex_budget_bytes);
     floor.research.topology_fallback=true;auto relaxed=generate(torus.view(),floor);
     CHECK(relaxed.topology_fallback_proposals==1);
     CHECK(relaxed.candidate_evaluations==preserving.candidate_evaluations+relaxed.topology_fallback_proposals);

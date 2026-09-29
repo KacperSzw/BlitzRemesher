@@ -18,6 +18,12 @@ for(const planPath of plans){const p=await read(planPath);
    const ref=d.candidates[d.reference_candidate],selected=d.candidates[d.selected_candidate];
    if(d.lods.some((l,i)=>l.triangles!==selected.triangles[i]||l.reference_triangles!==ref.triangles[i]||!l.source.passed||!l.adjacent.passed||(i&&BigInt(l.triangles)*10000n>BigInt(ref.triangles[i])*BigInt(10000+d.triangle_overhead_bps))))throw Error('Selection contract failed '+id);
    if(selected.storage.total_bytes!==stat.size)throw Error('Selected cost mismatch');
+   if(d.max_added_vertex_bytes_bps!==undefined){
+    if(d.max_added_vertex_bytes_bps!==null&&BigInt(d.storage.added_vertex_bytes)>BigInt(d.added_vertex_budget_bytes))throw Error('Vertex budget exceeded '+id);
+    if(d.runtime_storage?.length!==d.runtime_levels.length||d.runtime_storage.some((v,i)=>v.scheduled_index!==d.runtime_levels[i]))throw Error('Runtime storage mapping mismatch '+id);
+    const added=d.runtime_storage.reduce((n,v)=>n+v.added_vertex_bytes,0),indices=d.runtime_storage.reduce((n,v)=>n+v.index_bytes,0);
+    if(added!==d.storage.added_vertex_bytes||indices!==d.storage.index_bytes)throw Error('Runtime storage accounting mismatch '+id);
+   }
    let last=Infinity;for(const sweep of d.selection_sweep){if(sweep.storage.total_bytes>last)throw Error('Nonmonotonic allowance');last=sweep.storage.total_bytes;}
    const total=a=>a.slice(1).reduce((n,x)=>n+x,0),triangles=d.lods.map(l=>l.triangles);
    const row={id,category:r.category,run:name,budget,origin:variant.chain??'hybrid',complete:true,triangles,reference:ref.triangles,selected_total:total(triangles),reference_total:total(ref.triangles),storage:d.storage,shared:d.lods.map(l=>l.shared_vertices),seconds:r.generation_seconds,peak_rss_kib:r.peak_rss_kib,sweep:d.selection_sweep,retention:r.ratio,baseline:{}};

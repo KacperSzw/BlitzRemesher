@@ -1,0 +1,28 @@
+{
+  "assets": [
+    "ph_sweet_potato",
+    "ph_painted_wooden_bench"
+  ],
+  "conditions": [
+    {
+      "pixels": 16,
+      "states": 16,
+      "previous": 4,
+      "adjacent": 2
+    },
+    {
+      "pixels": 64,
+      "states": 16,
+      "previous": 4,
+      "adjacent": 3
+    },
+    {
+      "pixels": 256,
+      "states": 8,
+      "previous": 2,
+      "adjacent": 2
+    }
+  ],
+  "source_limit": 3,
+  "policy": "044257e58b612172aaac15b6e0f1f45c1cbba53a3f6b7bf88464f1db237461bb"
+}

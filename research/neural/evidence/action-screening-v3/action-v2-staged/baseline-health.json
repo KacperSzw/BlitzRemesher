@@ -1,0 +1,99 @@
+{
+  "healthy": true,
+  "summary": {
+    "blocked_assets": [],
+    "categories": {
+      "manufactured": {
+        "count": 1,
+        "mean_ratio": 0.9994547437295529
+      },
+      "rocks": {
+        "count": 1,
+        "mean_ratio": 0.9865098581805604
+      }
+    },
+    "complete": true,
+    "completed": 2,
+    "expected": 2,
+    "failed_assets": [],
+    "fallbacks": 0,
+    "run_sha256": "206de3545f6165cdfa68ff73559ab6b20eafa5bb6a01087b381a3432fb9cc19b",
+    "score": null,
+    "score_eligible": false,
+    "seconds": 449.55354973699997
+  },
+  "rows": [
+    {
+      "id": "ph_painted_wooden_shelves",
+      "seconds": 34.247750785,
+      "ratio": 0.9994547437295529,
+      "neural": {
+        "action_audit_cache_hits": 255,
+        "action_ranked": 29520,
+        "action_trials": 448,
+        "bounded_audits": 33,
+        "confirmation_cancelled": 0,
+        "confirmation_disagreements": 0,
+        "confirmation_failure": null,
+        "confirmation_nonfinite": 0,
+        "confirmation_resources": 0,
+        "decode_seconds": 0.130977387,
+        "decoded": 56,
+        "encode_seconds": 0.196467264,
+        "fallback_levels": 5,
+        "first_resource_failure": null,
+        "gpu_allocations": 132,
+        "gpu_audit_seconds": 29.203645017000003,
+        "gpu_buffer_reuses": 840489,
+        "gpu_confirmation_seconds": 4.580813535,
+        "gpu_download_bytes": 5067320,
+        "gpu_evaluations": 237,
+        "gpu_measurement_cache_hits": 3,
+        "gpu_peak_bytes": 1043138526,
+        "gpu_upload_bytes": 2327362,
+        "inference_seconds": 0.114925593,
+        "legal_collapses": 2,
+        "reference_audit_seconds": 0,
+        "reference_rejections": 0,
+        "rejected_collapses": 3942,
+        "resource_failures": 0
+      }
+    },
+    {
+      "id": "ph_moon_rock_02",
+      "seconds": 415.305798952,
+      "ratio": 0.9865098581805604,
+      "neural": {
+        "action_audit_cache_hits": 193,
+        "action_ranked": 1100004,
+        "action_trials": 448,
+        "bounded_audits": 68,
+        "confirmation_cancelled": 0,
+        "confirmation_disagreements": 0,
+        "confirmation_failure": null,
+        "confirmation_nonfinite": 0,
+        "confirmation_resources": 0,
+        "decode_seconds": 2.598276556,
+        "decoded": 56,
+        "encode_seconds": 0.000672418,
+        "fallback_levels": 5,
+        "first_resource_failure": null,
+        "gpu_allocations": 182,
+        "gpu_audit_seconds": 405.03796312900005,
+        "gpu_buffer_reuses": 7279483,
+        "gpu_confirmation_seconds": 7.466433965,
+        "gpu_download_bytes": 47999384,
+        "gpu_evaluations": 550,
+        "gpu_measurement_cache_hits": 78,
+        "gpu_peak_bytes": 1058241434,
+        "gpu_upload_bytes": 22052518,
+        "inference_seconds": 0.17758642800000002,
+        "legal_collapses": 1046,
+        "reference_audit_seconds": 0,
+        "reference_rejections": 0,
+        "rejected_collapses": 6594,
+        "resource_failures": 0
+      }
+    }
+  ]
+}

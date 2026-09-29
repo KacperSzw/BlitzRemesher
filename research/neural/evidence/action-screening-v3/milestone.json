@@ -1,0 +1,72 @@
+{
+  "revision": "46ba98369e0d3c59c249c6d51d5ced43f6a15ec2",
+  "captured_at": 1790696954477,
+  "phase": "first_checkpoint_complete_comparison_running",
+  "rental_directory": "runs/neural/runpod-action-screening-h200-01",
+  "quote": {
+    "gpu": "NVIDIA H200",
+    "gpu_hourly_usd": 4.59,
+    "data_center": "AP-JP-1",
+    "quoted_at": "2026-09-29T15:25:54.697Z"
+  },
+  "hard_cutoff_utc": "2026-09-29T16:25:55.047Z",
+  "maximum_additional_usd": 7.827002922222222,
+  "remote_optimizer_steps": 24576,
+  "local_optimizer_steps": 0,
+  "states": 236,
+  "all_seeds_healthy": true,
+  "generalization_proven": false,
+  "score": null,
+  "phases": {
+    "audit": {
+      "samples": 479,
+      "mean_gpu_busy_percent": 95.24843423799582,
+      "peak_memory_mib": 2175
+    },
+    "preparation": {
+      "samples": 57,
+      "mean_gpu_busy_percent": 53.175438596491226,
+      "peak_memory_mib": 769
+    },
+    "training": {
+      "samples": 132,
+      "mean_gpu_busy_percent": 10.772727272727273,
+      "peak_memory_mib": 917
+    }
+  },
+  "seeds": [
+    {
+      "seed": 101,
+      "step": 8192,
+      "first_loss": 1.3590706586837769,
+      "last_loss": 0.015260713174939156,
+      "preferred_membership": 0.9915254237288136,
+      "seconds": 42.888666089,
+      "updates_per_second": 191.0061735890888,
+      "fp64_max_abs": 0.000019701727267396052,
+      "native_max_abs": 0.000004291534423828125
+    },
+    {
+      "seed": 202,
+      "step": 8192,
+      "first_loss": 1.3456089496612549,
+      "last_loss": 0.021246224641799927,
+      "preferred_membership": 0.9745762711864406,
+      "seconds": 44.85146522,
+      "updates_per_second": 182.64732177237886,
+      "fp64_max_abs": 0.00001789058705314872,
+      "native_max_abs": 0.000003337860107421875
+    },
+    {
+      "seed": 303,
+      "step": 8192,
+      "first_loss": 1.3658509254455566,
+      "last_loss": 0.0185248963534832,
+      "preferred_membership": 0.9872881355932204,
+      "seconds": 39.975207993,
+      "updates_per_second": 204.92701379901487,
+      "fp64_max_abs": 0.000012384506229423664,
+      "native_max_abs": 0.00000286102294921875
+    }
+  ]
+}

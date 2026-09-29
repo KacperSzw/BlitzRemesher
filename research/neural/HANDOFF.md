@@ -5,6 +5,26 @@ Branch: `research/neural-lod-gpu`. The primary worktree is separate.
 
 ## Current milestone
 
+**Healthy remote training reached.** On H200, all three seeds completed 8,192
+updates on the expanded 236-state curriculum (24,576 updates total). Loss fell
+from about 1.35 to 0.0153–0.0212. All numerical, export and optimizer restore
+checks passed. All 19 remote tests passed. Checkpoints, models, labels and logs
+are saved in [action-screening-v3](evidence/action-screening-v3/README.md).
+
+The constant-versus-seed-101 comparison is currently running. Quality superiority
+is unproven. Audit GPU busy time averaged 95.25%, but training averaged only
+10.77%; do not claim full GPU saturation. The small trainer needs a targeted
+launch/synchronization profile before further performance changes.
+
+Active directory: `runs/neural/runpod-action-screening-h200-01`, source `46ba983`.
+Hard cutoff: **18:25:55 Warsaw / 16:25:55 UTC on 2026-09-29**. The independent
+watchdog and automatic collection/cleanup are active. Maximum additional
+reservation including previous attempts and reserve: **$7.827003 of $8**.
+Check its final report and verified cleanup before any further paid work.
+No local optimizer steps ran. The following entries preserve earlier failures.
+
+### Scheduling correction before healthy training
+
 The H200 full-settings baseline is now complete and healthy on both diagnostic
 meshes, with all 19 remote tests passing. Shelves took 34.020 seconds (2.41x faster
 than optimized Blackwell, exact output and audit parity); moon rock took 413.364

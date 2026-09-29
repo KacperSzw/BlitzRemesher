@@ -184,3 +184,19 @@ and testing this correction. Commit and push before creating the next rental.
 BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-screening-h200-01
 BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs launch runs/neural/runpod-action-screening-h200-01
 ```
+
+## Healthy training milestone
+
+The corrected run at `46ba983` passed all 19 remote tests and repeated both
+baseline outputs exactly. Its fresh labels are reference-confirmed; 72 added
+states bring the curriculum to 236. Each of three seeds completed 8,192 updates
+with finite values, verified exports and exact model/AdamW restore. Final losses
+were 0.01526, 0.02125 and 0.01852. All checkpoints and labels have been captured
+locally with hash verification; see [raw training evidence](evidence/action-screening-v3/README.md).
+
+The matched screening comparison is still running at this milestone. No SCORE
+or generalization claim is available. GPU busy time averaged 95.25% in audits
+and only 10.77% in the small trainer. This leaves trainer launch/synchronization
+overhead as a profiling target; it does not justify claiming full saturation or
+enlarging the network without quality evidence. The hard rental cutoff remains
+18:25:55 Warsaw time, with automatic collection and cleanup.

@@ -435,3 +435,20 @@ window is **08:54:27–10:54:27 UTC**; the hard rental cutoff is **11:04:27 UTC*
 This establishes a healthy training pipeline and measured GPU activity. Useful
 LOD improvement remains unproven; complete later development audits must provide
 that evidence. Flat audit scores do not end this requested window early.
+
+### First trained-checkpoint audit — 2026-09-29 09:02 UTC
+
+The **25,000-update** checkpoint completed the frozen development pilot: all
+eight assets processed, no bake/resource errors, **eight unreduced fallbacks and
+SCORE 0**. Thus there is no demonstrated mesh-quality improvement over the
+100-update readiness checkpoint. Lower teacher-training loss and healthy GPU
+execution are insufficient evidence of useful LOD reduction.
+
+Model SHA-256: `aa3be5f2d848264d26f48cc3987afa1c276beef31c29a101f86a6c59a27df1c5`.
+Pilot run hash: `f9f4b5501ae0f36ad1a78c70e084eda7a61b42e28c3e00b6997581a812db1bb6`.
+The complete audit took 61.50 seconds. Raw local snapshot:
+`runs/neural/runpod-pro6000-saturated/first-pilot.json`, SHA-256
+`b6c1d894f2044440d241d4e4c773a20e5d605e191beb9dd2c7f9b015e51f450a`.
+The run continued to at least update 28,672; the next audit is at 50,000 updates.
+Further improvement is possible, but has not yet been observed. The authorized
+two-hour window and unchanged numerical-health gates remain in force.

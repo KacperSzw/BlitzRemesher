@@ -9,8 +9,10 @@ PRO 6000 experiment is running and has passed its health gate at update 8,192:
 93.27% mean GPU activity, p10 91%, decreasing training loss, exact checkpoint
 restore and native export agreement. It continued past update 10,240. See
 RUNPOD.md for the active run, absolute cutoffs and collection commands, and
-REPORT.md for measured evidence. Local training is stopped. The initial full
-pilot returns eight unreduced fallbacks; useful LOD quality remains unproven.
+REPORT.md for measured evidence. Local training is stopped. At 09:02 UTC the
+first trained checkpoint (25,000 updates) also completed all eight development
+assets with eight unreduced fallbacks and SCORE 0. Training continued toward
+50,000 updates; useful LOD quality remains unproven.
 
 1. Establish CPU tests; add deterministic graph/decoder fixtures and explicit
    unavailable behavior. Verify source stream immutability and endpoint IDs.

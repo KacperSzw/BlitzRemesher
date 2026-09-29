@@ -147,6 +147,12 @@ pilot audit; two stages without score improvement stop further training.
 Validation selects among at most two viable stage checkpoints. Held-out assets
 remain unused. No checkpoint is automatically approved for release.
 
+Those limits describe the local sustained configuration. The active two-hour
+cloud run sets `train_until_deadline: true`, so it continues past flat pilots
+and the step cap while retaining health checks and the absolute cutoff. Its
+initial health segment is 8,192 updates. See [RUNPOD.md](RUNPOD.md) for current
+run evidence and collection/termination instructions.
+
 `health.json` includes a sustained telemetry window, moving-window training loss,
 parameter changes, exact model/optimizer-moment restoration and native export
 agreement. `gpu.jsonl` records GPU utilization, memory, power and temperature each

@@ -13,6 +13,9 @@ workers; mean GPU activity 93.27%, p10 91% over 61 seconds. Raw evidence and sou
 provenance are saved locally in that directory's `live-health.json`; REPORT.md
 records its checksum. Initial readiness completed all eight meshes but returned
 eight unreduced fallbacks, so this is not evidence of useful LOD improvement.
+At 09:02 UTC the first trained-checkpoint audit (25,000 updates) also reported
+eight unreduced fallbacks and SCORE 0. Its complete raw summary is saved in
+`first-pilot.json`; training continued toward the next audit at 50,000 updates.
 
 The two-hour experiment ends at **10:54:27 UTC / 12:54:27 Europe/Warsaw**. The
 independent watchdog's final rental cutoff is **11:04:27 UTC / 13:04:27 Warsaw**.

@@ -1,0 +1,58 @@
+{
+  "revision": "46ba98369e0d3c59c249c6d51d5ced43f6a15ec2",
+  "files": [
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/result.json",
+      "sha256": "c95f633416aa07a87f565e57dea98d9ed4ecb7ce134055de7d88307c24f4fa48"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/outcome.json",
+      "sha256": "1bc238774fa9f8a4bb5b6b83a891a6331d2d5fd8ada381e5004a957aba2184d0"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/baseline-health.json",
+      "sha256": "11186b73bdddde279ec8007efd4f743d48edb4c8e592515e79c6048aa916a246"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/curriculum/index.json",
+      "sha256": "76b386823fce80f82da591d61ab5ae9056aac621203d07a9c7666137f4e20afb"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/pilot-1/report.json",
+      "sha256": "144a1f3e073db469035a9ef81d9b59d533a0201307651f1b54a57a0600db6d3f"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/pilot-2/report.json",
+      "sha256": "b09cebabdbcb48e88f18b6ca1606462305011e6d582a87d3bf48338e576fcf6f"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/seed-101/contract.json",
+      "sha256": "59b66c2cf2b672a5e7427043b0c5fa4e4c9c0dab0433d0799633764d0f64ed05"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_sweet_potato-32/index.json",
+      "sha256": "74810a92ca59ad156a7658d43065840a59a13f1a11b1a237c94f0f67652e46cb"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_painted_wooden_bench-128/index.json",
+      "sha256": "89a41a56158a5dc4486770a231884e8f7b5800c320995ce1e35ac3006276c897"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_namaqualand_boulder_04-32/index.json",
+      "sha256": "8f112cb4bc8a8088ac62bf300dedbb546b07f76c80ede0f1cd874bd49d8100fc"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_namaqualand_boulder_04-128/index.json",
+      "sha256": "e8ca717cac5978e40b6f94ed05aa2431d3b5a43b26d0c3324dff0842e4b3951b"
+    },
+    {
+      "path": "research/neural/evidence/action-screening-v3/final/pilot-2/learned-0/meshes/ph_moon_rock_02/lods.json",
+      "sha256": "f1a8c294e41e6283b64bef6fbf2180be5e5741e90e9728a698e1347a6c7ff990"
+    }
+  ],
+  "methodology": {
+    "rental": "Audit = baseline summary seconds + both reports’ method wall_seconds. Training = sum of six health.seconds. Labels = sum of four fresh shard index.seconds. Remainder = rental_minutes × 60 minus those three totals.",
+    "rock": "Audit = gpu_audit_seconds + gpu_confirmation_seconds. Inference = inference_seconds. Remainder = asset seconds minus audit and inference.",
+    "sample": "Illustrative raster sample count = (ceil(screen_pixels + 8) × supersample)² for a saved audited LOD. This is one image at one sampling level, not a count of samples actually processed across the run."
+  }
+}

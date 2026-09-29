@@ -1,0 +1,220 @@
+{
+  "revision": "46ba98369e0d3c59c249c6d51d5ced43f6a15ec2",
+  "date": "2026-09-29",
+  "states": 236,
+  "seeds": [
+    101,
+    202,
+    303
+  ],
+  "updates": 49152,
+  "checkpoints": [
+    8192,
+    16384
+  ],
+  "batch": 512,
+  "precision": "IEEE FP32",
+  "architecture": [
+    80,
+    64,
+    64,
+    3
+  ],
+  "parameters": 9539,
+  "busy": {
+    "training": 10.170818505338078,
+    "audit": 95.3789599521817
+  },
+  "auditExample": {
+    "pixels": 312.0674954763457,
+    "views": 706,
+    "supersample": 8,
+    "side": 2568,
+    "samples": 6594624
+  },
+  "learning": [
+    {
+      "step": 8192,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "mean_reduction": 0.004362050163576936
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "mean_reduction": 0.012798339674852999
+        }
+      ]
+    },
+    {
+      "step": 16384,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "mean_reduction": 0.004907306434024039
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "mean_reduction": 0.02369422345209271
+        }
+      ]
+    }
+  ],
+  "charts": {
+    "rental": {
+      "title": "Entire rental",
+      "seconds": 2756.2949999999996,
+      "unit": "minutes",
+      "source": "../evidence/action-screening-v3/final/outcome.json",
+      "segments": [
+        {
+          "id": "evaluation",
+          "name": "Baseline + mesh comparisons",
+          "seconds": 1672.9715497369998,
+          "color": "#bf642d",
+          "kind": "Recorded stages",
+          "text": "One baseline plus two checkpoint comparisons. These timings include LOD generation, its visual audits, and small surrounding process costs. They are not pure GPU kernel time.",
+          "parts": [
+            {
+              "name": "Baseline",
+              "seconds": 449.55354973699997
+            },
+            {
+              "name": "First comparison",
+              "seconds": 534.596
+            },
+            {
+              "name": "Second comparison",
+              "seconds": 688.822
+            }
+          ],
+          "sources": [
+            "../evidence/action-screening-v3/action-v2-staged/baseline-health.json",
+            "../evidence/action-screening-v3/final/pilot-1/report.json",
+            "../evidence/action-screening-v3/final/pilot-2/report.json"
+          ]
+        },
+        {
+          "id": "training",
+          "name": "Training + checkpoint checks",
+          "seconds": 270.73085318,
+          "color": "#287f67",
+          "kind": "Recorded stages",
+          "text": "Six trainer segments across three seeds. Includes optimizer updates and periodic checkpoint/export/restore checks. Input tensors and labels stay on the GPU; no mesh audit runs inside each optimizer update.",
+          "sources": [
+            "../evidence/action-screening-v3/final/result.json"
+          ]
+        },
+        {
+          "id": "labels",
+          "name": "Fresh label preparation",
+          "seconds": 53.378015917,
+          "color": "#7660ad",
+          "kind": "Recorded stages",
+          "text": "Four new training shards. Earlier verified shards were reused. Labels describe queried trial edits; unknown choices are not treated as failures. These durations include the preparer’s reference confirmations.",
+          "parts": [
+            {
+              "name": "sweet_potato-32",
+              "seconds": 6.150273163
+            },
+            {
+              "name": "painted_wooden_bench-128",
+              "seconds": 7.890878631
+            },
+            {
+              "name": "namaqualand_boulder_04-32",
+              "seconds": 26.636362547
+            },
+            {
+              "name": "namaqualand_boulder_04-128",
+              "seconds": 12.700501576
+            }
+          ],
+          "sources": [
+            "../evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_sweet_potato-32/index.json",
+            "../evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_painted_wooden_bench-128/index.json",
+            "../evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_namaqualand_boulder_04-32/index.json",
+            "../evidence/action-screening-v3/action-v2-staged/curriculum/fresh-ph_namaqualand_boulder_04-128/index.json"
+          ]
+        },
+        {
+          "id": "other",
+          "name": "Setup / processes / collection remainder",
+          "seconds": 759.2145811659999,
+          "color": "#8193a0",
+          "kind": "Derived remainder",
+          "text": "Rental duration minus the recorded stages above. This includes setup, builds/tests, process startup, orchestration and collection, but their individual shares were not measured here. It must not be read as idle GPU time or a measured build duration.",
+          "sources": [
+            "../evidence/action-screening-v3/final/outcome.json",
+            "../evidence/action-screening-v3/final/result.json"
+          ]
+        }
+      ]
+    },
+    "rock": {
+      "title": "Final moon-rock generation",
+      "seconds": 554.047827061,
+      "unit": "seconds",
+      "source": "../evidence/action-screening-v3/final/pilot-2/report.json",
+      "segments": [
+        {
+          "id": "audit",
+          "name": "GPU audits + confirmation",
+          "seconds": 551.2473926800001,
+          "color": "#bf642d",
+          "kind": "Recorded stages",
+          "text": "567 GPU evaluations were executed, versus 159 for the constant control. An evaluation can fail before visiting all cameras. Passing comparisons and changed geometry can require more work. Stage time includes host synchronization.",
+          "parts": [
+            {
+              "name": "Proposal / chain audits",
+              "seconds": 539.0011496640001
+            },
+            {
+              "name": "Final confirmation",
+              "seconds": 12.246243016000001
+            }
+          ],
+          "sources": [
+            "../evidence/action-screening-v3/final/pilot-2/report.json"
+          ]
+        },
+        {
+          "id": "inference",
+          "name": "Network ranking / inference",
+          "seconds": 0.162648388,
+          "color": "#287f67",
+          "kind": "Recorded stage",
+          "text": "Scoring legal candidate actions is a tiny part of generation time. Making this stage faster alone would scarcely reduce this mesh’s total bake time.",
+          "sources": [
+            "../evidence/action-screening-v3/final/pilot-2/report.json"
+          ]
+        },
+        {
+          "id": "remaining",
+          "name": "Topology + other generation work",
+          "seconds": 2.6377859929999454,
+          "color": "#8193a0",
+          "kind": "Derived remainder",
+          "text": "Total asset time minus audit/confirmation and inference. Includes topology edits, feature preparation, loading/export and other overhead. It is not a direct measure of all CPU activity: audit stage time also includes host work and synchronization.",
+          "sources": [
+            "../evidence/action-screening-v3/final/pilot-2/report.json"
+          ]
+        }
+      ]
+    }
+  },
+  "references": {
+    "evidence": "../evidence/action-screening-v3/README.md",
+    "training": "../evidence/action-screening-v3/final/result.json",
+    "comparison": "../evidence/action-screening-v3/final/pilot-2/report.json",
+    "implementation": "../V2.md",
+    "gpu": "../AUDIT.md",
+    "acceleration": "../ACCELERATION.md",
+    "spec": "../../../docs/SPEC.md"
+  },
+  "methodology": {
+    "rental": "Audit = baseline summary seconds + both reports’ method wall_seconds. Training = sum of six health.seconds. Labels = sum of four fresh shard index.seconds. Remainder = rental_minutes × 60 minus those three totals.",
+    "rock": "Audit = gpu_audit_seconds + gpu_confirmation_seconds. Inference = inference_seconds. Remainder = asset seconds minus audit and inference.",
+    "sample": "Illustrative raster sample count = (ceil(screen_pixels + 8) × supersample)² for a saved audited LOD. This is one image at one sampling level, not a count of samples actually processed across the run."
+  }
+}

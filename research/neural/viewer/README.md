@@ -41,3 +41,34 @@ BLITZ_PLAYWRIGHT_MODULE=/path/to/node_modules/playwright \
 ```
 
 The raw training and comparison evidence is [here](../evidence/action-screening-v3/README.md).
+
+## Learning loop and audit costs
+
+Open [learning-loop.html](learning-loop.html) for the clickable training and
+audit diagrams. Select a step, use the arrow keys, or use Previous/Next to read
+its explanation. The two timing charts show the whole rental and the final
+moon-rock generation; each segment links to its recorded evidence.
+
+The rental chart adds the saved baseline and both comparison wall times,
+the six trainer durations (including checkpoint checks), and the four fresh
+preparer durations. The rest is explicitly a **derived remainder**, covering
+setup/process/collection time without claiming their individual shares. The
+rock chart separates audit/confirmation, inference, and remaining asset time.
+Image sample counts illustrate one saved LOD and are not whole-run workload
+measurements. Proposed optimizations have no claimed speedup.
+
+[Displayed data](learning-loop-data.json), [input hashes](learning-loop-manifest.json)
+and [browser checks](learning-loop-checks.json) accompany the page. It uses no
+external scripts, fonts or automatic network requests. Source links can be
+opened deliberately. All content comes from recorded evidence; no training,
+mesh generation or cloud rental is performed.
+
+```sh
+node tools/neural-loop.mjs
+BLITZ_PLAYWRIGHT_MODULE=/path/to/node_modules/playwright \
+  BLITZ_CHROMIUM=/path/to/chromium node tools/capture-neural-loop.mjs
+```
+
+Browser checks cover every diagram node, keyboard navigation, proportional
+timing bars, evidence links, input hashes and totals, and three viewport widths.
+Screenshots preserve the learning overview, audit view and mobile layout.

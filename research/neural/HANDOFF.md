@@ -13,6 +13,9 @@ See [final evidence](evidence/action-screening-v3/README.md).
 An [offline interactive viewer](viewer/index.html) compares the actual source,
 constant and network meshes with synchronized cameras, all LODs, saved normals,
 UV checker and changed-face highlights. See [viewer provenance](viewer/README.md).
+The [learning-loop explanation](viewer/learning-loop.html) shows CPU/GPU work,
+audit internals and evidence-derived timing charts, including the explicitly
+unclassified setup/process/collection remainder.
 
 Seed 101 beat constant ranking on both diagnostic meshes at both checkpoints.
 Mean triangle reduction across generated LODs at the second checkpoint was

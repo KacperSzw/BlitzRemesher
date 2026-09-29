@@ -46,7 +46,7 @@ async function prepare(){
     if(actions&&split==='validation')continue;
     for(const asset of read(manifest).assets.filter(a=>a.split===split))for(const file of asset.files)auditFiles.set(file.path,file.sha256);
   }
-  if(actions){const selected=new Set(['ph_sweet_potato','ph_moon_rock_03']);
+  if(actions){const selected=new Set(['ph_sweet_potato','ph_painted_wooden_bench']);
     const allowed=new Set(read(root+'/research/neural/training-manifest.json').assets.map(a=>a.id));
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');

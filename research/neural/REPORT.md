@@ -390,3 +390,48 @@ Local validation, without training: **14/14 CUDA CTests**, **8/8 portable
 ASan/UBSan CTests**, **22/22 Node contracts**, and an eight-worker ordered-prefetch
 comparison over 28 batches (multiple ring wraparounds) passed. New remote
 utilization and useful mesh reduction remain to be demonstrated.
+
+### Healthy two-hour Blackwell run — 2026-09-29 08:57 UTC
+
+The next Pod completed all **14 remote CTests** and the 28-batch ordered-prefetch
+check. The full GPU has 96 GB VRAM; this allocation provides 16 vCPUs and 188 GB
+host RAM at **$2.09/hour**. Training source is committed revision `2aca84e`.
+All three 75-second calibration trials passed numerical, restore, native parity,
+and sustained GPU gates:
+
+| Batch / workers | Core vertices/s after warmup | Mean GPU activity | GPU p10 |
+| --- | ---: | ---: | ---: |
+| 64 / 4 | 20.01 million | 91.90% | 89% |
+| 64 / 8 | 20.64 million | 92.84% | 90% |
+| 128 / 8 | 20.46 million | 95.95% | 95% |
+
+Selected **64 / 8** by highest measured useful throughput among passing trials.
+These are single calibration trials. The earlier 83.24% result came from a
+different allocation and cannot isolate the effect of worker count.
+Calibration models were discarded; the experiment started from the fixed random
+seed with the original 66-asset dataset. The complete eight-asset readiness audit
+took 43.95 seconds and returned **eight unreduced fallbacks, SCORE 0**, without
+resource limits or bake errors.
+
+The fresh run passed health at **update 8,192**:
+
+- Mean first/last 256-update training loss: **0.537584 -> 0.235760**.
+- Finite loss and gradients; positive parameter updates; exact model and AdamW
+  restoration; native export maximum absolute error **7.63e-6** (limit 2e-4).
+- **62 GPU samples over 61.013 seconds**: mean **93.27%**, p10 **91%**.
+- Health-segment throughput **19.92 million core vertices/s**; mean data wait
+  **0.055 ms/update**, peak Torch allocation **1,677 MiB**, reserved **7,520 MiB**,
+  total reported device memory peak **8,223 MiB**.
+- Training continued to at least **update 10,240** after passing the gate.
+
+Local evidence: `runs/neural/runpod-pro6000-saturated/live-health.json`, captured
+at **08:57:26 UTC**, SHA-256
+`8e79c2aea028fbeb65b9d68cd0780a61bfc590fd0faf4c49b94ab6dd09482554`.
+It includes raw calibration, health, readiness, source provenance, remote CTest
+output, and a running-state snapshot. The independent controller and watchdog
+remain responsible for collection and termination. The two-hour experiment
+window is **08:54:27–10:54:27 UTC**; the hard rental cutoff is **11:04:27 UTC**.
+
+This establishes a healthy training pipeline and measured GPU activity. Useful
+LOD improvement remains unproven; complete later development audits must provide
+that evidence. Flat audit scores do not end this requested window early.

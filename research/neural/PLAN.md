@@ -4,12 +4,13 @@ Branch: `research/neural-lod-gpu`, based on `7466a9e`. The sibling worktree
 leaves the primary checkout available to other agents. Implementation precedes
 the ten-hour experiment budget. No held-out asset is used for training or tuning.
 
-Current status (2026-09-29): implementation and audit recovery are validated;
-local training is stopped. A from-scratch two-hour Secure Cloud RTX PRO 6000
-experiment is now authorized; see RUNPOD.md for the staged deployment and gates.
-The saved-model pilot returns
-eight unreduced fallbacks. The numbered implementation steps below are completed
-except for establishing useful LOD quality. Remote health must be measured.
+Current status (2026-09-29 08:57 UTC): the from-scratch two-hour Secure Cloud RTX
+PRO 6000 experiment is running and has passed its health gate at update 8,192:
+93.27% mean GPU activity, p10 91%, decreasing training loss, exact checkpoint
+restore and native export agreement. It continued past update 10,240. See
+RUNPOD.md for the active run, absolute cutoffs and collection commands, and
+REPORT.md for measured evidence. Local training is stopped. The initial full
+pilot returns eight unreduced fallbacks; useful LOD quality remains unproven.
 
 1. Establish CPU tests; add deterministic graph/decoder fixtures and explicit
    unavailable behavior. Verify source stream immutability and endpoint IDs.
@@ -46,11 +47,11 @@ except for establishing useful LOD quality. Remote health must be measured.
    causes, visit remaining assets, stop fixed-limit retries, retain null SCORE
    for incomplete audits, and prevent reuse across different model hashes.
 
-Next research steps, after a request to resume work: diagnose why the audited
-25,000-update model produces no reduction; test one curriculum/decoder hypothesis
-on deterministic fixtures and the development pilot. Remote GPU migration and
-cost options are in CLOUD_GPU.md. Buying more compute alone does not establish
-the missing quality signal.
+Next handoff: let the bounded cloud run finish, confirm checksum-verified result
+collection and resource deletion, then inspect its complete development pilots.
+If reductions remain absent, diagnose the curriculum/decoder before buying more
+training time. Test one hypothesis on deterministic fixtures and the frozen
+development pilot. Remote GPU options and costs are in CLOUD_GPU.md.
 
 Runtime objectives: pass both source and adjacent visual gates; minimize triangles
 within the existing storage tradeoff; use pre-depth geometric overlap only to
@@ -58,7 +59,7 @@ break equal-triangle/equal-byte ties. It is not shader time and does not alter
 protocol v3 SCORE. Missing CUDA/model is an explicit error. Unreduced geometry
 remains a visible fallback. Training success is not evidence of release quality.
 
-GPU: RTX 2080, sm_75, 8 GiB. Target process device allocation at most 6 GiB with
+Local GPU: RTX 2080, sm_75, 8 GiB. Target process device allocation at most 6 GiB with
 headroom for the desktop. Import, topology decoding and final reference audits
 run on CPU. Heavy tensor operations and candidate raster/distance work run on GPU.
 Pinned training dependency: official LibTorch 2.10.0 cu128 C++11 ABI archive,

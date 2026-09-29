@@ -5,6 +5,33 @@ RTX PRO 6000 Blackwell Server Edition (full 96 GB GPU). Local training is not pa
 existing model's audited pilot still has SCORE 0; this migration does not change
 the curriculum, decoder, quality limits, or release status.
 
+## Active run and handoff — 2026-09-29
+
+The run in `runs/neural/runpod-pro6000-saturated` passed its initial health gate
+and continued training at 08:57 UTC. Source revision: `2aca84e`; batch 64, eight
+workers; mean GPU activity 93.27%, p10 91% over 61 seconds. Raw evidence and source
+provenance are saved locally in that directory's `live-health.json`; REPORT.md
+records its checksum. Initial readiness completed all eight meshes but returned
+eight unreduced fallbacks, so this is not evidence of useful LOD improvement.
+
+The two-hour experiment ends at **10:54:27 UTC / 12:54:27 Europe/Warsaw**. The
+independent watchdog's final rental cutoff is **11:04:27 UTC / 13:04:27 Warsaw**.
+Health failures may stop earlier. The controller collects a checksummed archive,
+deletes compute, then deletes persistent storage after verified collection.
+
+```sh
+node research/neural/runpod.mjs status runs/neural/runpod-pro6000-saturated
+systemctl --user is-active blitz-a7a0caed-3cd9-449b-a79a-5c50a30b42ce-control.service blitz-a7a0caed-3cd9-449b-a79a-5c50a30b42ce-watchdog.service
+```
+
+Keep the workstation awake and online. Check `collection.json`, `rental.json`
+and `watchdog.json` before considering recovery. When the run ends, inspect the
+archive's report, complete pilot rows and latest checkpoint; a normal full-window
+exit can have `training_window_exhausted: true` and `complete: false`, because
+final validation and model selection have not run. An interrupted audit has no
+score. Retain the results even if every complete pilot returns SCORE 0.
+Do not create another rental merely to inspect this run.
+
 ## Steps and gates
 
 1. **Prepare locally.** Commit and push this branch. `prepare` refuses unpushed

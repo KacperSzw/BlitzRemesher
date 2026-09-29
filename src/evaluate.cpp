@@ -1,6 +1,7 @@
 #include "blitz/evaluate.hpp"
 #include "coverage.hpp"
 #include "timing.hpp"
+#include "metric_angle.hpp"
 #include <bit>
 #include <type_traits>
 #include <stdexcept>
@@ -82,7 +83,7 @@ double sample_cost(const Pixel& a,const Pixel& b,double spatial,const EvalSettin
     double cost=spatial;
     if(s.profile!=Profile::Coverage && s.weights.normal>0) {
         double cosine=std::clamp(dot(a.normal,b.normal)/std::max(1e-30,length(a.normal)*length(b.normal)),-1.0,1.0);
-        double angle=std::acos(cosine)*s.weights.normal;cost+=angle*angle;
+        double angle=detail::metric_acos(cosine)*s.weights.normal;cost+=angle*angle;
     }
     if(s.profile==Profile::Attributes) {
         double x=double(a.color.x)-b.color.x,y=double(a.color.y)-b.color.y,z=double(a.color.z)-b.color.z;
@@ -257,7 +258,7 @@ template<class R> void finish_view(Measurement& current,const R& a,const R& c,co
             changed+=a.pixels[i].covered!=c.pixels[i].covered;
             total+=a.pixels[i].covered||c.pixels[i].covered;
             if(s.profile!=Profile::Coverage&&a.pixels[i].visible&&c.pixels[i].visible)
-                current.normal_degrees=std::max(current.normal_degrees,std::acos(std::clamp(dot(a.pixels[i].normal,c.pixels[i].normal),-1.0,1.0))*180/pi);
+                current.normal_degrees=std::max(current.normal_degrees,detail::metric_acos(std::clamp(dot(a.pixels[i].normal,c.pixels[i].normal),-1.0,1.0))*180/pi);
         }
         auto config=s;config.supersample=ss;
         current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit));

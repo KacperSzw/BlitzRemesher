@@ -45,6 +45,14 @@ std::vector<float> encode_cuda(const Graph&,const WeightsData&,const NeuralOptio
 std::vector<float> encode_mesh_cuda(const Graph&,const WeightsData&,const NeuralOptions&,const std::function<bool()>& = {});
 Prediction predict_cuda(std::span<const float>,const std::array<float,conditions>&,const WeightsData&,const NeuralOptions&,NumericTrace* = nullptr);
 Raster raster_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions& = {});
+// Per-generation CUDA storage; fixed source streams are borrowed and immutable.
+class AuditCuda {
+    struct Impl;std::unique_ptr<Impl> impl_;
+public:
+    explicit AuditCuda(const NeuralOptions&,MeshView fixed_source={});
+    ~AuditCuda();
+    Measurement evaluate(MeshView,MeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr);
+};
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);
 }

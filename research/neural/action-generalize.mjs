@@ -53,7 +53,7 @@ export async function generalize({root,execute,deadline,phase,reusePrepared=true
       health.push({seed,...h});models.push(run+'/'+h.model);
       write(root+'/progress.json',{phase:'training',stage,health,at:Date.now()});
     }
-    phase('audit');const began=Date.now(),out=root+'/pilot-'+stage;
+    phase('audit');write(root+'/progress.json',{phase:'audit',stage,at:Date.now()});const began=Date.now(),out=root+'/pilot-'+stage;
     const minutes=Math.min(45,(deadline-Date.now()-20000)/60000);
     if(minutes<1){result.stop_reason='insufficient_time_for_matched_pilot';break;}
     const args=['research/neural/action-pilot.mjs',out,...models,'--minutes',String(minutes),'--action-trials','8','--action-batch','32','--gpu-memory-mib','16384'];

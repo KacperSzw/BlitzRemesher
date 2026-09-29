@@ -1,6 +1,7 @@
 #include "neural_internal.hpp"
 #include "neural_numeric.hpp"
 #include "neural_action.hpp"
+#include "metric_angle.hpp"
 #include "chain_hooks.hpp"
 #include "blitz/render_cost.hpp"
 #include "blitz/blitz.h"
@@ -14,6 +15,8 @@ Mesh grid(unsigned side=9) {
     for(unsigned y=0;y+1<side;++y)for(unsigned x=0;x+1<side;++x){uint32_t a=y*side+x;m.indices.insert(m.indices.end(),{a,a+1,a+side,a+1,a+side+1,a+side});}m.double_sided={1};return m;
 }
 void graph_contracts() {
+    for(int i=-10000;i<=10000;++i){double x=i/10000.,value=detail::metric_acos(x);require(std::abs(value-std::acos(x))<=9e-16,"shared angular metric differs from independent libm oracle");}
+    require(detail::metric_acos(1)==0&&detail::metric_acos(-1)==std::acos(-1.),"angular metric endpoint contract");
     for(double bad:{NAN,INFINITY,-INFINITY}){std::array<double,2>a{0,bad},b{};require(!neural::legacy_numeric_pass(neural::numeric_difference(a,b)),"nonfinite prediction escaped numeric gate");}
     std::array<double,1>a{0},b{.0003};require(!neural::legacy_numeric_pass(neural::numeric_difference(a,b)),"legacy tolerance silently widened");
     auto numeric_graph=neural::graph(grid(4).view());neural::WeightsData w;w.values.resize(neural::weight_count);size_t at=0;
@@ -61,6 +64,7 @@ void graph_contracts() {
     auto cancelled=detail::generate_with_hooks(original.view(),s,{},&hooks);require(cancelled.status==Status::Cancelled&&same_mesh_data(cancelled.lods.back().view(original.view()),original.view()),"confirmation cancellation lost status or incumbent");
 }
 #ifdef BLITZ_CUDA
+#include <cuda_runtime_api.h>
 void cuda_contracts() {
     auto m=grid(5);auto b=bounds(m.view());NeuralOptions options;options.memory_mib=512;
     for(double screen:{16.,33.})for(auto c:cameras(b,screen,{3,2,42}))for(uint8_t ss:{uint8_t(1),uint8_t(4)}) {
@@ -77,12 +81,65 @@ void cuda_contracts() {
         for(size_t i=0;i<cpu.pixels.size();++i)if(cpu.pixels[i].visible){require(cpu.pixels[i].material==gpu.pixels[i].material,"coplanar material ownership differs");require(length(cpu.pixels[i].normal-gpu.pixels[i].normal)<1e-5,"coplanar normal ownership differs");}
     }
     auto altered=m;altered.positions[12].z=.03f;altered.normals[12]=normalized({.1f,0,1});
+    // Empty renders are valid even though mesh streams themselves are nonempty.
+    // Exercise culling, forced two-sided rendering and out-of-frame clipping.
+    Camera front{{1,0,0},{0,1,0},{0,0,1},4*b.radius,1,20/b.diameter(),false};
+    auto back=m;back.double_sided={0};for(size_t i=0;i<back.indices.size();i+=3)std::swap(back.indices[i+1],back.indices[i+2]);
+    for(bool two:{false,true}){
+        auto cpu=rasterize(back.view(),b,front,20,2,two),gpu=neural::raster_cuda(back.view(),b,front,20,2,two,options);size_t covered=0;
+        for(size_t i=0;i<cpu.pixels.size();++i){covered+=cpu.pixels[i].covered;require(cpu.pixels[i].covered==gpu.pixels[i].covered&&cpu.pixels[i].visible==gpu.pixels[i].visible,"backface culling CPU/GPU mismatch");}
+        require(two?covered>0:covered==0,"culling fixture did not exercise empty and visible renders");
+    }
+    auto outside=m;for(auto& p:outside.positions)p.x+=float(4*b.diameter());
+    auto clipped_cpu=rasterize(outside.view(),b,front,20,2,false),clipped_gpu=neural::raster_cuda(outside.view(),b,front,20,2,false,options);
+    require(clipped_cpu.clipped&&clipped_gpu.clipped,"clipping flag was lost during bin readback");
+    auto empty=m,other_empty=m;empty.indices={0,0,0};other_empty.indices={1,1,1};
+    EvalSettings empty_settings;empty_settings.views={2,1,833};empty_settings.screen_size=20;empty_settings.supersample=2;empty_settings.max_supersample=4;empty_settings.limit=3;
+    for(auto pair:{std::pair{empty.view(),other_empty.view()},std::pair{m.view(),empty.view()}}){
+        auto cpu=evaluate(pair.first,pair.second,b,empty_settings),gpu=evaluate_cuda(pair.first,pair.second,b,empty_settings,options);
+        require(cpu.passed==gpu.passed&&cpu.complete==gpu.complete&&cpu.changed_area==gpu.changed_area,"empty-render audit CPU/GPU mismatch");
+    }
     for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes})for(double limit:{.3,2.,4.}) {
         EvalSettings e;e.profile=profile;e.limit=limit;e.screen_size=24;e.views={5,2,321};e.supersample=2;e.max_supersample=8;e.max_changed_area=.5;
         auto cpu=evaluate(m.view(),altered.view(),b,e),gpu=evaluate_cuda(m.view(),altered.view(),b,e,options);
         require(cpu.passed==gpu.passed&&cpu.complete==gpu.complete,"CUDA decision mismatch");require(cpu.views_evaluated==gpu.views_evaluated,"CUDA view order mismatch");
         require((!std::isfinite(cpu.error)&&!std::isfinite(gpu.error))||std::abs(cpu.error-gpu.error)<1e-5,"CUDA metric mismatch");require(cpu.changed_area==gpu.changed_area,"CUDA changed area mismatch");
     }
+    // Reused workspace and topology must not reuse stale contents or settings.
+    auto endpoint=m.view();std::vector<uint32_t> endpoint_indices(m.indices.begin()+3,m.indices.end());endpoint.indices=endpoint_indices;
+    neural::AuditCuda workspace(options,m.view());EvalSettings reuse;reuse.screen_size=20;reuse.views={3,1,765};reuse.supersample=2;reuse.max_supersample=4;reuse.limit=4;
+    NeuralStats reuse_stats;auto first=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);require(first.complete&&first.passed,"workspace fixture must pass");
+    auto uploads=reuse_stats.gpu_upload_bytes,allocations=reuse_stats.gpu_allocations;
+    auto again=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);
+    require(again.error==first.error&&reuse_stats.gpu_measurement_cache_hits==1&&reuse_stats.gpu_upload_bytes==uploads&&reuse_stats.gpu_allocations==allocations,"completed audit repeated GPU work");
+    reuse.limit=3;workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);
+    require(reuse_stats.gpu_upload_bytes==uploads&&reuse_stats.gpu_buffer_reuses>0,"unchanged topology was re-uploaded");
+    endpoint_indices.erase(endpoint_indices.begin(),endpoint_indices.begin()+3);endpoint.indices=endpoint_indices;
+    auto changed=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats),expected=evaluate(m.view(),endpoint,b,reuse);
+    require(reuse_stats.gpu_upload_bytes>uploads&&changed.passed==expected.passed&&changed.complete==expected.complete,"topology revision reused old device data");
+    reuse.cancelled=[]{return true;};auto stopped_cached=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);
+    require(!stopped_cached.passed&&!stopped_cached.complete,"cache bypassed cancellation");
+    // Thresholds come from controlled measurements. Check both sides of exact
+    // pixel and area boundaries; tolerances must never excuse a decision mismatch.
+    auto threshold_mesh=m;for(auto& normal:threshold_mesh.normals)normal=normalized({.3f,0,1});for(auto& color:threshold_mesh.colors)color.r+=32;
+    for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes}){
+        EvalSettings e;e.profile=profile;e.screen_size=20;e.views={1,0,71423};e.supersample=4;e.max_supersample=4;e.limit=10;e.max_changed_area=1;
+        auto value=evaluate(m.view(),threshold_mesh.view(),b,e);require(std::isfinite(value.error),"threshold fixture error is not finite");
+        for(double threshold:{std::nextafter(value.error,0.),value.error,std::nextafter(value.error,INFINITY)}){
+            e.limit=threshold;auto cpu=evaluate(m.view(),threshold_mesh.view(),b,e),gpu=evaluate_cuda(m.view(),threshold_mesh.view(),b,e,options);
+            if(cpu.passed!=gpu.passed||cpu.complete!=gpu.complete){auto loose=e;loose.limit=10;auto g=evaluate_cuda(m.view(),threshold_mesh.view(),b,loose,options);std::cerr.precision(17);std::cerr<<"profile="<<unsigned(profile)<<" threshold="<<threshold<<" cpu="<<cpu.error<<" gpu="<<gpu.error<<" unbounded_gpu="<<g.error<<" coverage="<<cpu.coverage_upper<<","<<gpu.coverage_upper<<" normal="<<cpu.normal_degrees<<","<<gpu.normal_degrees<<'\n';
+            for(auto camera:cameras(b,e.screen_size,e.views)){auto cr=rasterize(threshold_mesh.view(),b,camera,e.screen_size,e.supersample,false),gr=neural::raster_cuda(threshold_mesh.view(),b,camera,e.screen_size,e.supersample,false,options);size_t mismatch=0;for(size_t i=0;i<cr.pixels.size();++i)if(cr.pixels[i].visible&&std::memcmp(&cr.pixels[i].normal,&gr.pixels[i].normal,sizeof(Vec3)))++mismatch;std::cerr<<"normal raster byte mismatches="<<mismatch<<'\n';}}
+            require(cpu.passed==gpu.passed&&cpu.complete==gpu.complete,"pixel boundary CPU/GPU decision mismatch");}
+        e.limit=10;auto area=evaluate(m.view(),endpoint,b,e).changed_area;require(area>0&&area<1,"area boundary fixture must change coverage");
+        for(double threshold:{std::max(0.,std::nextafter(area,0.)),area,std::min(1.,std::nextafter(area,INFINITY))}){
+            e.max_changed_area=threshold;auto cpu=evaluate(m.view(),endpoint,b,e),gpu=evaluate_cuda(m.view(),endpoint,b,e,options);
+            require(cpu.passed==gpu.passed&&cpu.changed_area==gpu.changed_area,"area boundary CPU/GPU decision mismatch");}
+    }
+    // Caller device state survives the workspace's construction, calls and destruction.
+    int original_device=0,device_count=0;cudaGetDevice(&original_device);cudaGetDeviceCount(&device_count);
+    int caller=device_count>1?(original_device+1)%device_count:original_device;cudaSetDevice(caller);
+    {neural::AuditCuda other(options,m.view());other.evaluate(m.view(),altered.view(),b,EvalSettings{.views={2,1,73},.supersample=2,.max_supersample=4,.screen_size=16,.limit=3},nullptr);int observed=-1;cudaGetDevice(&observed);require(observed==caller,"audit changed caller CUDA device");}
+    int restored_device=-1;cudaGetDevice(&restored_device);require(restored_device==caller,"audit destruction changed caller CUDA device");cudaSetDevice(original_device);
     neural::WeightsData weights;weights.values.resize(neural::weight_count,.001f);weights.provenance="test";
     auto path=std::filesystem::temp_directory_path()/"blitz-neural-contract.blzn";neural::save_weights(path,weights);auto restored=neural::load_weights(path);require(restored.values==weights.values,"model roundtrip");
     NeuralModel model(path.c_str(),options);Settings config;config.levels=3;config.base_pixels=24;config.last_pixels=12;config.profile=Profile::Attributes;config.candidate_budget=2;config.beam_width=1;config.search_views={2,1,14};config.audit_views={3,1,17};config.search_supersample=2;config.audit_supersample=4;config.max_supersample=8;
@@ -97,6 +154,13 @@ void cuda_contracts() {
     options.action_trials=2;NeuralModel action_model(path.c_str(),options);config.cancelled={};NeuralStats action_stats;
     auto action_result=generate_neural(m.view(),config,action_model,&action_stats);require(action_result.lods.size()==3&&action_stats.action_ranked>0&&action_stats.action_trials>0,"v2 inference not wired into chain");
     for(auto& l:action_result.lods)require(l.adjacent.passed&&l.source_error.passed,"v2 chain bypassed audits");
+    for(auto backend:{NeuralConfirmation::Gpu,NeuralConfirmation::Compare}){
+        options.confirmation=backend;NeuralModel confirmed(path.c_str(),options);NeuralStats health;
+        auto r=generate_neural(m.view(),config,confirmed,&health);require(r.status==Status::Complete&&health.confirmation_disagreements==0,"GPU confirmation disagreed with CPU");
+        require(health.reference_audit_ns==0||backend==NeuralConfirmation::Compare,"GPU confirmation executed CPU audit");
+        for(size_t i=0;i<r.lods.size();++i)require(same_mesh_data(r.lods[i].view(m.view()),action_result.lods[i].view(m.view())),"confirmation backend changed audited topology");
+    }
+    options.confirmation=NeuralConfirmation::Cpu;
     for(auto control:{NeuralRanking::Constant,NeuralRanking::Shuffled,NeuralRanking::ShortestEdge,NeuralRanking::CurrentPlane}){
         options.ranking=control;options.ranking_seed=83;NeuralModel controlled(path.c_str(),options);NeuralStats a,b;
         auto first=generate_neural(m.view(),config,controlled,&a),second=generate_neural(m.view(),config,controlled,&b);
@@ -110,6 +174,12 @@ void cuda_contracts() {
     EvalSettings huge;huge.screen_size=1024;huge.supersample=8;huge.max_supersample=8;huge.views={1,0,42};NeuralStats diagnostic;
     auto limited=evaluate_cuda(m.view(),altered.view(),b,huge,options,&diagnostic);require(limited.resource_limited&&!limited.passed&&!limited.complete,"CUDA resource failure became acceptance");
     auto& failure=diagnostic.first_resource_failure;require(diagnostic.resource_failures==1&&failure.kind==NeuralResourceLimit::SampleCount&&failure.requested>failure.limit&&failure.supersample==8&&failure.view==0,"CUDA resource failure lost its cause or location");
+    neural::AuditCuda recovering(options,m.view());NeuralStats recovered_stats;
+    auto denied=recovering.evaluate(m.view(),altered.view(),b,huge,&recovered_stats);
+    auto recovery_settings=empty_settings;recovery_settings.profile=Profile::Coverage;recovery_settings.limit=4;
+    auto recovery_cpu=evaluate(m.view(),altered.view(),b,recovery_settings);require(recovery_cpu.complete&&recovery_cpu.passed,"recovery fixture must pass its visual gate");
+    auto recovered=recovering.evaluate(m.view(),altered.view(),b,recovery_settings,&recovered_stats);
+    require(denied.resource_limited&&recovered.complete&&recovered.passed==recovery_cpu.passed&&!recovered.resource_limited,"pooled workspace did not recover after a resource failure");
 }
 #endif
 int main(int argc,char**) {try {

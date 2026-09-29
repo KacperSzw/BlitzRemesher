@@ -4,12 +4,14 @@ import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
 import {endpointDecision} from './action-gates.mjs';
 import {generalize} from './action-generalize.mjs';
+import {evaluateSaved} from './action-evaluate.mjs';
 const [setup,latest,minutes]=process.argv.slice(2,5).map(Number),experiment=process.argv[5]??'action-v2';
-const pilot=experiment==='action-v2-pilot';
-if(!['action-v2','action-v2-pilot'].includes(experiment)||![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>(pilot?50:20))throw new Error('Invalid action experiment deadline');
+const pilot=experiment==='action-v2-pilot',evaluation=experiment==='action-v2-evaluate';
+if(!['action-v2','action-v2-pilot','action-v2-evaluate'].includes(experiment)||![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>((pilot||evaluation)?50:20))throw new Error('Invalid action experiment deadline');
 const started=Date.now(),deadline=Math.min(latest,started+minutes*60000),results='/workspace/results',root=results+'/'+experiment;
 fs.mkdirSync(root,{recursive:true});write(results+'/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
 let active,cancelled=false,phase='preparation';
+const setPhase=value=>{phase=value;write(results+'/phase.json',{phase,at:Date.now()});};setPhase(phase);
 for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{cancelled=true;if(active)process.kill(-active.pid,'SIGTERM');});
 const monitor=spawn('nvidia-smi',['--query-gpu=utilization.gpu,power.draw,memory.used','--format=csv,noheader,nounits','-l','1']);
 const telemetry=fs.createWriteStream(root+'/gpu.jsonl');let pending='',monitorError;
@@ -27,15 +29,16 @@ async function execute(name,args,log,maximumMinutes){
 }
 const result={schema:2,started,deadline,complete:false,endpoint_gate_passed:false,seeds:[],quality_proven:false};
 try{
-  if(pilot){Object.assign(result,await generalize({root,execute,deadline,phase:value=>{phase=value;}}));}
+  if(evaluation){Object.assign(result,await evaluateSaved({root,execute,deadline,phase:setPhase}));}
+  else if(pilot){Object.assign(result,await generalize({root,execute,deadline,phase:setPhase}));}
   else {
   const data=root+'/proof-data';await execute('blitz-neural-action-prepare',['ph_sweet_potato',data,'--states','64','--pixels','32','--minutes','4'],root+'/prepare.log',4.5);
   if(!read(data+'/index.json').complete)throw new Error('Endpoint teacher preparation incomplete');
   for(const seed of [101,202,303]){
     const run=root+'/seed-'+seed,history=[];let decision={stop:false,passed:false};
     for(let stage=1;stage<=12&&!decision.stop;stage++){
-      phase='training';await execute('blitz-neural-action-train',[data,run,'--steps',String(stage*4096),'--minutes','4','--batch','512','--seed',String(seed)],root+`/train-${seed}.log`,4.5);
-      const health=read(run+'/latest.json');phase='audit';const report=root+`/proof-${seed}-${stage}.json`;
+      setPhase('training');await execute('blitz-neural-action-train',[data,run,'--steps',String(stage*4096),'--minutes','4','--batch','512','--seed',String(seed)],root+`/train-${seed}.log`,4.5);
+      const health=read(run+'/latest.json');setPhase('audit');const report=root+`/proof-${seed}-${stage}.json`;
       await execute('blitz-neural-action-proof',[run+'/'+health.model,data,report,'--minutes','2'],root+`/proof-${seed}.log`,2.5);
       const proof=read(report);history.push({health,proof});decision=endpointDecision(history);write(root+`/history-${seed}.json`,history);
       write(root+'/progress.json',{seed,stage,decision,health,proof:report,at:Date.now()});
@@ -47,4 +50,4 @@ try{
   }
   if(monitorError)throw new Error(monitorError);
 }catch(error){result.error=String(error);process.exitCode=1;}
-finally{result.finished=Date.now();write(root+'/result.json',result);write(results+'/job.json',{code:process.exitCode??0,experiment,result:root+'/result.json'});monitor.kill('SIGTERM');telemetry.end();}
+finally{result.finished=Date.now();write(root+'/result.json',result);write(results+'/job.json',{code:process.exitCode??0,experiment,result:root+'/result.json'});setPhase('finished');monitor.kill('SIGTERM');telemetry.end();}

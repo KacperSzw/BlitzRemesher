@@ -1,4 +1,6 @@
 #include "neural_cuda.cuh"
+#include "neural_audit_cache.hpp"
+#include "metric_angle.hpp"
 #include <cub/cub.cuh>
 #include <math_constants.h>
 namespace blitz::neural {
@@ -15,6 +17,7 @@ __device__ Vec3 norm(Vec3 a){double l=len(a);return l>0?mul(a,1/l):Vec3{};}
 __device__ double edge(double ax,double ay,double bx,double by,double x,double y){return (bx-ax)*(y-ay)-(by-ay)*(x-ax);}
 struct Vertex {double x,y,z;Vec3 normal;Vec4 color;};
 struct Triangle {Vertex a,b,c;Vec3 normal;double area,r0,r1,r2;int x0,x1,y0,y1;uint16_t material;uint8_t back,valid;};
+struct Bins {unsigned long long entries;int clipped;};
 struct Summary {unsigned long long ca,cb,changed,total,samples,pixels;double distance,attribute,normal;};
 struct AddSummary {__device__ Summary operator()(Summary a,Summary b) const {return {a.ca+b.ca,a.cb+b.cb,a.changed+b.changed,a.total+b.total,a.samples+b.samples,a.pixels+b.pixels,fmax(a.distance,b.distance),fmax(a.attribute,b.attribute),fmax(a.normal,b.normal)};}};
 __device__ void max_double(double* p,double x){atomicMax(reinterpret_cast<unsigned long long*>(p),__double_as_longlong(x));}
@@ -25,10 +28,10 @@ __global__ void project(const Vec3* position,const Vec3* normals,const ColorRGBA
     p.normal=norm(normals?normals[i]:Vec3{});p.color=colors?Vec4{colors[i].r/255.f,colors[i].g/255.f,colors[i].b/255.f,colors[i].a/255.f}:Vec4{1,1,1,1};out[i]=p;
 }
 __global__ void triangles(const Vertex* verts,const Vec3* pos,const uint32_t* indices,const uint16_t* materials,const uint8_t* two,uint32_t ntwo,
-    Triangle* out,uint32_t* counts,uint32_t nf,uint32_t size,double diameter,bool perspective,bool force_two,int* clipped) {
+    Triangle* out,uint32_t* counts,Bins* bins,uint32_t nf,uint32_t size,double diameter,bool perspective,bool force_two) {
     uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=nf)return;counts[f]=0;Triangle t{};
     auto ia=indices[f*3],ib=indices[f*3+1],ic=indices[f*3+2];t.a=verts[ia];t.b=verts[ib];t.c=verts[ic];t.material=materials?materials[f]:0;
-    if(perspective&&(t.a.z<=0||t.b.z<=0||t.c.z<=0)){atomicExch(clipped,1);out[f]=t;return;}
+    if(perspective&&(t.a.z<=0||t.b.z<=0||t.c.z<=0)){atomicExch(&bins->clipped,1);out[f]=t;return;}
     t.area=edge(t.a.x,t.a.y,t.b.x,t.b.y,t.c.x,t.c.y);t.back=t.area<0;
     if(fabs(t.area)<1e-16||(t.back&&!force_two&&!(t.material<ntwo&&two[t.material]))){out[f]=t;return;}
     auto p0=pos[ia],p1=pos[ib],p2=pos[ic];Vec3 d1{float((double(p1.x)-p0.x)/diameter),float((double(p1.y)-p0.y)/diameter),float((double(p1.z)-p0.z)/diameter)};
@@ -36,10 +39,10 @@ __global__ void triangles(const Vertex* verts,const Vec3* pos,const uint32_t* in
     if(t.back){auto b=t.b;t.b=t.c;t.c=b;t.area=-t.area;t.normal=mul(t.normal,-1);}
     double minx=fmin(t.a.x,fmin(t.b.x,t.c.x)),maxx=fmax(t.a.x,fmax(t.b.x,t.c.x));
     double miny=fmin(t.a.y,fmin(t.b.y,t.c.y)),maxy=fmax(t.a.y,fmax(t.b.y,t.c.y));
-    if(!isfinite(minx)||!isfinite(maxx)||!isfinite(miny)||!isfinite(maxy)||minx<0||miny<0||maxx>size||maxy>size){atomicExch(clipped,1);out[f]=t;return;}
+    if(!isfinite(minx)||!isfinite(maxx)||!isfinite(miny)||!isfinite(maxy)||minx<0||miny<0||maxx>size||maxy>size){atomicExch(&bins->clipped,1);out[f]=t;return;}
     t.x0=max(0,int(floor(minx)));t.x1=min(int(size)-1,int(floor(maxx)));t.y0=max(0,int(floor(miny)));t.y1=min(int(size)-1,int(floor(maxy)));
     t.r0=.5*(fabs(t.c.x-t.b.x)+fabs(t.c.y-t.b.y));t.r1=.5*(fabs(t.a.x-t.c.x)+fabs(t.a.y-t.c.y));t.r2=.5*(fabs(t.b.x-t.a.x)+fabs(t.b.y-t.a.y));t.valid=1;
-    counts[f]=uint32_t((t.x1/16-t.x0/16+1)*(t.y1/16-t.y0/16+1));out[f]=t;
+    counts[f]=uint32_t((t.x1/16-t.x0/16+1)*(t.y1/16-t.y0/16+1));atomicAdd(&bins->entries,static_cast<unsigned long long>(counts[f]));out[f]=t;
 }
 __global__ void scatter(const Triangle* tris,const uint32_t* offsets,uint64_t* keys,uint32_t n,uint32_t tiles) {
     uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=n||!tris[f].valid)return;auto t=tris[f];uint32_t at=offsets[f];
@@ -77,20 +80,30 @@ template<class T> Buffer<T> upload(Device& device,Stream<T> stream) {
     else {std::vector<T> packed(stream.count);for(size_t i=0;i<stream.count;++i)packed[i]=stream[i];b.upload(packed);}return b;
 }
 struct Image {Buffer<Pixel> pixels;uint32_t size;bool clipped;};
-Image render(Device& device,MeshView m,const Bounds& b,const Camera& camera,double screen,uint8_t ss,bool two,Summary* summary=nullptr) {
+struct UploadedMesh {
+    Buffer<Vec3> positions,normals;Buffer<ColorRGBA8> colors;
+    Buffer<uint32_t> indices;Buffer<uint16_t> materials;Buffer<uint8_t> double_sided;
+    const Vec3 *position,*normal;const ColorRGBA8* color;const uint8_t* sided;
+    uint32_t vertices,faces,sided_count;
+    UploadedMesh(Device& d,MeshView m,const UploadedMesh* shared=nullptr):
+        positions(shared?Buffer<Vec3>{}:upload(d,m.positions)),normals(shared?Buffer<Vec3>{}:upload(d,m.normals)),
+        colors(shared?Buffer<ColorRGBA8>{}:upload(d,m.colors)),indices(d,m.indices.size()),materials(d,m.materials.size()),double_sided(d,shared?0:m.double_sided.size()),
+        position(shared?shared->position:positions.p),normal(shared?shared->normal:normals.p),color(shared?shared->color:colors.p),sided(shared?shared->sided:double_sided.p),
+        vertices(uint32_t(m.positions.count)),faces(uint32_t(m.triangles())),sided_count(uint32_t(m.double_sided.size())) {
+        indices.upload(m.indices);materials.upload(m.materials);if(!shared)double_sided.upload(m.double_sided);
+    }
+};
+Image render(Device& device,const UploadedMesh& m,const Bounds& b,const Camera& camera,double screen,uint8_t ss,bool two,Summary* summary=nullptr) {
     if(!ss||!std::isfinite(screen)||screen<=0||screen>16384)throw std::invalid_argument("invalid raster extent");
     uint32_t size=summary?(uint32_t(std::ceil(screen+8))+1)&~1u:uint32_t(std::ceil(screen+8))*ss;
     if(uint64_t(size)*size>max_raster_samples)throw ResourceError(NeuralResourceLimit::SampleCount,uint64_t(size)*size,max_raster_samples,"raster exceeds per-view sample cap");
-    auto position=upload(device,m.positions),normals=upload(device,m.normals);auto colors=upload(device,m.colors);
-    Buffer<uint32_t> indices(device,m.indices.size());indices.upload(m.indices);Buffer<uint16_t> materials(device,m.materials.size());materials.upload(m.materials);
-    Buffer<uint8_t> double_sided(device,m.double_sided.size());double_sided.upload(m.double_sided);
-    Buffer<Vertex> projected(device,m.positions.count);uint32_t nf=uint32_t(m.triangles());
-    Buffer<Triangle> tris(device,nf);Buffer<uint32_t> counts(device,nf+1),offsets(device,nf+1);counts.zero();Buffer<int> clipped(device,1);clipped.zero();
-    project<<<blocks(m.positions.count),256>>>(position.p,normals.p,colors.p,projected.p,uint32_t(m.positions.count),b,camera,size,ss);
-    triangles<<<blocks(nf),256>>>(projected.p,position.p,indices.p,materials.p,double_sided.p,uint32_t(double_sided.n),tris.p,counts.p,nf,size,b.diameter(),camera.perspective,two,clipped.p);check(cudaGetLastError());
-    // Bound all bin entries before the 32-bit scan. Counts are copied only once per view;
-    // projected attributes, binning, sort and samples remain on the device.
-    auto host_counts=counts.download();uint64_t entries=0;for(auto c:host_counts)entries+=c;
+    Buffer<Vertex> projected(device,m.vertices);uint32_t nf=m.faces;
+    Buffer<Triangle> tris(device,nf);Buffer<uint32_t> counts(device,nf+1),offsets(device,nf+1);counts.zero();Buffer<Bins> bins(device,1);bins.zero();
+    project<<<blocks(m.vertices),256>>>(m.position,m.normal,m.color,projected.p,m.vertices,b,camera,size,ss);
+    triangles<<<blocks(nf),256>>>(projected.p,m.position,m.indices.p,m.materials.p,m.sided,m.sided_count,tris.p,counts.p,bins.p,nf,size,b.diameter(),camera.perspective,two);check(cudaGetLastError());
+    // Check the exact 64-bit sum before a 32-bit scan. The clipping flag is
+    // already available here, so it shares the same host synchronization.
+    auto bin_result=bins.download()[0];uint64_t entries=bin_result.entries;
     if(entries>INT32_MAX)throw ResourceError(NeuralResourceLimit::TileEntries,entries,INT32_MAX,"CUDA tile list exceeds 31-bit sort bound");
     size_t bytes=0;check(cub::DeviceScan::ExclusiveSum(nullptr,bytes,counts.p,offsets.p,nf+1));
     {Buffer<std::byte> temp(device,bytes);check(cub::DeviceScan::ExclusiveSum(temp.p,bytes,counts.p,offsets.p,nf+1));}
@@ -104,12 +117,12 @@ Image render(Device& device,MeshView m,const Bounds& b,const Camera& camera,doub
     }
     Buffer<Pixel> pixels(device,size_t(size)*size);
     raster<<<blocks(pixels.n),256>>>(tris.p,sorted.p,begin.p,end.p,pixels.p,size,tile_width,camera.perspective,b.diameter(),summary);check(cudaGetLastError());
-    bool was_clipped=clipped.download()[0]!=0;return {std::move(pixels),size,was_clipped};
+    return {std::move(pixels),size,bin_result.clipped!=0};
 }
 __global__ void initialize(const Pixel* a,const Pixel* b,float* da,float* db,Summary* s,size_t n) {
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;Summary local{};
     if(i<n){bool ca=a[i].covered,cb=b[i].covered;da[i]=ca?0.f:1e15f;db[i]=cb?0.f:1e15f;local.ca=ca;local.cb=cb;local.changed=ca!=cb;local.total=ca||cb;
-        if(a[i].visible&&b[i].visible)local.normal=acos(fmin(1.,fmax(-1.,dp(a[i].normal,b[i].normal))))*180/3.14159265358979323846;}
+        if(a[i].visible&&b[i].visible)local.normal=detail::metric_acos(fmin(1.,fmax(-1.,dp(a[i].normal,b[i].normal))))*180/3.14159265358979323846;}
     __shared__ cub::BlockReduce<Summary,256>::TempStorage storage;auto reduced=cub::BlockReduce<Summary,256>(storage).Reduce(local,AddSummary{});
     if(threadIdx.x==0){atomicAdd(&s->ca,reduced.ca);atomicAdd(&s->cb,reduced.cb);atomicAdd(&s->changed,reduced.changed);atomicAdd(&s->total,reduced.total);max_double(&s->normal,reduced.normal);}
 }
@@ -129,7 +142,7 @@ __global__ void directed_coverage(const Pixel* from,const float* to,Summary* sum
 }
 __device__ double sample(const Pixel& a,const Pixel& b,double spatial,int profile,Weights weights) {
     double cost=spatial;
-    if(profile&&weights.normal>0){double cosine=fmin(1.,fmax(-1.,dp(a.normal,b.normal)/fmax(1e-30,len(a.normal)*len(b.normal))));double angle=acos(cosine)*weights.normal;cost+=angle*angle;}
+    if(profile&&weights.normal>0){double cosine=fmin(1.,fmax(-1.,dp(a.normal,b.normal)/fmax(1e-30,len(a.normal)*len(b.normal))));double angle=detail::metric_acos(cosine)*weights.normal;cost+=angle*angle;}
     if(profile==2){double x=double(a.color.x)-b.color.x,y=double(a.color.y)-b.color.y,z=double(a.color.z)-b.color.z;cost+=weights.color*weights.color*(x*x+y*y+z*z);if(a.material!=b.material)cost+=weights.material*weights.material;}return cost;
 }
 __global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,int size,int ss,double limit,int profile,Weights weights) {
@@ -141,7 +154,7 @@ __global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,in
     for(int yy=max(0,y-r);yy<=min(size-1,y+r);++yy)for(int xx=max(0,x-r);xx<=min(size-1,x+r);++xx){auto& q=to[size_t(yy)*size+xx];if(!q.visible)continue;double dx=x-xx,dy=y-yy,spatial=(dx*dx+dy*dy)*invs2;if(spatial>=best||spatial>limit2)continue;best=fmin(best,sample(p,q,spatial,profile,weights));}
     max_double(&summary->attribute,best>limit2?CUDART_INF:best);
 }
-Measurement measure(Device& device,MeshView a,MeshView b,const Bounds& bounds,const Camera& camera,const EvalSettings& config,uint8_t ss) {
+Measurement measure(Device& device,const UploadedMesh& a,const UploadedMesh& b,const Bounds& bounds,const Camera& camera,const EvalSettings& config,uint8_t ss) {
     auto x=render(device,a,bounds,camera,config.screen_size,ss,config.force_two_sided),y=render(device,b,bounds,camera,config.screen_size,ss,config.force_two_sided);
     size_t n=x.pixels.n;int size=int(x.size);Buffer<float> da(device,n),db(device,n),temp(device,n);Buffer<int> stack(device,n);Buffer<double> boundaries(device,size_t(size)*(size+1));Buffer<Summary> summary(device,1);summary.zero();
     initialize<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,da.p,db.p,summary.p,n);check(cudaGetLastError());auto s=summary.download()[0];
@@ -163,25 +176,57 @@ Measurement measure(Device& device,MeshView a,MeshView b,const Bounds& bounds,co
 }
 }
 Raster raster_cuda(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool two,const NeuralOptions& options) {
-    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);Device device(options);auto image=render(device,m,b,c,screen,ss,two);return {image.size,image.size,image.pixels.download(),image.clipped};
+    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);Device device(options,true);UploadedMesh uploaded(device,m);auto image=render(device,uploaded,b,c,screen,ss,two);return {image.size,image.size,image.pixels.download(),image.clipped};
 }
-}
-namespace blitz {
-Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats) {
+struct AuditCuda::Impl {
+    struct Topology {
+        std::vector<uint32_t> indices;std::vector<uint16_t> materials;std::unique_ptr<UploadedMesh> uploaded;
+        bool matches(MeshView m) const {return uploaded&&std::equal(indices.begin(),indices.end(),m.indices.begin(),m.indices.end())&&std::equal(materials.begin(),materials.end(),m.materials.begin(),m.materials.end());}
+        const UploadedMesh* get(Device& device,MeshView m,const UploadedMesh* source){
+            if(!matches(m)){uploaded.reset();indices.assign(m.indices.begin(),m.indices.end());materials.assign(m.materials.begin(),m.materials.end());uploaded=std::make_unique<UploadedMesh>(device,m,source);}
+            return uploaded.get();
+        }
+    };
+    Device device;int id;MeshView source;AuditMemo memo;std::unique_ptr<UploadedMesh> uploaded;
+    Topology reference,candidate;
+    Impl(const NeuralOptions& options,MeshView mesh):device(options,true),id(options.device),source(mesh),memo(mesh){check(cudaSetDevice(device.previous));}
+    ~Impl(){cudaSetDevice(id);}
+};
+struct CurrentDevice {int previous;explicit CurrentDevice(int id){check(cudaGetDevice(&previous));check(cudaSetDevice(id));}~CurrentDevice(){cudaSetDevice(previous);}};
+AuditCuda::AuditCuda(const NeuralOptions& options,MeshView source):impl_(std::make_unique<Impl>(options,source)){}
+AuditCuda::~AuditCuda(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
+Measurement AuditCuda::evaluate(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,NeuralStats* stats) {
+    CurrentDevice current_device(impl_->id);auto& device=impl_->device;
+    struct Counters {Device& d;NeuralStats* s;uint64_t allocations,reuses,upload,download;
+        ~Counters(){if(s){s->gpu_peak_bytes=std::max<uint64_t>(s->gpu_peak_bytes,d.peak);s->gpu_allocations+=d.allocations-allocations;s->gpu_buffer_reuses+=d.reuses-reuses;s->gpu_upload_bytes+=d.upload_bytes-upload;s->gpu_download_bytes+=d.download_bytes-download;}}
+    } counters{device,stats,device.allocations,device.reuses,device.upload_bytes,device.download_bytes};
     if(auto e=validate(a);!e.empty())throw std::invalid_argument(e);if(auto e=validate(b);!e.empty())throw std::invalid_argument(e);
     // Validate evaluator settings through the identical-input fast path of the reference.
-    (void)evaluate(a,a,bounds,config);Measurement result;result.supersample=config.supersample;if(same_mesh_data(a,b))return result;
-    neural::gpu::Device device(options);auto views=cameras(bounds,config.screen_size,config.views);
+    (void)blitz::evaluate(a,a,bounds,config);Measurement result;result.supersample=config.supersample;
+    if(config.cancelled&&config.cancelled()){result.complete=false;result.passed=false;return result;}
+    if(same_mesh_data(a,b))return result;
+    if(auto cached=impl_->memo.find(a,b,bounds,config)){if(stats)++stats->gpu_measurement_cache_hits;return *cached;}
+    if(stats)++stats->gpu_evaluations;
+    uint32_t view=0;uint8_t sampling=config.supersample;
+    try {
+    if(impl_->source.positions.count&&!impl_->uploaded)impl_->uploaded=std::make_unique<UploadedMesh>(device,impl_->source);
+    auto upload_mesh=[&](MeshView m,Impl::Topology& slot,std::unique_ptr<UploadedMesh>& owned)->const UploadedMesh*{
+        if(impl_->uploaded&&source_attributes(m,impl_->source)){
+            if(same_mesh_data(m,impl_->source))return impl_->uploaded.get();
+            return slot.get(device,m,impl_->uploaded.get());
+        }
+        owned=std::make_unique<UploadedMesh>(device,m);return owned.get();
+    };
+    std::unique_ptr<UploadedMesh> owned_a,owned_b;
+    const auto* da=upload_mesh(a,impl_->reference,owned_a);
+    const auto* db=upload_mesh(b,impl_->candidate,owned_b);
+    auto views=cameras(bounds,config.screen_size,config.views);
     for(uint32_t v=0;v<views.size();++v) {
+        view=v;
         if(config.cancelled&&config.cancelled()){result.complete=false;result.passed=false;return result;}
         Measurement current;
         for(unsigned ss=config.supersample;;ss=std::min<unsigned>(config.max_supersample,ss*2)) {
-            try{current=neural::measure(device,a,b,bounds,views[v],config,uint8_t(ss));}
-            catch(const neural::gpu::ResourceError& error){
-                if(stats){stats->gpu_peak_bytes=std::max<uint64_t>(stats->gpu_peak_bytes,device.peak);
-                    if(!stats->resource_failures++)stats->first_resource_failure={config.screen_size,error.requested,error.limit,v,uint8_t(ss),error.kind};}
-                result.complete=false;result.passed=false;result.resource_limited=true;result.error=std::numeric_limits<double>::infinity();result.worst_view=v;result.supersample=uint8_t(ss);return result;
-            }
+            sampling=uint8_t(ss);current=measure(device,*da,*db,bounds,views[v],config,sampling);
             if(stats)stats->gpu_peak_bytes=std::max<uint64_t>(stats->gpu_peak_bytes,device.peak);
             if(current.passed||ss>=config.max_supersample||current.coverage-2*std::sqrt(2.)/ss>config.limit||!std::isfinite(current.error)||current.coverage_upper<=config.limit)break;
         }
@@ -190,12 +235,22 @@ Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalS
         if(current.changed_area>result.changed_area){result.changed_area=current.changed_area;result.changed_area_worst_view=v;}
         if(!current.passed){result.passed=false;result.complete=false;return result;}
     }
+    impl_->memo.insert(a,b,bounds,config,result);
     return result;
+    }catch(const ResourceError& error){
+        if(stats&&!stats->resource_failures++)stats->first_resource_failure={config.screen_size,error.requested,error.limit,view,sampling,error.kind};
+        result.complete=false;result.passed=false;result.resource_limited=true;result.error=infinity;result.worst_view=view;result.supersample=sampling;return result;
+    }
+}
+}
+namespace blitz {
+Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats) {
+    neural::AuditCuda workspace(options,a);return workspace.evaluate(a,b,bounds,config,stats);
 }
 double overlap_cuda(MeshView m,const Bounds& bounds,double screen,ViewSet views,const NeuralOptions& options) {
-    if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);neural::gpu::Device device(options);auto cameras_=cameras(bounds,screen,views);if(cameras_.empty())throw std::invalid_argument("overlap requires views");double overlap=0;
+    if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);neural::gpu::Device device(options,true);neural::UploadedMesh uploaded(device,m);auto cameras_=cameras(bounds,screen,views);if(cameras_.empty())throw std::invalid_argument("overlap requires views");double overlap=0;
     neural::gpu::Buffer<neural::Summary> summary(device,1);
-    for(auto c:cameras_){summary.zero();auto raster=neural::render(device,m,bounds,c,screen,1,false,summary.p);if(raster.clipped)return std::numeric_limits<double>::infinity();auto s=summary.download()[0];overlap+=s.pixels?double(s.samples)/s.pixels:0;}
+    for(auto c:cameras_){summary.zero();auto raster=neural::render(device,uploaded,bounds,c,screen,1,false,summary.p);if(raster.clipped)return std::numeric_limits<double>::infinity();auto s=summary.download()[0];overlap+=s.pixels?double(s.samples)/s.pixels:0;}
     return overlap/cameras_.size();
 }
 }

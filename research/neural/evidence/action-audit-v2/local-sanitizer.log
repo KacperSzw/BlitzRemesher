@@ -1,0 +1,83 @@
+Start testing: Sep 29 15:23 CEST
+----------------------------------------------------------
+1/9 Testing: neural-contracts
+1/9 Test: neural-contracts
+Command: "/home/kacper/Projects/BlitzRemesher-neural/build/sanitize/blitz-neural-tests"
+Directory: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+"neural-contracts" start time: Sep 29 15:23 CEST
+Output:
+----------------------------------------------------------
+neural contracts passed
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"neural-contracts" end time: Sep 29 15:23 CEST
+"neural-contracts" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/9 Testing: neural-action-contracts
+2/9 Test: neural-action-contracts
+Command: "/home/kacper/Projects/BlitzRemesher-neural/build/sanitize/blitz-neural-action-tests"
+Directory: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+"neural-action-contracts" start time: Sep 29 15:23 CEST
+Output:
+----------------------------------------------------------
+action contracts passed
+<end of output>
+Test time =   0.46 sec
+----------------------------------------------------------
+Test Passed.
+"neural-action-contracts" end time: Sep 29 15:23 CEST
+"neural-action-contracts" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/9 Testing: coverage-cache-contracts
+3/9 Test: coverage-cache-contracts
+Command: "/home/kacper/Projects/BlitzRemesher-neural/build/sanitize/blitz-coverage-cache-tests"
+Directory: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+"coverage-cache-contracts" start time: Sep 29 15:23 CEST
+Output:
+----------------------------------------------------------
+Coverage cache exactness, bounded admission, lifetimes and fallback passed
+<end of output>
+Test time =   7.44 sec
+----------------------------------------------------------
+Test Passed.
+"coverage-cache-contracts" end time: Sep 29 15:23 CEST
+"coverage-cache-contracts" time elapsed: 00:00:07
+----------------------------------------------------------
+
+6/9 Testing: contracts
+6/9 Test: contracts
+Command: "/home/kacper/Projects/BlitzRemesher-neural/build/sanitize/blitz-tests"
+Directory: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+"contracts" start time: Sep 29 15:23 CEST
+Output:
+----------------------------------------------------------
+345 contract checks passed (avx2)
+<end of output>
+Test time =   1.48 sec
+----------------------------------------------------------
+Test Passed.
+"contracts" end time: Sep 29 15:23 CEST
+"contracts" time elapsed: 00:00:01
+----------------------------------------------------------
+
+7/9 Testing: precision-contracts
+7/9 Test: precision-contracts
+Command: "/home/kacper/Projects/BlitzRemesher-neural/build/sanitize/blitz-precision-tests"
+Directory: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+"precision-contracts" start time: Sep 29 15:23 CEST
+Output:
+----------------------------------------------------------
+RGBA8, precision robustness and packed coverage contracts passed
+<end of output>
+Test time =   0.43 sec
+----------------------------------------------------------
+Test Passed.
+"precision-contracts" end time: Sep 29 15:23 CEST
+"precision-contracts" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Sep 29 15:23 CEST

@@ -1,5 +1,6 @@
 #include "blitz/io.hpp"
 #include "neural_json.hpp"
+#include "neural_audit_io.hpp"
 #include <openssl/evp.h>
 #include <chrono>
 #include <fstream>
@@ -133,6 +134,7 @@ int benchmark_main(int argc,char** argv) {
         else if(k=="--neural-model")neural_file=argv[i+1];else if(k=="--device")neural_options.device=std::stoi(argv[i+1]);
         else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
         else if(k=="--action-batch")neural_options.action_batch=neural_batch(argv[i+1]);
+        else if(k=="--neural-confirmation")neural_options.confirmation=confirmation_option(argv[i+1]);
         else if(k=="--gpu-memory-mib")neural_options.memory_mib=neural_unsigned(argv[i+1]);
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
@@ -146,9 +148,10 @@ int benchmark_main(int argc,char** argv) {
       {"backend",evaluator_backend(settings.force_scalar)},{"peak_rss_scope","process high-water; KiB"}};
     metadata["camera_sha256"]=digest(normalized["search_views"].dump()+normalized["audit_views"].dump());
     fs::path baseline;
-    std::unique_ptr<NeuralModel> model;if(!neural_file.empty()){if(method!="native")throw std::invalid_argument("neural model cannot be combined with an external baseline");model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);method="neural";metadata["model_sha256"]=model->sha256();metadata["cuda_device"]=neural_options.device;metadata["backend"]="cuda+reference-confirmation";}
+    neural_options.capture_confirmation_failure=true;
+    std::unique_ptr<NeuralModel> model;if(!neural_file.empty()){if(method!="native")throw std::invalid_argument("neural model cannot be combined with an external baseline");model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);method="neural";metadata["model_sha256"]=model->sha256();metadata["cuda_device"]=neural_options.device;metadata["backend"]="cuda+"+std::string(confirmation_name(neural_options.confirmation))+"-confirmation";}
     if(model&&neural_options.ranking!=NeuralRanking::Learned)method="neural-control-"+std::string(ranking_name(neural_options.ranking));metadata["method"]=method;
-    if(model){metadata["candidate_refinement"]="original sampling sequence bounded by 64000000 samples; uncertain bounds reject; unchanged CPU confirmation";metadata["neural_options"]=neural_json(neural_options);}
+    if(model){metadata["candidate_refinement"]="original sampling sequence bounded by 64000000 samples; uncertain bounds reject; full final confirmation";metadata["neural_options"]=neural_json(neural_options);}
     metadata["output_hash_scope"]="output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data";
     if(!model&&method!="native") {
         if(method!="meshopt"&&method!="fastquadric"&&method!="cgal-lt"&&method!="cgal-qem"&&method!="cgal-probabilistic")throw std::invalid_argument("unknown baseline");
@@ -211,6 +214,7 @@ int benchmark_main(int argc,char** argv) {
                 PerformanceStats work;settings.performance=&work;
                 auto generation_begin=std::chrono::steady_clock::now();
                 NeuralStats neural_stats;auto result=model?generate_neural(mesh.view(),settings,*model,&neural_stats):generate(mesh.view(),settings,proposer);if(model)row["neural"]=neural_json(neural_stats);
+                save_audit_failure(neural_stats,output/"diagnostics"/(id+"-confirmation.json"));
                 row["generation_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-generation_begin).count();
                 row["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};
                 row["numerics"]={{"solve_attempts",work.solve_attempts},{"singular_solves",work.singular_solves},{"nonfinite_solves",work.nonfinite_solves},
@@ -249,6 +253,7 @@ int benchmark_main(int argc,char** argv) {
     }
     json summary={{"run_sha256",runhash},{"complete",done==assets.size()},{"expected",assets.size()},{"completed",done},{"blocked_assets",blocked},{"failed_assets",failed},{"seconds",seconds},{"fallbacks",fallbacks},{"categories",json::object()}};
     double mean=0;for(auto& [name,values]:categories){double sum=0;for(auto v:values)sum+=v;double avg=sum/values.size();mean+=avg;summary["categories"][name]={{"count",values.size()},{"mean_ratio",avg}};}
-    summary["score"]=done==assets.size()?json(100*(1-mean/categories.size())):json(nullptr);
+    summary["score_eligible"]=corpus.value("score_eligible",true);
+    summary["score"]=done==assets.size()&&corpus.value("score_eligible",true)?json(100*(1-mean/categories.size())):json(nullptr);
     write(output/"summary.json",summary);std::cout<<summary.dump(2)<<'\n';return done==assets.size()?0:blocked.empty()?2:3;
 }

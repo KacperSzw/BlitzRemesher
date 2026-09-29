@@ -2,101 +2,68 @@
 
 Worktree: `/home/kacper/Projects/BlitzRemesher-neural`.
 Branch: `research/neural-lod-gpu`. The primary worktree is separate.
-The branch includes the endpoint/curriculum models, audited labels, CLI repair
-and tests. The rental state records its exact source revision.
 
-## Current experiment
+## Current milestone
 
-Local durable state: `runs/neural/runpod-action-pilot-03/rental.json`.
-The continuation uses one RTX PRO 6000 Blackwell Server Edition (96 GB),
-last quoted at $2.09/hour. The initial rental limit is 90 minutes; the controller
-shortens it after setup to the actual 50-minute experiment deadline plus
-collection time. Read the state file for the effective cutoff and resource status.
+Follow [AUDIT.md](AUDIT.md): GPU final confirmation, resident mesh data,
+recycled audit buffers, exact completed-audit caching, failure replay and an
+evaluation-only comparison of three saved models. No new optimizer steps are
+part of this milestone, locally or in the cloud.
+
+The previous rental `runs/neural/runpod-action-pilot-03` ended at 12:30:36 UTC.
+Results were checksummed and collected; compute and its volume were deleted.
+Its first full-settings asset reached the five-minute limit: zero complete
+assets, no SCORE. CPU final confirmation took 136.878 seconds and GPU audits
+162.975 seconds. See [raw evidence](evidence/action-audit-v2/manifest.json).
+This was a runtime failure, not evidence that learned ranking improved LODs.
+
+The next run directory is `runs/neural/runpod-action-evaluation-01`. Check for
+`rental.json` before assuming it has launched:
 
 ```sh
-node research/neural/runpod.mjs status runs/neural/runpod-action-pilot-03
+node research/neural/runpod.mjs status runs/neural/runpod-action-evaluation-01
 ```
 
-The controller and independent watchdog run as user systemd services. Their
-names derive from `rental.json`'s `name` field. They collect and verify
-`results.tar.gz`, terminate compute, and delete the volume after verified
-collection. A collection failure preserves the volume and its evidence.
-`stop RUN` requests early termination; do not delete uncollected evidence.
+The diagnostic uses shelves and moon rock 02 across all nine models/controls
+with the full visual settings. Its score is always null. Only a complete,
+healthy diagnostic with enough remaining time permits a frozen eight-asset
+pilot. Training is never started. Remote output is under
+`/workspace/results/action-v2-evaluate`; `phase.json`, scenario
+`progress.json`, `report.json` and `result.json` record live progress and
+completion. A resource, numeric or disagreement failure stops the comparison.
 
-Remote result root: `/workspace/results/action-v2-pilot`.
-
-- `curriculum/progress.json`: completed data shards.
-- `progress.json`: checkpoint health and matched comparison progress.
-- `seed-{101,202,303}/latest.json`: model, optimizer, numeric and membership checks.
-- `pilot-{1,2}/report.json`: all matched methods and persistence gate.
-- `result.json`: final completion, stop reason and next phase.
-- `gpu.jsonl`: utilization split by preparation, training and audit phase.
-
-The continuation reuses seven checksummed shards from two allowed training
-assets at several pixel sizes and fixed preceding LODs, then trains three fresh
-seeds at 8,192 and 16,384 updates. All
-methods use eight trials, batches up to 32, 16 GiB evaluator scratch and the
-unchanged full visual gates in `action-pilot.json`. No third stage is automatic.
-The experiment is bounded; incomplete pilots remain unscored.
-
-The first curriculum rental, `runpod-action-pilot-01`, has ended. All three
-seeds reached 8,192 updates with healthy numeric/restore checks and 98.78–99.39%
-queried preferred membership. The pilot failed at a missing CLI option; that
-interface is repaired and tested. Evidence was collected and both resources
-deleted. Saved curriculum/model evidence is under `evidence/action-curriculum-v2`.
-
-The second allocation (`runpod-action-pilot-02`) exposed no public IP/direct
-TCP mapping despite a running container and requested port 22. It was stopped
-before any upload; the newly created unused volume was verified and removed.
-The third allocation uses another data center and the same tested source.
-
-Verified snapshot at **12:27 UTC (14:27 Warsaw)**: all 18 cloud CTests passed,
-all seven saved shards passed reuse checks, and all three seeds completed 8,192
-updates with finite parameters/gradients, exact model/AdamW restoration and
-native/FP64 error below 2e-4. Loss fell from approximately 1.35 to 0.020;
-queried preferred membership was 98.78–99.39%. The repaired benchmark passed
-argument parsing and entered the GPU audit phase. No full-pilot score exists
-yet. Raw training checks and telemetry are in
-[repeat-8192.json](evidence/action-curriculum-v2/repeat-8192.json).
-
-The effective experiment deadline is **13:14 UTC (15:14 Warsaw)** and the
-collection/compute cutoff is **13:24 UTC (15:24 Warsaw)** on September 29.
-Early completion or a failed evidence gate stops sooner. Check durable rental
-state for subsequent changes. The launch budget ceiling was $8.93 cumulative,
-including the $1 reserve. `progress.json` records completed operations; the last
-`gpu.jsonl` row gives the current live phase while a comparison is in progress.
+The cumulative cloud cap remains $10. Before this evaluation, the conservative
+ledger plus prior estimate was $4.899. A 90-minute rental at the $2.50/hour
+cap, storage allowance and $1 reserve fits under $9.664 cumulative. Actual
+billing/resources are reconciled again by launch. The controller and independent
+watchdog collect/checksum evidence and terminate compute; a failed collection
+preserves its volume. Durable state, not an old timestamp here, owns the cutoff.
 
 ## Established evidence
 
-Three seeds passed the one-mesh proof at two checkpoints; see the six portable
-models and [raw evidence](evidence/action-v2/README.md). All ranking controls also
-met that proof's reduction quota. A two-mesh smoke showed 6.94% mean triangle
-reduction versus 1.43% for constant ranking. Full-pilot superiority is unproven.
+Three seeds passed the one-mesh proof at two checkpoints; see
+[raw endpoint evidence](evidence/action-v2/README.md). All ranking controls also
+met that proof's quota. A reduced-settings two-mesh smoke showed 6.94% mean
+triangle reduction versus 1.43% for constant ranking. Full-pilot superiority
+remains unproven.
 
-Local verification passed eight neural CTests, two relevant ASan/UBSan targets,
-20 Node cloud/action contracts and bounded data preparation checks. No local
-optimizer steps were run. The local high-pixel check was incomplete because
-Unity/desktop use left insufficient device memory; cloud capacity is separate.
+All three curriculum seeds completed 8,192 updates with finite parameters and
+gradients, exact model/AdamW restoration, native/FP64 error below 2e-4, and
+98.78–99.39% queried preferred membership. Loss fell from about 1.35 to 0.020.
+The US-MO-2 repeat took 20.14–25.04 seconds per seed with 16.41% mean GPU
+utilization over 73 one-second samples. The earlier 164-state curriculum
+averaged 38.74%. Neither run saturated the GPU. Saved models, labels and health
+reports are under [curriculum evidence](evidence/action-curriculum-v2/README.md).
 
-## Remaining gates
+## Remaining learning gates
 
 Follow [V2.md](V2.md). Require three learned seeds to beat the strongest
 constant/shuffled control by at least one SCORE point, with reduction in at
 least two categories, persisting at another checkpoint under the same contract.
-Also report shortest-edge and current-plane controls; do not imply superiority
-over them merely from passing the constant/shuffled gate.
+Also report shortest-edge and current-plane controls. The two-category
+diagnostic alone cannot meet the full-pilot/persistence gates.
 
-The tiny proof averaged 38.2% GPU utilization during training; the broader
-164-state curriculum averaged 38.74% on its first rental. The current repeat in
-US-MO-2 averaged 16.41% over 73 one-second training samples and took 20.14–25.04
-seconds per seed. It is not saturating the GPU. Auditing dominated the full
-local attempt. Profile
-useful throughput and convergence before changing precision, model size or batch
-size. BF16, CUDA graphs, segment placement and a GNN remain conditional.
-
-The cumulative cloud cap is $10, with no local training. The launcher includes
-conservative previous spend and a $1 reserve in every preflight budget.
-Reconcile actual billing and all earlier action rentals before any new launch.
-Generate training labels only from the frozen training selection. Pilot families
-stay out of training, validation is for later checkpoint selection, and held-out
-assets remain release-only.
+Profile useful throughput and convergence before changing precision, model
+size or batch size. BF16, CUDA graphs, segment placement and a GNN remain
+conditional. Training labels come only from the frozen training selection.
+Pilot families stay out of training; held-out assets remain release-only.

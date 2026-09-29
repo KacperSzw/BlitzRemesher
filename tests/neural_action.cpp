@@ -1,5 +1,6 @@
 #include "neural_action.hpp"
 #include "neural_action_cache.hpp"
+#include "neural_audit_cache.hpp"
 #include "chain_hooks.hpp"
 #include <iostream>
 #include <numeric>
@@ -12,6 +13,18 @@ Mesh plane(unsigned n) {
 }
 int main(){try{
     auto cache_mesh=plane(5);cache_mesh.materials.resize(cache_mesh.view().triangles(),0);
+    auto memo_source=cache_mesh.view(),memo_candidate=memo_source;std::vector<uint32_t> memo_indices(cache_mesh.indices.begin()+3,cache_mesh.indices.end());memo_candidate.indices=memo_indices;
+    memo_candidate.materials=memo_source.materials.subspan(1);
+    auto memo_bounds=bounds(memo_source);EvalSettings memo_settings;Measurement memo_measurement;memo_measurement.error=.25;memo_measurement.views_evaluated=7;
+    AuditMemo memo(memo_source);memo.insert(memo_source,memo_candidate,memo_bounds,memo_settings,memo_measurement);
+    check(memo.find(memo_source,memo_candidate,memo_bounds,memo_settings)->error==.25,"completed audit was not retained");
+    auto changed_settings=memo_settings;changed_settings.max_supersample=16;check(!memo.find(memo_source,memo_candidate,memo_bounds,changed_settings),"bounded audit reused for full confirmation");
+    auto changed_bounds=memo_bounds;changed_bounds.radius*=2;check(!memo.find(memo_source,memo_candidate,changed_bounds,memo_settings),"audit ignored source bounds");
+    std::swap(memo_indices[0],memo_indices[1]);check(!memo.find(memo_source,memo_candidate,memo_bounds,memo_settings),"audit cached borrowed topology pointers");
+    auto incomplete=memo_measurement;incomplete.complete=false;memo.insert(memo_source,memo_candidate,memo_bounds,memo_settings,incomplete);check(!memo.find(memo_source,memo_candidate,memo_bounds,memo_settings),"incomplete audit became acceptance");
+    auto different_attributes=cache_mesh;auto different_view=different_attributes.view();different_view.indices=memo_candidate.indices;
+    check(!memo.find(memo_source,different_view,memo_bounds,memo_settings),"audit reused mutable unrelated attributes");
+    AuditMemo tiny_memo(memo_source,1);tiny_memo.insert(memo_source,memo_candidate,memo_bounds,memo_settings,memo_measurement);check(!tiny_memo.find(memo_source,memo_candidate,memo_bounds,memo_settings),"audit memo exceeded byte cap");
     for(auto bytes:{cache_mesh.indices.size()*sizeof(uint32_t),cache_mesh.indices.size()*sizeof(uint32_t)*2}){
         ActionRejections cache(bytes);EvalSettings e;cache.configure(e);cache.insert(cache_mesh.view());
         check(cache.contains(cache_mesh.view())==(bytes>=cache_mesh.indices.size()*sizeof(uint32_t)+cache_mesh.materials.size()*sizeof(uint16_t)),"cache payload bound changed verdict");

@@ -18,7 +18,7 @@ export function endpointDecision(history){
   return {stop:flat>=2,passed:false,reason:flat>=2?'two_flat_action_audits':'continue'};
 }
 export function pilotDecision(runs,{scoreGain=1,categories=2}={}){
-  if(runs.length!==9||runs.some(r=>r.code!==0||!r.summary?.complete||r.summary.completed!==8||r.summary.expected!==8||!Number.isFinite(r.summary.score)))return {passed:false,reason:'incomplete'};
+  if(runs.length!==9||runs.some(r=>r.code!==0||r.health_complete===false||!r.summary?.complete||r.summary.completed!==8||r.summary.expected!==8||!Number.isFinite(r.summary.score)))return {passed:false,reason:'incomplete'};
   const learned=runs.filter(r=>r.ranking==='learned'),controls=runs.filter(r=>['constant','shuffled'].includes(r.ranking));
   if(learned.length!==3||controls.length!==4||runs.filter(r=>r.ranking==='shortest').length!==1||runs.filter(r=>r.ranking==='current-plane').length!==1)return {passed:false,reason:'missing_controls'};
   const strongest=Math.max(...controls.map(r=>r.summary.score));

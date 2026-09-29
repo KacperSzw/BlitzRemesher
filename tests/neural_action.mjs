@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {generalize} from '../research/neural/action-generalize.mjs';
+import {evaluateSaved,fullPilotFits} from '../research/neural/action-evaluate.mjs';
 import {write} from '../research/neural/runpod-api.mjs';
 import {actionBudget,actionAccrued} from '../research/neural/action-budget.mjs';
 import {endpointDecision,pilotDecision,actionHealth} from '../research/neural/action-gates.mjs';
@@ -20,6 +21,8 @@ test('cumulative rental cap includes previous spend, storage allowance and reser
   assert.throws(()=>actionBudget({billed:2,rate:2,additionalAccrued:6}));
   const pilot={...stopped,name:'pilot',experiment:'action-v2-pilot',compute_terminated:false};
   assert.equal(actionAccrued([stopped,pilot,pilot],3601000,2),3);
+  const evaluation={...stopped,name:'evaluation',experiment:'action-v2-evaluate'};
+  assert.equal(actionAccrued([stopped,pilot,evaluation,evaluation],3601000,2),4);
   assert.throws(()=>actionBudget({billed:2,rate:2.5,minutes:90,additionalAccrued:3}));
 });
 test('action health rejects unverified updates and unchanged or nonfinite parameters',()=>{
@@ -30,6 +33,19 @@ test('action health rejects unverified updates and unchanged or nonfinite parame
   for(const field of ['native_max_abs','fp64_max_abs'])assert.equal(actionHealth({...health,[field]:.000201}),false);
   assert.equal(actionHealth({...health,parameter_change:0}),false);
   assert.equal(actionHealth({...health,preferred_membership:1.01}),false);
+});
+test('saved-model evaluation never trains and stops after an incomplete diagnostic',async()=>{
+  for(const complete of [false,true]){
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-evaluate-'));const calls=[];
+    try{const result=await evaluateSaved({root,deadline:Date.now()+120000,phase:()=>{},execute:async(name,args)=>{
+      calls.push(name);assert.equal(name,'node');assert.equal(args[0],'research/neural/action-pilot.mjs');assert.equal(args[args.indexOf('--neural-confirmation')+1],'gpu');
+      write(args[1]+'/report.json',{complete,runs:Array.from({length:9},()=>({wall_seconds:30}))});
+    }});assert.deepEqual(calls,['node']);assert.equal(result.training_steps,0);assert.equal(result.complete,complete);assert.equal(result.quality_proven,false);
+    }finally{fs.rmSync(root,{recursive:true,force:true});}
+  }
+  assert.equal(fullPilotFits({complete:true,runs:Array.from({length:9},()=>({wall_seconds:2}))},300000),true);
+  assert.equal(fullPilotFits({complete:false,runs:[]},300000),false);
+  assert.equal(fullPilotFits({complete:true,runs:Array.from({length:9},()=>({wall_seconds:NaN}))},300000),false);
 });
 test('cloud continuation stops before training when the preceding LOD is unverified',async()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let calls=0;
@@ -53,6 +69,7 @@ test('matched pilot requires three seeds, all controls, complete assets and meas
   const runs=methods.map(ranking=>({ranking,code:0,summary:{complete:true,completed:8,expected:8,score:ranking==='learned'?8:5,categories:{a:{count:2,mean_ratio:.8},b:{count:2,mean_ratio:.9}}}}));
   for(const scoreGain of [1,2])assert.equal(pilotDecision(runs,{scoreGain}).passed,true);
   assert.equal(pilotDecision(runs,{scoreGain:4}).passed,false);
+  runs[1].health_complete=false;assert.equal(pilotDecision(runs).reason,'incomplete');runs[1].health_complete=true;
   runs[1].summary.complete=false;assert.equal(pilotDecision(runs).reason,'incomplete');runs[1].summary.complete=true;
   runs[6].summary.score=8;assert.equal(pilotDecision(runs).passed,false);
 });

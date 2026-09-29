@@ -75,32 +75,56 @@ __global__ void raster(const Triangle* tris,const uint64_t* keys,const uint32_t*
     }
     pixels[i]=p;if(summary&&overlap){atomicAdd(&summary->samples,overlap);atomicAdd(&summary->pixels,1ull);}
 }
-template<class T> Buffer<T> upload(Device& device,Stream<T> stream) {
-    Buffer<T> b(device,stream.count);if(stream.stride==sizeof(T))b.upload({reinterpret_cast<const T*>(stream.data),stream.count});
-    else {std::vector<T> packed(stream.count);for(size_t i=0;i<stream.count;++i)packed[i]=stream[i];b.upload(packed);}return b;
-}
 struct Image {Buffer<Pixel> pixels;uint32_t size;bool clipped;};
+// Exact owned mesh keys also cover mutable positions/normals. A topology-only
+// key is insufficient as soon as a proposal changes shading or placement.
+class RasterMemo {
+    using Key=std::tuple<float,float,float,double,double,uint32_t,uint16_t,uint16_t,bool>;
+    struct Entry {uint32_t view;uint8_t sampling;std::unique_ptr<Image> image;};
+    Key key_{};Mesh mesh_;DeviceMeshView device_mesh_{};size_t limit_,bytes_{};std::vector<Entry> entries_;bool enabled_{true};
+    static Key key(const Bounds& b,const EvalSettings& e){return {b.center.x,b.center.y,b.center.z,b.radius,e.screen_size,e.views.rotation_seed,e.views.orthographic,e.views.perspective,e.force_two_sided};}
+public:
+    explicit RasterMemo(size_t limit):limit_(limit){}
+    void clear(){entries_.clear();bytes_=0;}
+    void configure(MeshView m,const Bounds& b,const EvalSettings& e){
+        auto next=key(b,e);
+        try{if(device_mesh_.identity||next!=key_||mesh_.positions.empty()||!same_mesh_data(m,mesh_.view())){clear();mesh_=copy_mesh(m);key_=next;device_mesh_={};}enabled_=true;}
+        catch(const std::bad_alloc&){clear();enabled_=false;}}
+    void configure(DeviceMeshView m,const Bounds& b,const EvalSettings& e){auto next=key(b,e);
+        if(!m.identity)throw std::invalid_argument("device render cache requires owned mesh identity");
+        auto& old=device_mesh_;
+        if(next!=key_||old.identity!=m.identity||old.revision!=m.revision||old.positions!=m.positions||old.normals!=m.normals||old.colors!=m.colors||old.indices!=m.indices||old.materials!=m.materials||old.double_sided!=m.double_sided||old.vertices!=m.vertices||old.faces!=m.faces||old.sided_count!=m.sided_count){clear();device_mesh_=m;key_=next;mesh_={};}enabled_=true;}
+    const Image* find(uint32_t view,uint8_t sampling)const{if(enabled_)for(auto& entry:entries_)if(entry.view==view&&entry.sampling==sampling)return entry.image.get();return nullptr;}
+    const Image* retain(uint32_t view,uint8_t sampling,Image&& image){size_t bytes=image.pixels.n*sizeof(Pixel);
+        if(!enabled_||entries_.size()>=4096||bytes>limit_-bytes_)return nullptr;
+        // Reserve metadata before moving the only owned raster. Allocation
+        // failure leaves the caller's scratch image usable.
+        std::unique_ptr<Image> saved;
+        try{entries_.reserve(entries_.size()+1);saved=std::make_unique<Image>(std::move(image));}catch(const std::bad_alloc&){return nullptr;}
+        auto* result=saved.get();entries_.push_back({view,sampling,std::move(saved)});bytes_+=bytes;return result;}
+};
 struct UploadedMesh {
     Buffer<Vec3> positions,normals;Buffer<ColorRGBA8> colors;
     Buffer<uint32_t> indices;Buffer<uint16_t> materials;Buffer<uint8_t> double_sided;
     const Vec3 *position,*normal;const ColorRGBA8* color;const uint8_t* sided;
     uint32_t vertices,faces,sided_count;
     UploadedMesh(Device& d,MeshView m,const UploadedMesh* shared=nullptr):
-        positions(shared?Buffer<Vec3>{}:upload(d,m.positions)),normals(shared?Buffer<Vec3>{}:upload(d,m.normals)),
-        colors(shared?Buffer<ColorRGBA8>{}:upload(d,m.colors)),indices(d,m.indices.size()),materials(d,m.materials.size()),double_sided(d,shared?0:m.double_sided.size()),
+        positions(shared?Buffer<Vec3>{}:upload_stream(d,m.positions)),normals(shared?Buffer<Vec3>{}:upload_stream(d,m.normals)),
+        colors(shared?Buffer<ColorRGBA8>{}:upload_stream(d,m.colors)),indices(d,m.indices.size()),materials(d,m.materials.size()),double_sided(d,shared?0:m.double_sided.size()),
         position(shared?shared->position:positions.p),normal(shared?shared->normal:normals.p),color(shared?shared->color:colors.p),sided(shared?shared->sided:double_sided.p),
         vertices(uint32_t(m.positions.count)),faces(uint32_t(m.triangles())),sided_count(uint32_t(m.double_sided.size())) {
         indices.upload(m.indices);materials.upload(m.materials);if(!shared)double_sided.upload(m.double_sided);
     }
+    operator DeviceMeshView()const{return {position,normal,nullptr,color,nullptr,indices.p,materials.p,sided,vertices,faces,sided_count,0,0};}
 };
-Image render(Device& device,const UploadedMesh& m,const Bounds& b,const Camera& camera,double screen,uint8_t ss,bool two,Summary* summary=nullptr) {
+Image render(Device& device,DeviceMeshView m,const Bounds& b,const Camera& camera,double screen,uint8_t ss,bool two,Summary* summary=nullptr) {
     if(!ss||!std::isfinite(screen)||screen<=0||screen>16384)throw std::invalid_argument("invalid raster extent");
     uint32_t size=summary?(uint32_t(std::ceil(screen+8))+1)&~1u:uint32_t(std::ceil(screen+8))*ss;
     if(uint64_t(size)*size>max_raster_samples)throw ResourceError(NeuralResourceLimit::SampleCount,uint64_t(size)*size,max_raster_samples,"raster exceeds per-view sample cap");
     Buffer<Vertex> projected(device,m.vertices);uint32_t nf=m.faces;
     Buffer<Triangle> tris(device,nf);Buffer<uint32_t> counts(device,nf+1),offsets(device,nf+1);counts.zero();Buffer<Bins> bins(device,1);bins.zero();
-    project<<<blocks(m.vertices),256>>>(m.position,m.normal,m.color,projected.p,m.vertices,b,camera,size,ss);
-    triangles<<<blocks(nf),256>>>(projected.p,m.position,m.indices.p,m.materials.p,m.sided,m.sided_count,tris.p,counts.p,bins.p,nf,size,b.diameter(),camera.perspective,two);check(cudaGetLastError());
+    project<<<blocks(m.vertices),256>>>(m.positions,m.normals,m.colors,projected.p,m.vertices,b,camera,size,ss);
+    triangles<<<blocks(nf),256>>>(projected.p,m.positions,m.indices,m.materials,m.double_sided,m.sided_count,tris.p,counts.p,bins.p,nf,size,b.diameter(),camera.perspective,two);check(cudaGetLastError());
     // Check the exact 64-bit sum before a 32-bit scan. The clipping flag is
     // already available here, so it shares the same host synchronization.
     auto bin_result=bins.download()[0];uint64_t entries=bin_result.entries;
@@ -128,7 +152,9 @@ __global__ void initialize(const Pixel* a,const Pixel* b,float* da,float* db,Sum
 }
 // Transposing lets adjacent lanes visit adjacent pixels in both separable
 // passes. The padded shared tile also avoids bank conflicts on the write pass.
-__global__ void transpose(const float* in,float* out,int size) {
+__device__ bool needs_distance(const Summary* s){return s->changed&&bool(s->ca)==bool(s->cb);}
+__global__ void transpose(const float* in,float* out,int size,const Summary* summary) {
+    if(!needs_distance(summary))return;
     __shared__ float tile[32][33];
     int x=int(blockIdx.x)*32+int(threadIdx.x),y=int(blockIdx.y)*32+int(threadIdx.y);
     for(int j=0;j<32;j+=8)if(x<size&&y+j<size)tile[threadIdx.y+j][threadIdx.x]=in[size_t(y+j)*size+x];
@@ -140,7 +166,8 @@ __global__ void transpose(const float* in,float* out,int size) {
 // site on either side therefore gives the same squared distance as the general
 // lower envelope. At the raster cap, all finite distances are far below 1e15f;
 // an empty column remains exactly that sentinel. Square before rounding to float.
-__global__ void edt_binary(const float* in,float* out,int size) {
+__global__ void edt_binary(const float* in,float* out,int size,const Summary* summary) {
+    if(!needs_distance(summary))return;
     int line=int(blockIdx.x*blockDim.x+threadIdx.x);if(line>=size)return;
     int nearest=-1;
     for(int q=0;q<size;++q){size_t i=size_t(q)*size+line;if(in[i]==0)nearest=q;double d=q-nearest;out[i]=nearest<0?1e15f:float(d*d);}
@@ -151,13 +178,15 @@ __global__ void edt_binary(const float* in,float* out,int size) {
 // per thread. Stack entries are [depth][column], so nearby lanes share memory
 // transactions. Arithmetic and float rounding match the original row/column
 // implementation; the two transposes change only the memory layout.
-__global__ void edt(const float* in,float* out,int* stack,double* boundaries,int size) {
+__global__ void edt(const float* in,float* out,int* stack,double* boundaries,int size,const Summary* summary) {
+    if(!needs_distance(summary))return;
     int line=int(blockIdx.x*blockDim.x+threadIdx.x);if(line>=size)return;
     int* v=stack+line;double* z=boundaries+line;int k=0;v[0]=0;z[0]=-CUDART_INF;z[size]=CUDART_INF;
     for(int q=1;q<size;++q){double s;for(;;){int p=v[size_t(k)*size];s=((double(in[size_t(q)*size+line])+double(q)*q)-(double(in[size_t(p)*size+line])+double(p)*p))/(2*(q-p));if(s>z[size_t(k)*size]||k==0)break;--k;}++k;v[size_t(k)*size]=q;z[size_t(k)*size]=s;z[size_t(k+1)*size]=CUDART_INF;}
     k=0;for(int q=0;q<size;++q){while(z[size_t(k+1)*size]<q)++k;int p=v[size_t(k)*size];double d=q-p;out[size_t(q)*size+line]=float(d*d+in[size_t(p)*size+line]);}
 }
 __global__ void directed_coverage(const Pixel* from,const float* to,Summary* summary,size_t n) {
+    if(!needs_distance(summary))return;
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;double value=i<n&&from[i].covered?double(to[i]):0;
     __shared__ cub::BlockReduce<double,256>::TempStorage storage;double maximum=cub::BlockReduce<double,256>(storage).Reduce(value,cub::Max());
     if(threadIdx.x==0)max_double(&summary->distance,maximum);
@@ -180,7 +209,8 @@ __device__ double appearance_pixel(const Pixel* from,const Pixel* to,size_t i,in
     for(int yy=max(0,y-r);yy<=min(size-1,y+r);++yy)for(int xx=max(0,x-r);xx<=min(size-1,x+r);++xx){if(xx==x&&yy==y)continue;auto& q=to[size_t(yy)*size+xx];if(!q.visible)continue;double dx=x-xx,dy=y-yy,spatial=(dx*dx+dy*dy)*invs2;if(spatial>=best||spatial>limit2)continue;best=fmin(best,sample(p,q,spatial,profile,weights));}
     return best>limit2?CUDART_INF:best;
 }
-__global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,int size,int ss,double limit,int profile,Weights weights) {
+__global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,int size,int ss,double limit,int profile,Weights weights,bool clipped) {
+    if(clipped||bool(summary->ca)!=bool(summary->cb)||sqrt(summary->distance)/ss+2*sqrt(2.)/ss+1e-6>limit)return;
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;
     double value=appearance_pixel(from,to,i,size,ss,limit,profile,weights);
     // Every lane participates, including invisible/out-of-image pixels. Preserve
@@ -189,27 +219,35 @@ __global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,in
     double maximum=cub::BlockReduce<double,256>(storage).Reduce(value,cub::Max());
     if(threadIdx.x==0&&maximum>0)max_double(&summary->attribute,maximum);
 }
-Measurement measure(Device& device,const UploadedMesh& a,const UploadedMesh& b,const Bounds& bounds,const Camera& camera,const EvalSettings& config,uint8_t ss) {
-    auto x=render(device,a,bounds,camera,config.screen_size,ss,config.force_two_sided),y=render(device,b,bounds,camera,config.screen_size,ss,config.force_two_sided);
+Measurement measure(Device& device,DeviceMeshView a,DeviceMeshView b,const Bounds& bounds,const Camera& camera,const EvalSettings& config,uint8_t ss,
+    RasterMemo& reference,RasterMemo& candidate,uint32_t view,NeuralStats* stats) {
+    std::optional<Image> reference_scratch,candidate_scratch;
+    auto image=[&](DeviceMeshView m,RasterMemo& cache,std::optional<Image>& scratch,bool is_reference)->const Image&{
+        if(auto* cached=cache.find(view,ss)){if(stats){if(is_reference)++stats->gpu_reference_render_hits;else ++stats->gpu_candidate_render_hits;}return *cached;}
+        scratch.emplace(render(device,m,bounds,camera,config.screen_size,ss,config.force_two_sided));if(stats)++stats->gpu_rasters;
+        if(auto* retained=cache.retain(view,ss,std::move(*scratch))){scratch.reset();return *retained;}return *scratch;};
+    auto& x=image(a,reference,reference_scratch,true);auto& y=image(b,candidate,candidate_scratch,false);
     size_t n=x.pixels.n;int size=int(x.size);Buffer<float> da(device,n),db(device,n),temp(device,n);Buffer<int> stack(device,n);Buffer<double> boundaries(device,size_t(size)*(size+1));Buffer<Summary> summary(device,1);summary.zero();
-    initialize<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,da.p,db.p,summary.p,n);check(cudaGetLastError());auto s=summary.download()[0];
-    if(s.changed&&bool(s.ca)==bool(s.cb)) {
+    initialize<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,da.p,db.p,summary.p,n);check(cudaGetLastError());
+    {
         for(auto pair:{std::pair{da.p,y.pixels.p},std::pair{db.p,x.pixels.p}}) {
             dim3 tiles((size+31)/32,(size+31)/32),threads(32,8);
-            transpose<<<tiles,threads>>>(pair.first,temp.p,size);
-            edt_binary<<<(size+63)/64,64>>>(temp.p,pair.first,size);
-            transpose<<<tiles,threads>>>(pair.first,temp.p,size);
-            edt<<<(size+63)/64,64>>>(temp.p,pair.first,stack.p,boundaries.p,size);
+            transpose<<<tiles,threads>>>(pair.first,temp.p,size,summary.p);
+            edt_binary<<<(size+63)/64,64>>>(temp.p,pair.first,size,summary.p);
+            transpose<<<tiles,threads>>>(pair.first,temp.p,size,summary.p);
+            edt<<<(size+63)/64,64>>>(temp.p,pair.first,stack.p,boundaries.p,size,summary.p);
             directed_coverage<<<blocks(n),256>>>(pair.second,pair.first,summary.p,n);check(cudaGetLastError());
         }
-        s=summary.download()[0];
     }
+    if(config.profile!=Profile::Coverage){
+        appearance<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,summary.p,size,ss,config.limit,int(config.profile),config.weights,x.clipped||y.clipped);
+        appearance<<<blocks(n),256>>>(y.pixels.p,x.pixels.p,summary.p,size,ss,config.limit,int(config.profile),config.weights,x.clipped||y.clipped);check(cudaGetLastError());}
+    auto s=summary.download()[0];
     Measurement m;m.supersample=ss;m.coverage=bool(s.ca)!=bool(s.cb)?infinity:std::sqrt(s.distance)/ss;
     m.coverage_upper=m.coverage+2*std::sqrt(2.)/ss+1e-6;if(x.clipped||y.clipped)m.coverage_upper=infinity;
     m.changed_area=s.total?double(s.changed)/s.total:0;m.error=m.coverage_upper;m.normal_degrees=config.profile==Profile::Coverage?0:s.normal;
     if(m.coverage_upper<=config.limit&&config.profile!=Profile::Coverage) {
-        appearance<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,summary.p,size,ss,config.limit,int(config.profile),config.weights);
-        appearance<<<blocks(n),256>>>(y.pixels.p,x.pixels.p,summary.p,size,ss,config.limit,int(config.profile),config.weights);check(cudaGetLastError());s=summary.download()[0];m.error=std::max(m.error,std::sqrt(s.attribute));
+        m.error=std::max(m.error,std::sqrt(s.attribute));
     }
     m.passed=m.error<=config.limit&&m.changed_area<=config.max_changed_area;return m;
 }
@@ -219,26 +257,48 @@ Raster raster_cuda(MeshView m,const Bounds& b,const Camera& c,double screen,uint
 }
 struct AuditCuda::Impl {
     struct Topology {
-        std::vector<uint32_t> indices;std::vector<uint16_t> materials;std::unique_ptr<UploadedMesh> uploaded;
+        std::vector<uint32_t> indices;std::vector<uint16_t> materials;Mesh owned;bool standalone{};std::unique_ptr<UploadedMesh> uploaded;
         bool matches(MeshView m) const {return uploaded&&std::equal(indices.begin(),indices.end(),m.indices.begin(),m.indices.end())&&std::equal(materials.begin(),materials.end(),m.materials.begin(),m.materials.end());}
         const UploadedMesh* get(Device& device,MeshView m,const UploadedMesh* source){
-            if(!matches(m)){uploaded.reset();indices.assign(m.indices.begin(),m.indices.end());materials.assign(m.materials.begin(),m.materials.end());uploaded=std::make_unique<UploadedMesh>(device,m,source);}
+            bool same=uploaded&&standalone==!source&&(source?matches(m):same_mesh_data(m,owned.view()));
+            if(!same){uploaded.reset();standalone=!source;if(source){owned={};indices.assign(m.indices.begin(),m.indices.end());materials.assign(m.materials.begin(),m.materials.end());}else {owned=copy_mesh(m);indices.clear();materials.clear();}uploaded=std::make_unique<UploadedMesh>(device,m,source);}
             return uploaded.get();
         }
     };
     Device device;int id;MeshView source;AuditMemo memo;std::unique_ptr<UploadedMesh> uploaded;
+    RasterMemo source_images,reference_images,candidate_images;
     Topology reference,candidate;
-    Impl(const NeuralOptions& options,MeshView mesh):device(options,true),id(options.device),source(mesh),memo(mesh){check(cudaSetDevice(device.previous));}
+    void clear_images(){source_images.clear();reference_images.clear();candidate_images.clear();}
+    Measurement run(DeviceMeshView a,DeviceMeshView b,const Bounds& bounds,const EvalSettings& config,RasterMemo& images,NeuralStats* stats,uint32_t& view,uint8_t& sampling){
+        Measurement result;result.supersample=config.supersample;auto views=cameras(bounds,config.screen_size,config.views);
+        for(uint32_t v=0;v<views.size();++v){view=v;
+            if(config.cancelled&&config.cancelled()){result.complete=false;result.passed=false;return result;}
+            Measurement current;
+            for(unsigned ss=config.supersample;;ss=std::min<unsigned>(config.max_supersample,ss*2)){sampling=uint8_t(ss);
+                auto perform=[&]{return measure(device,a,b,bounds,views[v],config,sampling,images,candidate_images,v,stats);};
+                try{current=perform();}catch(const ResourceError& error){
+                    if(error.kind!=NeuralResourceLimit::WorkspaceMemory&&error.kind!=NeuralResourceLimit::DeviceMemory)throw;
+                    clear_images();current=perform();}
+                if(current.passed||ss>=config.max_supersample||current.coverage-2*std::sqrt(2.)/ss>config.limit||!std::isfinite(current.error)||current.coverage_upper<=config.limit)break;}
+            ++result.views_evaluated;if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}
+            result.coverage=std::max(result.coverage,current.coverage);result.coverage_upper=std::max(result.coverage_upper,current.coverage_upper);result.normal_degrees=std::max(result.normal_degrees,current.normal_degrees);
+            if(current.changed_area>result.changed_area){result.changed_area=current.changed_area;result.changed_area_worst_view=v;}
+            if(!current.passed){result.passed=false;result.complete=false;return result;}}
+        return result;
+    }
+    Impl(const NeuralOptions& options,MeshView mesh):device(options,true),id(options.device),source(mesh),memo(mesh),
+        source_images(options.cache_rasters?device.limit/12:0),reference_images(options.cache_rasters?device.limit/12:0),candidate_images(options.cache_rasters?device.limit/12:0){check(cudaSetDevice(device.previous));}
     ~Impl(){cudaSetDevice(id);}
 };
 struct CurrentDevice {int previous;explicit CurrentDevice(int id){check(cudaGetDevice(&previous));check(cudaSetDevice(id));}~CurrentDevice(){cudaSetDevice(previous);}};
+struct AuditCounters {Device& d;NeuralStats* s;uint64_t allocations,reuses,upload,download;
+    AuditCounters(Device& device,NeuralStats* stats):d(device),s(stats),allocations(d.allocations),reuses(d.reuses),upload(d.upload_bytes),download(d.download_bytes){}
+    ~AuditCounters(){if(s){s->gpu_peak_bytes=std::max<uint64_t>(s->gpu_peak_bytes,d.shared?d.shared->peak:d.peak);s->gpu_allocations+=d.allocations-allocations;s->gpu_buffer_reuses+=d.reuses-reuses;s->gpu_upload_bytes+=d.upload_bytes-upload;s->gpu_download_bytes+=d.download_bytes-download;}}};
 AuditCuda::AuditCuda(const NeuralOptions& options,MeshView source):impl_(std::make_unique<Impl>(options,source)){}
 AuditCuda::~AuditCuda(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
 Measurement AuditCuda::evaluate(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,NeuralStats* stats) {
     CurrentDevice current_device(impl_->id);auto& device=impl_->device;
-    struct Counters {Device& d;NeuralStats* s;uint64_t allocations,reuses,upload,download;
-        ~Counters(){if(s){s->gpu_peak_bytes=std::max<uint64_t>(s->gpu_peak_bytes,d.peak);s->gpu_allocations+=d.allocations-allocations;s->gpu_buffer_reuses+=d.reuses-reuses;s->gpu_upload_bytes+=d.upload_bytes-upload;s->gpu_download_bytes+=d.download_bytes-download;}}
-    } counters{device,stats,device.allocations,device.reuses,device.upload_bytes,device.download_bytes};
+    AuditCounters counters(device,stats);
     if(auto e=validate(a);!e.empty())throw std::invalid_argument(e);if(auto e=validate(b);!e.empty())throw std::invalid_argument(e);
     // Validate evaluator settings through the identical-input fast path of the reference.
     (void)blitz::evaluate(a,a,bounds,config);Measurement result;result.supersample=config.supersample;
@@ -248,38 +308,47 @@ Measurement AuditCuda::evaluate(MeshView a,MeshView b,const Bounds& bounds,const
     if(stats)++stats->gpu_evaluations;
     uint32_t view=0;uint8_t sampling=config.supersample;
     try {
+    auto clear_images=[&]{impl_->source_images.clear();impl_->reference_images.clear();impl_->candidate_images.clear();};
     if(impl_->source.positions.count&&!impl_->uploaded)impl_->uploaded=std::make_unique<UploadedMesh>(device,impl_->source);
     auto upload_mesh=[&](MeshView m,Impl::Topology& slot,std::unique_ptr<UploadedMesh>& owned)->const UploadedMesh*{
         if(impl_->uploaded&&source_attributes(m,impl_->source)){
             if(same_mesh_data(m,impl_->source))return impl_->uploaded.get();
             return slot.get(device,m,impl_->uploaded.get());
         }
-        owned=std::make_unique<UploadedMesh>(device,m);return owned.get();
+        return slot.get(device,m,nullptr);
     };
     std::unique_ptr<UploadedMesh> owned_a,owned_b;
-    const auto* da=upload_mesh(a,impl_->reference,owned_a);
-    const auto* db=upload_mesh(b,impl_->candidate,owned_b);
-    auto views=cameras(bounds,config.screen_size,config.views);
-    for(uint32_t v=0;v<views.size();++v) {
-        view=v;
-        if(config.cancelled&&config.cancelled()){result.complete=false;result.passed=false;return result;}
-        Measurement current;
-        for(unsigned ss=config.supersample;;ss=std::min<unsigned>(config.max_supersample,ss*2)) {
-            sampling=uint8_t(ss);current=measure(device,*da,*db,bounds,views[v],config,sampling);
-            if(stats)stats->gpu_peak_bytes=std::max<uint64_t>(stats->gpu_peak_bytes,device.peak);
-            if(current.passed||ss>=config.max_supersample||current.coverage-2*std::sqrt(2.)/ss>config.limit||!std::isfinite(current.error)||current.coverage_upper<=config.limit)break;
-        }
-        ++result.views_evaluated;if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}
-        result.coverage=std::max(result.coverage,current.coverage);result.coverage_upper=std::max(result.coverage_upper,current.coverage_upper);result.normal_degrees=std::max(result.normal_degrees,current.normal_degrees);
-        if(current.changed_area>result.changed_area){result.changed_area=current.changed_area;result.changed_area_worst_view=v;}
-        if(!current.passed){result.passed=false;result.complete=false;return result;}
-    }
+    const UploadedMesh *da=nullptr,*db=nullptr;
+    try{da=upload_mesh(a,impl_->reference,owned_a);db=upload_mesh(b,impl_->candidate,owned_b);}
+    catch(const ResourceError& error){if(error.kind!=NeuralResourceLimit::WorkspaceMemory&&error.kind!=NeuralResourceLimit::DeviceMemory)throw;
+        clear_images();owned_a.reset();owned_b.reset();da=upload_mesh(a,impl_->reference,owned_a);db=upload_mesh(b,impl_->candidate,owned_b);}
+    auto& images=impl_->source.positions.count&&same_mesh_data(a,impl_->source)?impl_->source_images:impl_->reference_images;
+    images.configure(a,bounds,config);impl_->candidate_images.configure(b,bounds,config);
+    result=impl_->run(*da,*db,bounds,config,images,stats,view,sampling);
     impl_->memo.insert(a,b,bounds,config,result);
     return result;
     }catch(const ResourceError& error){
         if(stats&&!stats->resource_failures++)stats->first_resource_failure={config.screen_size,error.requested,error.limit,view,sampling,error.kind};
         result.complete=false;result.passed=false;result.resource_limited=true;result.error=infinity;result.worst_view=view;result.supersample=sampling;return result;
     }
+}
+Measurement AuditCuda::evaluate(MeshView a,DeviceMeshView b,const Bounds& bounds,const EvalSettings& config,NeuralStats* stats){
+    CurrentDevice current_device(impl_->id);auto& p=*impl_;auto& device=p.device;AuditCounters counters(device,stats);
+    if(auto e=validate(a);!e.empty())throw std::invalid_argument(e);
+    if(!b.identity||!b.positions||!b.indices||!b.vertices||!b.faces)throw std::invalid_argument("invalid borrowed device mesh");
+    (void)blitz::evaluate(a,a,bounds,config);Measurement result;result.supersample=config.supersample;
+    if(config.cancelled&&config.cancelled()){result.complete=false;result.passed=false;return result;}if(stats)++stats->gpu_evaluations;
+    uint32_t view=0;uint8_t sampling=config.supersample;
+    try{if(p.source.positions.count&&!p.uploaded)p.uploaded=std::make_unique<UploadedMesh>(device,p.source);
+        std::unique_ptr<UploadedMesh> owned;const UploadedMesh* reference=nullptr;
+        auto upload=[&]{if(p.uploaded&&source_attributes(a,p.source)){reference=same_mesh_data(a,p.source)?p.uploaded.get():p.reference.get(device,a,p.uploaded.get());}
+            else reference=p.reference.get(device,a,nullptr);};
+        try{upload();}catch(const ResourceError& error){if(error.kind!=NeuralResourceLimit::WorkspaceMemory&&error.kind!=NeuralResourceLimit::DeviceMemory)throw;p.clear_images();owned.reset();upload();}
+        auto& images=p.source.positions.count&&same_mesh_data(a,p.source)?p.source_images:p.reference_images;
+        images.configure(a,bounds,config);p.candidate_images.configure(b,bounds,config);
+        return p.run(*reference,b,bounds,config,images,stats,view,sampling);
+    }catch(const ResourceError& error){if(stats&&!stats->resource_failures++)stats->first_resource_failure={config.screen_size,error.requested,error.limit,view,sampling,error.kind};
+        result.complete=false;result.passed=false;result.resource_limited=true;result.error=infinity;result.worst_view=view;result.supersample=sampling;return result;}
 }
 }
 namespace blitz {

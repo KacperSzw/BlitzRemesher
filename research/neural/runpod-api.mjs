@@ -83,13 +83,14 @@ export function verifyPod(pod,profile=deployment){
 export function terminationDue(state,now,cancelled=false){
   return cancelled||now>=state.deadline_ms||(!state.setup_complete&&now>=state.setup_deadline_ms);
 }
-export function rentalDeadlines(started,deadline=started+(deployment.setup_minutes+deployment.training_minutes+deployment.collection_minutes)*60000){
-  const maximum=started+(deployment.setup_minutes+deployment.training_minutes+deployment.collection_minutes)*60000;
-  if(!Number.isFinite(deadline)||deadline<=started+deployment.collection_minutes*60000||deadline>maximum)
+export function rentalDeadlines(started,deadline,profile=deployment){
+  const maximum=started+(profile.setup_minutes+profile.training_minutes+profile.collection_minutes)*60000;
+  if(deadline===undefined)deadline=maximum;
+  if(!Number.isFinite(deadline)||deadline<=started+profile.collection_minutes*60000||deadline>maximum)
     throw new Error('Rental deadline must leave collection time and stay within the approved setup/training budget');
-  const training=deadline-deployment.collection_minutes*60000;
-  return {started_at:started,setup_deadline_ms:Math.min(started+deployment.setup_minutes*60000,training),
-    training_minutes:deployment.training_minutes,training_deadline_ms:training,deadline_ms:deadline};
+  const training=deadline-profile.collection_minutes*60000;
+  return {started_at:started,setup_deadline_ms:Math.min(started+profile.setup_minutes*60000,training),
+    training_minutes:profile.training_minutes,training_deadline_ms:training,deadline_ms:deadline};
 }
 export class Rental {
   constructor(api,state,save,now=Date.now){this.api=api;this.state=state;this.save=save;this.now=now;}

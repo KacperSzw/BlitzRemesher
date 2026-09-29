@@ -1,5 +1,6 @@
 #pragma once
 #include "blitz/neural.hpp"
+#include "neural_device_view.hpp"
 #include <array>
 #include <filesystem>
 namespace blitz::neural {
@@ -52,6 +53,7 @@ public:
     explicit AuditCuda(const NeuralOptions&,MeshView fixed_source={});
     ~AuditCuda();
     Measurement evaluate(MeshView,MeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr);
+    Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr);
 };
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);

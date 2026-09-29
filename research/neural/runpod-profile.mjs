@@ -12,6 +12,7 @@ const blackwell={
 };
 export const profiles=Object.freeze({
   blackwell:Object.freeze(blackwell),
+  'gpu-refactor':Object.freeze({...blackwell,id:'gpu-refactor',setup_minutes:20,training_minutes:130,collection_minutes:10}),
   h100:Object.freeze({...blackwell,id:'h100',gpu:'NVIDIA H100 NVL',catalog_vram_gb:94,
     compute_capability:'9.0',cuda_architecture:90,gpu_hourly_usd_cap:3.25,
     staged_rental_minutes:90,staged_experiment_minutes:50}),

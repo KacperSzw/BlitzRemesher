@@ -20,13 +20,15 @@ trap finish EXIT
 setup_deadline_ms=$1
 training_deadline_ms=$2
 export BLITZ_ACTION_V2=0
-if [[ "${4:-vertex-v1}" == action-v2 || "${4:-vertex-v1}" == action-v2-pilot || "${4:-vertex-v1}" == action-v2-evaluate || "${4:-vertex-v1}" == action-v2-staged ]]; then export BLITZ_ACTION_V2=1; fi
+if [[ "${4:-vertex-v1}" == action-v2* || "${4:-vertex-v1}" == gpu-refactor ]]; then export BLITZ_ACTION_V2=1; fi
 export BLITZ_EVALUATE_ONLY=0
 if [[ "${4:-vertex-v1}" == action-v2-evaluate ]]; then export BLITZ_EVALUATE_ONLY=1; fi
 setup_seconds=$((setup_deadline_ms / 1000 - $(date +%s)))
 ((setup_seconds > 0))
 timeout --signal=TERM --kill-after=10s "${setup_seconds}s" bash research/neural/cloud-setup.sh
-if [[ "$BLITZ_ACTION_V2" == 1 ]]; then
+if [[ "${4:-vertex-v1}" == gpu-refactor ]]; then
+  node research/neural/refactor-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"
+elif [[ "$BLITZ_ACTION_V2" == 1 ]]; then
   node research/neural/action-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3" "$4"
 else
   node research/neural/cloud-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"

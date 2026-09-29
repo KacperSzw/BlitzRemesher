@@ -12,7 +12,7 @@ int main(int argc,char** argv){try{
     if(contract.value("previous_steps",0)!=0||contract.at("source_limit")!=3||contract.at("adjacent_limit")!=3)throw std::invalid_argument("endpoint proof requires its single-transition 3px teacher contract");
     if(!index.at("complete").get<bool>()||index.at("sha256")!=file_sha256(directory/"actions.bin")||index.at("contract_sha256")!=file_sha256(directory/"contract.json"))throw std::invalid_argument("incomplete or changed proof dataset");
     auto data=load_actions(directory/"actions.bin");auto [mesh,metadata]=training_mesh(index.at("asset"));if(metadata!=contract.at("asset"))throw std::invalid_argument("proof source manifest differs");
-    auto weights=load_weights(argv[1]);ActionCuda model(weights,{});auto output=model.predict(data.x);uint32_t correct=0,eligible=0;
+    auto weights=load_weights(argv[1]);if(weights.architecture!=action_schema||data.architecture!=action_schema)throw std::invalid_argument("endpoint proof requires architecture 2 data and policy");ActionCuda model(weights,{});auto output=model.predict(data.x);uint32_t correct=0,eligible=0;
     for(size_t s=0;s<data.states();++s){auto best=data.offsets[s];bool has=false;for(auto i=data.offsets[s];i<data.offsets[s+1];++i){has|=bool(data.labels[i]&Preferred);if(output[i*3]>output[best*3])best=i;}if(has){++eligible;correct+=bool(data.labels[best]&Preferred);}}
     auto start=std::chrono::steady_clock::now();auto seconds=[&]{return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};auto cancel=[&]{return bool(stopped)||seconds()>minutes*60;};
     auto e=action_eval(contract.at("pixels"));e.cancelled=cancel;auto source=mesh.view();auto bounds=blitz::bounds(source);auto c=condition(e,e.limit,.1);

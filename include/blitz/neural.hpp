@@ -22,8 +22,9 @@ struct NeuralOptions {
     NeuralRanking ranking{NeuralRanking::Learned}; // Explicit experimental controls only.
     uint32_t ranking_seed{0xB1172026};
     uint8_t action_batch{32}; // Disjoint geometric footprints per combined audit.
-    NeuralConfirmation confirmation{NeuralConfirmation::Cpu};
+    NeuralConfirmation confirmation{NeuralConfirmation::Gpu};
     bool capture_confirmation_failure{};
+    bool cache_rasters{true}; // Optional bounded cache; false supports matched profiling.
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {
@@ -44,6 +45,7 @@ struct NeuralStats {
     uint64_t action_audit_cache_hits{};
     uint64_t gpu_allocations{},gpu_buffer_reuses{},gpu_upload_bytes{},gpu_download_bytes{};
     uint64_t gpu_evaluations{},gpu_measurement_cache_hits{},gpu_confirmation_ns{};
+    uint64_t gpu_rasters{},gpu_reference_render_hits{},gpu_candidate_render_hits{};
     uint32_t confirmation_cancelled{},confirmation_resources{},confirmation_nonfinite{},confirmation_disagreements{};
     std::optional<NeuralConfirmationFailure> confirmation_failure;
 };

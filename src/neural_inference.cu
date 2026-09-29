@@ -1,6 +1,6 @@
 #include "neural_cuda.cuh"
 #include "neural_numeric.hpp"
-#include "neural_action.hpp"
+#include "neural_placement.hpp"
 namespace blitz {
 bool neural_available(int32_t device) noexcept {int count=0;auto e=cudaGetDeviceCount(&count);if(e!=cudaSuccess){cudaGetLastError();return false;}return device>=0&&device<count;}
 namespace neural {
@@ -61,28 +61,37 @@ Prediction predict_cuda(std::span<const float> embedding,const std::array<float,
     return result;
 }
 struct ActionCuda::Impl {
-    Device device;Blas blas;Buffer<float> weights,input,a,b,output;uint32_t batch;int id;
-    Impl(const WeightsData& w,const NeuralOptions& options,uint32_t count):device(options),weights(device,w.values.size()),input(device,size_t(count)*action_features),a(device,size_t(count)*hidden),b(device,size_t(count)*hidden),output(device,size_t(count)*action_outputs),batch(count),id(options.device) {
+    Device device;Blas blas;Buffer<float> weights,input,a,b,output;uint32_t batch,architecture;int id;
+    Impl(const WeightsData& w,const NeuralOptions& options,uint32_t count):device(options),weights(device,w.values.size()),input(device,size_t(count)*policy_inputs(w.architecture)),a(device,size_t(count)*hidden),b(device,size_t(count)*hidden),output(device,size_t(count)*policy_outputs(w.architecture)),batch(count),architecture(w.architecture),id(options.device) {
         weights.upload(w.values);check(cublasSetMathMode(blas,CUBLAS_PEDANTIC_MATH));
         check(cudaSetDevice(device.previous));
     }
     ~Impl(){cudaSetDevice(id);}
 };
 ActionCuda::ActionCuda(const WeightsData& w,const NeuralOptions& options,uint32_t count) {
-    if(w.architecture!=action_schema||w.values.size()!=action_weight_count||count<1||count>65536)throw std::invalid_argument("invalid action model or batch dimensions");
+    if(!policy_weights(w.architecture)||w.values.size()!=policy_weights(w.architecture)||count<1||count>65536)throw std::invalid_argument("invalid action model or batch dimensions");
     for(float v:w.values)if(!std::isfinite(v))throw std::invalid_argument("nonfinite action weights");
     impl_=std::make_unique<Impl>(w,options,count);
 }
 ActionCuda::~ActionCuda(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
+uint32_t ActionCuda::architecture()const{return impl_->architecture;}
+void ActionCuda::predict_device(const float* input,float* output,uint32_t rows) {
+    auto& p=*impl_;NeuralOptions options;options.device=p.id;Device guard(options);
+    auto width=policy_inputs(p.architecture),outputs=policy_outputs(p.architecture);
+    for(uint32_t row=0;row<rows;row+=p.batch){auto n=std::min(p.batch,rows-row);const float* in=input+size_t(row)*width;size_t at=0;
+        for(unsigned layer=0;layer<3;++layer){auto columns=layer?hidden:width,channels=layer==2?outputs:hidden;float* target=layer==0?p.a.p:layer==1?p.b.p:output+size_t(row)*outputs;
+            linear(p.blas,in,p.weights.p+at,target,n,columns,channels,layer<2);in=target;at+=size_t(channels)*(columns+1);}}
+}
 std::vector<float> ActionCuda::predict(std::span<const float> x) {
-    if(x.size()%action_features)throw std::invalid_argument("invalid action input dimensions");
+    auto& p=*impl_;auto width=policy_inputs(p.architecture),outputs=policy_outputs(p.architecture);
+    if(x.size()%width)throw std::invalid_argument("invalid action input dimensions");
     for(float v:x)if(!std::isfinite(v))throw std::invalid_argument("nonfinite action input");
-    auto& p=*impl_;NeuralOptions options;options.device=p.id;Device guard(options);std::vector<float> out(x.size()/action_features*action_outputs);
-    for(size_t row=0;row<x.size()/action_features;row+=p.batch){auto n=uint32_t(std::min<size_t>(p.batch,x.size()/action_features-row));
-        check(cudaMemcpy(p.input.p,x.data()+row*action_features,size_t(n)*action_features*sizeof(float),cudaMemcpyHostToDevice));
+    NeuralOptions options;options.device=p.id;Device guard(options);std::vector<float> out(x.size()/width*outputs);
+    for(size_t row=0;row<x.size()/width;row+=p.batch){auto n=uint32_t(std::min<size_t>(p.batch,x.size()/width-row));
+        check(cudaMemcpy(p.input.p,x.data()+row*width,size_t(n)*width*sizeof(float),cudaMemcpyHostToDevice));
         const float* in=p.input.p;size_t at=0;
-        for(unsigned layer=0;layer<3;++layer){float* target=layer==0?p.a.p:layer==1?p.b.p:p.output.p;linear(p.blas,in,p.weights.p+at,target,n,action_layer_in[layer],action_layer_out[layer],layer<2);in=target;at+=size_t(action_layer_out[layer])*(action_layer_in[layer]+1);}
-        check(cudaMemcpy(out.data()+row*action_outputs,p.output.p,size_t(n)*action_outputs*sizeof(float),cudaMemcpyDeviceToHost));}
+        for(unsigned layer=0;layer<3;++layer){auto columns=layer?hidden:width,channels=layer==2?outputs:hidden;float* target=layer==0?p.a.p:layer==1?p.b.p:p.output.p;linear(p.blas,in,p.weights.p+at,target,n,columns,channels,layer<2);in=target;at+=size_t(channels)*(columns+1);}
+        check(cudaMemcpy(out.data()+row*outputs,p.output.p,size_t(n)*outputs*sizeof(float),cudaMemcpyDeviceToHost));}
     for(float v:out)if(!std::isfinite(v))throw std::runtime_error("nonfinite action prediction");return out;
 }
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "neural_internal.hpp"
+#include "neural_memory.hpp"
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 #include <utility>
@@ -15,12 +16,16 @@ struct Device {
     int previous{};size_t limit{},live{},peak{};bool recycle{};
     uint64_t allocations{},reuses{},upload_bytes{},download_bytes{};
     std::vector<Block> blocks;
+    MemoryBudget* shared{};
     explicit Device(const NeuralOptions& o,bool pooling=false):limit(size_t(o.memory_mib)*1024*1024),recycle(pooling) {
         if(o.memory_mib<128||o.memory_mib>65536||o.device<0)throw std::invalid_argument("invalid CUDA options");
         check(cudaGetDevice(&previous));check(cudaSetDevice(o.device));
+        if(current_memory_budget&&current_memory_budget->device==o.device)shared=current_memory_budget;
     }
-    ~Device(){for(auto b:blocks)cudaFree(b.pointer);cudaSetDevice(previous);}
+    ~Device(){for(auto b:blocks)cudaFree(b.pointer);if(shared)shared->live-=live;cudaSetDevice(previous);}
     Device(const Device&)=delete;
+    bool fits(size_t bytes)const{return bytes<=limit-live&&(!shared||bytes<=shared->limit-shared->live);}
+    void freed(size_t bytes){live-=bytes;if(shared)shared->live-=bytes;}
     void* acquire(size_t bytes) {
         if(!bytes)return nullptr;
         if(recycle){
@@ -29,23 +34,23 @@ struct Device {
             if(best){best->used=true;++reuses;return best->pointer;}
             // Retained capacity counts against the cap. Discard idle blocks before
             // denying a request that fits alongside the actual live buffers.
-            for(size_t i=blocks.size();bytes>limit-live&&i-->0;)if(!blocks[i].used){
-                cudaFree(blocks[i].pointer);live-=blocks[i].bytes;blocks.erase(blocks.begin()+i);
+            for(size_t i=blocks.size();!fits(bytes)&&i-->0;)if(!blocks[i].used){
+                cudaFree(blocks[i].pointer);freed(blocks[i].bytes);blocks.erase(blocks.begin()+i);
             }
         }
-        if(bytes>limit-live)throw ResourceError(NeuralResourceLimit::WorkspaceMemory,live+bytes,limit,"CUDA workspace exceeds configured memory cap");
+        if(!fits(bytes))throw ResourceError(NeuralResourceLimit::WorkspaceMemory,(shared?shared->live:live)+bytes,shared?shared->limit:limit,"CUDA workspace exceeds configured memory cap");
         void* p=nullptr;auto status=cudaMalloc(&p,bytes);
         if(status==cudaErrorMemoryAllocation&&recycle){
-            for(size_t i=blocks.size();i-->0;)if(!blocks[i].used){cudaFree(blocks[i].pointer);live-=blocks[i].bytes;blocks.erase(blocks.begin()+i);}
+            for(size_t i=blocks.size();i-->0;)if(!blocks[i].used){cudaFree(blocks[i].pointer);freed(blocks[i].bytes);blocks.erase(blocks.begin()+i);}
             status=cudaMalloc(&p,bytes);
         }
         check(status);
         if(recycle){try{blocks.push_back({p,bytes,true});}catch(...){cudaFree(p);throw;}}
-        live+=bytes;peak=std::max(peak,live);++allocations;return p;
+        live+=bytes;peak=std::max(peak,live);if(shared){shared->live+=bytes;shared->peak=std::max(shared->peak,shared->live);}++allocations;return p;
     }
     void release(void* p,size_t bytes) noexcept {
         if(recycle){for(auto& b:blocks)if(b.pointer==p){b.used=false;return;}}
-        else {cudaFree(p);live-=bytes;}
+        else {cudaFree(p);freed(bytes);}
     }
 };
 template<class T> struct Buffer {
@@ -62,6 +67,13 @@ template<class T> struct Buffer {
     void upload(std::span<const T> a){if(a.size()!=n)throw std::invalid_argument("CUDA upload size");if(n){check(cudaMemcpy(p,a.data(),n*sizeof(T),cudaMemcpyHostToDevice));device->upload_bytes+=n*sizeof(T);}}
     std::vector<T> download()const{std::vector<T> a(n);if(n){check(cudaMemcpy(a.data(),p,n*sizeof(T),cudaMemcpyDeviceToHost));device->download_bytes+=n*sizeof(T);}return a;}
 };
+template<class T> Buffer<T> upload_stream(Device& d,Stream<T> stream){
+    Buffer<T> out(d,stream.count);if(stream.count){
+        if(stream.stride==sizeof(T))check(cudaMemcpy(out.p,stream.data,stream.count*sizeof(T),cudaMemcpyHostToDevice));
+        else check(cudaMemcpy2D(out.p,sizeof(T),stream.data,stream.stride,sizeof(T),stream.count,cudaMemcpyHostToDevice));
+        d.upload_bytes+=stream.count*sizeof(T);
+    }return out;
+}
 inline unsigned blocks(size_t n){return unsigned((n+255)/256);}
 struct Blas {cublasHandle_t value{};Blas(){check(cublasCreate(&value));}~Blas(){cublasDestroy(value);}operator cublasHandle_t()const{return value;}};
 }

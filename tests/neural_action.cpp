@@ -2,6 +2,7 @@
 #include "neural_action_cache.hpp"
 #include "neural_audit_cache.hpp"
 #include "chain_hooks.hpp"
+#include "../tools/neural_packed_data.hpp"
 #include <iostream>
 #include <numeric>
 using namespace blitz;using namespace blitz::neural;
@@ -42,6 +43,9 @@ int main(){try{
         check(!action_audit_known(m,e),"resource failure received a label");m.resource_limited=false;m.error=NAN;
         check(!action_audit_known(m,e),"NaN audit received a label");}
     for(unsigned n:{5u,7u}){auto m=plane(n);auto source=copy_mesh(m.view());ActionState state(m.view());auto actions=state.actions({});check(!actions.empty(),"plane lacks legal actions");
+        {auto rows=state.actions({.5f,.1f,.3f,.4f,0,1,.25f,.6f});std::vector<float> features;for(size_t i=0;i<3;++i)features.insert(features.end(),rows[i].x.begin(),rows[i].x.end());std::vector<uint8_t> labels{15,8,11};auto packed=training::pack_actions(features,labels,1,3,80);
+            for(size_t i=0;i<features.size();++i){auto c=uint32_t(i%80);int slot=training::feature_slot(c);float value=slot>=0?packed.values[i/80*52+unsigned(slot)]:slot>=-32?float((packed.flags[i/80]>>unsigned(-slot-1))&1):packed.conditions[unsigned(-slot-33)];check(std::bit_cast<uint32_t>(value)==std::bit_cast<uint32_t>(features[i]),"packed action changed feature bits");}
+            auto bad=features;bad[78]+=1;bool rejected=false;try{training::pack_actions(bad,labels,1,3,80);}catch(const std::invalid_argument&){rejected=true;}check(rejected,"inconsistent duplicate feature was lost");bad=features;bad[80+48]+=1;rejected=false;try{training::pack_actions(bad,labels,1,3,80);}catch(const std::invalid_argument&){rejected=true;}check(rejected,"inconsistent state condition was lost");}
         auto action=actions[actions.size()/2].action;auto before=state.lod().data.indices;auto trial=state.trial(action);
         check(state.lod().data.indices==before,"trial mutated current mesh");check(trial.shared_vertices&&trial.data.positions.empty(),"trial copied borrowed vertices");
         check(trial.view(m.view()).triangles()<m.view().triangles(),"legal action did not reduce");check(uv_distortion(trial.view(m.view())).negative_uv_faces==0,"action flipped UVs");

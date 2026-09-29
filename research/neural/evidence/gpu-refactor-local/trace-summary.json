@@ -1,0 +1,32 @@
+{
+  "scope": "first through last graph launch; excludes setup/final checkpoint",
+  "hot": [
+    {
+      "value": "cudaGraphLaunch_v10000",
+      "calls": 512
+    },
+    {
+      "value": "cudaStreamIsCapturing_v10000",
+      "calls": 511
+    },
+    {
+      "value": "cudaStreamSynchronize_v3020",
+      "calls": 3
+    },
+    {
+      "value": "cudaMemcpyAsync_v3020",
+      "calls": 3
+    }
+  ],
+  "transfers": [
+    {
+      "copyKind": 2,
+      "copies": 3,
+      "bytes": 192
+    }
+  ],
+  "graph": {
+    "updates": 512,
+    "gpu_seconds": 0.247015739
+  }
+}

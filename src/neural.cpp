@@ -1,6 +1,8 @@
 #include "neural_internal.hpp"
 #include "neural_action.hpp"
 #include "neural_action_cache.hpp"
+#include "neural_action_gpu.hpp"
+#include "neural_memory.hpp"
 #include "chain_hooks.hpp"
 #include <chrono>
 #include <random>
@@ -13,7 +15,7 @@ NeuralModel::NeuralModel(const char* file,const NeuralOptions& options) {
     if(!neural_available(options.device))throw NeuralUnavailable("neural mode requires an available CUDA device and a BLITZ_CUDA build");
 #ifdef BLITZ_CUDA
     auto value=std::make_unique<Impl>();value->options=options;value->weights=neural::load_weights(file,&value->hash);impl_=std::move(value);
-    if(impl_->weights.architecture!=neural::action_schema&&options.ranking!=NeuralRanking::Learned)throw std::invalid_argument("action ranking controls require architecture 2");
+    if(impl_->weights.architecture==neural::schema&&options.ranking!=NeuralRanking::Learned)throw std::invalid_argument("action ranking controls require an action policy");
 #endif
 }
 NeuralModel::~NeuralModel()=default;
@@ -49,6 +51,7 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     if(settings.research.component_candidates||settings.research.independent_seams||settings.research.topology_fallback)
         throw std::invalid_argument("CPU research proposal options are unsupported in neural mode");
     NeuralStats local;auto& counters=stats?*stats:local;auto& options=model.impl_->options;auto& weights=model.impl_->weights;
+    neural::MemoryScope memory(options);
     using Clock=std::chrono::steady_clock;auto nanos=[](auto start){return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-start).count());};
     auto start=Clock::now();neural::Graph g;std::vector<float> embedding;
     std::unique_ptr<neural::ActionCuda> action_network;
@@ -70,25 +73,21 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
         bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
         auto m=audit.evaluate(a,b,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
-    std::mt19937 ranking_random(options.ranking_seed);
-    neural::ActionRejections source_rejections;
+    std::unique_ptr<neural::GpuActionState> action_state,placement_state;
+    if(action_network)action_state=std::make_unique<neural::GpuActionState>(source,options);
     if(action_network)hooks.propose_guarded=[&](MeshView input,MeshView fixed_source,MeshView previous,const Bounds& bounds,const ReduceSettings& rs,const EvalSettings& source_eval,const EvalSettings& adjacent_eval){
         auto begin=Clock::now();auto nested_before=counters.inference_ns+counters.gpu_audit_ns;neural::ActionStats stats;
-        source_rejections.configure(source_eval);
-        auto rank=[&](const neural::ActionState& state,std::span<const neural::ActionRecord> actions){auto t=Clock::now();std::vector<float> scores(actions.size());
-            if(options.ranking==NeuralRanking::Learned||options.ranking==NeuralRanking::Shuffled){std::vector<float> x;x.reserve(actions.size()*neural::action_features);
-                for(auto& a:actions)x.insert(x.end(),a.x.begin(),a.x.end());auto values=action_network->predict(x);
-                for(size_t i=0;i<scores.size();++i)scores[i]=values[i*neural::action_outputs];
-                if(options.ranking==NeuralRanking::Shuffled)std::shuffle(scores.begin(),scores.end(),ranking_random);
-            }else if(options.ranking==NeuralRanking::ShortestEdge){for(size_t i=0;i<scores.size();++i)scores[i]=-actions[i].x[59];}
-            else if(options.ranking==NeuralRanking::CurrentPlane){for(size_t i=0;i<scores.size();++i)scores[i]=float(-state.teacher_cost(actions[i].action));}
-            counters.inference_ns+=nanos(t);return scores;};
-        auto gate=[&](MeshView candidate){if(s.cancelled&&s.cancelled())return false;
-            if(source_rejections.contains(candidate)){++counters.action_audit_cache_hits;return false;}
-            auto a=hooks.evaluate(fixed_source,candidate,bounds,source_eval);if(!a.complete||!a.passed){if(neural::action_audit_known(a,source_eval)&&!a.passed)source_rejections.insert(candidate);return false;}
-            auto b=hooks.evaluate(previous,candidate,bounds,adjacent_eval);return b.complete&&b.passed;};
-        auto candidate=neural::execute_actions(input,neural::condition(source_eval,adjacent_eval.limit,double(rs.target_triangles)/input.triangles()),rs.target_triangles,options.action_trials,rank,gate,&stats,s.cancelled,options.action_batch);
-        if(rs.output==OutputMode::Rebuild){candidate.data=copy_mesh(candidate.view(input));compact(candidate.data);candidate.shared_vertices=false;}
+        auto* state=action_state.get();if(weights.architecture==neural::placement_schema&&rs.output==OutputMode::Rebuild){
+            if(!placement_state)placement_state=std::make_unique<neural::GpuActionState>(source,options,true);state=placement_state.get();}state->reset();
+        auto evaluate_device=[&](MeshView reference,neural::DeviceMeshView candidate,const EvalSettings& config){auto t=Clock::now();auto bounded=config;
+            bounded.max_supersample=neural::bounded_refinement(config);if(bounded.max_supersample<config.max_supersample)++counters.bounded_audits;
+            auto result=audit.evaluate(reference,candidate,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(t);return result;};
+        auto gate=[&](neural::DeviceMeshView candidate){if(s.cancelled&&s.cancelled())return false;
+            auto a=evaluate_device(fixed_source,candidate,source_eval);if(!a.complete||!a.passed)return false;
+            auto b=evaluate_device(previous,candidate,adjacent_eval);return b.complete&&b.passed;};
+        auto candidate=state->execute(neural::condition(source_eval,adjacent_eval.limit,double(rs.target_triangles)/input.triangles()),rs.target_triangles,options.action_trials,action_network.get(),options.ranking,options.ranking_seed,options.action_batch,gate,&stats,s.cancelled);
+        counters.inference_ns+=stats.inference_ns;
+        if(rs.output==OutputMode::Rebuild&&candidate.shared_vertices){candidate.data=copy_mesh(candidate.view(input));compact(candidate.data);candidate.shared_vertices=false;}
         auto elapsed=nanos(begin),nested=counters.inference_ns+counters.gpu_audit_ns-nested_before;counters.decode_ns+=elapsed-std::min(elapsed,nested);
         ++counters.decoded;counters.legal_collapses+=stats.accepted;counters.rejected_collapses+=stats.rejected;counters.action_ranked+=stats.ranked;counters.action_trials+=stats.trials;
         return candidate;

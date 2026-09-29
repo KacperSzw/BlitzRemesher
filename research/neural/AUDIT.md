@@ -1,5 +1,9 @@
 # GPU confirmation and mesh residency
 
+Historical milestone. Current GPU residency, captured updates, free placement and
+confirmation defaults are documented in [GPU_REFACTOR.md](GPU_REFACTOR.md).
+
+
 This milestone evaluates the three saved 8,192-update action models. It runs
 no additional training and makes no quality claim from an incomplete comparison.
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "neural_internal.hpp"
+#include "neural_device_view.hpp"
 
 namespace blitz::neural {
 constexpr uint32_t action_schema=2, action_features=80, action_outputs=3;
@@ -41,7 +42,7 @@ private:
     bool mapping(Action,std::vector<std::pair<uint32_t,uint32_t>>&) const;
     bool claim_footprint(Action,std::span<uint8_t>) const;
 };
-struct ActionStats {uint64_t ranked{},trials{},accepted{},rejected{};};
+struct ActionStats {uint64_t ranked{},trials{},accepted{},rejected{},inference_ns{};};
 using ActionRanker=std::function<std::vector<float>(const ActionState&,std::span<const ActionRecord>)>;
 using ActionGate=std::function<bool(MeshView)>;
 // One per inference call/thread. Weights and bounded scratch are reused across
@@ -51,6 +52,8 @@ public:
     ActionCuda(const WeightsData&,const NeuralOptions&,uint32_t batch=16384);
     ~ActionCuda();
     std::vector<float> predict(std::span<const float>);
+    void predict_device(const float* input,float* output,uint32_t rows);
+    uint32_t architecture()const;
     ActionCuda(const ActionCuda&)=delete;
     ActionCuda& operator=(const ActionCuda&)=delete;
 private:

@@ -1,7 +1,7 @@
 // Cumulative authorization for the action-learning experiment, in USD.
 export function actionAccrued(states,now=Date.now(),hourlyCap=2.51){
   let total=0;const seen=new Set();
-  for(const s of states){if(!['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged'].includes(s.experiment)||seen.has(s.name))continue;seen.add(s.name);
+  for(const s of states){if(!['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged','gpu-refactor'].includes(s.experiment)||seen.has(s.name))continue;seen.add(s.name);
     const end=s.compute_terminated?s.terminated_at:now;
     if(!s.name||!Number.isFinite(s.started_at)||!Number.isFinite(end)||end<s.started_at)throw new Error('Reconcile incomplete action rental ledger');
     const rate=s.deployment?.gpu_hourly_usd_cap===undefined?hourlyCap:s.deployment.gpu_hourly_usd_cap+.01;
@@ -14,6 +14,17 @@ export function actionAccrued(states,now=Date.now(),hourlyCap=2.51){
 // deleted. Anchor this grant to that conservative ledger, never to the old $10
 // ceiling; retries and subsequent rentals consume the same additional grant.
 export const continuationAuthorization=Object.freeze({baseline_usd:5.513044952777777,additional_usd:8});
+// A separate, explicit $8 grant after all previous rentals were reconciled.
+export const refactorAuthorization=Object.freeze({baseline_usd:11.25963675,additional_usd:8});
+export function refactorBudget({billed,rate,additionalAccrued,minutes=160}){
+  const {baseline_usd,additional_usd}=refactorAuthorization;
+  for(const v of [billed,rate,additionalAccrued,minutes])if(!Number.isFinite(v)||v<0)throw new Error('Invalid refactor budget input');
+  if(!rate||rate>2.50||minutes!==160)throw new Error('Refactor requires the bounded 160-minute full-cycle profile');
+  const prior=Math.max(billed,2.75+additionalAccrued),rental=minutes/60*(rate+.01),reserve=1;
+  if(prior<baseline_usd-1e-9)throw new Error('Refactor ledger is missing earlier rentals');
+  if(prior+rental+reserve>baseline_usd+additional_usd)throw new Error('Additional cloud cap would be exceeded');
+  return {authorization:refactorAuthorization,cap_usd:baseline_usd+additional_usd,provider_billed_usd:billed,additional_accrued_upper_usd:additionalAccrued,prior_assumed_usd:prior,reserve_usd:reserve,maximum_rental_usd:rental,maximum_total_usd:prior+rental+reserve,maximum_additional_usd:prior+rental+reserve-baseline_usd,minutes};
+}
 export function continuationBudget(input){
   const {baseline_usd,additional_usd}=continuationAuthorization;
   const result=actionBudget({...input,cap:baseline_usd+additional_usd,priorEstimate:2.75,reserve:1});

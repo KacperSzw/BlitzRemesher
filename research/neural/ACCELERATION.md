@@ -1,5 +1,9 @@
 # GPU audit acceleration and staged learning — 2026-09-29
 
+Historical milestone. Current GPU residency, captured updates, free placement and
+confirmation defaults are documented in [GPU_REFACTOR.md](GPU_REFACTOR.md).
+
+
 ## Plan and gates
 
 1. Profile the unchanged evaluator with Nsight Systems on two bounded development

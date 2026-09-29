@@ -128,9 +128,14 @@ void cuda_contracts() {
     require(again.error==first.error&&reuse_stats.gpu_measurement_cache_hits==1&&reuse_stats.gpu_upload_bytes==uploads&&reuse_stats.gpu_allocations==allocations,"completed audit repeated GPU work");
     reuse.limit=3;workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);
     require(reuse_stats.gpu_upload_bytes==uploads&&reuse_stats.gpu_buffer_reuses>0,"unchanged topology was re-uploaded");
+    require(reuse_stats.gpu_reference_render_hits>0&&reuse_stats.gpu_candidate_render_hits>0,"unchanged renders were not reused across audit limits");
     endpoint_indices.erase(endpoint_indices.begin(),endpoint_indices.begin()+3);endpoint.indices=endpoint_indices;
     auto changed=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats),expected=evaluate(m.view(),endpoint,b,reuse);
     require(reuse_stats.gpu_upload_bytes>uploads&&changed.passed==expected.passed&&changed.complete==expected.complete,"topology revision reused old device data");
+    auto mutable_candidate=altered;auto check_mutable=[&]{auto gpu=workspace.evaluate(m.view(),mutable_candidate.view(),b,reuse,&reuse_stats),cpu=evaluate(m.view(),mutable_candidate.view(),b,reuse);
+        require(gpu.passed==cpu.passed&&gpu.complete==cpu.complete&&gpu.changed_area==cpu.changed_area&&((!std::isfinite(gpu.error)&&!std::isfinite(cpu.error))||std::abs(gpu.error-cpu.error)<1e-5),"render cache reused mutable vertex data");};
+    check_mutable();mutable_candidate.normals[12]=normalized({.8f,0,1});check_mutable();mutable_candidate.positions[12].z=.18f;check_mutable();
+    mutable_candidate.colors[12]={12,240,37,255};check_mutable();
     reuse.cancelled=[]{return true;};auto stopped_cached=workspace.evaluate(m.view(),endpoint,b,reuse,&reuse_stats);
     require(!stopped_cached.passed&&!stopped_cached.complete,"cache bypassed cancellation");
     // Thresholds come from controlled measurements. Check both sides of exact

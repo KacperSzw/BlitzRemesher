@@ -32,7 +32,7 @@ async function audit({root,execute,phase},model,name,confirmation='gpu'){
 export async function validateRefactor(ctx){const {root,execute,phase}=ctx;phase('validation');
   await execute('blitz-neural-profile',[],root+'/profile.json',1);const profile=read(root+'/profile.json');
   if(!profile.topology.every(r=>r.exact_output)||!profile.audit.every(r=>r.exact_metrics))throw new Error('GPU profile parity failed');
-  await execute('blitz-neural-action-train',['--replay','/workspace/numeric-replay',root+'/cross-gpu.json'],root+'/cross-gpu.log',1);
+  await execute('blitz-neural-action-train',['--replay','research/neural/evidence/gpu-refactor-local/replay',root+'/cross-gpu.json'],root+'/cross-gpu.log',1);
   if(!read(root+'/cross-gpu.json').passed)throw new Error('Cross-GPU FP32/FP64 export parity failed');
   const dataset='research/neural/evidence/action-screening-v3/action-v2-staged/curriculum',bench=[];
   for(let repeat=0;repeat<3;repeat++)for(const backend of repeat%2?['eager','captured']:['captured','eager']){

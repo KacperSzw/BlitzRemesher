@@ -58,8 +58,6 @@ async function prepare(){
     if(selected.size)throw new Error('Missing action proof assets');
   }
   for(const [file,checksum] of auditFiles)await copy(root+'/'+relative(file),'assets/'+file,checksum);
-  if(refactor){const replay='runs/neural/gpu-refactor/placement-train-01/forensic/step-256';
-    for(const file of ['model.blzn','input.pt','expected.pt'])await copy(root+'/'+replay+'/'+file,'numeric-replay/'+file);}
   files.push({path:'source.bundle',sha256:await sha(stage+'/source.bundle'),bytes:fs.statSync(stage+'/source.bundle').size});
   write(stage+'/inputs.json',{revision,files});
   fs.writeFileSync(stage+'/inputs.sha256',files.map(f=>`${f.sha256}  ${f.path}`).join('\n')+'\n');

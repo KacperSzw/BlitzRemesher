@@ -315,3 +315,22 @@ deleted. No training occurred during either attempt. A separate status-command
 branching bug was fixed with a regression covering absent optional state files.
 Shortened replacement rentals can retain the original final cutoff; setup stays
 bounded to 30 minutes per allocation. All **19 Node tests** pass.
+
+### LibTorch backend registration correction
+
+The next remote build and all 13 existing CTests passed, but the nontraining
+prefetch check reported `LibTorch CUDA unavailable`. Re-linking the local
+trainer with Ubuntu's `--as-needed` behavior reproduced the failure without
+training: `libtorch_cuda.so` disappeared from ELF dependencies even though the
+native CUDA runtime and `libc10_cuda.so` remained linked. The Linux link now
+retains the CUDA registration library with a scoped `--no-as-needed` setting.
+This failure mode is documented in PyTorch's
+[CUDA hooks interface](https://github.com/pytorch/pytorch/blob/v2.10.0/aten/src/ATen/detail/CUDAHooksInterface.h).
+
+A new `--check-cuda` CTest compares native device availability with LibTorch,
+then computes a known sum of squares on the GPU. It does not create a model,
+load data or train. A native GPU with missing Torch hooks fails rather than
+being skipped. Local CUDA CTest is now **14/14 passed** and portable ASan/UBSan
+remains **8/8 passed**. Remote diagnostics now include trainer shared-library
+dependencies. The failed allocation and storage were deleted after verified
+collection; no remote training has yet been claimed.

@@ -23,6 +23,7 @@ rm /opt/blitz/libtorch.zip
 blitz_cuda_arch=$(node --input-type=module -e "import {deployment} from './research/neural/runpod-profile.mjs'; console.log(deployment.cuda_architecture)")
 cmake -S . -B build/neural -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_NEURAL_TRAIN=ON -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch" -DBLITZ_LIBTORCH_ROOT=/opt/blitz/libtorch
 cmake --build build/neural -j2
+ldd build/neural/blitz-neural-train > /workspace/results/trainer-dependencies.txt
 ctest --test-dir build/neural --output-on-failure | tee /workspace/results/ctest.log
 build/neural/blitz-neural-train /workspace/dataset /workspace/results/prefetch --core 8 --batch 2 --workers 4 --check-prefetch 12
 git rev-parse HEAD > /workspace/results/git-revision

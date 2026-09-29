@@ -8,6 +8,7 @@
 #include <csignal>
 #include <condition_variable>
 #include <thread>
+#include <string_view>
 using namespace blitz;using namespace blitz::neural;using namespace blitz::neural::training;
 static volatile std::sig_atomic_t stopped=0;static void stop(int){stopped=1;}
 using Clock=std::chrono::steady_clock;
@@ -101,6 +102,16 @@ uint64_t unsigned_option(const char* text) {
     auto result=std::stoull(value,&used);if(used!=value.size())throw std::invalid_argument("invalid integer");return result;
 }
 int main(int argc,char** argv){try {
+    if(argc==2&&std::string_view(argv[1])=="--check-cuda"){
+        int devices=0;auto result=cudaGetDeviceCount(&devices);
+        if(result==cudaErrorNoDevice||result==cudaErrorInsufficientDriver||(result==cudaSuccess&&!devices))return 77;
+        if(result!=cudaSuccess)throw std::runtime_error(cudaGetErrorString(result));
+        if(!torch::cuda::is_available())throw NeuralUnavailable("Native CUDA is available but LibTorch CUDA hooks are missing");
+        torch::NoGradGuard guard;
+        auto values=torch::arange(1,5,torch::TensorOptions().dtype(torch::kFloat32).device(torch::kCUDA));
+        if(values.square().sum().item<float>()!=30.f)throw std::runtime_error("LibTorch CUDA arithmetic failed");
+        std::cout<<json({{"libtorch_cuda",true},{"devices",devices},{"training_started",false}}).dump()<<std::endl;return 0;
+    }
     std::signal(SIGINT,stop);std::signal(SIGTERM,stop);if(argc<3)throw std::invalid_argument("blitz-neural-train DATASET RUN [--steps 5120] [--segment-minutes 50] [--core 4096] [--batch 4] [--checkpoint-every 100]");
     fs::path dataset=argv[1],run=argv[2],initialize;uint64_t steps=5120,checkpoint_every=100,core=4096,batch_count=4,workers=2,memory_mib=5120,check_prefetch=0;double minutes=50;
     for(int i=3;i<argc;i+=2){if(i+1==argc)throw std::invalid_argument("missing option");std::string k=argv[i];if(k=="--steps")steps=unsigned_option(argv[i+1]);else if(k=="--segment-minutes")minutes=std::stod(argv[i+1]);else if(k=="--core")core=unsigned_option(argv[i+1]);else if(k=="--batch")batch_count=unsigned_option(argv[i+1]);else if(k=="--checkpoint-every")checkpoint_every=unsigned_option(argv[i+1]);else if(k=="--workers")workers=unsigned_option(argv[i+1]);else if(k=="--gpu-memory-mib")memory_mib=unsigned_option(argv[i+1]);else if(k=="--check-prefetch")check_prefetch=unsigned_option(argv[i+1]);else if(k=="--initialize")initialize=argv[i+1];else throw std::invalid_argument("unknown option "+k);}

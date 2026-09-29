@@ -82,7 +82,11 @@ if(BLITZ_TOOLS)
     target_include_directories(blitz-neural-train SYSTEM PRIVATE "${BLITZ_LIBTORCH_ROOT}/include" "${BLITZ_LIBTORCH_ROOT}/include/torch/csrc/api/include")
     target_compile_definitions(blitz-neural-train PRIVATE _GLIBCXX_USE_CXX11_ABI=1)
     target_link_directories(blitz-neural-train PRIVATE "${BLITZ_LIBTORCH_ROOT}/lib")
-    target_link_libraries(blitz-neural-train PRIVATE blitz_io CUDA::cudart torch torch_cpu torch_cuda c10 c10_cuda)
+    # CUDA backend registration runs when this DSO loads. Ubuntu's --as-needed
+    # can discard it because tensor calls dispatch through torch_cpu.
+    target_link_libraries(blitz-neural-train PRIVATE blitz_io CUDA::cudart torch torch_cpu
+      "$<$<PLATFORM_ID:Linux>:-Wl,--push-state,--no-as-needed>" torch_cuda
+      "$<$<PLATFORM_ID:Linux>:-Wl,--pop-state>" c10 c10_cuda)
     set_target_properties(blitz-neural-train PROPERTIES BUILD_RPATH "${BLITZ_LIBTORCH_ROOT}/lib")
   endif()
   add_executable(blitz-corpus tools/corpus.cpp)
@@ -128,6 +132,10 @@ if(BUILD_TESTING)
     target_compile_definitions(blitz-neural-tests PRIVATE BLITZ_CUDA)
     add_test(NAME neural-cuda-contracts COMMAND blitz-neural-tests --cuda)
     set_tests_properties(neural-cuda-contracts PROPERTIES SKIP_RETURN_CODE 77)
+  endif()
+  if(BLITZ_NEURAL_TRAIN)
+    add_test(NAME neural-libtorch-cuda-contract COMMAND blitz-neural-train --check-cuda)
+    set_tests_properties(neural-libtorch-cuda-contract PROPERTIES SKIP_RETURN_CODE 77)
   endif()
   add_executable(blitz-coverage-cache-tests tests/coverage_cache.cpp)
   target_include_directories(blitz-coverage-cache-tests PRIVATE src)

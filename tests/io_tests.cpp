@@ -55,7 +55,10 @@ int main() {
         Mesh m;m.positions={{0,0,0},{1,0,0},{0,1,0}};m.normals={{0,0,1},{0,0,1},{0,0,1}};m.uv={{0,0},{1,0},{0,1}};m.indices={0,1,2};
         save_ply(m.view(),dir/"triangle.ply");auto p=load_mesh(dir/"triangle.ply");CHECK(p.indices==m.indices);CHECK(p.uv[1].x==1);CHECK(p.normals[0].z==1);
         Result r;r.source=m.view();r.reference_bounds=bounds(m.view());r.max_changed_area=.5;
-        for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;r.lods.push_back(std::move(l));}
+        for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;l.schedule={80./(i+1),.75+i*.25,1.+i};r.lods.push_back(std::move(l));}
+        r.audit.profile=Profile::Attributes;r.audit.audit_views={7,2,135};r.audit.search_views={3,1,244};
+        r.audit.weights={2,3,4};r.audit.normal_importance={{{0,.5},{1,.75}}};r.audit.attribute_importance={{{0,.25},{1,1}}};
+        r.audit.search_supersample=2;r.audit.audit_supersample=4;r.audit.max_supersample=8;
         r.adaptive_retry_attempted=true;r.adaptive_retry_selected=true;r.adaptive_retry_evaluations=3;
         ProposalTrace retry_trace;retry_trace.pass=1;r.proposals.push_back(retry_trace);
         auto diagnostic=result_json(r);
@@ -68,6 +71,11 @@ int main() {
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));
         CHECK(manifest["runtime_storage"].size()==1&&manifest["runtime_storage"][0]["index_bytes"]==12);
         CHECK(manifest["max_changed_area"]==.5);
+        CHECK(manifest["runtime_meshes"].size()==1&&manifest["runtime_meshes"][0]["scheduled_index"]==0);
+        CHECK(manifest["audit_contract"]["scope"]=="configured_cameras"&&manifest["audit_contract"]["texture_images_scored"]==false);
+        CHECK(manifest["audit_contract"]["profile"]=="attributes"&&manifest["audit_contract"]["audit_views"]["seed"]==135);
+        CHECK(manifest["audit_contract"]["weights"]["normal"]==2&&manifest["audit_contract"]["normal_importance"][1][1]==.75);
+        for(size_t i=0;i<3;++i)CHECK(manifest["lods"][i]["screen_pixels"]==80./(i+1)&&manifest["lods"][i]["transition_limit"]==.75+i*.25);
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"].size()==1&&j["nodes"].size()==3&&j["nodes"][2]["mesh"]==0);
         // Collection-only foliage inspection must not relax the production
@@ -82,6 +90,9 @@ int main() {
         // Equal triangle counts do not imply equal render data. A winding change
         // keeps the borrowed vertex accessors but requires a separate mesh.
         r.lods[2].data.indices={0,2,1};save_chain(r,dir/"distinct");
+        std::ifstream(dir/"distinct/lods.json")>>manifest;
+        CHECK(manifest["runtime_meshes"].size()==2&&manifest["runtime_meshes"][1]["scheduled_index"]==2);
+        CHECK(manifest["runtime_meshes"][1]["screen_pixels"]==80./3&&manifest["runtime_meshes"][1]["shared_vertices"]==true);
         std::ifstream(dir/"distinct/chain.gltf")>>j;CHECK(j["meshes"].size()==2&&j["nodes"][2]["mesh"]==1);
         CHECK(j["meshes"][0]["primitives"][0]["attributes"]==j["meshes"][1]["primitives"][0]["attributes"]);
         g=load_gltf_mesh(dir/"distinct/chain.gltf",1);CHECK(g.indices==r.lods[2].data.indices);
@@ -90,6 +101,12 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        for(int passes:{0,1,3}) {
+            auto graph=settings_json(nlohmann::json{{"research",{{"graph_passes",passes}}}});
+            CHECK(graph.research.graph_passes==passes&&settings_json(graph)["research"]["graph_passes"]==passes);
+        }
+        for(auto bad:nlohmann::json::array({-1,4,1.5,"1",true,nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"graph_passes",bad}}}});});
         CHECK(config["max_added_vertex_bytes_bps"]==2000&&config["triangle_overhead_bps"]==0);
         for(auto cap:nlohmann::json::array({0,1000,2000,10000,nullptr})) {
             auto decoded=settings_json(nlohmann::json{{"max_added_vertex_bytes_bps",cap}});

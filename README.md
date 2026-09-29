@@ -13,7 +13,11 @@ The meshes are enlarged to show each LOD; labels give their target screen sizes.
 
 [Automatic hybrid research](research/hybrid/REPORT.md) compares resident buffer
 bytes and triangle counts, with measured bake times and independent tail checks.
-[Open the current 20% vertex-budget board](examples/current-board/index.html).
+[Open the whole-chain reduction board](examples/reduction-board/index.html):
+fixed eight-asset rows, coverage/appearance/strict presets, recorded settings,
+triangle and bake-progress curves, independent-audit status, and engine exports.
+[Results and promotion decision](research/chain-search/DECISION.md).
+[Earlier 13-model vertex-budget gallery](examples/current-board/index.html).
 [Open the algorithm and LOD chain example](examples/lod-chains.html).
 The [earlier hybrid board](research/hybrid/board/index.html) records uncapped
 and forced-placement research runs; its Moon rock chain is rebuilt at every
@@ -86,6 +90,16 @@ material graph. Engine integrations retain their own material payloads.
 
 ## Controls
 
+- Experimental C++/CLI `research.graph_passes` accepts 0..3. Zero retains the
+  incumbent search described below. Each extra pass builds a bounded candidate
+  graph, independently audits source admission and predecessor transitions,
+  and minimizes the equally weighted sum of LOD1–N triangles. The complete
+  incumbent remains eligible. This requires automatic hybrid output, respects
+  the same vertex and visual limits, and adds at most `candidate_budget`
+  reduction calls per transition per pass. Audit work is counted separately;
+  twice the proposals does not mean twice the bake time. Topology fallback
+  replaces calls inside this graph budget. The [frozen experiment](research/chain-search/PLAN.md)
+  and [reproduction guide](research/chain-search/README.md) describe its bounds.
 - Automatic hybrid limits newly allocated vertex streams to
   `max_added_vertex_bytes_bps` of the packed source vertex streams. Default
   2000 means 20%; 0 permits only source vertex storage and `null` disables the
@@ -145,9 +159,10 @@ Forced whole-chain placements (`research.output`) and proposal origins
 the C descriptor. Archived top-level output/chain JSON requires the explicit
 `--legacy-config` simplify option; normal `--config` rejects it. C++ clients must rebuild.
 
-LOD0 is always unchanged. Cancellation returns an exact, validated source
-chain with cancelled status; the implementation does not yet preserve a
-partially optimized prefix on cancellation. Success means the configured
+LOD0 is always unchanged. Graph exploration keeps its last complete, validated
+incumbent on cancellation or allocation failure and reports incomplete status.
+Before a complete incumbent exists, cancellation returns the exact source chain.
+Success means the configured
 search and audit finished, not that no better reduction exists.
 
 ## Engine integration
@@ -175,6 +190,12 @@ level. `blitz_result_storage` also reports the chain's added vertex budget.
 use each retained slot's original screen threshold. Equal triangle counts
 alone never cause a merge. glTF export shares one mesh and buffer payload for
 each identical consecutive group, while `lods.json` preserves every audit.
+Its `runtime_meshes` rows explicitly map runtime mesh IDs to the first scheduled
+slot and its original pixel threshold. `audit_contract` records the profile,
+weights, importance curves, camera seeds, and sampling used for those checks.
+Engine material bindings use each glTF primitive's original material ID;
+retain the engine's material payload. Independent qualification is recorded
+separately and is never implied by a successful export.
 
 `blitz/render_cost.hpp` exposes optional, deterministic CPU geometry
 diagnostics: projected tiny triangles, zero-sample primitives, per-primitive
@@ -310,7 +331,7 @@ coverage raster/field builds, cache hits/bypasses and peak charged cache bytes;
 the caller supplies the borrowed pointer. The benchmark runner enables it,
 records the compiled storage configuration, and hashes canonical input attributes.
 C++ consumers must rebuild for the enlarged research settings and statistics.
-The coverage cache leaves the C descriptor and ABI version 4 unchanged.
+The coverage cache and experimental graph controls leave the C descriptor and ABI version 5 unchanged.
 Protocol v2 results must be compared with freshly rerun v2 baselines.
 Measured speed, memory, quality changes and the complete validation matrix are
 in [the precision report](research/precision/REPORT.md).

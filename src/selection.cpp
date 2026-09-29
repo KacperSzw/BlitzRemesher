@@ -25,13 +25,13 @@ std::vector<RuntimeLevelStorage> runtime_storage(const Result& r) {
     }
     return out;
 }
-ChainSelection select_chain(std::span<const ChainCost> pool,uint16_t overhead,std::optional<uint64_t> added_budget) {
+ChainSelection select_chain(std::span<const ChainCost> pool,uint16_t overhead,std::optional<uint64_t> added_budget,ChainObjective objective) {
     if(pool.empty()||overhead>10000)throw std::invalid_argument("invalid selection pool or overhead");
     const auto levels=pool[0].triangles.size();
     if(levels<2||levels>32)throw std::invalid_argument("selection requires 2..32 levels");
     auto sum=[](const ChainCost& c){return std::accumulate(c.triangles.begin()+1,c.triangles.end(),uint64_t{});};
     auto better=[&](const ChainCost& a,const ChainCost& b){
-        if(added_budget)for(size_t l=levels;l-->1;)if(a.triangles[l]!=b.triangles[l])
+        if(added_budget&&objective==ChainObjective::TailFirst)for(size_t l=levels;l-->1;)if(a.triangles[l]!=b.triangles[l])
             return a.triangles[l]<b.triangles[l];
         return sum(a)<sum(b);
     };

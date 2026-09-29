@@ -1,0 +1,443 @@
+{
+  "version": 1,
+  "algorithm": "v3",
+  "complete": true,
+  "scope": "Three sequential full-pilot pairs, alternating order; shared workstation. Other independent audits may occupy separate CPU cores.",
+  "pairs": [
+    {
+      "repeat": 1,
+      "order": [
+        "baseline",
+        "graph-2"
+      ],
+      "runs": {
+        "baseline": {
+          "dir": "research/runs/chain-search-timing-v3-r1-baseline",
+          "run_sha256": "59a242543462931e350e17c4a3cbba979e6367865c7466a839bf417a8a55709f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 2.647490423,
+              "output_sha256": "15d7a2d7cd2a70bedbcae07492e7e85f396dc2339f340bc447af30a4b3d44276",
+              "attributes_sha256": "9ce1934300512c66821c1f0212de760068cda30a78a43f288f86bf98fd1cb0fc"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 8.109437585,
+              "output_sha256": "8ee9ae7f50f00c225c51d983e05203200ceecca034014bcdb9f033a90bbc4ab4",
+              "attributes_sha256": "92e47154e91ddbe39f132ad7a3e567b0e2277b9a0cf608d1a04f0c80564953b7"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 4.996773389,
+              "output_sha256": "71b1a1385de40cbcf148863bc3ad04f290c8db73072e3de9a31e19ca9e7a9231",
+              "attributes_sha256": "9bf3eda54cc42eaa4c4a26d89f2a8dfc8ed361dc6fcc32fe70089aeed16fa60d"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 13.693343551,
+              "output_sha256": "ce6b442eecddb32e7d712df8b6223c86708f3fd215524a4da3c63156199a394f",
+              "attributes_sha256": "d0ad44698a285a45d2fa11e8809645089d2602dc1764ef52c52f5b44604e74ac"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 10.441924291,
+              "output_sha256": "8277ea02ee959a5f7f440d1bf42b3e9b77428613898613441b50db8cd98f4470",
+              "attributes_sha256": "bf226cb0795908be80ad612d46e8ca73eb5feabae0fc65d2fef48c5399741dd3"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 13.411497193,
+              "output_sha256": "ec11cb110b1a75e2a97cfc8cd245c1f513fe6a285d84356a4635f853c25687f1",
+              "attributes_sha256": "86a77d666e8fe197d35c59fcb0b4c0e5bfd237ca6b19abb38ed4c0fd66b3a9cf"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 26.2486362,
+              "output_sha256": "e3a14aaf7a7f21998a24f4e7c6606fe5bfeb28999416fffb7f2b9f0a0edf5dbf",
+              "attributes_sha256": "f38c6b5f85e9da6d7db91935943cf71783d9befaa5c171538a995145fa69641f"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 29.491104251,
+              "output_sha256": "dd58cbcd794e136f85e54add4f4e5484bc71809683cca65905d05fbfb0817591",
+              "attributes_sha256": "45b656bb378608aa47545399a5afb72e9c7c596553b71912a974de78d301d070"
+            }
+          ]
+        },
+        "graph-2": {
+          "dir": "research/runs/chain-search-timing-v3-r1-graph-2",
+          "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 8.333222509,
+              "output_sha256": "feaba829867ebcd2bd1ec36de24daf950ae35a1dbe105a7d4d55fb6d5286138a",
+              "attributes_sha256": "196f78ab368603518a4f998f097606d3eefd94a2e28ca00fdc7736432958dc26"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 29.877412422,
+              "output_sha256": "677e4e9d84815793776ec6bc4ce7e2d47bdd06804e576ab59369991354b0c89d",
+              "attributes_sha256": "df4006a6b1725be24c1c7970b4fcc8ce6fd66b03f3e91cd0edb58e20e0401a80"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 9.989542795,
+              "output_sha256": "456c92d1570bcdbe582bc26146b7e0fa28bd0effd41a3239eb1211d1c3538e43",
+              "attributes_sha256": "c071b89d83f62028f8a85e7a2b720a0c15e4b52877d6246a3b2cc39397a3ca84"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 36.663074633,
+              "output_sha256": "91deba8f68ebe258d9fce7b356db7b4893fdf74a4df2664a127f15f1f02cc53c",
+              "attributes_sha256": "416523903393d7b23b2b61e901d956f5da23407dfebd917faa9cbc834ed232ee"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 31.481447014,
+              "output_sha256": "2af210565a9b05dcaed9d0c2b634774f2769347359722a7024a4adf516cea60e",
+              "attributes_sha256": "86d0912cc76df0296e6d717876b7e45b98499c306fc3480a9094f3c0dad22773"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 38.429534577,
+              "output_sha256": "e0bd4ee43d16bfbb876d5150a95b9a6bf26818f17afd75fcc41fcbacc8141ae4",
+              "attributes_sha256": "8012037c8da63fa62e368e000f897a8c5aef999e5884250bc07602e46b1f492f"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 37.38189579,
+              "output_sha256": "2358a88186f93834ef94b2527cf40dfa9bb73ed1d2b9e196f6e0e1c1e6b0c470",
+              "attributes_sha256": "c538b7b3f9d3283943644f0c28be387784b5860532c53d3f42f0bc5d9ee1fb89"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 61.796542155,
+              "output_sha256": "0b711a22ed658d5dbc0b8f992048d3f99ca6101ade5092200d57d4cf2652c03c",
+              "attributes_sha256": "2b6c91ae5c3bd9afc5c75553465bf088c0d6cdc66af03bda702cd564b64a8218"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "repeat": 2,
+      "order": [
+        "graph-2",
+        "baseline"
+      ],
+      "runs": {
+        "graph-2": {
+          "dir": "research/runs/chain-search-timing-v3-r2-graph-2",
+          "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 8.245976051,
+              "output_sha256": "feaba829867ebcd2bd1ec36de24daf950ae35a1dbe105a7d4d55fb6d5286138a",
+              "attributes_sha256": "196f78ab368603518a4f998f097606d3eefd94a2e28ca00fdc7736432958dc26"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 29.790776955,
+              "output_sha256": "677e4e9d84815793776ec6bc4ce7e2d47bdd06804e576ab59369991354b0c89d",
+              "attributes_sha256": "df4006a6b1725be24c1c7970b4fcc8ce6fd66b03f3e91cd0edb58e20e0401a80"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 10.02241622,
+              "output_sha256": "456c92d1570bcdbe582bc26146b7e0fa28bd0effd41a3239eb1211d1c3538e43",
+              "attributes_sha256": "c071b89d83f62028f8a85e7a2b720a0c15e4b52877d6246a3b2cc39397a3ca84"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 32.542352947,
+              "output_sha256": "91deba8f68ebe258d9fce7b356db7b4893fdf74a4df2664a127f15f1f02cc53c",
+              "attributes_sha256": "416523903393d7b23b2b61e901d956f5da23407dfebd917faa9cbc834ed232ee"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 30.407521195,
+              "output_sha256": "2af210565a9b05dcaed9d0c2b634774f2769347359722a7024a4adf516cea60e",
+              "attributes_sha256": "86d0912cc76df0296e6d717876b7e45b98499c306fc3480a9094f3c0dad22773"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 38.151947761,
+              "output_sha256": "e0bd4ee43d16bfbb876d5150a95b9a6bf26818f17afd75fcc41fcbacc8141ae4",
+              "attributes_sha256": "8012037c8da63fa62e368e000f897a8c5aef999e5884250bc07602e46b1f492f"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 38.900398932,
+              "output_sha256": "2358a88186f93834ef94b2527cf40dfa9bb73ed1d2b9e196f6e0e1c1e6b0c470",
+              "attributes_sha256": "c538b7b3f9d3283943644f0c28be387784b5860532c53d3f42f0bc5d9ee1fb89"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 65.547394456,
+              "output_sha256": "0b711a22ed658d5dbc0b8f992048d3f99ca6101ade5092200d57d4cf2652c03c",
+              "attributes_sha256": "2b6c91ae5c3bd9afc5c75553465bf088c0d6cdc66af03bda702cd564b64a8218"
+            }
+          ]
+        },
+        "baseline": {
+          "dir": "research/runs/chain-search-timing-v3-r2-baseline",
+          "run_sha256": "59a242543462931e350e17c4a3cbba979e6367865c7466a839bf417a8a55709f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 2.857202907,
+              "output_sha256": "15d7a2d7cd2a70bedbcae07492e7e85f396dc2339f340bc447af30a4b3d44276",
+              "attributes_sha256": "9ce1934300512c66821c1f0212de760068cda30a78a43f288f86bf98fd1cb0fc"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 9.968713743,
+              "output_sha256": "8ee9ae7f50f00c225c51d983e05203200ceecca034014bcdb9f033a90bbc4ab4",
+              "attributes_sha256": "92e47154e91ddbe39f132ad7a3e567b0e2277b9a0cf608d1a04f0c80564953b7"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 6.624044583,
+              "output_sha256": "71b1a1385de40cbcf148863bc3ad04f290c8db73072e3de9a31e19ca9e7a9231",
+              "attributes_sha256": "9bf3eda54cc42eaa4c4a26d89f2a8dfc8ed361dc6fcc32fe70089aeed16fa60d"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 16.120449712,
+              "output_sha256": "ce6b442eecddb32e7d712df8b6223c86708f3fd215524a4da3c63156199a394f",
+              "attributes_sha256": "d0ad44698a285a45d2fa11e8809645089d2602dc1764ef52c52f5b44604e74ac"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 12.207368261,
+              "output_sha256": "8277ea02ee959a5f7f440d1bf42b3e9b77428613898613441b50db8cd98f4470",
+              "attributes_sha256": "bf226cb0795908be80ad612d46e8ca73eb5feabae0fc65d2fef48c5399741dd3"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 13.797932902,
+              "output_sha256": "ec11cb110b1a75e2a97cfc8cd245c1f513fe6a285d84356a4635f853c25687f1",
+              "attributes_sha256": "86a77d666e8fe197d35c59fcb0b4c0e5bfd237ca6b19abb38ed4c0fd66b3a9cf"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 25.413770989,
+              "output_sha256": "e3a14aaf7a7f21998a24f4e7c6606fe5bfeb28999416fffb7f2b9f0a0edf5dbf",
+              "attributes_sha256": "f38c6b5f85e9da6d7db91935943cf71783d9befaa5c171538a995145fa69641f"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 30.482942142,
+              "output_sha256": "dd58cbcd794e136f85e54add4f4e5484bc71809683cca65905d05fbfb0817591",
+              "attributes_sha256": "45b656bb378608aa47545399a5afb72e9c7c596553b71912a974de78d301d070"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "repeat": 3,
+      "order": [
+        "baseline",
+        "graph-2"
+      ],
+      "runs": {
+        "baseline": {
+          "dir": "research/runs/chain-search-timing-v3-r3-baseline",
+          "run_sha256": "59a242543462931e350e17c4a3cbba979e6367865c7466a839bf417a8a55709f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 2.751765062,
+              "output_sha256": "15d7a2d7cd2a70bedbcae07492e7e85f396dc2339f340bc447af30a4b3d44276",
+              "attributes_sha256": "9ce1934300512c66821c1f0212de760068cda30a78a43f288f86bf98fd1cb0fc"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 8.202432576,
+              "output_sha256": "8ee9ae7f50f00c225c51d983e05203200ceecca034014bcdb9f033a90bbc4ab4",
+              "attributes_sha256": "92e47154e91ddbe39f132ad7a3e567b0e2277b9a0cf608d1a04f0c80564953b7"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 5.185212175,
+              "output_sha256": "71b1a1385de40cbcf148863bc3ad04f290c8db73072e3de9a31e19ca9e7a9231",
+              "attributes_sha256": "9bf3eda54cc42eaa4c4a26d89f2a8dfc8ed361dc6fcc32fe70089aeed16fa60d"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 14.121153309,
+              "output_sha256": "ce6b442eecddb32e7d712df8b6223c86708f3fd215524a4da3c63156199a394f",
+              "attributes_sha256": "d0ad44698a285a45d2fa11e8809645089d2602dc1764ef52c52f5b44604e74ac"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 10.572334267,
+              "output_sha256": "8277ea02ee959a5f7f440d1bf42b3e9b77428613898613441b50db8cd98f4470",
+              "attributes_sha256": "bf226cb0795908be80ad612d46e8ca73eb5feabae0fc65d2fef48c5399741dd3"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 13.713375878,
+              "output_sha256": "ec11cb110b1a75e2a97cfc8cd245c1f513fe6a285d84356a4635f853c25687f1",
+              "attributes_sha256": "86a77d666e8fe197d35c59fcb0b4c0e5bfd237ca6b19abb38ed4c0fd66b3a9cf"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 27.548110501,
+              "output_sha256": "e3a14aaf7a7f21998a24f4e7c6606fe5bfeb28999416fffb7f2b9f0a0edf5dbf",
+              "attributes_sha256": "f38c6b5f85e9da6d7db91935943cf71783d9befaa5c171538a995145fa69641f"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 30.912627639,
+              "output_sha256": "dd58cbcd794e136f85e54add4f4e5484bc71809683cca65905d05fbfb0817591",
+              "attributes_sha256": "45b656bb378608aa47545399a5afb72e9c7c596553b71912a974de78d301d070"
+            }
+          ]
+        },
+        "graph-2": {
+          "dir": "research/runs/chain-search-timing-v3-r3-graph-2",
+          "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+          "rows": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "seconds": 8.439902549,
+              "output_sha256": "feaba829867ebcd2bd1ec36de24daf950ae35a1dbe105a7d4d55fb6d5286138a",
+              "attributes_sha256": "196f78ab368603518a4f998f097606d3eefd94a2e28ca00fdc7736432958dc26"
+            },
+            {
+              "id": "ph_metal_stool_02",
+              "seconds": 29.826063457,
+              "output_sha256": "677e4e9d84815793776ec6bc4ce7e2d47bdd06804e576ab59369991354b0c89d",
+              "attributes_sha256": "df4006a6b1725be24c1c7970b4fcc8ce6fd66b03f3e91cd0edb58e20e0401a80"
+            },
+            {
+              "id": "ph_grass_bermuda_01",
+              "seconds": 10.207201006,
+              "output_sha256": "456c92d1570bcdbe582bc26146b7e0fa28bd0effd41a3239eb1211d1c3538e43",
+              "attributes_sha256": "c071b89d83f62028f8a85e7a2b720a0c15e4b52877d6246a3b2cc39397a3ca84"
+            },
+            {
+              "id": "ph_dead_quiver_trunk",
+              "seconds": 32.56769677,
+              "output_sha256": "91deba8f68ebe258d9fce7b356db7b4893fdf74a4df2664a127f15f1f02cc53c",
+              "attributes_sha256": "416523903393d7b23b2b61e901d956f5da23407dfebd917faa9cbc834ed232ee"
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "seconds": 29.909945213,
+              "output_sha256": "2af210565a9b05dcaed9d0c2b634774f2769347359722a7024a4adf516cea60e",
+              "attributes_sha256": "86d0912cc76df0296e6d717876b7e45b98499c306fc3480a9094f3c0dad22773"
+            },
+            {
+              "id": "ph_rock_face_02",
+              "seconds": 38.213712136,
+              "output_sha256": "e0bd4ee43d16bfbb876d5150a95b9a6bf26818f17afd75fcc41fcbacc8141ae4",
+              "attributes_sha256": "8012037c8da63fa62e368e000f897a8c5aef999e5884250bc07602e46b1f492f"
+            },
+            {
+              "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+              "seconds": 38.970465443,
+              "output_sha256": "2358a88186f93834ef94b2527cf40dfa9bb73ed1d2b9e196f6e0e1c1e6b0c470",
+              "attributes_sha256": "c538b7b3f9d3283943644f0c28be387784b5860532c53d3f42f0bc5d9ee1fb89"
+            },
+            {
+              "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+              "seconds": 62.83948138,
+              "output_sha256": "0b711a22ed658d5dbc0b8f992048d3f99ca6101ade5092200d57d4cf2652c03c",
+              "attributes_sha256": "2b6c91ae5c3bd9afc5c75553465bf088c0d6cdc66af03bda702cd564b64a8218"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "ph_painted_wooden_shelves",
+      "ratios": [
+        3.1475930702545174,
+        2.886030960838582,
+        3.067086891082855
+      ],
+      "median_ratio": 3.067086891082855,
+      "max_ratio": 3.1475930702545174
+    },
+    {
+      "id": "ph_metal_stool_02",
+      "ratios": [
+        3.684276758879574,
+        2.9884273661603524,
+        3.6362460990255387
+      ],
+      "median_ratio": 3.6362460990255387,
+      "max_ratio": 3.684276758879574
+    },
+    {
+      "id": "ph_grass_bermuda_01",
+      "ratios": [
+        1.9991986862944766,
+        1.5130357434069222,
+        1.96852137608043
+      ],
+      "median_ratio": 1.96852137608043,
+      "max_ratio": 1.9991986862944766
+    },
+    {
+      "id": "ph_dead_quiver_trunk",
+      "ratios": [
+        2.677437727056995,
+        2.0187000690666586,
+        2.3063057285302078
+      ],
+      "median_ratio": 2.3063057285302078,
+      "max_ratio": 2.677437727056995
+    },
+    {
+      "id": "ph_moon_rock_02",
+      "ratios": [
+        3.014908568254434,
+        2.4909153672496065,
+        2.829076763715231
+      ],
+      "median_ratio": 2.829076763715231,
+      "max_ratio": 3.014908568254434
+    },
+    {
+      "id": "ph_rock_face_02",
+      "ratios": [
+        2.8654171882508326,
+        2.765048071473801,
+        2.7866013792639657
+      ],
+      "median_ratio": 2.7866013792639657,
+      "max_ratio": 2.8654171882508326
+    },
+    {
+      "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+      "ratios": [
+        1.4241462110705776,
+        1.530681886951665,
+        1.4146329724350921
+      ],
+      "median_ratio": 1.4241462110705776,
+      "max_ratio": 1.530681886951665
+    },
+    {
+      "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+      "ratios": [
+        2.095429917748996,
+        2.1502975057544567,
+        2.032809443242555
+      ],
+      "median_ratio": 2.095429917748996,
+      "max_ratio": 2.1502975057544567
+    }
+  ],
+  "median_ratio_gate": true,
+  "all_repeats_gate": true
+}

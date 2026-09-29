@@ -24,6 +24,20 @@ exact consecutive runtime duplicates once, and all present attributes/u32 indice
 count. Forced output/origin modes remain research controls. See research/hybrid/PLAN.md.
 Forced output research controls bypass the production vertex cap and report it
 as disabled so archived placement experiments keep their original meaning.
+The experimental C++/CLI `research.graph_passes` control (0..3, default zero)
+adds bounded whole-chain improvement passes after this reference search.
+With it enabled, selection uses the equally weighted LOD1–N triangle total
+under the configured vertex cap. Source admission and transition edges are
+audited independently. Each layer retains at most `2*beam_width` additional
+geometries, four incoming predecessor geometries per candidate, and
+`4*beam_width` active paths, plus pinned source/incumbent paths. Dominance
+applies only at identical terminal geometry and preserves triangle counts,
+added bytes and resident bytes; nonzero overhead also preserves earlier
+per-slot counts. The complete incumbent is retained through interruption and
+allocation failure. This is a bounded search, with no optimality guarantee.
+Each graph pass uses at most `candidate_budget` reduction calls per transition;
+its optional topology-relaxed calls replace calls within this budget.
+Source/transition audit counts and complete-incumbent progress are exported.
 Borrowed reducer/proposer outputs address the input passed to that call. In
 progressive rebuild, compact IDs from the preceding LOD must not be interpreted
 against LOD0; preserve the referenced input for as long as the output needs it.

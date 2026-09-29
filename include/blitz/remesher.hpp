@@ -6,6 +6,7 @@ enum class OutputMode:uint8_t { Rebuild,Reuse };
 enum class ChainMode:uint8_t { Direct,Progressive,Hybrid };
 enum class Objective:uint8_t { Quadric,Regularized,Visual,TopologyRelaxed };
 enum class Status:uint8_t { Complete,BudgetLimited,Cancelled };
+enum class ChainObjective:uint8_t { WholeChain,TailFirst };
 struct Curve { std::vector<Vec2> points{{0,2},{1,3}}; double at(double) const; };
 // Forced whole-chain modes are research controls, not production policies.
 struct ResearchOptions {
@@ -13,6 +14,7 @@ struct ResearchOptions {
     ChainMode chain{ChainMode::Hybrid};
     double boundary_weight{};
     uint16_t coverage_cache_mib{256}; // 0 disables; 0..256 MiB, split equally between references and candidate.
+    uint8_t graph_passes{}; // 0: incumbent search; 1..3: bounded whole-chain improvement passes.
     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
 };
 struct Settings {
@@ -48,8 +50,8 @@ struct ProposalTrace {
     uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     double seconds{};
-    uint8_t level{},origin{},strategy{},gate{},pass{}; // pass: baseline=0, adaptive retry=1; origin: direct=0, progressive=1, tail probe=2.
-    // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8, vertex budget=9.
+    uint8_t level{},origin{},strategy{},gate{},pass{}; // pass: baseline=0, adaptive retry=1, graph=2..4; origin: direct=0, progressive=1, tail probe=2.
+    // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8, vertex budget=9, objective bound=10.
 };
 struct StorageStats {
     uint64_t source_vertex_bytes{},added_vertex_bytes{},index_bytes{};
@@ -61,13 +63,28 @@ struct ChainCost {
 };
 struct ChainSelection { size_t reference{},selected{}; };
 // Deterministic selection from an already audited pool. Does not establish validity.
-ChainSelection select_chain(std::span<const ChainCost>,uint16_t overhead_bps,std::optional<uint64_t> added_vertex_budget_bytes={});
+ChainSelection select_chain(std::span<const ChainCost>,uint16_t overhead_bps,std::optional<uint64_t> added_vertex_budget_bytes={},ChainObjective=ChainObjective::WholeChain);
+struct SearchProgress {
+    uint64_t candidate_evaluations{},audit_evaluations{},triangle_total{},added_vertex_bytes{};
+    double seconds{};
+    uint8_t pass{}; // 0 is the complete incumbent; later entries are complete graph passes.
+};
+// Owned description of the finite visual contract, also exported in lods.json.
+struct AuditContract {
+    Profile profile{Profile::Normals};
+    ViewSet search_views{},audit_views{};
+    Weights weights{};
+    Curve normal_importance{},attribute_importance{};
+    uint8_t search_supersample{},audit_supersample{},max_supersample{};
+};
 uint64_t vertex_bytes(MeshView); // Canonical packed attributes, excluding borrowed stride padding.
 struct Result {
     MeshView source; Bounds reference_bounds; std::vector<Lod> lods;
+    AuditContract audit;
     Status status{Status::Complete}; uint64_t candidate_evaluations{};
     // Source search, adjacent search, source audit, adjacent audit.
     std::array<uint64_t,4> rejected_gates{};
+    std::array<uint64_t,4> audit_evaluations{}; // Includes search screens and full audits, in the same order.
     std::array<uint64_t,4> area_rejected_gates{}; // Audit-only subset: pixel limit passed, area limit failed.
     std::array<Measurement,4> worst_rejected{};
     std::vector<ProposalTrace> proposals;
@@ -77,6 +94,10 @@ struct Result {
     uint64_t transition_reconnections{}; // Extra audited edges, not reduction proposals.
     uint64_t adaptive_retry_evaluations{};
     bool adaptive_retry_attempted{},adaptive_retry_selected{};
+    ChainObjective chain_objective{ChainObjective::TailFirst};
+    uint64_t graph_candidates{},graph_edges{},graph_pruned_candidates{},graph_pruned_paths{};
+    uint8_t graph_passes_completed{};
+    std::vector<SearchProgress> search_progress;
     uint16_t triangle_overhead_bps{};
     std::optional<uint32_t> max_added_vertex_bytes_bps;
     std::optional<uint64_t> added_vertex_budget_bytes;

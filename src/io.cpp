@@ -254,9 +254,24 @@ json result_json(const Result& r) {
     j["max_added_vertex_bytes_bps"]=r.max_added_vertex_bytes_bps?json(*r.max_added_vertex_bytes_bps):json(nullptr);
     j["added_vertex_budget_bytes"]=r.added_vertex_budget_bytes?json(*r.added_vertex_budget_bytes):json(nullptr);
     j["max_changed_area"]=r.max_changed_area;
+    auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
+    auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
+    const auto& contract=r.audit;
+    j["audit_contract"]={{"profile",contract.profile==Profile::Coverage?"coverage":contract.profile==Profile::Normals?"normals":"attributes"},
+        {"scope","configured_cameras"},{"texture_images_scored",false},{"normal_maps_scored",false},
+        {"search_views",views(contract.search_views)},{"audit_views",views(contract.audit_views)},
+        {"search_supersample",contract.search_supersample},{"audit_supersample",contract.audit_supersample},{"max_supersample",contract.max_supersample},
+        {"weights",{{"normal",contract.weights.normal},{"color",contract.weights.color},{"material",contract.weights.material}}},
+        {"normal_importance",curve(contract.normal_importance)},{"attribute_importance",curve(contract.attribute_importance)}};
+    j["chain_objective"]=r.chain_objective==ChainObjective::WholeChain?"whole_chain":"tail_first";
+    j["audit_evaluations"]=r.audit_evaluations;
+    j["graph_search"]={{"passes_completed",r.graph_passes_completed},{"source_valid_candidates",r.graph_candidates},{"transition_edges",r.graph_edges},
+        {"pruned_candidates",r.graph_pruned_candidates},{"pruned_paths",r.graph_pruned_paths},{"progress",json::array()}};
+    for(auto p:r.search_progress)j["graph_search"]["progress"].push_back({{"pass",p.pass},{"candidate_evaluations",p.candidate_evaluations},{"audit_evaluations",p.audit_evaluations},
+        {"triangle_total",p.triangle_total},{"added_vertex_bytes",p.added_vertex_bytes},{"seconds",p.seconds}});
     j["reference_candidate"]=r.selection.reference;j["selected_candidate"]=r.selection.selected;
     j["candidates"]=json::array();for(auto& c:r.candidates)j["candidates"].push_back({{"triangles",c.triangles},{"storage",storage(c.storage)}});
-    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b,r.added_vertex_budget_bytes);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
+    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b,r.added_vertex_budget_bytes,r.chain_objective);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
     j["runtime_storage"]=json::array();for(auto level:runtime_storage(r))j["runtime_storage"].push_back({{"scheduled_index",level.scheduled_index},{"added_vertex_bytes",level.added_vertex_bytes},{"index_bytes",level.index_bytes},{"cumulative_added_vertex_bytes",level.cumulative_added_vertex_bytes}});
     j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections},{"vertex_budget_rejections",r.vertex_budget_rejections},{"tail_probe_evaluations",r.tail_probe_evaluations},{"tail_reserved_vertex_bytes",r.tail_reserved_vertex_bytes},
@@ -264,8 +279,8 @@ json result_json(const Result& r) {
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
         const char* origins[]={"direct","progressive","tail_probe"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
-        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable","vertex_budget"};
-        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"pass",p.pass?"adaptive_retry":"baseline"},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
+        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable","vertex_budget","objective_bound"};
+        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"pass",p.pass>1?"graph_"+std::to_string(p.pass-1):p.pass?"adaptive_retry":"baseline"},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
             {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
     }
@@ -326,6 +341,10 @@ void save_chain(const Result& r,const fs::path& directory) {
     std::ofstream bin(directory/"chain.bin",std::ios::binary);bin.write(reinterpret_cast<char*>(bytes.data()),bytes.size());if(!bin)fail("cannot write glTF buffer");
     std::ofstream(directory/"chain.gltf")<<j.dump(2)<<'\n';auto manifest=result_json(r);manifest["gltf"]="chain.gltf";
     for(size_t i=0;i<r.lods.size();++i){manifest["lods"][i]["gltf_mesh"]=j["nodes"][i]["mesh"];manifest["lods"][i]["gltf_node"]=i;}
+    manifest["runtime_meshes"]=json::array();
+    for(size_t i=0;i<runtime.size();++i){auto slot=runtime[i];manifest["runtime_meshes"].push_back({{"gltf_mesh",i},{"scheduled_index",slot},
+        {"screen_pixels",r.lods[slot].schedule.pixels},{"shared_vertices",r.lods[slot].shared_vertices}});}
+    manifest["material_binding"]="primitive.material is the input material ID; the engine retains its material payload";
     std::ofstream(directory/"lods.json")<<manifest.dump(2)<<'\n';
 }
 json settings_json(const Settings& s) {
@@ -339,7 +358,7 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+      {"research",{{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
@@ -374,6 +393,9 @@ Settings settings_json(const json& original,bool legacy_research) {
     const auto& cache=experimental.at("coverage_cache_mib");
     if(!cache.is_number_integer()||cache<0||cache>256)fail("coverage cache must be an integer in 0..256 MiB");
     s.research.coverage_cache_mib=cache.get<uint16_t>();
+    const auto& passes=experimental.at("graph_passes");
+    if(!passes.is_number_integer()||passes<0||passes>3)fail("graph passes must be an integer in 0..3");
+    s.research.graph_passes=passes.get<uint8_t>();
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));

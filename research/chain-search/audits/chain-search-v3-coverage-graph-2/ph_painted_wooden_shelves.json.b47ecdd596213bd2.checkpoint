@@ -1,0 +1,116 @@
+{
+  "audit": {
+    "max_changed_area": 0.5,
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 2702647334,
+    "supersample": 8
+  },
+  "binary_sha256": "be21b73e433a5af78f9379a92a81b36a62a07ac65dbc690145cb79a12a2bb713",
+  "chain_bin_sha256": "76e205354cae5aaaaf0a3ec845765897e0cf2cb2e84665aa2e7347bac8510dee",
+  "chain_gltf_sha256": "5733fbc558f1fadeadb7006009255054cee63bcffb520958fce09c29eaedbdb1",
+  "complete": false,
+  "coverage_cache": {
+    "bypasses": 8597,
+    "field_hits": 6,
+    "fields": 4152,
+    "mask_hits": 73,
+    "mib": 256,
+    "peak_bytes": 268028784,
+    "rasters": 4623
+  },
+  "expected_levels": 7,
+  "first_level": 1,
+  "id": "ph_painted_wooden_shelves",
+  "lods": [
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.0013936462795088268,
+        "changed_area_worst_view": 614,
+        "complete": true,
+        "coverage_upper_px": 1.4785543905932736,
+        "distance_passed": true,
+        "error_px": 1.4785543905932736,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 61
+      },
+      "level": 1,
+      "max_changed_area": 0.5,
+      "screen_pixels": 312.0674954763457,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.0013936462795088268,
+        "changed_area_worst_view": 614,
+        "complete": true,
+        "coverage_upper_px": 1.4785543905932736,
+        "distance_passed": true,
+        "error_px": 1.4785543905932736,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 61
+      },
+      "source_limit": 2.0,
+      "transition_limit": 2.0,
+      "triangles": 393
+    },
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.003586406983547957,
+        "changed_area_worst_view": 227,
+        "complete": false,
+        "coverage_upper_px": 2.046196236107954,
+        "distance_passed": false,
+        "error_px": 2.046196236107954,
+        "nonfinite_error": false,
+        "passed": false,
+        "resource_limited": false,
+        "supersample": 32,
+        "views": 228,
+        "worst_view": 227
+      },
+      "level": 2,
+      "max_changed_area": 0.5,
+      "screen_pixels": 190.2072690095294,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.005534274705374621,
+        "changed_area_worst_view": 409,
+        "complete": true,
+        "coverage_upper_px": 2.5365855401648965,
+        "distance_passed": true,
+        "error_px": 2.5365855401648965,
+        "nonfinite_error": false,
+        "passed": true,
+        "resource_limited": false,
+        "supersample": 8,
+        "views": 706,
+        "worst_view": 409
+      },
+      "source_limit": 3.0,
+      "transition_limit": 2.0,
+      "triangles": 376
+    }
+  ],
+  "passed": false,
+  "profile": "coverage",
+  "purpose": "Dense independent full-chain check",
+  "row_sha256": "41dcb1088f0054598f1a7c3a0f8e84f309a9baa76d5257f6173645f055512c36",
+  "run": "chain-search-v3-coverage-graph-2",
+  "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+  "seconds": 773.379258411,
+  "stage_seconds": {
+    "distance": 592.013145172,
+    "raster": 181.32572823700002
+  },
+  "version": 2
+}

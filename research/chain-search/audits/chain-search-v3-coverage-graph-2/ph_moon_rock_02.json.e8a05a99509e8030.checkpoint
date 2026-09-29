@@ -1,0 +1,80 @@
+{
+  "audit": {
+    "max_changed_area": 0.5,
+    "max_supersample": 32,
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 2702647334,
+    "supersample": 8
+  },
+  "binary_sha256": "ff348bf0ceb41dac2219585dba1cc0d3dae18c2d8b0504defa342342d4c541f0",
+  "chain_bin_sha256": "fb98271eb6f8f6b658b69c83918bb3dba0d47d51ef9d4c6a8cd691387987e2c9",
+  "chain_gltf_sha256": "9abeb28d21a74152032927a83c970460054616be8250321bc2626f47c8dc6d06",
+  "complete": false,
+  "completion_scope": "Every planned comparison passed all views or produced a failing witness; individual complete=false can mean early rejection.",
+  "coverage_cache": {
+    "bypasses": 240,
+    "field_hits": 0,
+    "fields": 158,
+    "mask_hits": 0,
+    "mib": 256,
+    "peak_bytes": 267091488,
+    "rasters": 158
+  },
+  "expected_levels": 7,
+  "first_level": 1,
+  "id": "ph_moon_rock_02",
+  "lods": [
+    {
+      "adjacent": {
+        "area_passed": true,
+        "changed_area": 0.0016429134782924588,
+        "changed_area_worst_view": 66,
+        "complete": false,
+        "coverage_upper_px": 1.989277695296637,
+        "distance_passed": false,
+        "error_px": null,
+        "nonfinite_error": true,
+        "passed": false,
+        "resource_limited": true,
+        "supersample": 16,
+        "views": 74,
+        "worst_view": 61
+      },
+      "binary_sha256": "ff348bf0ceb41dac2219585dba1cc0d3dae18c2d8b0504defa342342d4c541f0",
+      "level": 1,
+      "max_changed_area": 0.5,
+      "screen_pixels": 312.0674954763457,
+      "source": {
+        "area_passed": true,
+        "changed_area": 0.0016429134782924588,
+        "changed_area_worst_view": 66,
+        "complete": false,
+        "coverage_upper_px": 1.989277695296637,
+        "distance_passed": false,
+        "error_px": null,
+        "nonfinite_error": true,
+        "passed": false,
+        "resource_limited": true,
+        "supersample": 16,
+        "views": 74,
+        "worst_view": 61
+      },
+      "source_limit": 2.0,
+      "transition_limit": 2.0,
+      "triangles": 2478
+    }
+  ],
+  "passed": false,
+  "profile": "coverage",
+  "purpose": "Dense independent full-chain check",
+  "row_sha256": "1fe4907d01f63bb2cddb2f1d229cdd9ee2712d0ccd01a85e81b816d3d6b9c754",
+  "run": "chain-search-v3-coverage-graph-2",
+  "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+  "seconds": 38.738626489,
+  "stage_seconds": {
+    "distance": 31.423969101,
+    "raster": 7.2975873270000005
+  },
+  "version": 3
+}

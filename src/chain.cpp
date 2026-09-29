@@ -7,6 +7,7 @@
 #include <memory>
 #include <stdexcept>
 namespace blitz {
+namespace detail { Result improve_chain(Result,const Settings&,const Proposer&,double); }
 std::vector<uint8_t> runtime_levels(const Result& r) {
     if(r.lods.size()>32)throw std::invalid_argument("runtime chain exceeds 32 scheduled levels");
     std::vector<uint8_t> levels;
@@ -29,6 +30,8 @@ std::string validate(const Settings& s) {
     if(s.triangle_overhead_bps>10000)return "triangle overhead must be 0..10000 basis points";
     if(s.max_added_vertex_bytes_bps&&*s.max_added_vertex_bytes_bps==UINT32_MAX)return "added vertex budget must be below UINT32_MAX basis points";
     if(s.research.coverage_cache_mib>256)return "coverage cache must be 0..256 MiB";
+    if(s.research.graph_passes>3)return "graph passes must be 0..3";
+    if(s.research.graph_passes&&(s.research.output||s.research.chain!=ChainMode::Hybrid))return "graph search requires automatic hybrid output";
     if(!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)
         return "maximum changed area must be in [0,1]";
     for(double v:{s.pixels_per_meter,s.meters_per_unit,s.last_pixels})
@@ -110,12 +113,15 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     const bool automatic=!s.research.output;
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
+    result.audit={s.profile,s.search_views,s.audit_views,s.weights,s.normal_importance,s.attribute_importance,
+        s.search_supersample,s.audit_supersample,s.max_supersample};
     result.max_added_vertex_bytes_bps=automatic?s.max_added_vertex_bytes_bps:std::nullopt;
     if(result.max_added_vertex_bytes_bps) {
         auto bytes=vertex_bytes(source),bps=uint64_t(*result.max_added_vertex_bytes_bps);
         auto whole=bytes/10000,part=(bytes%10000)*bps/10000;
         result.added_vertex_budget_bytes=bps&&whole>(UINT64_MAX-part)/bps?UINT64_MAX:whole*bps+part;
     }
+    result.chain_objective=result.added_vertex_budget_bytes?ChainObjective::TailFirst:ChainObjective::WholeChain;
     result.max_changed_area=s.max_changed_area;
     auto steps=schedule(result.reference_bounds,s);
     // An exact source chain is a valid incumbent even if cancellation precedes the first audit.
@@ -167,11 +173,11 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
             else if(bytes>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;gate=9;}
             else {
                 coverage.begin_candidate();
-                auto measured=coverage.evaluate(source,view,search,0,false);
+                ++result.audit_evaluations[0];auto measured=coverage.evaluate(source,view,search,0,false);
                 if(measured.resource_limited)result.status=Status::BudgetLimited;
                 if(!measured.passed)gate=1;
                 else {
-                    measured=coverage.evaluate(source,view,audit,0,true);
+                    ++result.audit_evaluations[2];measured=coverage.evaluate(source,view,audit,0,true);
                     if(measured.resource_limited)result.status=Status::BudgetLimited;
                     if(!measured.passed)gate=3;
                 }
@@ -207,6 +213,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
         for(size_t i=0;i<beam.size();++i)
             reference_ids[i]=same_mesh_data(source,beam[i]->lod.view(source))?0:uint8_t(i+1);
         auto accepted=[&](const Measurement& m,size_t stage) {
+            ++result.audit_evaluations[stage];
             if(m.resource_limited)result.status=Status::BudgetLimited;
             if(m.passed)return true;
             ++result.rejected_gates[stage];
@@ -467,12 +474,20 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
 }
 }
 Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+    if(auto error=validate(s);!error.empty())throw std::invalid_argument(error);
+    if(s.research.graph_passes) {
+        const auto begin=std::chrono::steady_clock::now();
+        auto seed=s;seed.research.graph_passes=0;seed.research.topology_fallback=false;
+        auto incumbent=generate(source,seed,proposer);
+        return detail::improve_chain(std::move(incumbent),s,proposer,
+            std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count());
+    }
     if(s.performance)*s.performance={};
     auto first=search_pass(source,s,proposer);
     auto& result=first.result;
     if(first.finalists.empty())return std::move(result);
     const bool automatic=!s.research.output;
-    auto baseline=automatic?select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes):ChainSelection{};
+    auto baseline=automatic?select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes,ChainObjective::TailFirst):ChainSelection{};
     result.selection=baseline;
     auto selected=first.finalists[baseline.selected];
     const auto budget=result.added_vertex_budget_bytes.value_or(0);
@@ -494,6 +509,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         result.vertex_budget_rejections+=second.result.vertex_budget_rejections;
         result.tail_probe_evaluations+=second.result.tail_probe_evaluations;
         for(size_t i=0;i<4;++i) {
+            result.audit_evaluations[i]+=second.result.audit_evaluations[i];
             result.rejected_gates[i]+=second.result.rejected_gates[i];
             result.area_rejected_gates[i]+=second.result.area_rejected_gates[i];
             if(second.result.worst_rejected[i].error>=result.worst_rejected[i].error)
@@ -511,7 +527,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             first.finalists.insert(first.finalists.end(),
                 std::make_move_iterator(second.finalists.begin()),
                 std::make_move_iterator(second.finalists.end()));
-            result.selection=select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes);
+            result.selection=select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes,ChainObjective::TailFirst);
             result.adaptive_retry_selected=result.selection.selected>=first_count;
             if(result.adaptive_retry_selected)result.tail_reserved_vertex_bytes=second.result.tail_reserved_vertex_bytes;
         }else result.status=second.result.status;

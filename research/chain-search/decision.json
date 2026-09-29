@@ -1,0 +1,340 @@
+{
+  "version": 1,
+  "algorithm": "v3",
+  "production_default": "incumbent",
+  "promoted": false,
+  "gates": {
+    "pilot": true,
+    "validation": true,
+    "time": true,
+    "independent_coverage": false,
+    "independent_appearance": false
+  },
+  "qualified_reduced_appearance_chains": [
+    "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652"
+  ],
+  "audits": [
+    {
+      "preset": "coverage",
+      "id": "ph_painted_wooden_shelves",
+      "complete": true,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 2,
+          "comparison": "adjacent",
+          "error_px": 2.046196236107954,
+          "nonfinite_error": false,
+          "limit": 2,
+          "area": 0.003586406983547957,
+          "area_limit": 0.5,
+          "views": 228,
+          "view": 227,
+          "area_view": 227,
+          "resource_limited": false
+        }
+      ]
+    },
+    {
+      "preset": "coverage",
+      "id": "ph_metal_stool_02",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": []
+    },
+    {
+      "preset": "coverage",
+      "id": "ph_grass_bermuda_01",
+      "complete": true,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 5,
+          "comparison": "source",
+          "error_px": 2.199157273122449,
+          "nonfinite_error": false,
+          "limit": 3,
+          "area": 0.51010101010101,
+          "area_limit": 0.5,
+          "views": 116,
+          "view": 93,
+          "area_view": 115,
+          "resource_limited": false
+        },
+        {
+          "level": 6,
+          "comparison": "source",
+          "error_px": 1.3298356000816054,
+          "nonfinite_error": false,
+          "limit": 3,
+          "area": 0.5009940357852882,
+          "area_limit": 0.5,
+          "views": 44,
+          "view": 15,
+          "area_view": 43,
+          "resource_limited": false
+        },
+        {
+          "level": 7,
+          "comparison": "source",
+          "error_px": 1.0266999914850867,
+          "nonfinite_error": false,
+          "limit": 3,
+          "area": 0.5059171597633136,
+          "area_limit": 0.5,
+          "views": 147,
+          "view": 122,
+          "area_view": 146,
+          "resource_limited": false
+        }
+      ]
+    },
+    {
+      "preset": "coverage",
+      "id": "ph_dead_quiver_trunk",
+      "complete": true,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 7,
+          "comparison": "source",
+          "error_px": 2.211812984008087,
+          "nonfinite_error": false,
+          "limit": 3,
+          "area": 0.515850144092219,
+          "area_limit": 0.5,
+          "views": 287,
+          "view": 179,
+          "area_view": 286,
+          "resource_limited": false
+        }
+      ]
+    },
+    {
+      "preset": "coverage",
+      "id": "ph_moon_rock_02",
+      "complete": false,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 1,
+          "comparison": "source",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 2,
+          "area": 0.0016429134782924588,
+          "area_limit": 0.5,
+          "views": 74,
+          "view": 61,
+          "area_view": 66,
+          "resource_limited": true
+        },
+        {
+          "level": 1,
+          "comparison": "adjacent",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 2,
+          "area": 0.0016429134782924588,
+          "area_limit": 0.5,
+          "views": 74,
+          "view": 61,
+          "area_view": 66,
+          "resource_limited": true
+        }
+      ]
+    },
+    {
+      "preset": "coverage",
+      "id": "ph_rock_face_02",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": []
+    },
+    {
+      "preset": "coverage",
+      "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": []
+    },
+    {
+      "preset": "coverage",
+      "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_painted_wooden_shelves",
+      "complete": true,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 7,
+          "comparison": "source",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 3,
+          "area": 0.00021519259737465033,
+          "area_limit": 0.5,
+          "views": 67,
+          "view": 66,
+          "area_view": 28,
+          "resource_limited": false
+        },
+        {
+          "level": 7,
+          "comparison": "adjacent",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 2,
+          "area": 0.00021519259737465033,
+          "area_limit": 0.5,
+          "views": 54,
+          "view": 53,
+          "area_view": 28,
+          "resource_limited": false
+        }
+      ]
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_metal_stool_02",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": true,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_grass_bermuda_01",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": true,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_dead_quiver_trunk",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": true,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_moon_rock_02",
+      "complete": true,
+      "passed": false,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": [
+        {
+          "level": 5,
+          "comparison": "source",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 3,
+          "area": 0.0005221932114882506,
+          "area_limit": 0.5,
+          "views": 45,
+          "view": 44,
+          "area_view": 34,
+          "resource_limited": false
+        },
+        {
+          "level": 5,
+          "comparison": "adjacent",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 2,
+          "area": 0.0005221932114882506,
+          "area_limit": 0.5,
+          "views": 45,
+          "view": 44,
+          "area_view": 34,
+          "resource_limited": false
+        },
+        {
+          "level": 7,
+          "comparison": "source",
+          "error_px": null,
+          "nonfinite_error": true,
+          "limit": 3,
+          "area": 0.00129291768424077,
+          "area_limit": 0.5,
+          "views": 340,
+          "view": 339,
+          "area_view": 162,
+          "resource_limited": false
+        }
+      ]
+    },
+    {
+      "preset": "appearance",
+      "id": "ph_rock_face_02",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": true,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": false,
+      "failures": []
+    },
+    {
+      "preset": "appearance",
+      "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+      "complete": true,
+      "passed": true,
+      "measured_levels": 7,
+      "expected_levels": 7,
+      "unchanged": true,
+      "failures": []
+    }
+  ]
+}

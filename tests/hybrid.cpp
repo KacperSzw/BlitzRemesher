@@ -15,10 +15,13 @@ int main(){try{
     for(uint16_t b:{0,200,500,1000}){auto c=select_chain(pool,b);CHECK(c.reference==0);auto bytes=pool[c.selected].storage.total();CHECK(bytes<=last);last=bytes;}
     pool.push_back(pool[1]);CHECK(select_chain(pool,500).selected==1);
     bool threw=false;try{select_chain({},0);}catch(const std::invalid_argument&){threw=true;}CHECK(threw);
-    CHECK(select_chain(pool,500,100).reference==1);
-    CHECK(select_chain(pool,500,0).selected==3);
+    CHECK(select_chain(pool,500,100).reference==2);
+    CHECK(select_chain(pool,500,100,ChainObjective::TailFirst).reference==1);
+    CHECK(select_chain(pool,500,0).selected==2);
+    CHECK(select_chain(pool,500,0,ChainObjective::TailFirst).selected==3);
     std::vector<ChainCost> tail_pool={{{100,20,20,20},{100,80,0}},{{100,60,60,4},{100,96,0}}};
-    CHECK(select_chain(tail_pool,0,96).reference==1);
+    CHECK(select_chain(tail_pool,0,96).reference==0);
+    CHECK(select_chain(tail_pool,0,96,ChainObjective::TailFirst).reference==1);
     CHECK(select_chain(tail_pool,0,80).reference==0);
     CHECK(select_chain(tail_pool,0).reference==0);
     threw=false;try{select_chain(std::span<const ChainCost>(pool.data(),2),0,0);}catch(const std::invalid_argument&){threw=true;}CHECK(threw);
@@ -53,7 +56,7 @@ int main(){try{
     rescue.triangle_overhead_bps=500;
     auto with_overhead=generate(m.view(),rescue);
     CHECK(with_overhead.adaptive_retry_attempted);
-    CHECK(with_overhead.selection.selected==select_chain(with_overhead.candidates,500,with_overhead.added_vertex_budget_bytes).selected);
+    CHECK(with_overhead.selection.selected==select_chain(with_overhead.candidates,500,with_overhead.added_vertex_budget_bytes,with_overhead.chain_objective).selected);
     rescue.triangle_overhead_bps=0;
     rescue.research.adaptive_targets=true;CHECK(!generate(m.view(),rescue).adaptive_retry_attempted);
     rescue.research.adaptive_targets=false;rescue.max_added_vertex_bytes_bps=0;
@@ -123,11 +126,21 @@ int main(){try{
     tail.max_added_vertex_bytes_bps=std::nullopt;calls=0;
     auto unbounded_tail=generate(torus.view(),tail,tail_proposer);
     CHECK(!unbounded_tail.added_vertex_budget_bytes&&storage_stats(unbounded_tail).added_vertex_bytes==48);
+    CHECK(unbounded_tail.chain_objective==ChainObjective::WholeChain);
     floor.research.output=OutputMode::Rebuild;floor.research.chain=ChainMode::Direct;floor.research.trace=true;
     auto preserving=generate(torus.view(),floor);
     CHECK(!preserving.added_vertex_budget_bytes);
     floor.research.topology_fallback=true;auto relaxed=generate(torus.view(),floor);
     CHECK(relaxed.topology_fallback_proposals==1);
+    // This closed torus stalls above the one-triangle rebuild request allowed
+    // by a three-vertex cap. Graph relaxation must consume the existing budget.
+    for(uint16_t budget:{3,7}) {
+        auto bounded=floor;bounded.candidate_budget=budget;bounded.max_added_vertex_bytes_bps=1875;
+        bounded.research.output.reset();bounded.research.chain=ChainMode::Hybrid;bounded.research.graph_passes=1;
+        auto limited=generate(torus.view(),bounded);
+        CHECK(limited.status==Status::Complete&&limited.topology_fallback_proposals>0);
+        CHECK(limited.candidate_evaluations-limited.search_progress[0].candidate_evaluations<=budget);
+    }
     CHECK(relaxed.candidate_evaluations==preserving.candidate_evaluations+relaxed.topology_fallback_proposals);
     CHECK(relaxed.proposals.size()==preserving.proposals.size()+relaxed.topology_fallback_proposals);
     CHECK(relaxed.lods.back().view(torus.view()).triangles()<preserving.lods.back().view(torus.view()).triangles());

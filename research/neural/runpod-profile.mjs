@@ -1,5 +1,5 @@
-// Full-GPU profiles, copied with the controller and source bundle. H100 is the
-// measured FP64-audit follow-up within the user's existing additional budget.
+// Full-GPU profiles, copied with the controller and source bundle. FP64 devices
+// are bounded follow-ups to the measured Blackwell audit workload.
 const blackwell={
   id:'blackwell',
   gpu:'NVIDIA RTX PRO 6000 Blackwell Server Edition',
@@ -17,7 +17,10 @@ export const profiles=Object.freeze({
     staged_rental_minutes:90,staged_experiment_minutes:50}),
   a100:Object.freeze({...blackwell,id:'a100',gpu:'NVIDIA A100 80GB PCIe',catalog_vram_gb:80,
     device_memory_mib:76000,compute_capability:'8.0',cuda_architecture:80,gpu_hourly_usd_cap:1.65,
-    staged_rental_minutes:150,staged_experiment_minutes:110})
+    staged_rental_minutes:150,staged_experiment_minutes:110}),
+  h200:Object.freeze({...blackwell,id:'h200',gpu:'NVIDIA H200',catalog_vram_gb:141,
+    device_memory_mib:130000,compute_capability:'9.0',cuda_architecture:90,gpu_hourly_usd_cap:4.60,
+    staged_rental_minutes:80,staged_experiment_minutes:40})
 });
 const selected=process.env.BLITZ_RUNPOD_PROFILE??'blackwell';
 if(!Object.hasOwn(profiles,selected))throw new Error('Unknown bounded RunPod profile');

@@ -20,6 +20,12 @@ rented. See the follow-up section in ACCELERATION.md. The A100 reservation plus
 the completed attempt is at most $5.91458 of the new $8 grant. Local and new
 remote optimizer steps remain zero at this commit.
 
+A100 inventory disappeared before creation, including six bounded availability
+retries. The prepared A100 directory has **no rental**. H200 with persistent
+storage was quoted in AP-JP-1 at $4.59/hour; its new 80-minute maximum profile
+keeps the completed RTX attempt, retry reservation and reserve below $7.912 of
+the additional $8. See ACCELERATION.md for the exact launch command.
+
 The following records describe the preceding evaluation milestone and its old
 budget, for context:
 

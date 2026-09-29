@@ -122,3 +122,18 @@ All algorithm, training and audit gates remain the same.
 BLITZ_RUNPOD_PROFILE=a100 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-staged-a100-01
 BLITZ_RUNPOD_PROFILE=a100 BLITZ_RUNPOD_DATA_CENTER=CA-MTL-3 node research/neural/runpod.mjs launch runs/neural/runpod-action-staged-a100-01
 ```
+
+A100 availability disappeared at launch. Six bounded quote retries created no
+resources and incurred no rental charge. The next available FP64 device with
+standard storage was **H200 in AP-JP-1 at $4.59/hour**. NVIDIA lists native FP64
+at 34 TFLOPS for [H200 SXM](https://www.nvidia.com/en-us/data-center/h200/).
+The `h200` profile caps the GPU rate at $4.60/hour and the rental at **80 minutes**
+(30 setup, 40 experiment, ten collection). Its reservation, the completed RTX
+attempt, storage allowance and $1 reserve total at most **$7.91125 of the new
+$8 grant**. No A100/H100 compute was created. This availability-driven fallback
+keeps all audit and optimizer health gates.
+
+```sh
+BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-staged-h200-01
+BLITZ_RUNPOD_PROFILE=h200 BLITZ_RUNPOD_DATA_CENTER=AP-JP-1 node research/neural/runpod.mjs launch runs/neural/runpod-action-staged-h200-01
+```

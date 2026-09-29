@@ -2,13 +2,15 @@
 #include "neural_action.hpp"
 #include "chain_hooks.hpp"
 #include <chrono>
+#include <random>
 namespace blitz {
 struct NeuralModel::Impl {neural::WeightsData weights;NeuralOptions options;std::string hash;};
 NeuralModel::NeuralModel(const char* file,const NeuralOptions& options) {
-    if(!file||!file[0]||options.device<0||options.memory_mib<128||options.memory_mib>65536||!options.action_trials||options.action_trials>65536)throw std::invalid_argument("invalid neural model options");
+    if(!file||!file[0]||options.device<0||options.memory_mib<128||options.memory_mib>65536||!options.action_trials||options.action_trials>65536||options.ranking>NeuralRanking::CurrentPlane)throw std::invalid_argument("invalid neural model options");
     if(!neural_available(options.device))throw NeuralUnavailable("neural mode requires an available CUDA device and a BLITZ_CUDA build");
 #ifdef BLITZ_CUDA
     auto value=std::make_unique<Impl>();value->options=options;value->weights=neural::load_weights(file,&value->hash);impl_=std::move(value);
+    if(impl_->weights.architecture!=neural::action_schema&&options.ranking!=NeuralRanking::Learned)throw std::invalid_argument("action ranking controls require architecture 2");
 #endif
 }
 NeuralModel::~NeuralModel()=default;
@@ -64,11 +66,17 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
         bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
         auto m=evaluate_cuda(a,b,bounds,bounded,options,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
+    std::mt19937 ranking_random(options.ranking_seed);
     if(action_network)hooks.propose_guarded=[&](MeshView input,MeshView fixed_source,MeshView previous,const Bounds& bounds,const ReduceSettings& rs,const EvalSettings& source_eval,const EvalSettings& adjacent_eval){
         auto begin=Clock::now();auto nested_before=counters.inference_ns+counters.gpu_audit_ns;neural::ActionStats stats;
-        auto rank=[&](const neural::ActionState&,std::span<const neural::ActionRecord> actions){auto t=Clock::now();std::vector<float> x;x.reserve(actions.size()*neural::action_features);
-            for(auto& a:actions)x.insert(x.end(),a.x.begin(),a.x.end());auto values=action_network->predict(x);std::vector<float> scores(actions.size());
-            for(size_t i=0;i<scores.size();++i)scores[i]=values[i*neural::action_outputs];counters.inference_ns+=nanos(t);return scores;};
+        auto rank=[&](const neural::ActionState& state,std::span<const neural::ActionRecord> actions){auto t=Clock::now();std::vector<float> scores(actions.size());
+            if(options.ranking==NeuralRanking::Learned||options.ranking==NeuralRanking::Shuffled){std::vector<float> x;x.reserve(actions.size()*neural::action_features);
+                for(auto& a:actions)x.insert(x.end(),a.x.begin(),a.x.end());auto values=action_network->predict(x);
+                for(size_t i=0;i<scores.size();++i)scores[i]=values[i*neural::action_outputs];
+                if(options.ranking==NeuralRanking::Shuffled)std::shuffle(scores.begin(),scores.end(),ranking_random);
+            }else if(options.ranking==NeuralRanking::ShortestEdge){for(size_t i=0;i<scores.size();++i)scores[i]=-actions[i].x[59];}
+            else if(options.ranking==NeuralRanking::CurrentPlane){for(size_t i=0;i<scores.size();++i)scores[i]=float(-state.teacher_cost(actions[i].action));}
+            counters.inference_ns+=nanos(t);return scores;};
         auto gate=[&](MeshView candidate){auto a=hooks.evaluate(fixed_source,candidate,bounds,source_eval);if(!a.complete||!a.passed)return false;
             auto b=hooks.evaluate(previous,candidate,bounds,adjacent_eval);return b.complete&&b.passed;};
         auto candidate=neural::execute_actions(input,neural::condition(source_eval,adjacent_eval.limit,double(rs.target_triangles)/input.triangles()),rs.target_triangles,options.action_trials,rank,gate,&stats,s.cancelled);

@@ -96,7 +96,14 @@ void cuda_contracts() {
     neural::save_weights(path,action_weights);auto action_restored=neural::load_weights(path);require(action_restored.architecture==neural::action_schema&&action_restored.values==action_weights.values,"action architecture roundtrip");
     options.action_trials=2;NeuralModel action_model(path.c_str(),options);config.cancelled={};NeuralStats action_stats;
     auto action_result=generate_neural(m.view(),config,action_model,&action_stats);require(action_result.lods.size()==3&&action_stats.action_ranked>0&&action_stats.action_trials>0,"v2 inference not wired into chain");
-    for(auto& l:action_result.lods)require(l.adjacent.passed&&l.source_error.passed,"v2 chain bypassed audits");std::filesystem::remove(path);
+    for(auto& l:action_result.lods)require(l.adjacent.passed&&l.source_error.passed,"v2 chain bypassed audits");
+    for(auto control:{NeuralRanking::Constant,NeuralRanking::Shuffled,NeuralRanking::ShortestEdge,NeuralRanking::CurrentPlane}){
+        options.ranking=control;options.ranking_seed=83;NeuralModel controlled(path.c_str(),options);NeuralStats a,b;
+        auto first=generate_neural(m.view(),config,controlled,&a),second=generate_neural(m.view(),config,controlled,&b);
+        require(a.action_trials<=a.decoded*options.action_trials&&a.action_trials==b.action_trials,"ranking control changed or exceeded deterministic work budget");
+        require(same_mesh_data(first.lods.back().view(m.view()),second.lods.back().view(m.view())),"ranking control is nondeterministic");
+        for(auto& l:first.lods)require(l.adjacent.passed&&l.source_error.passed,"ranking control bypassed audits");}
+    std::filesystem::remove(path);
     auto single=overlap_cuda(m.view(),b,24,{1,0,0xB1172026},options);auto twice=m;twice.indices.insert(twice.indices.end(),m.indices.begin(),m.indices.end());auto doubled=overlap_cuda(twice.view(),b,24,{1,0,0xB1172026},options);require(std::abs(doubled-2*single)<1e-8,"overdraw counts do not scale");
     for(double screen:{16.,25.}){auto costs=render_cost(twice.view(),b,ViewSet{1,0,0xB1172026},screen);auto cuda=overlap_cuda(twice.view(),b,screen,{1,0,0xB1172026},options);require(costs.covered_pixels&&std::abs(cuda-double(costs.covered_samples)/costs.covered_pixels)<1e-8,"overdraw differs from CPU proxy");}
     EvalSettings stopped;stopped.cancelled=[]{return true;};auto cancelled=evaluate_cuda(m.view(),altered.view(),b,stopped,options);require(!cancelled.complete&&!cancelled.passed,"CUDA cancellation ignored");

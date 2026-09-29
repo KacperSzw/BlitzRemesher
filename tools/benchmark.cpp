@@ -131,6 +131,7 @@ int benchmark_main(int argc,char** argv) {
     for(int i=3;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("missing benchmark option value");std::string k=argv[i];
         if(k=="--split")split=argv[i+1];else if(k=="--limit")limit=std::stoull(argv[i+1]);else if(k=="--minutes")minutes=std::stod(argv[i+1]);
         else if(k=="--neural-model")neural_file=argv[i+1];else if(k=="--device")neural_options.device=std::stoi(argv[i+1]);
+        else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");
     auto corpus=read(manifest);
@@ -144,10 +145,10 @@ int benchmark_main(int argc,char** argv) {
     metadata["camera_sha256"]=digest(normalized["search_views"].dump()+normalized["audit_views"].dump());
     fs::path baseline;
     std::unique_ptr<NeuralModel> model;if(!neural_file.empty()){if(method!="native")throw std::invalid_argument("neural model cannot be combined with an external baseline");model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);method="neural";metadata["model_sha256"]=model->sha256();metadata["cuda_device"]=neural_options.device;metadata["backend"]="cuda+reference-confirmation";}
-    metadata["method"]=method;
-    if(model)metadata["candidate_refinement"]="original sampling sequence bounded by 64000000 samples; uncertain bounds reject; unchanged CPU confirmation";
+    if(model&&neural_options.ranking!=NeuralRanking::Learned)method="neural-control-"+std::string(ranking_name(neural_options.ranking));metadata["method"]=method;
+    if(model){metadata["candidate_refinement"]="original sampling sequence bounded by 64000000 samples; uncertain bounds reject; unchanged CPU confirmation";metadata["neural_options"]=neural_json(neural_options);}
     metadata["output_hash_scope"]="output_sha256: owned positions and indices; attributes_sha256: all output streams, including shared source data";
-    if(method!="native"&&method!="neural") {
+    if(!model&&method!="native") {
         if(method!="meshopt"&&method!="fastquadric"&&method!="cgal-lt"&&method!="cgal-qem"&&method!="cgal-probabilistic")throw std::invalid_argument("unknown baseline");
         baseline=fs::absolute(baseline_dir/("blitz-baseline-"+(method.starts_with("cgal-")?std::string("cgal"):method)));
         metadata["baseline_sha256"]=file_hash(baseline);
@@ -185,7 +186,7 @@ int benchmark_main(int argc,char** argv) {
                 row["load_seconds"]=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
                 row["canonical_attributes_sha256"]=attribute_hash(mesh.view());
                 Proposer proposer;
-                if(method!="native"&&method!="neural") {
+                if(!model&&method!="native") {
                     if(settings.profile!=Profile::Coverage)throw std::runtime_error("external adapters expose geometry-only coverage capabilities");
                     if(settings.research.output==OutputMode::Reuse&&method!="meshopt")throw std::runtime_error("baseline cannot preserve source vertices");
                     fs::create_directories(output/".scratch");auto scratch=output/".scratch";

@@ -4,11 +4,14 @@
 #include <stdexcept>
 namespace blitz {
 class NeuralUnavailable : public std::runtime_error { using std::runtime_error::runtime_error; };
+enum class NeuralRanking:uint8_t { Learned,Constant,Shuffled,ShortestEdge,CurrentPlane };
 struct NeuralOptions {
     int32_t device{};
     uint32_t memory_mib{6144}; // Includes library-owned CUDA scratch; minimum 128.
     bool overdraw_tiebreak{true};
     uint32_t action_trials{64}; // Per v2 proposal; additional measured visual trials.
+    NeuralRanking ranking{NeuralRanking::Learned}; // Explicit experimental controls only.
+    uint32_t ranking_seed{0xB1172026};
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {

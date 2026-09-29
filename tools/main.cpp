@@ -24,13 +24,14 @@ int main(int argc,char** argv) {
         for(int i=start;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("option needs a value");std::string k=argv[i];
             if(k=="--config"||k=="--legacy-config"){nlohmann::json j;std::ifstream f(argv[i+1]);f>>j;s=settings_json(j,k=="--legacy-config");}
             else if(k=="--neural-model")neural_file=argv[i+1];else if(k=="--device")neural_options.device=std::stoi(argv[i+1]);else if(k=="--gpu-memory-mib")neural_options.memory_mib=std::stoul(argv[i+1]);
+            else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
             else if(k=="--out")out=argv[i+1];else if(k=="--pixels")pixels=std::stod(argv[i+1]);else if(k=="--limit")limit=std::stod(argv[i+1]);else throw std::invalid_argument("unknown option "+k);}
         if(!neural_file.empty())s.research.chain=ChainMode::Direct;
         s.cancelled=[]{return stopped!=0;};auto m=load_mesh(argv[2]);
         if(command=="simplify") {
             PerformanceStats work;s.performance=&work;
             auto begin=std::chrono::steady_clock::now();std::unique_ptr<NeuralModel> model;if(!neural_file.empty())model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);NeuralStats neural_stats;auto r=model?generate_neural(m.view(),s,*model,&neural_stats):generate(m.view(),s);auto generated=std::chrono::steady_clock::now();save_chain(r,out);auto exported=std::chrono::steady_clock::now();
-            auto j=result_json(r);if(model){j["method"]="neural";j["model_sha256"]=model->sha256();j["neural"]=neural_json(neural_stats);}j["seconds"]=std::chrono::duration<double>(exported-begin).count();j["generation_seconds"]=std::chrono::duration<double>(generated-begin).count();j["export_seconds"]=std::chrono::duration<double>(exported-generated).count();j["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};j["output"]=out.string();std::cout<<j.dump(2)<<'\n';return r.status==Status::Complete?0:2;
+            auto j=result_json(r);if(model){j["method"]=neural_options.ranking==NeuralRanking::Learned?"neural":"neural-control-"+std::string(ranking_name(neural_options.ranking));j["model_sha256"]=model->sha256();j["neural_options"]=neural_json(neural_options);j["neural"]=neural_json(neural_stats);}j["seconds"]=std::chrono::duration<double>(exported-begin).count();j["generation_seconds"]=std::chrono::duration<double>(generated-begin).count();j["export_seconds"]=std::chrono::duration<double>(exported-generated).count();j["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};j["output"]=out.string();std::cout<<j.dump(2)<<'\n';return r.status==Status::Complete?0:2;
         }
         if(command=="evaluate") {
             if(argc<4)throw std::invalid_argument("evaluate requires two inputs");auto candidate=load_mesh(argv[3]);

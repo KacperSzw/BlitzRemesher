@@ -85,3 +85,40 @@ Prophet research was checked against primary sources:
 * [Nsight Systems](https://docs.nvidia.com/nsight-systems/UserGuide/#cuda-trace): kernel/API/transfer tracing; no permanent timing instrumentation needed here.
 * [PBA+ author notes](https://www.comp.nus.edu.sg/~tants/pba.html): column-oriented coalescing and transposes. A full PBA replacement was deferred; memory-layout changes plus a binary first pass were sufficient for a measured pilot improvement.
 * [Felzenszwalb/Huttenlocher EDT](https://cs.brown.edu/people/pfelzens/dt/index.html): separable lower-envelope distance transform. The general second pass retains its existing arithmetic and float-distance output.
+
+## Blackwell outcome and FP64 follow-up
+
+`runpod-action-staged-01` used revision `9159228`. All 19 remote CTests passed.
+Shelves finished in **81.926 s** versus **144.485 s** previously (43.3% less
+time), with identical output/attribute hashes and complete per-LOD measurements.
+Moon rock still exceeded the shared ten-minute diagnostic cutoff: 518.043 s
+on that asset, including 516.535 s in GPU audits, 299 action trials and 206
+legal collapses. It remains cancelled, with no SCORE. Training did not start.
+The archive was checksummed and collected; compute and storage were deleted.
+See [raw cloud evidence](evidence/audit-acceleration-v3/cloud-blackwell/).
+
+A CUDA device query measured a **64:1 FP32/FP64 throughput ratio** on the rented
+RTX PRO 6000, with 188 multiprocessors. Its high busy-time utilization does not
+establish high utilization of the whole processor. The profiler and arithmetic
+mix suggest an FP64-capable device is worth testing; this is a hardware-fit
+hypothesis, not a measured speedup guarantee.
+
+[NVIDIA specifies](https://www.nvidia.com/en-us/data-center/h100/) native FP64
+at 30 TFLOPS for H100 NVL and 34 for SXM. The live NVL quote was $3.19/hour,
+but no quoted H100 location had the required standard persistent storage.
+No H100 was rented. A100 80GB PCIe was available with that storage in CA-MTL-3
+at **$1.59/hour**. [NVIDIA's A100 specification](https://www.nvidia.com/en-us/data-center/a100/)
+lists **9.7 TFLOPS native FP64**, distinct from its FP64 Tensor Core figure.
+
+The `a100` profile uses CUDA architecture 80 and verifies the full device,
+driver, memory and hourly rate. Profile selection propagates to the durable
+controller, watchdog and remote build. The ledger charges each rental using
+its own rate cap. The new 150-minute reservation is $4.15 plus $1 reserve;
+including the completed Blackwell attempt's conservative $0.76458 estimate,
+the maximum additional reservation is **$5.91458 of the authorized $8**.
+All algorithm, training and audit gates remain the same.
+
+```sh
+BLITZ_RUNPOD_PROFILE=a100 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-staged-a100-01
+BLITZ_RUNPOD_PROFILE=a100 BLITZ_RUNPOD_DATA_CENTER=CA-MTL-3 node research/neural/runpod.mjs launch runs/neural/runpod-action-staged-a100-01
+```

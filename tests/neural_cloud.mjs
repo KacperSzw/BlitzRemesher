@@ -5,11 +5,13 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue,rentalDeadlines,retrySsh} from '../research/neural/runpod-api.mjs';
-import {deployment,verifyDevice} from '../research/neural/runpod-profile.mjs';
+import {Api,Rental,IMAGE,chooseQuote as quoteFor,podRequest,verifyPod as verifyFor,terminationDue,rentalDeadlines,retrySsh} from '../research/neural/runpod-api.mjs';
+import {profiles,verifyDevice} from '../research/neural/runpod-profile.mjs';
+const deployment={...profiles.blackwell,gpu_hourly_usd_cap:2.5,host_ram_gb:32,vcpus:16},GPU=deployment.gpu;
+const chooseQuote=(gpus,centers,center)=>quoteFor(gpus,centers,center,deployment),verifyPod=pod=>verifyFor(pod,deployment);
 const gpu={id:GPU,memory:96,secure:true,price:{secure:2.09},dataCenters:[{id:'EU-1',availability:'HIGH'}]};
 const centers=[{id:'EU-1',networkVolumeTypes:['STANDARD']}];
-const initial=()=>({name:'test-unique',quote:chooseQuote([gpu],centers),setup_deadline_ms:1800000,deadline_ms:7200000});
+const initial=()=>({name:'test-unique',deployment,quote:chooseQuote([gpu],centers),setup_deadline_ms:1800000,deadline_ms:7200000});
 test('repeatable SSH calls recover transport failures, preserve command failures and stop retrying',async()=>{
   let calls=0,waits=0;
   const network=Object.assign(new Error('connection timeout'),{ssh_exit:255});
@@ -109,7 +111,18 @@ test('remote hardware validation requires a full device and a valid compatible d
     'Fixture GPU, 12.0, 98000, 575.51.02','Fixture GPU, 12.0, 98000, 580.0.0\nFixture GPU, 12.0, 98000, 580.0.0'])
     assert.throws(()=>verifyDevice(row,profile));
   assert.equal(deployment.gpu,'NVIDIA RTX PRO 6000 Blackwell Server Edition');
-  assert.equal(verifyDevice(`${deployment.gpu}, 12.0, 97280, 580.0.0`).compute_capability,'12.0');
+  assert.equal(verifyDevice(`${deployment.gpu}, 12.0, 97280, 580.0.0`,deployment).compute_capability,'12.0');
+});
+test('each selected profile binds quote, Pod allocation, native architecture and rate cap',()=>{
+  for(const profile of Object.values(profiles)){
+    const entry={...gpu,id:profile.gpu,memory:profile.catalog_vram_gb,price:{secure:profile.gpu_hourly_usd_cap-.05}};
+    const quote=quoteFor([entry],centers,undefined,profile),state={...initial(),deployment:profile,quote};
+    const body=podRequest(state,'public');assert.equal(body.gpu.id,profile.gpu);
+    assert.equal(quote.gpu,profile.gpu);assert.equal(Number(profile.compute_capability)*10,profile.cuda_architecture);
+    assert.throws(()=>quoteFor([{...entry,price:{secure:profile.gpu_hourly_usd_cap+.01}}],centers,undefined,profile));
+    verifyDevice(`${profile.gpu}, ${profile.compute_capability}, ${profile.device_memory_mib+1000}, 580.0.0`,profile);
+    verifyFor({cloud:'SECURE',cost:profile.gpu_hourly_usd_cap,gpu:{id:profile.gpu,count:1,memory:profile.host_ram_gb,vcpuCount:profile.vcpus}},profile);
+  }
 });
 test('lost create response is reconciled after restart without a second rental or deadline reset',async()=>{
   const api=new MockApi();api.lost=true;let durable;

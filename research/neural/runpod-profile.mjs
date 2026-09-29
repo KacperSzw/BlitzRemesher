@@ -1,12 +1,27 @@
-// One approved, full-GPU deployment; copied with the controller and source bundle.
-export const deployment=Object.freeze({
+// Full-GPU profiles, copied with the controller and source bundle. H100 is the
+// measured FP64-audit follow-up within the user's existing additional budget.
+const blackwell={
+  id:'blackwell',
   gpu:'NVIDIA RTX PRO 6000 Blackwell Server Edition',
   catalog_vram_gb:96,device_memory_mib:90000,compute_capability:'12.0',cuda_architecture:120,
   minimum_driver:[575,51,3],minimum_cuda:'12.9',
   host_ram_gb:32,vcpus:16,gpu_hourly_usd_cap:2.50,
   container_disk_gb:50,network_volume_gb:20,
-  setup_minutes:30,training_minutes:120,collection_minutes:10
+  setup_minutes:30,training_minutes:120,collection_minutes:10,
+  staged_rental_minutes:150,staged_experiment_minutes:110
+};
+export const profiles=Object.freeze({
+  blackwell:Object.freeze(blackwell),
+  h100:Object.freeze({...blackwell,id:'h100',gpu:'NVIDIA H100 NVL',catalog_vram_gb:94,
+    compute_capability:'9.0',cuda_architecture:90,gpu_hourly_usd_cap:3.25,
+    staged_rental_minutes:90,staged_experiment_minutes:50}),
+  a100:Object.freeze({...blackwell,id:'a100',gpu:'NVIDIA A100 80GB PCIe',catalog_vram_gb:80,
+    device_memory_mib:76000,compute_capability:'8.0',cuda_architecture:80,gpu_hourly_usd_cap:1.65,
+    staged_rental_minutes:150,staged_experiment_minutes:110})
 });
+const selected=process.env.BLITZ_RUNPOD_PROFILE??'blackwell';
+if(!Object.hasOwn(profiles,selected))throw new Error('Unknown bounded RunPod profile');
+export const deployment=profiles[selected];
 
 export function verifyDevice(csv,profile=deployment){
   const rows=csv.trim().split('\n');

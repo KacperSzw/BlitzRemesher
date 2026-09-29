@@ -55,28 +55,29 @@ export class Api {
     return chooseQuote(catalog.gpus,centers.dataCenters,dataCenter);
   }
 }
-export function chooseQuote(gpus,centers,dataCenter){
-  const gpu=gpus.find(g=>g.id===GPU);
-  if(!gpu?.secure||!(gpu.memory>=deployment.catalog_vram_gb)||!(gpu.price?.secure>0&&gpu.price.secure<=deployment.gpu_hourly_usd_cap))
-    throw new Error(`Secure ${GPU} unavailable within $${deployment.gpu_hourly_usd_cap}/GPU-hour cap`);
+export function chooseQuote(gpus,centers,dataCenter,profile=deployment){
+  const gpu=gpus.find(g=>g.id===profile.gpu);
+  if(!gpu?.secure||!(gpu.memory>=profile.catalog_vram_gb)||!(gpu.price?.secure>0&&gpu.price.secure<=profile.gpu_hourly_usd_cap))
+    throw new Error(`Secure ${profile.gpu} unavailable within $${profile.gpu_hourly_usd_cap}/GPU-hour cap`);
   const levels={HIGH:3,MEDIUM:2,LOW:1};
   const available=(gpu.dataCenters??[]).filter(d=>(!dataCenter||d.id===dataCenter)&&levels[d.availability]&&centers.some(c=>c.id===d.id&&c.networkVolumeTypes.includes('STANDARD')));
   available.sort((a,b)=>levels[b.availability]-levels[a.availability]||a.id.localeCompare(b.id));
-  if(!available.length)throw new Error(`No Secure ${GPU} location with standard network storage is available`);
+  if(!available.length)throw new Error(`No Secure ${profile.gpu} location with standard network storage is available`);
   return {gpu:gpu.id,gpu_hourly_usd:gpu.price.secure,data_center:available[0].id,quoted_at:new Date().toISOString()};
 }
 export function podRequest(state,publicKey){
-  return {name:state.name,cloud:'SECURE',image:IMAGE,disk:deployment.container_disk_gb,
-    gpu:{id:GPU,count:1,minRamPerGpu:deployment.host_ram_gb,minVcpuCountPerGpu:deployment.vcpus,minCudaVersion:deployment.minimum_cuda},
+  const profile=state.deployment??deployment;
+  return {name:state.name,cloud:'SECURE',image:IMAGE,disk:profile.container_disk_gb,
+    gpu:{id:profile.gpu,count:1,minRamPerGpu:profile.host_ram_gb,minVcpuCountPerGpu:profile.vcpus,minCudaVersion:profile.minimum_cuda},
     dataCenterIds:[state.quote.data_center],mounts:{network:[{volumeId:state.volume_id,path:'/workspace'}]},
     ports:['22/tcp'],startSsh:true,startJupyter:false,env:{PUBLIC_KEY:publicKey.trim()}};
 }
-export function verifyPod(pod){
+export function verifyPod(pod,profile=deployment){
   // Pod gpu.memory is allocated HOST RAM; catalog memory and nvidia-smi verify VRAM.
-  if(pod.cloud!=='SECURE'||pod.gpu?.id!==GPU||pod.gpu.count!==1||!(pod.gpu.memory>=deployment.host_ram_gb)||!(pod.gpu.vcpuCount>=deployment.vcpus))
+  if(pod.cloud!=='SECURE'||pod.gpu?.id!==profile.gpu||pod.gpu.count!==1||!(pod.gpu.memory>=profile.host_ram_gb)||!(pod.gpu.vcpuCount>=profile.vcpus))
     throw new Error('Allocated Pod does not match approved GPU/CPU/RAM requirements');
   // `cost` includes the container disk. Allow its documented $0.10/GB-month separately.
-  if(!Number.isFinite(pod.cost)||pod.cost<=0||pod.cost>deployment.gpu_hourly_usd_cap+deployment.container_disk_gb*.10/(30*24)+.00001)
+  if(!Number.isFinite(pod.cost)||pod.cost<=0||pod.cost>profile.gpu_hourly_usd_cap+profile.container_disk_gb*.10/(30*24)+.00001)
     throw new Error('Allocated Pod exceeds approved hourly compute/storage rate');
 }
 export function terminationDue(state,now,cancelled=false){
@@ -104,7 +105,7 @@ export class Rental {
     if(this.now()>=s.setup_deadline_ms)throw new Error('Setup deadline reached');
     this.commit({volume_requested:true});
     try{
-      const v=await this.api.request('POST','/network-volumes',{name:s.name,size:deployment.network_volume_gb,dataCenter:s.quote.data_center,type:'STANDARD'});
+      const v=await this.api.request('POST','/network-volumes',{name:s.name,size:(s.deployment??deployment).network_volume_gb,dataCenter:s.quote.data_center,type:'STANDARD'});
       this.commit({volume_id:v.id});
     }catch(error){
       if([400,401,403,404,409,422,429].includes(error.status))this.commit({volume_rejected:true});

@@ -68,7 +68,7 @@ async function prepare(){
 function unitString(s){return '"'+s.replaceAll('\\','\\\\').replaceAll('"','\\"').replaceAll('%','%%')+'"';}
 function installService(name,mode){
   const units=path.join(os.homedir(),'.config/systemd/user');fs.mkdirSync(units,{recursive:true});
-  fs.writeFileSync(units+'/'+name+'.service',`[Unit]\nDescription=Bounded Blitz GPU ${mode}\n[Service]\nType=simple\nExecStart=${[process.execPath,dir+'/control/runpod.mjs',mode,dir].map(unitString).join(' ')}\nEnvironment=${unitString('PATH='+process.env.PATH)}\nRestart=on-failure\nRestartSec=10\nTimeoutStopSec=20\n[Install]\nWantedBy=default.target\n`);
+  fs.writeFileSync(units+'/'+name+'.service',`[Unit]\nDescription=Bounded Blitz GPU ${mode}\n[Service]\nType=simple\nExecStart=${[process.execPath,dir+'/control/runpod.mjs',mode,dir].map(unitString).join(' ')}\nEnvironment=${unitString('PATH='+process.env.PATH)}\nEnvironment=${unitString('BLITZ_RUNPOD_PROFILE='+deployment.id)}\nRestart=on-failure\nRestartSec=10\nTimeoutStopSec=20\n[Install]\nWantedBy=default.target\n`);
 }
 async function launch(){
   if(fs.existsSync(statePath))throw new Error('This rental already has durable state; services resume it without creating another Pod');
@@ -82,14 +82,14 @@ async function launch(){
     if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
     const ledger=fs.readdirSync(root+'/runs/neural',{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>root+'/runs/neural/'+e.name+'/rental.json').filter(f=>fs.existsSync(f)).map(read);
     const continuation=prepared.experiment==='action-v2-staged';
-    budget=(continuation?continuationBudget:actionBudget)({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:continuation?150:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
+    budget=(continuation?continuationBudget:actionBudget)({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:continuation?deployment.staged_rental_minutes:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
   }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
   const requested=process.argv[4]===undefined?undefined:Number(process.argv[4]);
   const deadlines=rentalDeadlines(started,budget?Math.min(requested??Infinity,started+budget.minutes*60000):requested);
-  if(budget)deadlines.training_minutes=prepared.experiment==='action-v2-staged'?110:prepared.experiment==='action-v2'?20:50;
+  if(budget)deadlines.training_minutes=prepared.experiment==='action-v2-staged'?deployment.staged_experiment_minutes:prepared.experiment==='action-v2'?20:50;
   write(statePath,{name,quote,deployment,experiment:prepared.experiment,budget,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);
@@ -167,7 +167,7 @@ async function control(){
     }
     rental.commit({phase:'start-job'});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
-    await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' '+sh(s.experiment??'vertex-v1')+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
+    await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup env BLITZ_RUNPOD_PROFILE='+sh(deployment.id)+' bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' '+sh(s.experiment??'vertex-v1')+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
     while(Date.now()<s.deadline_ms-30000){
       if(fs.existsSync(dir+'/stop-requested'))throw new Error('Cancellation requested');
       const phase=await retrySsh(()=>remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi'));

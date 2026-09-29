@@ -40,6 +40,10 @@ test('additional authorization counts earlier rentals and retries without adding
   assert.throws(()=>continuationBudget({billed:base+7,rate:2,additionalAccrued:accrued}),/cap/);
   assert.throws(()=>continuationBudget({billed:4,rate:2,additionalAccrued:accrued+7}),/cap/);
   assert.equal(actionAccrued([{name:'new',experiment:'action-v2-staged',started_at:0,terminated_at:1800000,compute_terminated:true}],0,2),1);
+  const rental={experiment:'action-v2-staged',started_at:0,terminated_at:3600000,compute_terminated:true};
+  const mixed=actionAccrued([{...rental,name:'one',deployment:{gpu_hourly_usd_cap:2}},{...rental,name:'two',deployment:{gpu_hourly_usd_cap:3}}]);
+  assert.equal(mixed,5.02);
+  assert.throws(()=>actionAccrued([{...rental,name:'bad',deployment:{gpu_hourly_usd_cap:NaN}}]),/rate/);
 });
 test('action health rejects unverified updates and unchanged or nonfinite parameters',()=>{
   const health={complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9};

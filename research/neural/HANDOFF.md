@@ -11,7 +11,14 @@ and appearance work is faster on the bounded smoke; label preparation reuses
 its GPU audit workspace. A new `prepare-action-staged` mode checks full-settings
 diagnostics before refreshing training labels and training/auditing two short
 checkpoints. The hard rental reservation is at most $7.275 of this new grant.
-No new remote rental has started at this commit; local optimizer steps are zero.
+The first staged rental has finished without training: shelves was 43.3% faster
+with exact full-settings output parity, but moon rock exceeded ten minutes.
+Its evidence was collected and both resources deleted. The measured GPU
+FP32/FP64 ratio is 64:1; the new A100 80GB PCIe profile tests a better fit for
+the strict-FP64 audits. H100 quotes lacked persistent storage and were not
+rented. See the follow-up section in ACCELERATION.md. The A100 reservation plus
+the completed attempt is at most $5.91458 of the new $8 grant. Local and new
+remote optimizer steps remain zero at this commit.
 
 The following records describe the preceding evaluation milestone and its old
 budget, for context:

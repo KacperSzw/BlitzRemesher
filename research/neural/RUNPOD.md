@@ -34,6 +34,8 @@ the curriculum, decoder, quality limits, or release status.
    results archive and verify SHA-256. Delete the Pod, confirm termination, then
    delete the volume only after verified collection. Failure to collect retains
    the volume and its ongoing storage charge for recovery.
+   A definitive rejected Pod request also deletes its newly created, unattached
+   empty volume; an ambiguous create response requires reconciliation.
 
 The two-hour clock starts immediately before provisioning (slightly earlier than
 Pod creation). Image pull, upload, build, calibration, audits and downloads all

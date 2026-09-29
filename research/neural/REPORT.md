@@ -253,10 +253,11 @@ Validation (no local training):
 
 - CUDA build and CTest: **13/13 passed**.
 - Portable ASan/UBSan CTest: **8/8 passed**.
-- Node runner/cloud contracts: **14/14 passed**; cover scratch arguments,
+- Node runner/cloud contracts: **16/16 passed**; cover scratch arguments,
   calibration correctness filtering, sustained telemetry, price/hardware caps,
   ambiguous create recovery without duplicate allocation, setup/hard deadlines,
-  failed termination, volume retention, and paginated REST responses.
+  failed termination, volume retention, rejected-provisioning storage cleanup,
+  and paginated REST responses.
 - Nontraining ordered-prefetch comparison: 12 batches starting at step 7 with
   each of 1, 2 and 4 workers; all tensors and parity patches match serial
   preparation across multiple ring-buffer wraparounds.

@@ -88,6 +88,31 @@ test('independent watchdog enforces setup and hard deadlines regardless of contr
   assert.equal(terminationDue(state,7200000),true);
   assert.equal(terminationDue(state,100,true),true);
 });
+test('a definitive provisioning rejection cleans up the new empty volume',async()=>{
+  const api=new MockApi(),request=api.request.bind(api);
+  api.request=async(method,uri,body)=>{
+    if(method==='POST'&&uri==='/pods'){const error=new Error('Insufficient balance');error.status=400;throw error;}
+    return request(method,uri,body);
+  };
+  const rental=new Rental(api,initial(),()=>{},()=>100);
+  await rental.volume();await assert.rejects(rental.pod('public'),/balance/);
+  assert.equal(rental.state.pod_rejected,true);
+  await rental.terminate();await rental.cleanupVolume(false);
+  assert.equal(api.volumes.length,0);assert.equal(rental.state.compute_terminated,true);
+});
+test('lost volume response is reconciled and cleaned without another volume create',async()=>{
+  const api=new MockApi(),request=api.request.bind(api);
+  api.request=async(method,uri,body)=>{
+    const result=await request(method,uri,body);
+    if(method==='POST'&&uri==='/network-volumes')throw new Error('lost volume response');
+    return result;
+  };
+  const rental=new Rental(api,initial(),()=>{},()=>100);
+  await assert.rejects(rental.volume(),/lost volume/);
+  await rental.terminate();await rental.cleanupVolume(false);
+  assert.equal(api.volumes.length,0);
+  assert.equal(api.calls.filter(c=>c.method==='POST'&&c.uri==='/network-volumes').length,1);
+});
 test('REST handles empty deletions, missing resources, errors and cursor pagination',async()=>{
   const calls=[],api=new Api('test-key',async(url,options)=>{
     calls.push({url,options});

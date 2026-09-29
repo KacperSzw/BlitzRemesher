@@ -53,7 +53,7 @@ for(const batch of [64,128])for(const workers of [2,4]){
   }catch(error){trials.push({batch,workers,error:String(error),elapsed_seconds:(Date.now()-start)/1000});}
   write(results+'/calibration.json',{complete:false,trials});
 }
-const best=selectCalibration(trials.filter(t=>t.code===0||t.code===2));
+const best=selectCalibration(trials.filter(t=>(t.code===0||t.code===2)&&t.reason!=='host_memory_budget'));
 write(results+'/calibration.json',{complete:true,trials,selected:{batch:best.batch,workers:best.workers}});
 if(Date.now()>=setupDeadline)throw new Error('Setup exceeded 30-minute allowance');
 fs.mkdirSync(run,{recursive:true});

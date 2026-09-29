@@ -82,8 +82,13 @@ export class Rental {
     }
     if(this.now()>=s.setup_deadline_ms)throw new Error('Setup deadline reached');
     this.commit({volume_requested:true});
-    const v=await this.api.request('POST','/network-volumes',{name:s.name,size:20,dataCenter:s.quote.data_center,type:'STANDARD'});
-    this.commit({volume_id:v.id});
+    try{
+      const v=await this.api.request('POST','/network-volumes',{name:s.name,size:20,dataCenter:s.quote.data_center,type:'STANDARD'});
+      this.commit({volume_id:v.id});
+    }catch(error){
+      if([400,401,403,404,409,422,429].includes(error.status))this.commit({volume_rejected:true});
+      throw error;
+    }
   }
   async pod(publicKey){
     const s=this.state;if(s.pod_id)return;
@@ -94,8 +99,15 @@ export class Rental {
       this.commit({pod_id:matches[0].id});return;
     }
     this.commit({pod_requested:true,pod_requested_at:this.now()});
-    const pod=await this.api.request('POST','/pods',podRequest(s,publicKey));
-    this.commit({pod_id:pod.id});
+    try{
+      const pod=await this.api.request('POST','/pods',podRequest(s,publicKey));
+      this.commit({pod_id:pod.id});
+    }catch(error){
+      // A documented client rejection has a known outcome. A disconnect or
+      // server error may still have created a Pod and must be reconciled.
+      if([400,401,403,404,409,422,429].includes(error.status))this.commit({pod_rejected:true,pod_rejection_status:error.status});
+      throw error;
+    }
   }
   async terminate(){
     const s=this.state;
@@ -105,7 +117,7 @@ export class Rental {
       const known=await this.api.request('GET','/pods/'+encodeURIComponent(s.pod_id));
       if(known)pods.push(known);
     }
-    if(s.pod_requested&&!s.pod_id&&!pods.length)throw new Error('Pod create outcome remains unresolved; watchdog must keep reconciling');
+    if(s.pod_requested&&!s.pod_rejected&&!s.pod_id&&!pods.length)throw new Error('Pod create outcome remains unresolved; watchdog must keep reconciling');
     for(const pod of pods){
       await this.api.request('DELETE','/pods/'+encodeURIComponent(pod.id));
       const current=await this.api.request('GET','/pods/'+encodeURIComponent(pod.id));
@@ -115,7 +127,9 @@ export class Rental {
   }
   async cleanupVolume(verified){
     if(!this.state.compute_terminated)throw new Error('Terminate compute before deleting storage');
-    if(!verified)return; // The sole recovery copy stays on persistent storage.
+    const neverAttached=!this.state.pod_id&&(this.state.pod_rejected||!this.state.pod_requested);
+    if(!verified&&!neverAttached)return; // The sole recovery copy stays on persistent storage.
+    if(!this.state.volume_id&&this.state.volume_requested&&!this.state.volume_rejected)await this.volume();
     if(this.state.volume_id)await this.api.request('DELETE','/network-volumes/'+encodeURIComponent(this.state.volume_id));
     this.commit({volume_deleted:true});
   }

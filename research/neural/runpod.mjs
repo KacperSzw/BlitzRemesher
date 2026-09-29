@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
 import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines,retrySsh} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
-import {actionBudget} from './action-budget.mjs';
+import {actionBudget,actionAccrued} from './action-budget.mjs';
 
 const [command,directory]=process.argv.slice(2);
 if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
@@ -60,7 +60,7 @@ async function prepare(){
   for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs','action-budget.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
   write(dir+'/prepared.json',{revision,branch,deployment,experiment:actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
   fs.rmSync(stage,{recursive:true});
-  console.log('Prepared checksummed source, original training shards, pilot and validation assets: '+dir);
+  console.log('Prepared checksummed '+(actions?'action proof source/training meshes and development pilot':'source, original training shards, pilot and validation assets')+': '+dir);
 }
 function unitString(s){return '"'+s.replaceAll('\\','\\\\').replaceAll('"','\\"').replaceAll('%','%%')+'"';}
 function installService(name,mode){
@@ -77,7 +77,8 @@ async function launch(){
   if(prepared.experiment==='action-v2'){
     const [pods,volumes,bill]=await Promise.all([api.pods(),api.request('GET','/network-volumes'),api.request('GET','/billing')]);
     if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
-    budget=actionBudget({billed:bill.metadata.totals.totalAmount,rate:deployment.gpu_hourly_usd_cap});write(dir+'/billing-before.json',bill);
+    const ledger=fs.readdirSync(root+'/runs/neural',{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>root+'/runs/neural/'+e.name+'/rental.json').filter(f=>fs.existsSync(f)).map(read);
+    budget=actionBudget({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap});write(dir+'/billing-before.json',bill);
   }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);

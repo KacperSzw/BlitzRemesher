@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {actionBudget} from '../research/neural/action-budget.mjs';
+import {actionBudget,actionAccrued} from '../research/neural/action-budget.mjs';
 import {endpointDecision,pilotDecision} from '../research/neural/action-gates.mjs';
 test('cumulative rental cap includes previous spend, storage allowance and reserve',()=>{
   for(const rate of [1.8,2.1,2.5])for(const billed of [1.9,2.75,4.2]){
@@ -8,6 +8,11 @@ test('cumulative rental cap includes previous spend, storage allowance and reser
     assert.equal(b.maximum_rental_usd,rate+.01);
   }
   for(const invalid of [{billed:9,rate:2},{billed:2,rate:5,minutes:150},{billed:NaN,rate:2},{billed:2,rate:2,minutes:Infinity},{billed:2,rate:2,reserve:0}])assert.throws(()=>actionBudget(invalid));
+  const stopped={name:'one',experiment:'action-v2',started_at:1000,terminated_at:1801000,compute_terminated:true};
+  const accrued=actionAccrued([stopped,stopped,{name:'old',experiment:'vertex-v1'}],3601000,2);
+  assert.equal(accrued,1);assert.equal(actionBudget({billed:2,rate:2,priorEstimate:3,additionalAccrued:accrued}).prior_assumed_usd,4);
+  assert.equal(actionBudget({billed:5,rate:2,priorEstimate:3,additionalAccrued:accrued}).prior_assumed_usd,5);
+  assert.throws(()=>actionBudget({billed:2,rate:2,additionalAccrued:6}));
 });
 test('matched pilot requires three seeds, all controls, complete assets and measured advantage',()=>{
   const methods=['learned','learned','learned','constant','shuffled','shuffled','shuffled','shortest','current-plane'];

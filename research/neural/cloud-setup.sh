@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
+# sshd need not inherit the CUDA image's Docker PATH.
+export PATH="/usr/local/cuda/bin:$PATH"
+export CUDACXX=/usr/local/cuda/bin/nvcc
+export CUDAToolkit_ROOT=/usr/local/cuda
+"$CUDACXX" --version > /workspace/results/cuda-toolkit.txt
 apt-get update -qq
 apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
 nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv,noheader,nounits | tee /workspace/results/gpu.csv
@@ -22,4 +27,3 @@ ctest --test-dir build/neural --output-on-failure | tee /workspace/results/ctest
 build/neural/blitz-neural-train /workspace/dataset /workspace/results/prefetch --core 8 --batch 2 --workers 4 --check-prefetch 12
 git rev-parse HEAD > /workspace/results/git-revision
 dpkg-query -W > /workspace/results/packages.txt
-/usr/local/cuda/bin/nvcc --version > /workspace/results/cuda-toolkit.txt

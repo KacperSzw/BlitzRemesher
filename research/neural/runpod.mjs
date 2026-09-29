@@ -5,11 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
-import {Api,Rental,apiKey,read,write,verifyPod,terminationDue} from './runpod-api.mjs';
+import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
 
 const [command,directory]=process.argv.slice(2);
-if(!directory)throw new Error('runpod.mjs {prepare|launch|status|stop|control|watchdog} RUN_DIRECTORY');
+if(!directory)throw new Error('runpod.mjs {prepare|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
 const dir=path.resolve(directory),root=process.cwd(),statePath=dir+'/rental.json';
 const keyFile=path.join(os.homedir(),'.config/blitz/runpod-api-key');
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -67,14 +67,14 @@ async function launch(){
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
-  write(statePath,{name,quote,deployment,revision:prepared.revision,started_at:started,
-    setup_deadline_ms:started+30*60000,training_deadline_ms:started+110*60000,deadline_ms:started+120*60000});
+  const deadlines=rentalDeadlines(started,process.argv[4]===undefined?undefined:Number(process.argv[4]));
+  write(statePath,{name,quote,deployment,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);
   sync('systemctl',['--user','enable','--now',name+'-watchdog.service']);
   sync('systemctl',['--user','is-active',name+'-watchdog.service']);
   sync('systemctl',['--user','enable','--now',name+'-control.service']);
-  console.log(JSON.stringify({name,quote,deadline:new Date(started+120*60000).toISOString(),directory:dir}));
+  console.log(JSON.stringify({name,quote,deadline:new Date(deadlines.deadline_ms).toISOString(),directory:dir}));
 }
 function sshArgs(endpoint){
   if(!endpoint||!/^[a-zA-Z0-9.:-]+$/.test(endpoint.host)||!/^\w+$/.test(endpoint.username)||!Number.isInteger(endpoint.port)||endpoint.port<1||endpoint.port>65535)
@@ -192,5 +192,7 @@ else if(command==='launch')await launch();
 else if(command==='control')await control();
 else if(command==='watchdog')await watchdog();
 else if(command==='stop'){fs.writeFileSync(dir+'/stop-requested','Stop requested\n',{mode:0o600});console.log('Termination requested; the watchdog will preserve uncollected storage.');}
-else if(command==='status')for(const name of ['rental.json','watchdog.json','collection.json'])if(fs.existsSync(dir+'/'+name))console.log(name,JSON.stringify(read(dir+'/'+name),null,2));
+else if(command==='status'){
+  for(const name of ['rental.json','watchdog.json','collection.json'])if(fs.existsSync(dir+'/'+name))console.log(name,JSON.stringify(read(dir+'/'+name),null,2));
+}
 else throw new Error('Unknown command: '+command);

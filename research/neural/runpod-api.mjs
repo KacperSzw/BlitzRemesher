@@ -72,6 +72,12 @@ export function verifyPod(pod){
 export function terminationDue(state,now,cancelled=false){
   return cancelled||now>=state.deadline_ms||(!state.setup_complete&&now>=state.setup_deadline_ms);
 }
+export function rentalDeadlines(started,deadline=started+120*60000){
+  if(!Number.isFinite(deadline)||deadline<=started+10*60000||deadline>started+120*60000)
+    throw new Error('Rental deadline must leave more than 10 minutes and cannot exceed two hours');
+  const training=deadline-10*60000;
+  return {started_at:started,setup_deadline_ms:Math.min(started+30*60000,training),training_deadline_ms:training,deadline_ms:deadline};
+}
 export class Rental {
   constructor(api,state,save,now=Date.now){this.api=api;this.state=state;this.save=save;this.now=now;}
   commit(extra){Object.assign(this.state,extra);this.save(this.state);}

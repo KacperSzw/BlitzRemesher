@@ -305,3 +305,13 @@ bounded SSH stderr in a private local diagnostic log, so cleanup does not hide
 the original failure. All 17 Node contracts and Node syntax checks passed.
 The replacement reuses the existing volume only after confirming the first Pod
 was deleted, and retains the original setup/training/rental deadlines.
+
+The corrected extraction, all input checksums and Git restoration passed on the
+network volume. The next setup failure was CMake's inability to discover CUDA
+through the SSH session. Setup now sets the explicit CUDA compiler/toolkit path
+and checks the compiler before installing/downloading dependencies. Diagnostics
+were collected with a verified checksum and the replacement Pod and volume were
+deleted. No training occurred during either attempt. A separate status-command
+branching bug was fixed with a regression covering absent optional state files.
+Shortened replacement rentals can retain the original final cutoff; setup stays
+bounded to 30 minutes per allocation. All **19 Node tests** pass.

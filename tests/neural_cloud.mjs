@@ -1,10 +1,42 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue} from '../research/neural/runpod-api.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue,rentalDeadlines} from '../research/neural/runpod-api.mjs';
 import {deployment,verifyDevice} from '../research/neural/runpod-profile.mjs';
 const gpu={id:GPU,memory:96,secure:true,price:{secure:2.09},dataCenters:[{id:'EU-1',availability:'HIGH'}]};
 const centers=[{id:'EU-1',networkVolumeTypes:['STANDARD']}];
 const initial=()=>({name:'test-unique',quote:chooseQuote([gpu],centers),setup_deadline_ms:1800000,deadline_ms:7200000});
+test('recovery can shorten a rental to its original cutoff without extending the budget',()=>{
+  const started=12340000,originalEnd=started+90*60000;
+  const limits=rentalDeadlines(started,originalEnd);
+  assert.equal(limits.deadline_ms,originalEnd);
+  assert.equal(limits.training_deadline_ms,originalEnd-10*60000);
+  assert.ok(limits.setup_deadline_ms<=started+30*60000);
+  for(const minutes of [15,45,120]){
+    const d=rentalDeadlines(started,started+minutes*60000);
+    assert.ok(d.setup_deadline_ms<=d.training_deadline_ms);
+    assert.ok(d.training_deadline_ms<d.deadline_ms);
+  }
+  for(const deadline of [NaN,Infinity,started,started+10*60000,started+121*60000])
+    assert.throws(()=>rentalDeadlines(started,deadline));
+});
+test('status succeeds with optional state files absent and reports every available record',()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-cloud-status-'));
+  const cli=fileURLToPath(new URL('../research/neural/runpod.mjs',import.meta.url));
+  try{
+    fs.writeFileSync(directory+'/rental.json',JSON.stringify({name:'fixture-rental'}));
+    for(const collected of [false,true]){
+      if(collected)fs.writeFileSync(directory+'/collection.json',JSON.stringify({verified:true}));
+      const result=spawnSync(process.execPath,[cli,'status',directory],{encoding:'utf8'});
+      assert.equal(result.status,0,result.stderr);assert.match(result.stdout,/fixture-rental/);
+      assert.equal(result.stdout.includes('collection.json'),collected);
+    }
+  }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});
 class MockApi {
   constructor(){this.calls=[];this.volumes=[];this.resources=[];this.lost=false;this.deletionFails=false;}
   async pods(){return this.resources.map(p=>({...p}));}

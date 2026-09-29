@@ -76,6 +76,12 @@ node research/neural/runpod.mjs status runs/neural/runpod-pro6000-first
 node research/neural/runpod.mjs stop runs/neural/runpod-pro6000-first
 ```
 
+`launch` accepts an optional absolute deadline in milliseconds after the run
+directory to shorten a replacement rental to the original budget cutoff. It
+cannot extend a rental beyond two hours and keeps ten minutes for collection.
+Confirm the previous Pod is deleted before launching a replacement. Each new
+allocation has at most 30 minutes for setup, within that shared final cutoff.
+
 `prepare` is offline except for checking the pushed Git revision. `launch` rents
 the approved resources; don't invoke it just to validate the scripts. Before
 launch, save the account API key in `~/.config/blitz/runpod-api-key` with mode 600.

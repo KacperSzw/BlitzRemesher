@@ -33,6 +33,17 @@ training diversity has not yet established better quality. GPU capacity differs
 between those two smoke records, and neither had a recorded resource failure.
 Full matched controls, three seeds and checkpoint persistence remain required.
 
+## Repeat after the CLI repair
+
+`repeat-8192.json` records a live snapshot from `runpod-action-pilot-03`, source
+`8fade47`, in US-MO-2 at 12:27 UTC on September 29. All 18 cloud CTests passed.
+The three fresh seeds reproduced the loss, membership and numerical checks
+above on the reused shards. Each segment took 20.14–25.04 seconds; training
+utilization averaged 16.41% across 73 one-second samples, with a 771 MiB peak.
+This run is slower and less utilized than the first curriculum rental; the
+cause has not been profiled. The repaired benchmark had entered GPU auditing
+at collection of this snapshot. This file contains no mesh-quality conclusion.
+
 Data derive from the CC0 assets identified in each contract. These models are
 experimental endpoint rankers. Texture/normal-map scoring and segment placement
 are outside this stage; source/preceding-LOD audits still decide acceptance.

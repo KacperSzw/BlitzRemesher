@@ -50,6 +50,22 @@ TCP mapping despite a running container and requested port 22. It was stopped
 before any upload; the newly created unused volume was verified and removed.
 The third allocation uses another data center and the same tested source.
 
+Verified snapshot at **12:27 UTC (14:27 Warsaw)**: all 18 cloud CTests passed,
+all seven saved shards passed reuse checks, and all three seeds completed 8,192
+updates with finite parameters/gradients, exact model/AdamW restoration and
+native/FP64 error below 2e-4. Loss fell from approximately 1.35 to 0.020;
+queried preferred membership was 98.78–99.39%. The repaired benchmark passed
+argument parsing and entered the GPU audit phase. No full-pilot score exists
+yet. Raw training checks and telemetry are in
+[repeat-8192.json](evidence/action-curriculum-v2/repeat-8192.json).
+
+The effective experiment deadline is **13:14 UTC (15:14 Warsaw)** and the
+collection/compute cutoff is **13:24 UTC (15:24 Warsaw)** on September 29.
+Early completion or a failed evidence gate stops sooner. Check durable rental
+state for subsequent changes. The launch budget ceiling was $8.93 cumulative,
+including the $1 reserve. `progress.json` records completed operations; the last
+`gpu.jsonl` row gives the current live phase while a comparison is in progress.
+
 ## Established evidence
 
 Three seeds passed the one-mesh proof at two checkpoints; see the six portable
@@ -71,8 +87,10 @@ Also report shortest-edge and current-plane controls; do not imply superiority
 over them merely from passing the constant/shuffled gate.
 
 The tiny proof averaged 38.2% GPU utilization during training; the broader
-164-state curriculum averaged 38.74%. Full saturation
-has not been established. Auditing dominated the full local attempt. Profile
+164-state curriculum averaged 38.74% on its first rental. The current repeat in
+US-MO-2 averaged 16.41% over 73 one-second training samples and took 20.14–25.04
+seconds per seed. It is not saturating the GPU. Auditing dominated the full
+local attempt. Profile
 useful throughput and convergence before changing precision, model size or batch
 size. BF16, CUDA graphs, segment placement and a GNN remain conditional.
 

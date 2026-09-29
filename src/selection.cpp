@@ -6,6 +6,10 @@ uint64_t vertex_bytes(MeshView v) {
     return uint64_t(v.positions.count)*12+uint64_t(v.normals.count)*12+
         uint64_t(v.uv.count)*8+uint64_t(v.colors.count)*4+uint64_t(v.tangents.count)*16;
 }
+uint64_t added_vertex_bytes(const Lod& l,MeshView source) {
+    if(l.shared_vertices)return 0;auto v=l.view(source);
+    return vertex_bytes(v)-(l.source_prefix_vertices?uint64_t(l.source_prefix_vertices)*(vertex_bytes(v)/v.positions.count):0);
+}
 StorageStats storage_stats(const Result& r) {
     StorageStats s;s.source_vertex_bytes=vertex_bytes(r.source);
     for(auto level:runtime_storage(r)) {
@@ -19,7 +23,11 @@ std::vector<RuntimeLevelStorage> runtime_storage(const Result& r) {
     uint64_t cumulative=0;
     for(auto i:runtime_levels(r)) {
         auto v=r.lods[i].view(r.source);
-        uint64_t added=r.lods[i].shared_vertices?0:vertex_bytes(v);
+        const auto& lod=r.lods[i];uint64_t added=added_vertex_bytes(lod,r.source);
+        if(lod.source_prefix_vertices)for(auto previous:out) {
+            const auto& earlier=r.lods[previous.scheduled_index];
+            if(earlier.source_prefix_vertices&&earlier.vertex_pool==lod.vertex_pool){added=0;break;}
+        }
         cumulative+=added;
         out.push_back({i,added,uint64_t(v.indices.size())*4,cumulative});
     }

@@ -82,11 +82,10 @@ blitz_status blitz_result_runtime_lod_storage(const blitz_result* r,size_t i,bli
     if(!r||!out||out->struct_size!=sizeof(*out)||i>=r->runtime.size())return BLITZ_INVALID_ARGUMENT;
     uint64_t cumulative=0;
     for(size_t j=0;j<=i;++j) {
-        const auto index=r->runtime[j];
-        const auto& lod=r->value.lods[index];auto view=lod.view(r->value.source);
-        const uint64_t added=lod.shared_vertices?0:blitz::vertex_bytes(view);
-        cumulative+=added;
-        if(j==i)*out={sizeof(*out),index,added,uint64_t(view.indices.size())*4,cumulative};
+        auto index=r->runtime[j];const auto& lod=r->value.lods[index];auto added=blitz::added_vertex_bytes(lod,r->value.source);
+        if(lod.source_prefix_vertices)for(size_t k=0;k<j;++k){const auto& previous=r->value.lods[r->runtime[k]];
+            if(previous.source_prefix_vertices&&previous.vertex_pool==lod.vertex_pool){added=0;break;}}
+        cumulative+=added;if(j==i)*out={sizeof(*out),index,added,uint64_t(lod.data.indices.size())*4,cumulative};
     }
     return BLITZ_OK;
 }

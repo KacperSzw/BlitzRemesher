@@ -19,7 +19,7 @@ reference. With nonzero overhead, selection minimizes
 resident bytes subject to each scheduled LOD using at most
 floor(reference_triangles*(1+overhead)) triangles. Overhead supports 0..10000
 basis points. The proposal pool is independent of overhead. Source vertex
-streams remain immutable; owned levels are compact. Source buffers count once,
+streams remain immutable; ordinary owned levels are compact. Source buffers count once,
 exact consecutive runtime duplicates once, and all present attributes/u32 indices
 count. Forced output/origin modes remain research controls. See research/hybrid/PLAN.md.
 Forced output research controls bypass the production vertex cap and report it
@@ -210,3 +210,36 @@ or area. Final audits and their sampling/refinement policy remain unchanged.
 An optional borrowed EvaluationWitness captures the first failing appearance
 sample and the best visible correspondence inside the spatial search radius;
 its squared metric components are diagnostics, not continuous error bounds.
+
+Experimental C++/CLI rebuilt-storage controls default to false:
+
+- `research.density_targets` estimates triangle requests from referenced input
+  vertices, then actual emitted triangles and packed vertex bytes. Each input,
+  placement and search slot owns its feedback. Over-budget predictions leave
+  1/16 headroom; stalled requests shrink. Failed appearance does not establish
+  monotonicity. Existing candidate/tail-probe budgets still apply, and actual
+  emitted storage decides admission.
+- `research.merge_wedges` merges contracted continuous interior corner fans.
+  Original seams, boundaries, nonmanifold edges, material changes, alpha and
+  tangent handedness remain separate. Area-weighted original-face fields fit
+  normal/RGB/UV values; boundary UVs stay fixed. A surviving UV reversal restores
+  its original fans and attributes locally, with at most four full checks before
+  reverting the entire postpass. The ordinary source/adjacent gates still apply.
+- In automatic generation, `research.shared_rebuild` matches complete emitted vertex tuples byte for byte
+  against the source. Only unmatched tuples consume the added-vertex cap. It
+  preserves untouched/endpoint world coordinates through normalization and uses
+  the ordinary triangle ladder without the rebuilt triangle-soup clamp. Source
+  positions, normals, UVs, RGBA and tangents retain their original bytes and IDs.
+  A mixed LOD addresses an immutable owned source prefix plus changed vertices;
+  all selected mixed LODs share one combined contiguous pool. Ordinary fully
+  rebuilt LODs remain compact. Source-only levels keep prefix accessors; glTF
+  writes the combined attribute buffer once. Runtime accounting charges its
+  added suffix once at the first mixed level. Result copies and LOD copies retain
+  shared pool ownership. Graph dominance also preserves allocation history:
+  a path cannot dominate another that owns a different reusable pool. Input
+  index/material spans still require the source
+  lifetime. If final packing runs out of memory, the valid uncombined incumbent
+  is returned with incomplete status. These controls do not change C ABI 5.
+
+These proposal/storage heuristics do not qualify a chain independently or
+establish optimality. Frozen trials and audits are in research/density.

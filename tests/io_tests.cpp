@@ -1,4 +1,5 @@
 #include "blitz/io.hpp"
+#include "shared_vertices.hpp"
 #include <fstream>
 #include <iostream>
 #include <bit>
@@ -110,6 +111,15 @@ int main() {
             throws([&]{settings_json(nlohmann::json{{"research",{{"appearance_stage",bad}}}});});
         for(auto bad:nlohmann::json::array({1,"true",nullptr}))
             throws([&]{settings_json(nlohmann::json{{"research",{{"conservative_screen",bad}}}});});
+        for(auto key:{"density_targets","merge_wedges","shared_rebuild"}) {
+            for(bool enabled:{false,true}) {
+                auto controls=settings_json(nlohmann::json{{"research",{{key,enabled}}}});
+                CHECK((std::string(key)=="density_targets"?controls.research.density_targets:std::string(key)=="merge_wedges"?controls.research.merge_wedges:controls.research.shared_rebuild)==enabled);
+                CHECK(settings_json(controls)["research"][key]==enabled);
+            }
+            for(auto bad:nlohmann::json::array({1,"true",nullptr}))
+                throws([&]{settings_json(nlohmann::json{{"research",{{key,bad}}}});});
+        }
         for(int passes:{0,1,3}) {
             auto graph=settings_json(nlohmann::json{{"research",{{"graph_passes",passes}}}});
             CHECK(graph.research.graph_passes==passes&&settings_json(graph)["research"]["graph_passes"]==passes);
@@ -158,6 +168,24 @@ int main() {
         auto& color_accessor=j["accessors"][color_index];CHECK(color_accessor["componentType"]==5121&&color_accessor["normalized"]==true);
         auto& color_view=j["bufferViews"][color_accessor["bufferView"].get<size_t>()];
         CHECK(color_view["byteLength"]==colors.colors.size()*4&&color_view["byteOffset"].get<size_t>()%4==0);
+        {
+            Mesh input;input.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0},{0,0,0},{.2f,0,0}};
+            input.indices={0,1,4,1,2,5,2,3,5,3,0,4,4,1,5,4,5,3};input.double_sided={1};
+            for(auto p:input.positions){input.normals.push_back({0,0,1});input.uv.push_back({(p.x+1)*.5f,(p.y+1)*.5f});input.colors.push_back({40,90,120,77});input.tangents.push_back({1,0,0,-1});}
+            detail::SourceVertices table(input.view(),true);Result mixed;mixed.source=input.view();mixed.reference_bounds=bounds(input.view());
+            Lod base;base.data.indices=input.indices;mixed.lods.push_back(base);
+            for(float x:{.1f,.3f}){Lod l;l.shared_vertices=false;l.data=input;l.data.indices={0,1,4,1,2,4,2,3,4,3,0,4};
+                l.data.positions[4]={x,0,0};l.data.uv[4]={(x+1)*.5f,.5f};compact(l.data);table.share(l);mixed.lods.push_back(std::move(l));}
+            detail::share_result_vertices(mixed);save_chain(mixed,dir/"mixed");
+            const uint64_t expected_bytes=8*(12+12+8+4+16)+(18+12+12)*4;
+            CHECK(std::filesystem::file_size(dir/"mixed/chain.bin")==expected_bytes&&storage_stats(mixed).total()==expected_bytes);
+            nlohmann::json gltf;std::ifstream(dir/"mixed/chain.gltf")>>gltf;
+            auto first=gltf["meshes"][0]["primitives"][0]["attributes"],second=gltf["meshes"][1]["primitives"][0]["attributes"],third=gltf["meshes"][2]["primitives"][0]["attributes"];
+            CHECK(second==third);
+            for(auto it=first.begin();it!=first.end();++it){auto a=gltf["accessors"][it.value().get<size_t>()],b=gltf["accessors"][second[it.key()].get<size_t>()];
+                CHECK(a["count"]==6&&b["count"]==8&&a["bufferView"]==b["bufferView"]);}
+            CHECK(load_mesh(dir/"mixed/chain.gltf").positions.size()==6);
+        }
         std::cout<<"Import, transforms, runtime mesh sharing, shared accessors and settings round trips passed\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

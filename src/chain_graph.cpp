@@ -1,6 +1,8 @@
 #include "blitz/remesher.hpp"
 #include "coverage.hpp"
 #include "timing.hpp"
+#include "density.hpp"
+#include "shared_vertices.hpp"
 #include <chrono>
 #include <numeric>
 #include <stdexcept>
@@ -31,6 +33,7 @@ struct Slot {
     OutputMode output{};
     bool direct{};
     std::vector<Trial> trials;
+    DensityTargets density;
 };
 uint64_t triangle_total(const Result& r) {
     uint64_t total=0;for(size_t i=1;i<r.lods.size();++i)total+=r.lods[i].data.indices.size()/3;return total;
@@ -50,6 +53,7 @@ class Graph {
     const Settings& settings;
     const Proposer& proposer;
     uint8_t pass;
+    SourceVertices source_vertices;
     std::vector<Lod> meshes;
     std::vector<Path> paths;
     std::vector<uint32_t> incumbent;
@@ -61,6 +65,14 @@ class Graph {
     }
     MeshView view(uint16_t id) const { return meshes[id].view(result.source); }
     MeshView view(const Candidate& c) const { return c.mesh==new_mesh?c.owned.view(result.source):view(c.mesh); }
+    bool owns_pool(const Lod& lod,uint32_t parent) const {
+        for(auto p=parent;p!=no_parent;p=paths[p].parent){const auto& old=meshes[paths[p].mesh];
+            if(old.source_prefix_vertices&&old.vertex_pool==lod.vertex_pool)return true;}
+        return false;
+    }
+    uint64_t added(const Lod& lod,uint32_t parent) const {
+        return lod.source_prefix_vertices&&owns_pool(lod,parent)?0:added_vertex_bytes(lod,result.source);
+    }
     uint16_t intern(Lod lod) {
         const auto v=lod.view(result.source);
         for(size_t i=0;i<meshes.size();++i)if(same_mesh_data(v,view(uint16_t(i))))return uint16_t(i);
@@ -104,7 +116,7 @@ class Graph {
         });
         std::vector<uint8_t> keep(candidates.size());
         for(size_t i=0;i<settings.beam_width;++i)keep[order[i]]=1;
-        auto bytes=[&](size_t i){const auto& c=candidates[i];return (c.mesh==new_mesh?c.owned.shared_vertices:meshes[c.mesh].shared_vertices)?0:vertex_bytes(view(c));};
+        auto bytes=[&](size_t i){const auto& c=candidates[i];return added_vertex_bytes(c.mesh==new_mesh?c.owned:meshes[c.mesh],result.source);};
         std::stable_sort(order.begin(),order.end(),[&](size_t a,size_t b){return bytes(a)!=bytes(b)?bytes(a)<bytes(b):view(candidates[a]).triangles()<view(candidates[b]).triangles();});
         size_t retained=settings.beam_width;
         for(auto i:order)if(!keep[i]&&retained<limit){keep[i]=1;++retained;}
@@ -116,6 +128,10 @@ class Graph {
     bool dominates(uint32_t a,uint32_t b) const {
         const auto& x=paths[a];const auto& y=paths[b];
         if(x.mesh!=y.mesh||x.triangles>y.triangles||x.storage.added_vertex_bytes>y.storage.added_vertex_bytes||x.storage.total()>y.storage.total())return false;
+        // A prior pool can make a later mesh free. Equal current costs do not
+        // dominate a path retaining a different reusable allocation.
+        for(auto p=b;p!=no_parent;p=paths[p].parent){const auto& lod=meshes[paths[p].mesh];
+            if(lod.source_prefix_vertices&&!owns_pool(lod,a))return false;}
         if(settings.triangle_overhead_bps) {
             auto ca=cost(a),cb=cost(b);for(size_t i=1;i<ca.triangles.size();++i)if(ca.triangles[i]>cb.triangles[i])return false;
         }
@@ -141,7 +157,7 @@ class Graph {
         std::stable_sort(next.begin(),next.end(),[&](auto a,auto b){return less(a,b);});
     }
 public:
-    Graph(Result& r,const Settings& s,const Proposer& p,uint8_t iteration):result(r),settings(s),proposer(p),pass(iteration) {
+    Graph(Result& r,const Settings& s,const Proposer& p,uint8_t iteration):result(r),settings(s),proposer(p),pass(iteration),source_vertices(r.source,s.research.shared_rebuild) {
         incumbent_total=triangle_total(r);
         meshes.reserve(32+31*(2u*s.beam_width+2));
         StorageStats storage{vertex_bytes(r.source),0,0};uint32_t parent=no_parent;uint64_t total=0;
@@ -149,7 +165,7 @@ public:
             auto id=intern(r.lods[i]);const auto v=view(id);
             if(!i||id!=paths[parent].mesh) {
                 storage.index_bytes+=v.indices.size()*4;
-                if(!meshes[id].shared_vertices)storage.added_vertex_bytes+=vertex_bytes(v);
+                storage.added_vertex_bytes+=added(meshes[id],parent);
             }
             if(i)total+=v.triangles();
             parent=append({parent,id,uint8_t(i),total,storage,r.lods[i].source_error,r.lods[i].adjacent});incumbent.push_back(parent);
@@ -171,7 +187,7 @@ public:
                 if(!validate(v).empty())return 5;
                 for(auto& previous:candidates)if(same_mesh_data(v,view(previous))){++result.duplicate_proposals;return 7;}
                 const bool shared=candidate.mesh==new_mesh?candidate.owned.shared_vertices:meshes[candidate.mesh].shared_vertices;
-                if(result.added_vertex_budget_bytes&&!shared&&vertex_bytes(v)>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;return 9;}
+                if(result.added_vertex_budget_bytes&&!shared&&added_vertex_bytes(candidate.mesh==new_mesh?candidate.owned:meshes[candidate.mesh],result.source)>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;return 9;}
                 if(!settings.triangle_overhead_bps&&std::none_of(parents.begin(),parents.end(),[&](auto p){return paths[p].triangles+v.triangles()<=incumbent_total;})) {
                     ++result.graph_pruned_candidates;return 10;
                 }
@@ -188,8 +204,8 @@ public:
             // Direct and progressive histories never share pass/fail brackets.
             std::vector<Slot> slots;
             for(auto output:{OutputMode::Rebuild,OutputMode::Reuse}) {
-                slots.push_back({0,paths[parents.front()].mesh,output,true,{}});
-                size_t count=0;for(auto id:input_meshes)if(id&&count++<settings.beam_width)slots.push_back({id,id,output,false,{}});
+                slots.push_back({0,paths[parents.front()].mesh,output,true,{},{}});
+                size_t count=0;for(auto id:input_meshes)if(id&&count++<settings.beam_width)slots.push_back({id,id,output,false,{},{}});
             }
             struct Relax { uint16_t input,parent;ReduceSettings settings;bool direct; };
             std::optional<Relax> relaxed;
@@ -208,13 +224,22 @@ public:
                 ReduceSettings rs;rs.output=slot.output;rs.objective=settings.objective;rs.target_triangles=target;
                 rs.appearance_stage=settings.research.appearance_stage;rs.appearance_weights=ss.weights;if(settings.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=ss.screen_size;
                 rs.normal_weight=ss.weights.normal;rs.cancelled=settings.cancelled;rs.prune=settings.prune&&((attempt/slots.size()+pass)%2==0);
-                rs.coupled_wedges=settings.coupled_wedges;rs.boundary_weight=settings.research.boundary_weight;
+                rs.coupled_wedges=settings.coupled_wedges;rs.merge_wedges=settings.research.merge_wedges;rs.preserve_positions=settings.research.shared_rebuild;rs.boundary_weight=settings.research.boundary_weight;
                 rs.boundary_placement=settings.research.boundary_placement;rs.independent_seams=settings.research.independent_seams;
                 uint16_t input_id=slot.input,parent_id=slot.parent;bool direct=slot.direct,topology=false;
                 if(relaxed) {input_id=relaxed->input;parent_id=relaxed->parent;direct=relaxed->direct;rs=relaxed->settings;relaxed.reset();topology=true;}
-                if(result.added_vertex_budget_bytes&&rs.output==OutputMode::Rebuild) {
+                if(result.added_vertex_budget_bytes&&rs.output==OutputMode::Rebuild&&!settings.research.shared_rebuild) {
                     const auto stride=vertex_bytes(result.source)/result.source.positions.count;
-                    if(stride&&*result.added_vertex_budget_bytes/stride>=3)rs.target_triangles=std::min(rs.target_triangles,size_t(*result.added_vertex_budget_bytes/stride/3));
+                    if(settings.research.density_targets&&!topology) {
+                        auto remaining=*result.added_vertex_budget_bytes;
+                        if(!direct) {
+                            uint64_t used=remaining;
+                            for(auto p:parents)if(paths[p].mesh==input_id)used=std::min(used,paths[p].storage.added_vertex_bytes);
+                            remaining-=used;
+                        }
+                        rs.target_triangles=slot.density.next(view(input_id),parent_count,remaining,rs.target_triangles);
+                    } else if(!settings.research.density_targets&&stride&&*result.added_vertex_budget_bytes/stride>=3)
+                        rs.target_triangles=std::min(rs.target_triangles,size_t(*result.added_vertex_budget_bytes/stride/3));
                 }
                 rs.screen_size=ss.screen_size*bounds(view(input_id)).diameter()/result.reference_bounds.diameter();
                 ReductionStats stats;rs.statistics=&stats;Lod lod;const auto start=std::chrono::steady_clock::now();
@@ -233,7 +258,10 @@ public:
                     if(same_mesh_data(local,view(input_id)))c.mesh=input_id;
                     else {lod.data=copy_mesh(local);compact(lod.data);lod.shared_vertices=false;c.owned=std::move(lod);}
                 }else c.owned=std::move(lod);
+                if(c.mesh==new_mesh)source_vertices.share(c.owned);
+                const auto emitted_bytes=vertex_bytes(view(c));
                 auto gate=offer(std::move(c));
+                if(settings.research.density_targets&&!topology&&rs.output==OutputMode::Rebuild)slot.density.observe(rs.target_triangles,achieved,emitted_bytes,gate);
                 if(!topology)slot.trials.push_back({rs.target_triangles,gate==0||gate==7});
                 if(settings.research.trace)result.proposals.push_back({uint32_t(view(input_id).triangles()),uint32_t(view(parent_id).triangles()),uint32_t(rs.target_triangles),uint32_t(achieved),
                     stats.attempts,stats.collapsed,stats.geometry_rejections,stats.uv_rejections,stats.link_rejections,
@@ -255,8 +283,8 @@ public:
                 const auto v=view(id);std::vector<uint16_t> incoming;
                 auto affordable=[&](uint32_t parent) {
                     if(!result.added_vertex_budget_bytes||meshes[id].shared_vertices||paths[parent].mesh==id)return true;
-                    auto used=paths[parent].storage.added_vertex_bytes,added=vertex_bytes(v),cap=*result.added_vertex_budget_bytes;
-                    return used<=cap&&added<=cap-used;
+                    auto used=paths[parent].storage.added_vertex_bytes,bytes=added(meshes[id],parent),cap=*result.added_vertex_budget_bytes;
+                    return used<=cap&&bytes<=cap-used;
                 };
                 for(auto parent:parents)if(!affordable(parent))++result.vertex_budget_rejections;
                 auto add=[&](uint16_t mesh){
@@ -278,7 +306,7 @@ public:
                     for(auto parent:parents)if(paths[parent].mesh==from) {
                         Path p{parent,id,level,paths[parent].triangles+v.triangles(),paths[parent].storage,candidate.source,adjacent};
                         if(!settings.triangle_overhead_bps&&p.triangles>incumbent_total)continue;
-                        if(from!=id) {p.storage.index_bytes+=v.indices.size()*4;if(!meshes[id].shared_vertices)p.storage.added_vertex_bytes+=vertex_bytes(v);}
+                        if(from!=id) {p.storage.index_bytes+=v.indices.size()*4;p.storage.added_vertex_bytes+=added(meshes[id],parent);}
                         if(result.added_vertex_budget_bytes&&p.storage.added_vertex_bytes>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;continue;}
                         next.push_back(append(p));
                     }

@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 const root=resolve(import.meta.dirname,'..');
 const [id,start='0',stride='1',experiment='research/chain-search',rotation='0xA1172026']=process.argv.slice(2);
-if(!/^(chain-search|appearance)-[\w-]+$/.test(id??'')||!/^\d+$/.test(start)||!/^\d+$/.test(stride)||+stride<1)throw Error('Usage: RUN_ID [START_INDEX [STRIDE]]');
+if(!/^(chain-search|appearance|density)-[\w-]+$/.test(id??'')||!/^\d+$/.test(start)||!/^\d+$/.test(stride)||+stride<1)throw Error('Usage: RUN_ID [START_INDEX [STRIDE]]');
 const read=async p=>JSON.parse(await fs.readFile(resolve(root,p),'utf8'));
 const hash=async p=>createHash('sha256').update(await fs.readFile(resolve(root,p))).digest('hex');
 const meta=await read(`research/runs/${id}/metadata.json`),pilot=await read('research/pilot.json');

@@ -1,0 +1,44 @@
+{
+  "complete": true,
+  "offline": true,
+  "runs": [
+    {
+      "run": "chain-search-v3-appearance-graph-2",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-appearance-baseline",
+      "rows": 8
+    },
+    {
+      "run": "appearance-screen",
+      "rows": 8
+    },
+    {
+      "run": "appearance-ordering",
+      "rows": 8
+    },
+    {
+      "run": "density-v3-merged",
+      "rows": 8
+    },
+    {
+      "run": "density-v5-shared",
+      "rows": 8
+    }
+  ],
+  "checks": [
+    "geometry counts and bounds",
+    "stored normal streams",
+    "stable row order",
+    "scheduled and runtime slots",
+    "matched rotation",
+    "four display modes",
+    "five camera modes",
+    "actual target pixel size",
+    "mobile layout"
+  ],
+  "page_errors": [],
+  "network_requests": [],
+  "browser": "153.0.8010.36"
+}

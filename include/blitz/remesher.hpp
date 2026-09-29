@@ -1,5 +1,6 @@
 #pragma once
 #include "evaluate.hpp"
+#include <memory>
 #include <optional>
 namespace blitz {
 enum class OutputMode:uint8_t { Rebuild,Reuse };
@@ -18,6 +19,9 @@ struct ResearchOptions {
     uint8_t graph_passes{}; // 0: incumbent search; 1..3: bounded whole-chain improvement passes.
     AppearanceStage appearance_stage{};
     bool conservative_screen{};
+    bool density_targets{}; // Estimate rebuilt targets from referenced/output vertex density.
+    bool merge_wedges{}; // Fit/merge continuous interior wedges after positional contractions.
+    bool shared_rebuild{}; // Share exact source tuples; charge only changed rebuilt vertices.
     bool boundary_placement{},adaptive_targets{},component_candidates{},trace{},independent_seams{},topology_fallback{};
 };
 struct Settings {
@@ -42,11 +46,13 @@ std::vector<ScheduleEntry> schedule(const Bounds&,const Settings&);
 std::string validate(const Settings&);
 struct Lod {
     Mesh data; ScheduleEntry schedule{}; Measurement adjacent{},source_error{};
+    std::shared_ptr<const Mesh> vertex_pool; // One immutable buffer owner, never one object per vertex.
+    uint32_t source_prefix_vertices{};
     // reduce(): relative to that call's input; generate(): relative to Result.source.
     bool shared_vertices{true};
     MeshView view(MeshView source) const {
-        if(!shared_vertices) return data.view();
-        source.indices=data.indices; source.materials=data.materials; return source;
+        auto v=shared_vertices?source:vertex_pool?vertex_pool->view():data.view();
+        v.indices=data.indices;v.materials=data.materials;return v;
     }
 };
 struct ProposalTrace {
@@ -81,6 +87,7 @@ struct AuditContract {
     uint8_t search_supersample{},audit_supersample{},max_supersample{};
 };
 uint64_t vertex_bytes(MeshView); // Canonical packed attributes, excluding borrowed stride padding.
+uint64_t added_vertex_bytes(const Lod&,MeshView source);
 struct Result {
     MeshView source; Bounds reference_bounds; std::vector<Lod> lods;
     AuditContract audit;
@@ -134,6 +141,8 @@ struct ReduceSettings {
     double boundary_weight{};
     bool boundary_placement{};
     bool independent_seams{}; // Collapse within each original chart; never weld attribute vertices.
+    bool merge_wedges{};
+    bool preserve_positions{}; // Keep untouched/endpoint coordinates byte exact through normalization.
     AppearanceStage appearance_stage{};
     Weights appearance_weights{};
     double screen_size{1}; // Pixels per source bounding-sphere diameter.

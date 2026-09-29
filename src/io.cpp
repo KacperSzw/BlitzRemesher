@@ -1,4 +1,5 @@
 #include "blitz/io.hpp"
+#include "shared_vertices.hpp"
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -287,7 +288,7 @@ json result_json(const Result& r) {
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
     for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"area_only_count",r.area_rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
     for(size_t index=0;index<r.lods.size();++index){auto& l=r.lods[index];auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
-      {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},
+      {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},{"source_prefix_vertices",l.source_prefix_vertices},
       {"screen_pixels",l.schedule.pixels},{"transition_limit",l.schedule.transition},{"source_limit",l.schedule.source},
       {"adjacent",measurement(l.adjacent)},{"source",measurement(l.source_error)},
       {"uv_diagnostics",{{"mean_density",d.mean_uv_density},{"max_density",d.max_uv_density},{"max_anisotropy",d.max_uv_anisotropy},
@@ -295,6 +296,8 @@ json result_json(const Result& r) {
     return j;
 }
 void save_chain(const Result& r,const fs::path& directory) {
+    std::shared_ptr<const Mesh> vertex_pool;
+    for(auto& l:r.lods)if(l.source_prefix_vertices){if(vertex_pool&&vertex_pool!=l.vertex_pool){auto packed=r;detail::share_result_vertices(packed);save_chain(packed,directory);return;}vertex_pool=l.vertex_pool;}
     fs::create_directories(directory);json j={{"asset",{{"version","2.0"},{"generator","BlitzRemesher"}}},{"scene",0},{"scenes",json::array({{{"nodes",json::array({0})}}})},
       {"nodes",json::array()},{"meshes",json::array()},{"accessors",json::array()},{"bufferViews",json::array()},{"materials",json::array()}};
     uint16_t maxmat=0;for(auto& l:r.lods)for(size_t f=0;f<l.data.indices.size()/3;++f)maxmat=std::max(maxmat,l.view(r.source).material(f));
@@ -322,10 +325,17 @@ void save_chain(const Result& r,const fs::path& directory) {
         Vec3 lo=v.positions[0],hi=lo;for(size_t i=1;i<v.positions.count;++i){auto p=v.positions[i];lo={std::min(lo.x,p.x),std::min(lo.y,p.y),std::min(lo.z,p.z)};hi={std::max(hi.x,p.x),std::max(hi.y,p.y),std::max(hi.z,p.z)};}
         j["accessors"][a["POSITION"].get<size_t>()]["min"]={lo.x,lo.y,lo.z};j["accessors"][a["POSITION"].get<size_t>()]["max"]={hi.x,hi.y,hi.z};return a;
     };
-    json shared=attributes(r.source);
+    json pooled,shared;
+    if(vertex_pool) {
+        pooled=attributes(vertex_pool->view());shared=pooled;
+        for(auto it=shared.begin();it!=shared.end();++it){auto a=j["accessors"][it.value().get<size_t>()];a["count"]=r.source.positions.count;
+            if(it.key()=="POSITION"){Vec3 lo=r.source.positions[0],hi=lo;for(size_t i=1;i<r.source.positions.count;++i){auto p=r.source.positions[i];lo={std::min(lo.x,p.x),std::min(lo.y,p.y),std::min(lo.z,p.z)};hi={std::max(hi.x,p.x),std::max(hi.y,p.y),std::max(hi.z,p.z)};}
+                a["min"]={lo.x,lo.y,lo.z};a["max"]={hi.x,hi.y,hi.z};}
+            it.value()=j["accessors"].size();j["accessors"].push_back(std::move(a));}
+    } else shared=attributes(r.source);
     const auto runtime=runtime_levels(r);
     for(auto i:runtime) {
-        auto v=r.lods[i].view(r.source);auto a=r.lods[i].shared_vertices?shared:attributes(v);json primitives=json::array();
+        auto v=r.lods[i].view(r.source);auto a=r.lods[i].shared_vertices?shared:r.lods[i].source_prefix_vertices?pooled:attributes(v);json primitives=json::array();
         std::map<uint16_t,std::vector<uint32_t>> groups;
         for(size_t f=0;f<v.triangles();++f)for(int k=0;k<3;++k)groups[v.material(f)].push_back(v.indices[f*3+k]);
         for(auto& [mat,indices]:groups){size_t offset=bytes.size();for(auto index:indices)append(bytes,index);
@@ -358,7 +368,7 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"conservative_screen",s.research.conservative_screen},{"appearance_stage",unsigned(s.research.appearance_stage)},{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+      {"research",{{"shared_rebuild",s.research.shared_rebuild},{"merge_wedges",s.research.merge_wedges},{"density_targets",s.research.density_targets},{"conservative_screen",s.research.conservative_screen},{"appearance_stage",unsigned(s.research.appearance_stage)},{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
@@ -400,6 +410,9 @@ Settings settings_json(const json& original,bool legacy_research) {
     if(!stage.is_number_integer()||stage<0||stage>3)fail("appearance stage must be an integer in 0..3");
     s.research.appearance_stage=AppearanceStage(stage.get<uint8_t>());
     s.research.conservative_screen=experimental.at("conservative_screen").get<bool>();
+    s.research.density_targets=experimental.at("density_targets").get<bool>();
+    s.research.merge_wedges=experimental.at("merge_wedges").get<bool>();
+    s.research.shared_rebuild=experimental.at("shared_rebuild").get<bool>();
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));

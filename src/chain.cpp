@@ -2,6 +2,8 @@
 #include "timing.hpp"
 #include "components.hpp"
 #include "coverage.hpp"
+#include "density.hpp"
+#include "shared_vertices.hpp"
 #include <chrono>
 #include <iterator>
 #include <memory>
@@ -98,7 +100,7 @@ template<class T> bool equal_vector(const std::vector<T>& a,const std::vector<T>
     return a.size()==b.size()&&(a.empty()||std::memcmp(a.data(),b.data(),a.size()*sizeof(T))==0);
 }
 bool same_lod(const Lod& a,const Lod& b) {
-    return a.shared_vertices==b.shared_vertices&&a.data.indices==b.data.indices&&a.data.materials==b.data.materials
+    return a.shared_vertices==b.shared_vertices&&a.vertex_pool==b.vertex_pool&&a.source_prefix_vertices==b.source_prefix_vertices&&a.data.indices==b.data.indices&&a.data.materials==b.data.materials
       &&equal_vector(a.data.positions,b.data.positions)&&equal_vector(a.data.normals,b.data.normals)
       &&equal_vector(a.data.colors,b.data.colors)&&equal_vector(a.data.uv,b.data.uv)&&equal_vector(a.data.tangents,b.data.tangents);
 }
@@ -115,6 +117,7 @@ EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,boo
 SearchPass search_pass(MeshView source,const Settings& s,const Proposer& proposer) {
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     const bool automatic=!s.research.output;
+    detail::SourceVertices source_vertices(source,automatic&&s.research.shared_rebuild);
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
     result.audit={s.profile,s.search_views,s.audit_views,s.weights,s.normal_importance,s.attribute_importance,
         s.search_supersample,s.audit_supersample,s.max_supersample};
@@ -148,15 +151,16 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
         auto audit=eval_config(s,steps[last],last,true,std::min(steps[last].source,steps[last].transition));
         detail::CoverageCache coverage(s.profile==Profile::Coverage?uint32_t(s.research.coverage_cache_mib)*1024*1024:0,
             result.reference_bounds);
-        size_t previous_target=0;
-        for(auto target:targets) {
+        size_t previous_target=0;detail::DensityTargets density;
+        for(auto nominal:targets) {
+            auto target=s.research.density_targets?density.next(source,source.triangles(),*result.added_vertex_budget_bytes,nominal):nominal;
             if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
             if(target==previous_target)continue;
             previous_target=target;
             ReduceSettings rs;rs.output=OutputMode::Rebuild;rs.objective=s.objective;rs.target_triangles=target;
             rs.appearance_stage=s.research.appearance_stage;rs.appearance_weights=search.weights;if(s.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=search.screen_size;
             rs.normal_weight=search.weights.normal;rs.cancelled=s.cancelled;rs.prune=s.prune;
-            rs.coupled_wedges=s.coupled_wedges;rs.boundary_weight=s.research.boundary_weight;
+            rs.coupled_wedges=s.coupled_wedges;rs.merge_wedges=s.research.merge_wedges;rs.preserve_positions=s.research.shared_rebuild;rs.boundary_weight=s.research.boundary_weight;
             rs.boundary_placement=s.research.boundary_placement;rs.independent_seams=s.research.independent_seams;
             ReductionStats stats;rs.statistics=(s.performance||s.research.trace)?&stats:nullptr;
             const auto begin=std::chrono::steady_clock::now();
@@ -168,10 +172,10 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                 s.performance->nonfinite_costs+=stats.nonfinite_costs;s.performance->appearance_peak_bytes=std::max(s.performance->appearance_peak_bytes,stats.appearance_bytes);
             }
             ++result.candidate_evaluations;++result.tail_probe_evaluations;
-            auto view=candidate.view(source);
+            source_vertices.share(candidate);auto view=candidate.view(source);
             const auto achieved=view.triangles();
             uint8_t gate=0;
-            const auto bytes=vertex_bytes(view);
+            const auto bytes=added_vertex_bytes(candidate,source);
             if(!validate(view).empty())gate=5;
             else if(same_mesh_data(view,source))gate=7;
             else if(bytes>*result.added_vertex_budget_bytes){++result.vertex_budget_rejections;gate=9;}
@@ -189,6 +193,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                 }
                 coverage.begin_candidate();
             }
+            if(s.research.density_targets)density.observe(target,achieved,bytes,gate);
             if(!gate&&(!tail_seed||view.triangles()<tail_seed->view(source).triangles()||
                 (view.triangles()==tail_seed->view(source).triangles()&&bytes<tail_reserved))) {
                 tail_reserved=bytes;tail_seed=std::move(candidate);
@@ -231,12 +236,15 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
         };
         struct Seen {const Node* parent;Lod lod;uint8_t gate;};std::vector<Seen> seen;size_t seen_bytes=0;
         auto offer=[&](Lod candidate,const std::shared_ptr<Node>& parent)->uint8_t {
+            source_vertices.share(candidate);
             auto view=candidate.view(source),previous=parent->lod.view(source);
             if(!validate(view).empty())return 5;
             if(view.triangles()>previous.triangles())return 6;
             const bool changed=!same_mesh_data(view,previous);
+            auto added=added_vertex_bytes(candidate,source);
+            if(candidate.source_prefix_vertices)for(auto p=parent;p;p=p->parent)
+                if(p->lod.source_prefix_vertices&&p->lod.vertex_pool==candidate.vertex_pool){added=0;break;}
             if(result.added_vertex_budget_bytes&&changed&&!candidate.shared_vertices) {
-                auto added=vertex_bytes(view);
                 auto allowed=*result.added_vertex_budget_bytes-(level+1<s.levels?tail_reserved:0);
                 if(parent->storage.added_vertex_bytes>allowed||added>allowed-parent->storage.added_vertex_bytes) {
                     ++result.vertex_budget_rejections;return 9;
@@ -274,7 +282,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
             node->storage=parent->storage;
             if(changed) {
                 node->storage.index_bytes+=uint64_t(view.indices.size())*4;
-                if(!candidate.shared_vertices)node->storage.added_vertex_bytes+=vertex_bytes(view);
+                node->storage.added_vertex_bytes+=added;
             }
             node->lod=std::move(candidate);next.push_back(std::move(node));
             return 0;
@@ -284,6 +292,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
         struct Slot {
             std::shared_ptr<Node> parent;bool direct;OutputMode output;
             std::vector<std::pair<size_t,bool>> trials,requested; // requested: target and prune flag.
+            detail::DensityTargets density;
         };
         std::vector<Slot> slots;
         struct Trials {const Node* parent;std::vector<std::pair<size_t,bool>> values;};std::vector<Trials> parent_trials;
@@ -298,7 +307,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                 if(!direct&&(s.research.chain==ChainMode::Direct ||
                     (s.research.chain==ChainMode::Hybrid&&same_mesh_data(source,parent->lod.view(source)))))continue;
                 if(automatic&&std::any_of(slots.begin(),slots.end(),[&](auto& slot){return slot.direct==direct&&slot.output==output&&same_mesh_data(slot.parent->lod.view(source),parent->lod.view(source));}))continue;
-                slots.push_back({parent,direct,output,{},{}});
+                slots.push_back({parent,direct,output,{},{},{}});
             }
         }
         // Alternate placement priority across levels; work remains deterministic.
@@ -334,15 +343,13 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                     if(automatic&&slot.direct&&slot.output==OutputMode::Reuse&&high<parent->lod.view(source).triangles()&&
                        std::none_of(slot.trials.begin(),slot.trials.end(),[&](auto x){return x.first==high;}))target=high;
                 }
-                if(automatic&&result.added_vertex_budget_bytes&&slot.output==OutputMode::Rebuild) {
-                    // A compact triangle references at most three vertices.
-                    // Probe a target that can fit the remaining budget even
-                    // when a narrow beam gives this slot just one attempt.
+                if(automatic&&result.added_vertex_budget_bytes&&slot.output==OutputMode::Rebuild&&!s.research.shared_rebuild) {
                     const auto allowed=*result.added_vertex_budget_bytes-(level+1<s.levels?tail_reserved:0);
                     const auto remaining=parent->storage.added_vertex_bytes<=allowed?
                         allowed-parent->storage.added_vertex_bytes:0;
                     const auto stride=vertex_bytes(source)/source.positions.count;
-                    if(stride&&remaining/stride>=3)target=std::min(target,size_t(remaining/stride/3));
+                    if(s.research.density_targets)target=slot.density.next(input,parent->lod.view(source).triangles(),remaining,target);
+                    else if(stride&&remaining/stride>=3)target=std::min(target,size_t(remaining/stride/3));
                 }
                 ReduceSettings rs;rs.output=slot.output;rs.objective=s.objective;rs.target_triangles=target;
                 rs.appearance_stage=s.research.appearance_stage;rs.appearance_weights=search_source.weights;if(s.profile!=Profile::Attributes)rs.appearance_weights.color=0;rs.screen_size=search_source.screen_size*bounds(input).diameter()/result.reference_bounds.diameter();
@@ -355,7 +362,7 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                     }
                     slot.requested.push_back(request);
                 }
-                rs.coupled_wedges=s.coupled_wedges;
+                rs.coupled_wedges=s.coupled_wedges;rs.merge_wedges=s.research.merge_wedges;rs.preserve_positions=s.research.shared_rebuild;
                 rs.boundary_weight=s.research.boundary_weight;rs.boundary_placement=s.research.boundary_placement;
                 rs.independent_seams=s.research.independent_seams;
                 ReductionStats stats;rs.statistics=(s.performance||s.research.trace||s.research.topology_fallback)?&stats:nullptr;
@@ -389,7 +396,9 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
                     lod.data=copy_mesh(local);compact(lod.data);lod.shared_vertices=false;return true;
                 };
                 if(prepare_borrowed(candidate)) {
+                    const auto emitted_bytes=vertex_bytes(candidate.view(source));
                     auto gate=offer(std::move(candidate),parent);
+                    if(s.research.density_targets&&slot.output==OutputMode::Rebuild)slot.density.observe(target,trace.achieved,emitted_bytes,gate);
                     trials.push_back({target,gate==0});
                     if(automatic)slot.trials.push_back({target,gate==0});
                     if(trace.gate!=8)trace.gate=gate;
@@ -481,12 +490,12 @@ SearchPass search_pass(MeshView source,const Settings& s,const Proposer& propose
     return {std::move(result),std::move(finalists)};
 }
 }
-Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+static Result generate_impl(MeshView source,const Settings& s,const Proposer& proposer) {
     if(auto error=validate(s);!error.empty())throw std::invalid_argument(error);
     if(s.research.graph_passes) {
         const auto begin=std::chrono::steady_clock::now();
         auto seed=s;seed.research.graph_passes=0;seed.research.topology_fallback=false;
-        auto incumbent=generate(source,seed,proposer);
+        auto incumbent=generate_impl(source,seed,proposer);
         return detail::improve_chain(std::move(incumbent),s,proposer,
             std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count());
     }
@@ -542,6 +551,11 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
     }
     auto best=first.finalists[result.selection.selected];
     for(size_t i=result.lods.size();i-->0;) {result.lods[i]=std::move(best->lod);best=best->parent;}
+    return result;
+}
+Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+    auto result=generate_impl(source,s,proposer);
+    if(s.research.shared_rebuild)try {detail::share_result_vertices(result);}catch(const std::bad_alloc&){result.status=Status::BudgetLimited;}
     return result;
 }
 }

@@ -1,0 +1,9 @@
+Before wiring density_targets into proposal generation, the new controlled
+fixture failed on the old triangle-soup target cap:
+
+tests/density.cpp:34: result.status==Status::Complete&&result.lods.back().view(source.view()).triangles()==candidate.view().triangles()
+
+Command: build/release/blitz-density-tests
+Exit status: 1
+The source was unchanged; the admissible 18-triangle/16-vertex candidate was
+never requested. No corpus measurements preceded this regression.

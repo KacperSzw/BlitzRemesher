@@ -1,0 +1,2775 @@
+{
+  "purpose": "Bounded development smoke; no aggregate or default-quality score",
+  "rows": [
+    {
+      "id": "density-v1-attributes-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "9af3c3bf9305940feb006f4c58d6fec10d3d8ca4e7868b580a268e5046715794",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 12.209662841,
+      "appearance_bytes": 924912,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 479,
+          "achieved": 479,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 361,
+          "achieved": 362,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 351,
+          "achieved": 352,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 349,
+          "achieved": 350,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 348,
+          "achieved": 348,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 260,
+          "achieved": 260,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 339,
+          "achieved": 340,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v1-attributes-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "e98111503029b465bca72a268ba079c5eb6b82f510cd0837d5238df7f2448bf2",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        16854,
+        16854
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 22.455430255,
+      "appearance_bytes": 1968928,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 1049,
+          "achieved": 1050,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 764,
+          "achieved": 764,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 729,
+          "achieved": 730,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 726,
+          "achieved": 726,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 675,
+          "achieved": 676,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 718,
+          "achieved": 718,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v1-screen-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "65e77ecef4e215d79e0bbbbe682fd5fa075a1c48aeb8b0b6d0871cd9a329a7fb",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 10.841881089,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 484,
+          "achieved": 484,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 354,
+          "achieved": 354,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 338,
+          "achieved": 338,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 337,
+          "achieved": 337,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 130,
+          "achieved": 130,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 326,
+          "achieved": 326,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 334,
+          "achieved": 334,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v1-screen-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "0a6ce45130b9041762d13aaed3c4c254e5930db4caa3c9d25586f544bf83ee11",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 14.661285702,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 1036,
+          "achieved": 1036,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 748,
+          "achieved": 748,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 718,
+          "achieved": 718,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 714,
+          "achieved": 714,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 675,
+          "achieved": 676,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 712,
+          "achieved": 712,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v1-uncoupled-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "4fc21842560f2e338723752c77f3ea1db19ffb3c39888b98e92722102c9707e5",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": false,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 10.736468146,
+      "appearance_bytes": 880040,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1307,
+          "gate": "vertex_budget",
+          "uv_rejections": 59
+        },
+        {
+          "requested": 951,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 916,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 458,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 229,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 114,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 57,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        },
+        {
+          "requested": 28,
+          "achieved": 1211,
+          "gate": "vertex_budget",
+          "uv_rejections": 86
+        }
+      ]
+    },
+    {
+      "id": "density-v1-uncoupled-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "add1f19d1ef1f0723bc92a79c42780a98a7a1504e4f5c9859aee741d0055fe7e",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": false,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        16854,
+        16854
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 19.913010946,
+      "appearance_bytes": 1859060,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 1270
+        },
+        {
+          "requested": 3181,
+          "achieved": 3182,
+          "gate": "vertex_budget",
+          "uv_rejections": 648
+        },
+        {
+          "requested": 3116,
+          "achieved": 3116,
+          "gate": "vertex_budget",
+          "uv_rejections": 150
+        },
+        {
+          "requested": 3104,
+          "achieved": 3104,
+          "gate": "vertex_budget",
+          "uv_rejections": 151
+        },
+        {
+          "requested": 3102,
+          "achieved": 3102,
+          "gate": "source_audit",
+          "uv_rejections": 151
+        },
+        {
+          "requested": 358,
+          "achieved": 728,
+          "gate": "source_audit",
+          "uv_rejections": 692
+        },
+        {
+          "requested": 1945,
+          "achieved": 1946,
+          "gate": "source_audit",
+          "uv_rejections": 466
+        },
+        {
+          "requested": 2798,
+          "achieved": 2798,
+          "gate": "source_audit",
+          "uv_rejections": 159
+        }
+      ]
+    },
+    {
+      "id": "density-v2-merged-attributes-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "efec8f2413a2273e3b296e22b4cd0772fefc0d64291759819b6b74551d7bd767",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 14.061080875,
+      "appearance_bytes": 1271500,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 479,
+          "achieved": 479,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 361,
+          "achieved": 362,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 351,
+          "achieved": 352,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 349,
+          "achieved": 350,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 348,
+          "achieved": 348,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 260,
+          "achieved": 260,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 339,
+          "achieved": 340,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        }
+      ]
+    },
+    {
+      "id": "density-v2-merged-attributes-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "9219087cf0d618028a01d8b40545bd432ad3b38baef7c7f5e309112e084cb03f",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        16854,
+        16854
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 25.852001496,
+      "appearance_bytes": 2921770,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 1049,
+          "achieved": 1050,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 764,
+          "achieved": 764,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 729,
+          "achieved": 730,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 726,
+          "achieved": 726,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 675,
+          "achieved": 676,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 718,
+          "achieved": 718,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        }
+      ]
+    },
+    {
+      "id": "density-v2-merged-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "43179d54e356c3f6337d7c978e8bb09ec0ce0c40f2c207935bc78ae909b21fbf",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 11.85126127,
+      "appearance_bytes": 346588,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 484,
+          "achieved": 484,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 354,
+          "achieved": 354,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 338,
+          "achieved": 338,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 337,
+          "achieved": 337,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 130,
+          "achieved": 130,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 326,
+          "achieved": 326,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 334,
+          "achieved": 334,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        }
+      ]
+    },
+    {
+      "id": "density-v2-merged-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "4354a1343c927414cf580eb0edb46325d3d7ac20f007a0389f5653cbaaafaeae",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 15.555942892,
+      "appearance_bytes": 952842,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 1036,
+          "achieved": 1036,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 748,
+          "achieved": 748,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 718,
+          "achieved": 718,
+          "gate": "vertex_budget",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 714,
+          "achieved": 714,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 675,
+          "achieved": 676,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        },
+        {
+          "requested": 712,
+          "achieved": 712,
+          "gate": "source_audit",
+          "uv_rejections": 1
+        }
+      ]
+    },
+    {
+      "id": "density-v3-merged-attributes-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "9f134ce81ae366c053e5431bdb4f9c496eec8b934707bc7a3f488587893c6f0b",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 17.447472751,
+      "appearance_bytes": 1349884,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 22
+        },
+        {
+          "requested": 751,
+          "achieved": 751,
+          "gate": "vertex_budget",
+          "uv_rejections": 22
+        },
+        {
+          "requested": 636,
+          "achieved": 636,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 645,
+          "achieved": 645,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 650,
+          "achieved": 650,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 651,
+          "achieved": 651,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 260,
+          "achieved": 260,
+          "gate": "source_audit",
+          "uv_rejections": 16
+        },
+        {
+          "requested": 529,
+          "achieved": 529,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        }
+      ]
+    },
+    {
+      "id": "density-v3-merged-attributes-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "0a502a05954ebea2a3f946ed5b4cb02c4e264dbbf5785fb0c7df9f3c8508bc4e",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 2,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        16854,
+        16854
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 25.855874857,
+      "appearance_bytes": 3137506,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 28
+        },
+        {
+          "requested": 2800,
+          "achieved": 2800,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 2888,
+          "achieved": 2888,
+          "gate": "source_audit",
+          "uv_rejections": 23
+        },
+        {
+          "requested": 2904,
+          "achieved": 2904,
+          "gate": "source_audit",
+          "uv_rejections": 23
+        },
+        {
+          "requested": 2908,
+          "achieved": 2908,
+          "gate": "source_audit",
+          "uv_rejections": 23
+        },
+        {
+          "requested": 2909,
+          "achieved": 2910,
+          "gate": "source_audit",
+          "uv_rejections": 23
+        },
+        {
+          "requested": 2910,
+          "achieved": 2910,
+          "gate": "source_audit",
+          "uv_rejections": 23
+        },
+        {
+          "requested": 1432,
+          "achieved": 1432,
+          "gate": "source_audit",
+          "uv_rejections": 11
+        }
+      ]
+    },
+    {
+      "id": "density-v3-merged-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "63019d007a6d918eff084e1d48aa59b8fae3ce9def30f3b464202e1420e44e21",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 14.221238012,
+      "appearance_bytes": 424972,
+      "tail_probes": [
+        {
+          "requested": 1306,
+          "achieved": 1306,
+          "gate": "vertex_budget",
+          "uv_rejections": 22
+        },
+        {
+          "requested": 752,
+          "achieved": 752,
+          "gate": "vertex_budget",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 623,
+          "achieved": 623,
+          "gate": "vertex_budget",
+          "uv_rejections": 20
+        },
+        {
+          "requested": 579,
+          "achieved": 579,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 601,
+          "achieved": 601,
+          "gate": "source_audit",
+          "uv_rejections": 20
+        },
+        {
+          "requested": 611,
+          "achieved": 611,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 612,
+          "achieved": 612,
+          "gate": "source_audit",
+          "uv_rejections": 21
+        },
+        {
+          "requested": 459,
+          "achieved": 459,
+          "gate": "source_audit",
+          "uv_rejections": 11
+        }
+      ]
+    },
+    {
+      "id": "density-v3-merged-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "c81c56dd16887c57244aea1ee1eda552cc98442fd37f07300115acf91939643d",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": true,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": true,
+          "output": null,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978,
+        17978
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 60704,
+      "seconds": 21.865717121,
+      "appearance_bytes": 1168578,
+      "tail_probes": [
+        {
+          "requested": 3595,
+          "achieved": 3596,
+          "gate": "vertex_budget",
+          "uv_rejections": 19
+        },
+        {
+          "requested": 2815,
+          "achieved": 2816,
+          "gate": "source_audit",
+          "uv_rejections": 14
+        },
+        {
+          "requested": 2957,
+          "achieved": 2958,
+          "gate": "source_audit",
+          "uv_rejections": 14
+        },
+        {
+          "requested": 2975,
+          "achieved": 2976,
+          "gate": "source_audit",
+          "uv_rejections": 13
+        },
+        {
+          "requested": 2983,
+          "achieved": 2984,
+          "gate": "source_audit",
+          "uv_rejections": 13
+        },
+        {
+          "requested": 2985,
+          "achieved": 2986,
+          "gate": "source_audit",
+          "uv_rejections": 13
+        },
+        {
+          "requested": 2986,
+          "achieved": 2986,
+          "gate": "source_audit",
+          "uv_rejections": 13
+        },
+        {
+          "requested": 1432,
+          "achieved": 1432,
+          "gate": "source_audit",
+          "uv_rejections": 7
+        }
+      ]
+    },
+    {
+      "id": "density-v4-shared-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "ed6d1e7d3d5c410a53774773fb4b69332cb9d5db4d8f9a7e5f90e6f88d2f9070",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": false,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": false,
+          "output": null,
+          "shared_rebuild": true,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 15.993203516,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 1,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 4,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 16,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 32,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 65,
+          "achieved": 66,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 130,
+          "achieved": 130,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 260,
+          "achieved": 261,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 520,
+          "achieved": 520,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v4-shared-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "bcb600f66bb56709c746338f5550b99ae71c72bd1abed406ae42a6e92c78003a",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": false,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": false,
+          "output": null,
+          "shared_rebuild": true,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698
+      ],
+      "added_bytes": 9632,
+      "vertex_cap": 60704,
+      "seconds": 25.121475347,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 1,
+          "achieved": 2,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 11,
+          "achieved": 12,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 44,
+          "achieved": 44,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 89,
+          "achieved": 90,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 179,
+          "achieved": 180,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 716,
+          "achieved": 716,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 1432,
+          "achieved": 1432,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v5-shared-smoke-stool",
+      "asset": "ph_metal_stool_02",
+      "complete": true,
+      "run_sha256": "871b05cb49c9f087fd131478b4556103e487b31e605154ac647aa3d919b4ca48",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": false,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": false,
+          "output": null,
+          "shared_rebuild": true,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": true,
+      "triangles": [
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532,
+        6532
+      ],
+      "added_bytes": 0,
+      "vertex_cap": 28736,
+      "seconds": 16.656930329,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 1,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 4,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 16,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 32,
+          "achieved": 48,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 65,
+          "achieved": 66,
+          "gate": "source_search",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 130,
+          "achieved": 130,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 260,
+          "achieved": 261,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 520,
+          "achieved": 520,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        }
+      ]
+    },
+    {
+      "id": "density-v5-shared-smoke-trunk",
+      "asset": "ph_dead_quiver_trunk",
+      "complete": true,
+      "run_sha256": "9c34048eb5c84d9a5b6adda662f25b51e8b6f5e7be537ec085f417cec4d46943",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "appearance_stage": 0,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "conservative_screen": true,
+          "coverage_cache_mib": 256,
+          "density_targets": false,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "merge_wedges": false,
+          "output": null,
+          "shared_rebuild": true,
+          "topology_fallback": false,
+          "trace": true
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "fallback": false,
+      "triangles": [
+        17978,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698,
+        17698
+      ],
+      "added_bytes": 9632,
+      "vertex_cap": 60704,
+      "seconds": 25.666824027,
+      "appearance_bytes": 0,
+      "tail_probes": [
+        {
+          "requested": 1,
+          "achieved": 2,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 11,
+          "achieved": 12,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 44,
+          "achieved": 44,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 89,
+          "achieved": 90,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 179,
+          "achieved": 180,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 358,
+          "achieved": 358,
+          "gate": "source_audit",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 716,
+          "achieved": 716,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        },
+        {
+          "requested": 1432,
+          "achieved": 1432,
+          "gate": "vertex_budget",
+          "uv_rejections": 0
+        }
+      ]
+    }
+  ]
+}

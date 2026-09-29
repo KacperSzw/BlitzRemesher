@@ -21,6 +21,9 @@ triangle and bake-progress curves, independent-audit status, and engine exports.
 conservative screening, appearance ordering, wedge fitting and position fitting
 under the same quality limits. [Measurements](research/appearance/REPORT.md) and
 [qualification](research/appearance/DECISION.md) keep failed results visible.
+[Rebuilt-storage board](examples/density-board/index.html) compares indexed
+targets, interior wedge merging and source sharing under those same limits.
+[Measured outcomes and decision](research/density/DECISION.md).
 [Earlier 13-model vertex-budget gallery](examples/current-board/index.html).
 [Open the algorithm and LOD chain example](examples/lod-chains.html).
 The [earlier hybrid board](research/hybrid/board/index.html) records uncapped
@@ -174,6 +177,15 @@ search and audit finished, not that no better reduction exists.
 The C++ entry point is blitz::generate(MeshView, Settings). MeshView borrows
 strided streams; Result owns rebuilt vertices and output indices. Keep the
 source alive and unchanged until all result views are finished.
+
+In automatic generation, experimental `research.shared_rebuild` stores byte-identical source vertices
+once and adds only changed tuples. Mixed LODs use one immutable vertex pool;
+`Lod::view(result.source)` returns the correct streams and indices. The glTF
+export shares that pool across runtime meshes, and the memory ledger charges
+its added suffix once. `research.density_targets` and `research.merge_wedges`
+are separate opt-in proposal controls. See [contracts](docs/SPEC.md) and
+[experiment](research/density/PLAN.md). C++ consumers must rebuild for the new
+`Lod` layout; C ABI 5 is unchanged.
 
 The versioned [C API](include/blitz/blitz.h) exposes plain descriptors,
 explicit status/error buffers and an opaque result handle:

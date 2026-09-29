@@ -218,7 +218,7 @@ int benchmark_main(int argc,char** argv) {
                 size_t tail_count=std::min<size_t>(3,result.lods.size()-1);double tail=0;
                 for(size_t i=result.lods.size()-tail_count;i<result.lods.size();++i)tail+=result.lods[i].data.indices.size()/3;
                 row["last_three_ratio"]=tail/(tail_count*mesh.view().triangles());
-                std::string output_hash;for(auto& l:result.lods){output_hash+=digest({reinterpret_cast<const std::byte*>(l.data.indices.data()),l.data.indices.size()*4});output_hash+=digest({reinterpret_cast<const std::byte*>(l.data.positions.data()),l.data.positions.size()*sizeof(Vec3)});}
+                std::string output_hash;for(auto& l:result.lods){output_hash+=digest({reinterpret_cast<const std::byte*>(l.data.indices.data()),l.data.indices.size()*4});const auto& positions=l.vertex_pool?l.vertex_pool->positions:l.data.positions;output_hash+=digest({reinterpret_cast<const std::byte*>(positions.data()),positions.size()*sizeof(Vec3)});}
                 row["output_sha256"]=digest(output_hash);
                 std::string attributes;for(auto& l:result.lods)attributes+=attribute_hash(l.view(result.source));row["attributes_sha256"]=digest(attributes);
                 auto export_begin=std::chrono::steady_clock::now();

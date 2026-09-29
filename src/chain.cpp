@@ -3,6 +3,7 @@
 #include "components.hpp"
 #include "coverage.hpp"
 #include <chrono>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 namespace blitz {
@@ -79,6 +80,10 @@ struct Node {
     uint64_t triangles{};
     StorageStats storage;
 };
+struct SearchPass {
+    Result result;
+    std::vector<std::shared_ptr<Node>> finalists;
+};
 ChainCost cost(const std::shared_ptr<Node>& node) {
     ChainCost c;c.storage=node->storage;
     for(auto p=node;p;p=p->parent)c.triangles.push_back(uint32_t(p->lod.data.indices.size()/3));
@@ -101,9 +106,7 @@ EvalSettings eval_config(const Settings& s,ScheduleEntry step,unsigned level,boo
     e.views=audit?s.audit_views:s.search_views;e.supersample=audit?s.audit_supersample:s.search_supersample;
     e.max_supersample=s.max_supersample;e.cancelled=s.cancelled;e.force_scalar=s.force_scalar;e.performance=s.performance;return e;
 }
-}
-Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
-    if(s.performance)*s.performance={};
+SearchPass search_pass(MeshView source,const Settings& s,const Proposer& proposer) {
     if(auto e=validate(source);!e.empty())throw std::invalid_argument(e);
     const bool automatic=!s.research.output;
     Result result;result.source=source;result.reference_bounds=bounds(source);result.triangle_overhead_bps=s.triangle_overhead_bps;
@@ -138,7 +141,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
             result.reference_bounds);
         size_t previous_target=0;
         for(auto target:targets) {
-            if(cancelled()){result.status=Status::Cancelled;return result;}
+            if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
             if(target==previous_target)continue;
             previous_target=target;
             ReduceSettings rs;rs.output=OutputMode::Rebuild;rs.objective=s.objective;rs.target_triangles=target;
@@ -191,7 +194,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         result.tail_reserved_vertex_bytes=tail_reserved;
     }
     for(unsigned level=1;level<s.levels;++level) {
-        if(cancelled()){result.status=Status::Cancelled;return result;}
+        if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
         std::vector<std::shared_ptr<Node>> next;
         auto search_source=eval_config(s,steps[level],level,false,steps[level].source);
         auto search_adj=eval_config(s,steps[level],level,false,steps[level].transition);
@@ -292,7 +295,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         for(unsigned r=0;proposals<s.candidate_budget;++r) {
             for(auto& slot:slots) {
                 if(proposals==s.candidate_budget)break;
-                if(cancelled()){result.status=Status::Cancelled;return result;}
+                if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
                 auto& parent=slot.parent;
                 auto input=slot.direct?source:parent->lod.view(source);
                 auto found_trials=std::find_if(parent_trials.begin(),parent_trials.end(),[&](auto& t){return t.parent==parent.get();});
@@ -384,7 +387,7 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 // whether the topology-changing result is usable.
                 if(s.research.topology_fallback&&!proposer&&s.objective==Objective::Quadric&&
                    !topology_fallback_attempted&&stats.link_rejections&&uint64_t(trace.achieved)>uint64_t(target)*4) {
-                    if(cancelled()){result.status=Status::Cancelled;return result;}
+                    if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
                     topology_fallback_attempted=true;
                     auto relaxed=rs;relaxed.objective=Objective::TopologyRelaxed;
                     ReductionStats relaxed_stats;relaxed.statistics=&relaxed_stats;
@@ -412,14 +415,14 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
                 }
             }
         }
-        if(cancelled()){result.status=Status::Cancelled;return result;}
+        if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
         if(level+1==s.levels&&tail_seed)for(auto& parent:beam)offer(*tail_seed,parent);
         if(automatic&&!next.empty()) {
             // Reconnect the current triangle leader to cheaper histories. Sharing a
             // prefix does not require its descendants to keep the same reduction path.
             auto leader=*std::min_element(next.begin(),next.end(),[](auto& a,auto& b){return a->triangles<b->triangles;});
             for(auto& parent:beam)if(parent!=leader->parent&&parent!=source_path) {
-                if(cancelled()){result.status=Status::Cancelled;return result;}
+                if(cancelled()){result.status=Status::Cancelled;return {std::move(result),{}};}
                 ++result.transition_reconnections;offer(leader->lod,parent);
             }
         }
@@ -460,9 +463,60 @@ Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
         beam=std::move(next);
     }
     result.candidates.clear();for(auto& node:finalists)result.candidates.push_back(cost(node));
-    result.selection=select_chain(result.candidates,automatic?s.triangle_overhead_bps:0,result.added_vertex_budget_bytes);
-    if(!automatic)result.selection={0,0}; // Historical triangle-first research controls.
-    auto best=finalists[result.selection.selected];
+    return {std::move(result),std::move(finalists)};
+}
+}
+Result generate(MeshView source,const Settings& s,const Proposer& proposer) {
+    if(s.performance)*s.performance={};
+    auto first=search_pass(source,s,proposer);
+    auto& result=first.result;
+    if(first.finalists.empty())return std::move(result);
+    const bool automatic=!s.research.output;
+    auto baseline=automatic?select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes):ChainSelection{};
+    result.selection=baseline;
+    auto selected=first.finalists[baseline.selected];
+    const auto budget=result.added_vertex_budget_bytes.value_or(0);
+    const bool retry=automatic&&s.research.chain==ChainMode::Hybrid&&!s.research.adaptive_targets&&!proposer&&
+        result.status==Status::Complete&&budget&&selected->parent&&
+        same_mesh_data(selected->lod.view(source),selected->parent->lod.view(source))&&
+        selected->storage.added_vertex_bytes<=budget/2;
+    if(retry) {
+        auto adaptive=s;adaptive.research.adaptive_targets=true;
+        auto second=search_pass(source,adaptive,proposer);
+        result.adaptive_retry_attempted=true;
+        result.adaptive_retry_evaluations=second.result.candidate_evaluations;
+        result.candidate_evaluations+=second.result.candidate_evaluations;
+        result.duplicate_proposals+=second.result.duplicate_proposals;
+        result.component_builds+=second.result.component_builds;
+        result.component_unavailable+=second.result.component_unavailable;
+        result.topology_fallback_proposals+=second.result.topology_fallback_proposals;
+        result.transition_reconnections+=second.result.transition_reconnections;
+        result.vertex_budget_rejections+=second.result.vertex_budget_rejections;
+        result.tail_probe_evaluations+=second.result.tail_probe_evaluations;
+        for(size_t i=0;i<4;++i) {
+            result.rejected_gates[i]+=second.result.rejected_gates[i];
+            result.area_rejected_gates[i]+=second.result.area_rejected_gates[i];
+            if(second.result.worst_rejected[i].error>=result.worst_rejected[i].error)
+                result.worst_rejected[i]=second.result.worst_rejected[i];
+        }
+        for(auto& trace:second.result.proposals)trace.pass=1;
+        result.proposals.insert(result.proposals.end(),
+            std::make_move_iterator(second.result.proposals.begin()),
+            std::make_move_iterator(second.result.proposals.end()));
+        if(second.result.status==Status::Complete&&!second.finalists.empty()) {
+            const auto first_count=first.finalists.size();
+            result.candidates.insert(result.candidates.end(),
+                std::make_move_iterator(second.result.candidates.begin()),
+                std::make_move_iterator(second.result.candidates.end()));
+            first.finalists.insert(first.finalists.end(),
+                std::make_move_iterator(second.finalists.begin()),
+                std::make_move_iterator(second.finalists.end()));
+            result.selection=select_chain(result.candidates,s.triangle_overhead_bps,result.added_vertex_budget_bytes);
+            result.adaptive_retry_selected=result.selection.selected>=first_count;
+            if(result.adaptive_retry_selected)result.tail_reserved_vertex_bytes=second.result.tail_reserved_vertex_bytes;
+        }else result.status=second.result.status;
+    }
+    auto best=first.finalists[result.selection.selected];
     for(size_t i=result.lods.size();i-->0;) {result.lods[i]=std::move(best->lod);best=best->parent;}
     return result;
 }

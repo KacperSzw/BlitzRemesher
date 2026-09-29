@@ -48,7 +48,7 @@ struct ProposalTrace {
     uint32_t input_triangles{},parent_triangles{},requested{},achieved{};
     uint64_t attempts{},collapsed{},geometry_rejections{},uv_rejections{},link_rejections{};
     double seconds{};
-    uint8_t level{},origin{},strategy{},gate{}; // origin: direct=0, progressive=1, tail probe=2; strategy: QEM=0, endpoint=1, components=2, topology fallback=3.
+    uint8_t level{},origin{},strategy{},gate{},pass{}; // pass: baseline=0, adaptive retry=1; origin: direct=0, progressive=1, tail probe=2.
     // gate: accepted=0, four gates=1..4, invalid=5, growth=6, duplicate=7, unavailable=8, vertex budget=9.
 };
 struct StorageStats {
@@ -72,9 +72,11 @@ struct Result {
     std::array<Measurement,4> worst_rejected{};
     std::vector<ProposalTrace> proposals;
     uint64_t duplicate_proposals{},component_builds{},component_unavailable{},topology_fallback_proposals{},vertex_budget_rejections{};
-    uint8_t tail_probe_evaluations{}; // At most eight direct tail probes.
+    uint8_t tail_probe_evaluations{}; // At most eight direct tail probes per pass.
     uint64_t tail_reserved_vertex_bytes{};
     uint64_t transition_reconnections{}; // Extra audited edges, not reduction proposals.
+    uint64_t adaptive_retry_evaluations{};
+    bool adaptive_retry_attempted{},adaptive_retry_selected{};
     uint16_t triangle_overhead_bps{};
     std::optional<uint32_t> max_added_vertex_bytes_bps;
     std::optional<uint64_t> added_vertex_budget_bytes;

@@ -81,6 +81,16 @@ also remains eligible for direct tail proposals. Rebuild requests are bounded
 by the remaining budget divided by three times the packed source vertex
 stride, so even a single proposal can probe a compact tail. Actual emitted
 bytes decide admission; target counts are only search hints.
+If the selected final scheduled LOD is an exact duplicate of its predecessor
+and at most half of a positive added-vertex budget was spent, automatic hybrid
+generation runs one additional search with adaptive triangle targets. This
+retry is skipped for a custom proposer or an already adaptive research run.
+Both passes use identical source, schedule, cameras, cap and visual gates.
+Their audited finalist pools are selected together, so the retry cannot replace
+a better chain from the first pass. Candidate and trace diagnostics count both
+passes; traces identify the pass, and the selected chain alone determines
+runtime meshes and storage. An interrupted or resource-limited retry keeps
+the first chain and reports an incomplete status.
 The opt-in research setting `topology_fallback` applies only to the quadric
 objective. If a quadric proposal stops more than four times above its requested
 triangle count with link-condition rejections, it tries at most one additional

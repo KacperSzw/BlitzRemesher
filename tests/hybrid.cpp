@@ -41,6 +41,33 @@ int main(){try{
     CHECK(same_mesh_data(source.view(),m.view()));CHECK(a.candidates.size()==b.candidates.size());CHECK(a.candidate_evaluations==b.candidate_evaluations);
     for(size_t i=0;i<a.candidates.size();++i){CHECK(a.candidates[i].triangles==b.candidates[i].triangles);CHECK(a.candidates[i].storage.total()==b.candidates[i].storage.total());}
     CHECK(storage_stats(b).total()<=storage_stats(a).total());
+    Settings rescue=cfg;rescue.triangle_overhead_bps=0;rescue.candidate_budget=1;
+    rescue.research.trace=true;
+    auto stalled=generate(m.view(),rescue);
+    CHECK(stalled.status==Status::Complete&&stalled.adaptive_retry_attempted&&!stalled.adaptive_retry_selected);
+    CHECK(stalled.adaptive_retry_evaluations>0&&stalled.candidate_evaluations>stalled.adaptive_retry_evaluations);
+    CHECK(stalled.proposals.size()==stalled.candidate_evaluations);
+    CHECK(std::any_of(stalled.proposals.begin(),stalled.proposals.end(),[](auto& p){return p.pass==1;}));
+    CHECK(stalled.candidates.size()>1&&runtime_levels(stalled).size()==1);
+    CHECK(storage_stats(stalled).added_vertex_bytes==0&&stalled.lods.back().view(m.view()).triangles()==m.view().triangles());
+    rescue.triangle_overhead_bps=500;
+    auto with_overhead=generate(m.view(),rescue);
+    CHECK(with_overhead.adaptive_retry_attempted);
+    CHECK(with_overhead.selection.selected==select_chain(with_overhead.candidates,500,with_overhead.added_vertex_budget_bytes).selected);
+    rescue.triangle_overhead_bps=0;
+    rescue.research.adaptive_targets=true;CHECK(!generate(m.view(),rescue).adaptive_retry_attempted);
+    rescue.research.adaptive_targets=false;rescue.max_added_vertex_bytes_bps=0;
+    CHECK(!generate(m.view(),rescue).adaptive_retry_attempted);
+    rescue.max_added_vertex_bytes_bps=std::nullopt;
+    CHECK(!generate(m.view(),rescue).adaptive_retry_attempted);
+    rescue.max_added_vertex_bytes_bps=2000;
+    rescue.research.chain=ChainMode::Direct;
+    CHECK(!generate(m.view(),rescue).adaptive_retry_attempted);
+    rescue.research.chain=ChainMode::Hybrid;
+    auto unchanged_proposer=[](MeshView input,const ReduceSettings&) {
+        Lod lod;lod.data.indices.assign(input.indices.begin(),input.indices.end());return lod;
+    };
+    CHECK(!generate(m.view(),rescue,unchanged_proposer).adaptive_retry_attempted);
     cfg.cancelled=[]{return true;};auto cancelled=generate(m.view(),cfg);CHECK(cancelled.status==Status::Cancelled);CHECK(cancelled.candidates.size()==1);
     for(auto& lod:cancelled.lods)CHECK(lod.shared_vertices&&lod.data.indices==m.indices);
     cfg.triangle_overhead_bps=10001;CHECK(!validate(cfg).empty());

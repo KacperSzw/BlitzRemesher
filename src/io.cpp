@@ -259,12 +259,13 @@ json result_json(const Result& r) {
     if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b,r.added_vertex_budget_bytes);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
     j["runtime_storage"]=json::array();for(auto level:runtime_storage(r))j["runtime_storage"].push_back({{"scheduled_index",level.scheduled_index},{"added_vertex_bytes",level.added_vertex_bytes},{"index_bytes",level.index_bytes},{"cumulative_added_vertex_bytes",level.cumulative_added_vertex_bytes}});
-    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections},{"vertex_budget_rejections",r.vertex_budget_rejections},{"tail_probe_evaluations",r.tail_probe_evaluations},{"tail_reserved_vertex_bytes",r.tail_reserved_vertex_bytes}};
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections},{"vertex_budget_rejections",r.vertex_budget_rejections},{"tail_probe_evaluations",r.tail_probe_evaluations},{"tail_reserved_vertex_bytes",r.tail_reserved_vertex_bytes},
+        {"adaptive_retry_attempted",r.adaptive_retry_attempted},{"adaptive_retry_selected",r.adaptive_retry_selected},{"adaptive_retry_evaluations",r.adaptive_retry_evaluations}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
         const char* origins[]={"direct","progressive","tail_probe"};const char* strategies[]={"quadric","endpoints","components","topology_fallback"};
         const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable","vertex_budget"};
-        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
+        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"pass",p.pass?"adaptive_retry":"baseline"},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
             {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
     }

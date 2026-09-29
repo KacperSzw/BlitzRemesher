@@ -46,7 +46,7 @@
   <section class="policy" aria-label="Policy settings"><div><div class="label">Added vertex cap</div><strong>20%</strong><small>Of packed source vertex streams, across distinct runtime meshes</small></div>
     <div><div class="label">Triangle overhead</div><strong>0%</strong><small>Tail-first audited reference; earlier slots break ties</small></div>
     <div><div class="label">Examples</div><strong>__EXAMPLE_COUNT__</strong><small>Nature, rock, manufactured, and mixed meshes</small></div>
-    <div><div class="label">Final scheduled size</div><strong>16 px</strong><small>An earlier runtime mesh may serve this audit slot</small></div></section>
+    <div><div class="label">Final scheduled size</div><strong>16 px</strong><small>A stalled tail with spare vertex bytes gets one adaptive retry</small></div></section>
   <section class="controls" aria-label="Board controls"><p>Click a level for details. Runtime view hides exact consecutive duplicate meshes.</p><div class="switch"><button type="button" data-mode="all" aria-pressed="true">All audit slots</button><button type="button" data-mode="runtime" aria-pressed="false">Runtime meshes</button></div></section>
   <section class="focus" aria-label="Selected LOD"><canvas id="focus-canvas" aria-label="Selected mesh view"></canvas><div class="focus-copy" id="focus-copy"></div></section>
   <section id="assets" aria-label="Measured LOD chains"></section>
@@ -61,13 +61,15 @@ const assets=data.assets;
 const format=n=>Number(n).toLocaleString('en-US');
 const fixed=(n,d=1)=>Number(n).toFixed(d);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const state={mode:'all',activeAsset:0,activeLod:assets[0].lods.length-1,dragged:false};
+const initial=assets.findIndex(a=>a.id==='ph_potted_plant_04');
+const state={mode:'all',activeAsset:Math.max(0,initial),activeLod:assets[Math.max(0,initial)].lods.length-1,dragged:false};
 const levelCost=(a,i)=>a.runtime_storage.find(c=>c.scheduled_index===i);
 const runtimeIndex=(a,i)=>a.runtime_levels.filter(n=>n<=i).at(-1);
 const geometry=new Map();
 document.getElementById('assets').innerHTML=assets.map((a,ai)=>{
   const final=a.lods.at(-1).triangles,source=a.lods[0].triangles;
-  return '<article class="asset" data-asset="'+ai+'"><div class="asset-head"><div><div class="badge">'+esc(a.category)+' / current automatic policy</div><h2>'+esc(a.name)+'</h2><p class="asset-meta"><strong>20% cap: '+format(a.storage.added_vertex_bytes)+' / '+format(a.budget_bytes)+' added vertex bytes</strong> · '+a.tail_probe_evaluations+' tail probes · '+format(a.tail_reserved_vertex_bytes)+' B reserved for 16 px · '+a.candidate_budget+' proposals/level · '+a.levels+' audit slots · '+a.runtime_levels.length+' runtime meshes · '+fixed(a.generation_seconds,2)+' s bake</p><div class="asset-links"><a href="../'+esc(a.dir.split('/').at(-1))+'/chain.gltf">glTF chain</a><a href="../../'+esc(a.result)+'">Raw result</a><a href="../../'+esc(a.config)+'">Settings</a><a href="'+esc(a.source_url)+'">Source credit</a></div></div><div class="asset-summary"><strong>−'+fixed(100*(1-final/source),1)+'%</strong><small>'+format(source)+' → '+format(final)+' triangles</small></div></div><div class="chain-scroll"><div class="chain" style="--count:'+a.lods.length+'">'+a.lods.map((l,i)=>{
+  const retry=a.adaptive_retry_attempted?' · adaptive retry '+(a.adaptive_retry_selected?'selected':'kept baseline'):'';
+  return '<article class="asset" data-asset="'+ai+'"><div class="asset-head"><div><div class="badge">'+esc(a.category)+' / current automatic policy</div><h2>'+esc(a.name)+'</h2><p class="asset-meta"><strong>20% cap: '+format(a.storage.added_vertex_bytes)+' / '+format(a.budget_bytes)+' added vertex bytes</strong> · '+a.tail_probe_evaluations+' tail probes · '+format(a.tail_reserved_vertex_bytes)+' B reserved for 16 px'+retry+' · '+a.candidate_budget+' proposals/level · '+a.levels+' audit slots · '+a.runtime_levels.length+' runtime meshes · '+fixed(a.generation_seconds,2)+' s bake</p><div class="asset-links"><a href="../'+esc(a.dir.split('/').at(-1))+'/chain.gltf">glTF chain</a><a href="../../'+esc(a.result)+'">Raw result</a><a href="../../'+esc(a.config)+'">Settings</a><a href="'+esc(a.source_url)+'">Source credit</a></div></div><div class="asset-summary"><strong>−'+fixed(100*(1-final/source),1)+'%</strong><small>'+format(source)+' → '+format(final)+' triangles</small></div></div><div class="chain-scroll"><div class="chain" style="--count:'+a.lods.length+'">'+a.lods.map((l,i)=>{
     const cost=levelCost(a,i),active=!!cost;
     const mode=!active?'SAME MESH AS LOD '+runtimeIndex(a,i):l.shared_vertices?'SOURCE VERTICES':'NEW VERTEX BUFFER';
     const byteLine=!active?'0 new runtime bytes':'+ '+fixed(cost.added_vertex_bytes/1024,1)+' KiB verts · '+fixed(cost.index_bytes/1024,1)+' KiB indices';

@@ -56,6 +56,13 @@ int main() {
         save_ply(m.view(),dir/"triangle.ply");auto p=load_mesh(dir/"triangle.ply");CHECK(p.indices==m.indices);CHECK(p.uv[1].x==1);CHECK(p.normals[0].z==1);
         Result r;r.source=m.view();r.reference_bounds=bounds(m.view());r.max_changed_area=.5;
         for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;r.lods.push_back(std::move(l));}
+        r.adaptive_retry_attempted=true;r.adaptive_retry_selected=true;r.adaptive_retry_evaluations=3;
+        ProposalTrace retry_trace;retry_trace.pass=1;r.proposals.push_back(retry_trace);
+        auto diagnostic=result_json(r);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_attempted"]==true);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_selected"]==true);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_evaluations"]==3);
+        CHECK(diagnostic["proposals"][0]["pass"]=="adaptive_retry");
         save_chain(r,dir/"gltf");auto g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.indices.size()==3);CHECK(g.positions.size()==3);
         nlohmann::json manifest;std::ifstream(dir/"gltf/lods.json")>>manifest;CHECK(manifest["lods"][2]["gltf_mesh"]==0);
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));

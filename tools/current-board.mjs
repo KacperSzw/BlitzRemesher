@@ -2,28 +2,11 @@
 import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {dirname,resolve} from 'node:path';
+import {entries} from './current-board-assets.mjs';
 
 const root=resolve(import.meta.dirname,'..');
 const read=async path=>JSON.parse(await fs.readFile(resolve(root,path),'utf8'));
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
-const entries=[
-  {id:'ph_moon_rock_02',name:'Moon rock',category:'Rock',color:'#ba9066',yaw:.62,pitch:.36,
-    dir:'examples/moon-rock-budget',input:'data/polyhaven/moon_rock_02/source.gltf',result:'research/vertex-budget/moon-rock-result.json',config:'research/vertex-budget/moon-rock.json'},
-  {id:'ph_grass_bermuda_01',name:'Bermuda grass',category:'Nature',color:'#7d9b69',yaw:.48,pitch:.24,
-    dir:'examples/grass-bermuda-budget',input:'data/polyhaven/grass_bermuda_01/source.gltf',result:'research/vertex-budget/grass-bermuda-result.json',config:'research/vertex-budget/grass-bermuda.json'},
-  {id:'ph_lambis_shell',name:'Lambis shell',category:'Nature',color:'#b38b71',yaw:.62,pitch:.28,
-    dir:'examples/lambis-shell-budget',input:'data/polyhaven/lambis_shell/source.gltf',result:'research/vertex-budget/lambis-shell-result.json',config:'research/vertex-budget/lambis-shell.json'},
-  {id:'ph_metal_stool_02',name:'Metal stool',category:'Manufactured',color:'#548f96',yaw:.64,pitch:.28,
-    dir:'examples/metal-stool-budget',input:'data/polyhaven/metal_stool_02/source.gltf',result:'research/vertex-budget/metal-stool-result.json',config:'research/vertex-budget/metal-stool.json'},
-  {id:'ph_potted_plant_04',name:'Potted plant',category:'Mixed',color:'#87996d',yaw:.6,pitch:.26,
-    dir:'examples/potted-plant-budget',input:'data/polyhaven/potted_plant_04/source.gltf',result:'research/vertex-budget/potted-plant-result.json',config:'research/vertex-budget/potted-plant.json'},
-  {id:'ph_dead_quiver_trunk',name:'Dead quiver trunk',category:'Nature',color:'#9c7656',yaw:.58,pitch:.24,
-    dir:'examples/dead-quiver-trunk-budget',input:'data/polyhaven/dead_quiver_trunk/source.gltf',result:'research/vertex-budget/dead-quiver-trunk-result.json',config:'research/vertex-budget/dead-quiver-trunk.json'},
-  {id:'ph_painted_wooden_shelves',name:'Painted wooden shelves',category:'Manufactured',color:'#b68a62',yaw:.55,pitch:.32,
-    dir:'examples/shelves-budget',input:'research/area-v3/trace-extracts/shelves-adaptive/meshes/ph_painted_wooden_shelves/chain.gltf',result:'research/vertex-budget/smoke-shelves-result.json',config:'research/vertex-budget/smoke-shelves.json'},
-  {id:'ph_rock_face_02',name:'Rock face',category:'Rock',color:'#a99378',yaw:.65,pitch:.3,
-    dir:'examples/rock-face-budget',input:'data/polyhaven/rock_face_02/source.gltf',result:'research/vertex-budget/rock-face-result.json',config:'research/vertex-budget/rock-face.json'}
-];
 const catalogs=await Promise.all([read('research/pilot.json'),read('research/corpus.json')]);
 const assets=[];
 for(const entry of entries){
@@ -47,6 +30,9 @@ for(const entry of entries){
   if(!(result.proposal_diagnostics?.tail_probe_evaluations>0)||
       result.proposal_diagnostics.tail_reserved_vertex_bytes>result.added_vertex_budget_bytes)
     throw Error('Missing capped tail-first search diagnostics: '+entry.id);
+  if(result.proposal_diagnostics.adaptive_retry_selected&&!result.proposal_diagnostics.adaptive_retry_attempted||
+      (result.proposal_diagnostics.adaptive_retry_evaluations??0)>result.candidate_evaluations)
+    throw Error('Invalid adaptive retry diagnostics: '+entry.id);
   if(result.storage.total_bytes!==binary.length||result.storage.added_vertex_bytes>result.added_vertex_budget_bytes||
       manifest.storage.total_bytes!==binary.length)throw Error('Storage or budget mismatch: '+entry.id);
   if(result.runtime_levels.length!==result.runtime_storage.length||
@@ -73,6 +59,9 @@ for(const entry of entries){
     storage:result.storage,budget_bytes:result.added_vertex_budget_bytes,
     tail_probe_evaluations:result.proposal_diagnostics.tail_probe_evaluations,
     tail_reserved_vertex_bytes:result.proposal_diagnostics.tail_reserved_vertex_bytes,
+    adaptive_retry_attempted:!!result.proposal_diagnostics.adaptive_retry_attempted,
+    adaptive_retry_selected:!!result.proposal_diagnostics.adaptive_retry_selected,
+    adaptive_retry_evaluations:result.proposal_diagnostics.adaptive_retry_evaluations??0,
     generation_seconds:result.generation_seconds,candidate_evaluations:result.candidate_evaluations,
     candidate_budget:config.candidate_budget,levels:config.levels,config:entry.config});
 }
@@ -84,6 +73,6 @@ const directory=resolve(root,'examples/current-board');
 await fs.mkdir(directory,{recursive:true});
 await fs.writeFile(resolve(directory,'index.html'),output);
 await fs.writeFile(resolve(directory,'manifest.json'),JSON.stringify({version:1,policy:data.policy,
-  assets:assets.map(({id,name,dir,input,input_gltf_sha256,input_binary_sha256,source_url,license,chain_sha256,config,runtime_levels,budget_bytes,storage,tail_probe_evaluations,tail_reserved_vertex_bytes})=>
-    ({id,name,dir,input,input_gltf_sha256,input_binary_sha256,source_url,license,chain_sha256,config,runtime_levels,budget_bytes,storage,tail_probe_evaluations,tail_reserved_vertex_bytes}))},null,2)+'\n');
+  assets:assets.map(({id,name,dir,input,input_gltf_sha256,input_binary_sha256,source_url,license,chain_sha256,config,runtime_levels,budget_bytes,storage,tail_probe_evaluations,tail_reserved_vertex_bytes,adaptive_retry_attempted,adaptive_retry_selected,adaptive_retry_evaluations})=>
+    ({id,name,dir,input,input_gltf_sha256,input_binary_sha256,source_url,license,chain_sha256,config,runtime_levels,budget_bytes,storage,tail_probe_evaluations,tail_reserved_vertex_bytes,adaptive_retry_attempted,adaptive_retry_selected,adaptive_retry_evaluations}))},null,2)+'\n');
 console.log(JSON.stringify({assets:assets.length,bytes:Buffer.byteLength(output),output:'examples/current-board/index.html'}));

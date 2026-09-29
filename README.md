@@ -94,7 +94,11 @@ material graph. Engine integrations retain their own material payloads.
   LOD's triangle count, then each earlier LOD in reverse order. The search first
   reserves the bytes of an audited compact final mesh, then lets earlier LODs
   spend the remainder. Up to eight tail probes add work beyond the per-level
-  candidate budget. With the cap disabled, selection minimizes total chain
+  candidate budget per pass. If the final LOD repeats its predecessor while at
+  least half the cap remains unused, one adaptive-target retry runs and the
+  better audited chain wins. This can add a second bounded bake on stalled
+  assets; the byte cap and visual limits stay the same. With the cap disabled,
+  selection minimizes total chain
   triangles. Nonzero overhead permits a smaller resident payload when every
   scheduled LOD stays within its integer triangle allowance. This is a bounded search.
 - Both original-source and preceding-LOD proposals undergo source and transition

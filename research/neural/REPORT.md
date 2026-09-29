@@ -2,6 +2,15 @@
 
 ## Current action-model evidence
 
+The subsequent 164-state curriculum also trained all three seeds successfully:
+98.78–99.39% preferred membership, loss about 1.35 to 0.02, native/FP64 error
+below 2.244e-5, and exact restoration. Its pilot stopped at a missing CLI memory
+option, now repaired and covered by a real executable test. Results were
+collected and compute/storage deleted. See [curriculum evidence](evidence/action-curriculum-v2/README.md).
+Its two-mesh smoke scored 4.096% mean reduction, below the original 6.940%
+smoke; broader learning has not yet demonstrated better mesh quality. The saved
+shards are reused for the bounded retry described in [HANDOFF.md](HANDOFF.md).
+
 The v2 endpoint experiment completed on an RTX PRO 6000 with all three seeds
 passing the one-mesh gate at 4,096 and 8,192 updates. The six portable models,
 raw proof histories, queried labels and telemetry are committed under

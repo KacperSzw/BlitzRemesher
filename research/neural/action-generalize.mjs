@@ -6,7 +6,7 @@ import {read,write} from './runpod-api.mjs';
 import {endpointDecision,actionHealth} from './action-gates.mjs';
 const evidence=fileURLToPath(new URL('./evidence/action-v2',import.meta.url));
 const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-export async function generalize({root,execute,deadline,phase}){
+export async function generalize({root,execute,deadline,phase,reusePrepared=true}){
   const manifest=read(evidence+'/manifest.json'),seeds=[101,202,303];
   for(const seed of seeds){
     if(!endpointDecision(read(evidence+`/history-${seed}.json`)).passed)throw new Error('Missing persisted endpoint proof');
@@ -15,8 +15,19 @@ export async function generalize({root,execute,deadline,phase}){
   }
   const result={complete:false,endpoint_gate_passed:true,quality_proven:false,generalization_gate_passed:false,stages:[]};
   const data=root+'/curriculum',datasets=['endpoint-proof'];
-  fs.mkdirSync(data,{recursive:true});fs.cpSync(evidence+'/proof-data',data+'/endpoint-proof',{recursive:true});
+  fs.mkdirSync(data,{recursive:true});
   const conditions=[{pixels:16,states:16,previous:4,adjacent:2},{pixels:64,states:16,previous:4,adjacent:3},{pixels:256,states:8,previous:2,adjacent:2}];
+  const saved=fileURLToPath(new URL('./evidence/action-curriculum-v2/data',import.meta.url));
+  if(reusePrepared&&fs.existsSync(saved+'/index.json')){
+    const expected=['endpoint-proof',...['ph_sweet_potato','ph_painted_wooden_bench'].flatMap(a=>conditions.map(c=>a+'-'+c.pixels))];
+    if(JSON.stringify(read(saved+'/index.json').datasets)!==JSON.stringify(expected))throw new Error('Saved curriculum selection changed');
+    for(const name of expected){const d=saved+'/'+name,j=read(d+'/index.json');
+      if(!j.complete||!j.reference_confirmed||hash(d+'/actions.bin')!==j.sha256||hash(d+'/contract.json')!==j.contract_sha256)throw new Error('Saved curriculum is incomplete or changed');
+      if(name!=='endpoint-proof'&&(!j.preceding_lod_emitted||j.previous_triangles>=j.source_triangles))throw new Error('Saved preceding LOD is missing');
+    }
+    fs.cpSync(saved,data,{recursive:true});datasets.splice(0,datasets.length,...expected);
+  }else{
+  fs.cpSync(evidence+'/proof-data',data+'/endpoint-proof',{recursive:true});
   write(data+'/curriculum.json',{assets:['ph_sweet_potato','ph_painted_wooden_bench'],conditions,source_limit:3,policy:manifest.files.find(f=>f.seed===101&&f.step===8192).sha256});
   phase('preparation');
   for(const asset of ['ph_sweet_potato','ph_painted_wooden_bench'])for(const c of conditions){
@@ -26,7 +37,9 @@ export async function generalize({root,execute,deadline,phase}){
     if(!index.complete||!index.reference_confirmed||!index.preceding_lod_emitted||index.previous_triangles>=index.source_triangles)throw new Error('Curriculum lacks an audited preceding LOD');
     datasets.push(name);write(data+'/progress.json',{complete:false,datasets,at:Date.now()});
   }
+  }
   write(data+'/index.json',{datasets});
+  write(data+'/progress.json',{complete:true,datasets,at:Date.now()});
   let previous,previousDuration=0;
   // Two checkpoints are sufficient to test persistence. A failed pilot remains
   // visible, and no third tuning stage or more expensive model is automatic.

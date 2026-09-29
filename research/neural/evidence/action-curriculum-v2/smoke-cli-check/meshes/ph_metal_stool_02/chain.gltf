@@ -1,0 +1,197 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 4490,
+      "max": [
+        0.224061518907547,
+        0.458111435174942,
+        0.23790474236011505
+      ],
+      "min": [
+        -0.22403839230537415,
+        -1.1295080184936523e-05,
+        -0.23518560826778412
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4490,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4490,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5125,
+      "count": 19596,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5125,
+      "count": 19500,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5125,
+      "count": 19308,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5125,
+      "count": 19203,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "BlitzRemesher",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 53880,
+      "byteOffset": 0
+    },
+    {
+      "buffer": 0,
+      "byteLength": 53880,
+      "byteOffset": 53880
+    },
+    {
+      "buffer": 0,
+      "byteLength": 35920,
+      "byteOffset": 107760
+    },
+    {
+      "buffer": 0,
+      "byteLength": 78384,
+      "byteOffset": 143680
+    },
+    {
+      "buffer": 0,
+      "byteLength": 78000,
+      "byteOffset": 222064
+    },
+    {
+      "buffer": 0,
+      "byteLength": 77232,
+      "byteOffset": 300064
+    },
+    {
+      "buffer": 0,
+      "byteLength": 76812,
+      "byteOffset": 377296
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 454108,
+      "uri": "chain.bin"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "material_0"
+    }
+  ],
+  "meshes": [
+    {
+      "name": "LOD0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD1",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD2",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "LOD3",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TEXCOORD_0": 2
+          },
+          "indices": 6,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "name": "LOD0"
+    },
+    {
+      "mesh": 1,
+      "name": "LOD1"
+    },
+    {
+      "mesh": 2,
+      "name": "LOD2"
+    },
+    {
+      "mesh": 3,
+      "name": "LOD3"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}

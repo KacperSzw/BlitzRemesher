@@ -33,18 +33,20 @@ test('action health rejects unverified updates and unchanged or nonfinite parame
 });
 test('cloud continuation stops before training when the preceding LOD is unverified',async()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let calls=0;
-  try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},execute:async(name,args)=>{
+  try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},reusePrepared:false,execute:async(name,args)=>{
     ++calls;assert.equal(name,'blitz-neural-action-prepare');write(args[1]+'/index.json',{complete:true,reference_confirmed:false});
   }}),/audited preceding LOD/);assert.equal(calls,1);}finally{fs.rmSync(root,{recursive:true,force:true});}
 });
 test('an incomplete matched pilot prevents a second cloud training stage',async()=>{
-  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let updates=0,audits=0;
-  try{const result=await generalize({root,deadline:Date.now()+120000,phase:()=>{},execute:async(name,args)=>{
-    if(name==='blitz-neural-action-prepare')write(args[1]+'/index.json',{complete:true,reference_confirmed:true,preceding_lod_emitted:true,source_triangles:100,previous_triangles:90});
+  for(const reusePrepared of [false,true]){
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let updates=0,audits=0,preparations=0;
+  try{const result=await generalize({root,deadline:Date.now()+120000,phase:()=>{},reusePrepared,execute:async(name,args)=>{
+    if(name==='blitz-neural-action-prepare'){++preparations;write(args[1]+'/index.json',{complete:true,reference_confirmed:true,preceding_lod_emitted:true,source_triangles:100,previous_triangles:90});}
     else if(name==='blitz-neural-action-train'){++updates;write(args[1]+'/latest.json',{complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn'});}
     else{assert.equal(name,'node');++audits;write(args[1]+'/report.json',{complete:false,gate:{passed:false,reason:'incomplete'},persisted:false});}
-  }});assert.equal(updates,3);assert.equal(audits,1);assert.equal(result.complete,false);assert.equal(result.generalization_gate_passed,false);assert.equal(result.stop_reason,'incomplete_matched_pilot');
+  }});assert.equal(preparations,reusePrepared?0:6);assert.equal(updates,3);assert.equal(audits,1);assert.equal(JSON.parse(fs.readFileSync(root+'/curriculum/progress.json')).complete,true);assert.equal(result.complete,false);assert.equal(result.generalization_gate_passed,false);assert.equal(result.stop_reason,'incomplete_matched_pilot');
   }finally{fs.rmSync(root,{recursive:true,force:true});}
+  }
 });
 test('matched pilot requires three seeds, all controls, complete assets and measured advantage',()=>{
   const methods=['learned','learned','learned','constant','shuffled','shuffled','shuffled','shortest','current-plane'];

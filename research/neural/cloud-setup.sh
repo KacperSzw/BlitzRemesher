@@ -25,6 +25,8 @@ cmake -S . -B build/neural -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -
 cmake --build build/neural -j2
 ldd build/neural/blitz-neural-train > /workspace/results/trainer-dependencies.txt
 ctest --test-dir build/neural --output-on-failure | tee /workspace/results/ctest.log
-build/neural/blitz-neural-train /workspace/dataset /workspace/results/prefetch --core 8 --batch 2 --workers 8 --check-prefetch 28
+if [[ "${BLITZ_ACTION_V2:-0}" != 1 ]]; then
+  build/neural/blitz-neural-train /workspace/dataset /workspace/results/prefetch --core 8 --batch 2 --workers 8 --check-prefetch 28
+fi
 git rev-parse HEAD > /workspace/results/git-revision
 dpkg-query -W > /workspace/results/packages.txt

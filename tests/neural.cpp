@@ -1,5 +1,6 @@
 #include "neural_internal.hpp"
 #include "neural_numeric.hpp"
+#include "neural_action.hpp"
 #include "chain_hooks.hpp"
 #include "blitz/render_cost.hpp"
 #include "blitz/blitz.h"
@@ -91,6 +92,11 @@ void cuda_contracts() {
     require(blitz_neural_model_load(path.c_str(),&coptions,&cmodel,error,sizeof(error))==BLITZ_OK,"C model load failed");require(blitz_neural_model_sha256(cmodel)!=nullptr,"C model hash missing");blitz_neural_model_destroy(cmodel);
     {std::fstream f(path,std::ios::in|std::ios::out|std::ios::binary);f.seekp(50);f.put('x');}bool rejected=false;try{neural::load_weights(path);}catch(const std::invalid_argument&){rejected=true;}std::filesystem::remove(path);require(rejected,"model corruption accepted");
     auto g=neural::graph(m.view());auto encoded=neural::encode_cuda(g,weights,options);require(encoded.size()==g.size()*neural::hidden,"embedding shape");auto prediction=neural::predict_cuda(encoded,{},weights,options);require(prediction.values.size()==g.size()*4,"head shape");
+    neural::WeightsData action_weights;action_weights.architecture=neural::action_schema;action_weights.values.resize(neural::action_weight_count,.001f);action_weights.provenance="v2 test";
+    neural::save_weights(path,action_weights);auto action_restored=neural::load_weights(path);require(action_restored.architecture==neural::action_schema&&action_restored.values==action_weights.values,"action architecture roundtrip");
+    options.action_trials=2;NeuralModel action_model(path.c_str(),options);config.cancelled={};NeuralStats action_stats;
+    auto action_result=generate_neural(m.view(),config,action_model,&action_stats);require(action_result.lods.size()==3&&action_stats.action_ranked>0&&action_stats.action_trials>0,"v2 inference not wired into chain");
+    for(auto& l:action_result.lods)require(l.adjacent.passed&&l.source_error.passed,"v2 chain bypassed audits");std::filesystem::remove(path);
     auto single=overlap_cuda(m.view(),b,24,{1,0,0xB1172026},options);auto twice=m;twice.indices.insert(twice.indices.end(),m.indices.begin(),m.indices.end());auto doubled=overlap_cuda(twice.view(),b,24,{1,0,0xB1172026},options);require(std::abs(doubled-2*single)<1e-8,"overdraw counts do not scale");
     for(double screen:{16.,25.}){auto costs=render_cost(twice.view(),b,ViewSet{1,0,0xB1172026},screen);auto cuda=overlap_cuda(twice.view(),b,screen,{1,0,0xB1172026},options);require(costs.covered_pixels&&std::abs(cuda-double(costs.covered_samples)/costs.covered_pixels)<1e-8,"overdraw differs from CPU proxy");}
     EvalSettings stopped;stopped.cancelled=[]{return true;};auto cancelled=evaluate_cuda(m.view(),altered.view(),b,stopped,options);require(!cancelled.complete&&!cancelled.passed,"CUDA cancellation ignored");

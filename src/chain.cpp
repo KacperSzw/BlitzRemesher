@@ -248,7 +248,8 @@ Result detail::generate_with_hooks(MeshView source,const Settings& s,const Propo
                 auto begin=std::chrono::steady_clock::now();
                 Lod candidate;
                 {detail::ScopedTime timer(s.performance?&s.performance->reduction_ns:nullptr);
-                 if(hooks)candidate=hooks->propose(input,rs,search_source,steps[level].transition);
+                 if(hooks&&hooks->propose_guarded)candidate=hooks->propose_guarded(input,source,parent->lod.view(source),result.reference_bounds,rs,audit_source,audit_adj);
+                 else if(hooks)candidate=hooks->propose(input,rs,search_source,steps[level].transition);
                  else if(!proposer&&s.research.component_candidates&&steps[level].pixels<=128&&proposals%3==2) {
                      trace.strategy=2;auto found=std::find_if(components.begin(),components.end(),[&](auto& c){return same_mesh_data(c.input,input);});
                      if(found==components.end()) {components.push_back({input,detail::component_order(input,result.reference_bounds,search_source)});found=std::prev(components.end());++result.component_builds;}

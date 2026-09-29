@@ -8,6 +8,7 @@ struct NeuralOptions {
     int32_t device{};
     uint32_t memory_mib{6144}; // Includes library-owned CUDA scratch; minimum 128.
     bool overdraw_tiebreak{true};
+    uint32_t action_trials{64}; // Per v2 proposal; additional measured visual trials.
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {
@@ -24,6 +25,7 @@ struct NeuralStats {
     uint32_t bounded_audits{},resource_failures{};
     uint64_t gpu_peak_bytes{};
     NeuralAuditFailure first_resource_failure{};
+    uint64_t action_ranked{},action_trials{};
 };
 // Immutable weights. Calls use private CUDA workspaces and preserve the caller's device.
 // Source streams must outlive the returned Result, as for generate().

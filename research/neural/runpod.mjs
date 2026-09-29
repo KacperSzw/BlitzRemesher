@@ -7,9 +7,10 @@ import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
 import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines,retrySsh} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
+import {actionBudget} from './action-budget.mjs';
 
 const [command,directory]=process.argv.slice(2);
-if(!directory)throw new Error('runpod.mjs {prepare|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
+if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
 const dir=path.resolve(directory),root=process.cwd(),statePath=dir+'/rental.json';
 const keyFile=path.join(os.homedir(),'.config/blitz/runpod-api-key');
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -33,14 +34,22 @@ async function prepare(){
     fs.copyFileSync(source,target,fs.constants.COPYFILE_FICLONE);
     files.push({path:destination,sha256:actual,bytes:fs.statSync(target).size});
   };
-  const dataset=root+'/runs/neural/first-pass/data',index=read(dataset+'/index.json');
+  const actions=command==='prepare-actions';
+  if(!actions){const dataset=root+'/runs/neural/first-pass/data',index=read(dataset+'/index.json');
   if(!index.complete||index.assets.length!==66||await sha(dataset+'/index.json')!=='4faabd8f7411e6dfbc1fd0357e143f6627a6248e73b5c2421a947396cad1e5d7')
     throw new Error('Expected the approved original 66-asset teacher dataset');
   await copy(dataset+'/index.json','dataset/index.json');
   for(const asset of index.assets)await copy(dataset+'/'+relative(asset.path),'dataset/'+asset.path,asset.sha256);
+  }
   const auditFiles=new Map();
   for(const [manifest,split] of [['research/pilot.json','development'],['research/corpus.json','validation']]){
+    if(actions&&split==='validation')continue;
     for(const asset of read(manifest).assets.filter(a=>a.split===split))for(const file of asset.files)auditFiles.set(file.path,file.sha256);
+  }
+  if(actions){const selected=new Set(['ph_sweet_potato','ph_moon_rock_03']);
+    const allowed=new Set(read(root+'/research/neural/training-manifest.json').assets.map(a=>a.id));
+    for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
+    if(selected.size)throw new Error('Missing action proof assets');
   }
   for(const [file,checksum] of auditFiles)await copy(root+'/'+relative(file),'assets/'+file,checksum);
   files.push({path:'source.bundle',sha256:await sha(stage+'/source.bundle'),bytes:fs.statSync(stage+'/source.bundle').size});
@@ -48,8 +57,8 @@ async function prepare(){
   fs.writeFileSync(stage+'/inputs.sha256',files.map(f=>`${f.sha256}  ${f.path}`).join('\n')+'\n');
   sync('tar',['-cf',dir+'/input.tar','-C',stage,'.']);
   fs.mkdirSync(dir+'/control',{recursive:true});
-  for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
-  write(dir+'/prepared.json',{revision,branch,deployment,archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
+  for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs','action-budget.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
+  write(dir+'/prepared.json',{revision,branch,deployment,experiment:actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
   fs.rmSync(stage,{recursive:true});
   console.log('Prepared checksummed source, original training shards, pilot and validation assets: '+dir);
 }
@@ -64,11 +73,19 @@ async function launch(){
   if(JSON.stringify(prepared.deployment)!==JSON.stringify(deployment))throw new Error('Prepared GPU profile differs; prepare a new bundle');
   if(await sha(dir+'/input.tar')!==prepared.archive_sha256)throw new Error('Prepared archive changed');
   const api=new Api(apiKey(keyFile)),quote=await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER);
+  let budget;
+  if(prepared.experiment==='action-v2'){
+    const [pods,volumes,bill]=await Promise.all([api.pods(),api.request('GET','/network-volumes'),api.request('GET','/billing')]);
+    if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
+    budget=actionBudget({billed:bill.metadata.totals.totalAmount,rate:deployment.gpu_hourly_usd_cap});write(dir+'/billing-before.json',bill);
+  }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
-  const deadlines=rentalDeadlines(started,process.argv[4]===undefined?undefined:Number(process.argv[4]));
-  write(statePath,{name,quote,deployment,revision:prepared.revision,...deadlines});
+  const requested=process.argv[4]===undefined?undefined:Number(process.argv[4]);
+  const deadlines=rentalDeadlines(started,budget?Math.min(requested??Infinity,started+budget.minutes*60000):requested);
+  if(budget)deadlines.training_minutes=20;
+  write(statePath,{name,quote,deployment,experiment:prepared.experiment,budget,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);
   sync('systemctl',['--user','enable','--now',name+'-watchdog.service']);
@@ -145,7 +162,7 @@ async function control(){
     }
     rental.commit({phase:'start-job'});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
-    await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
+    await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' '+sh(s.experiment??'vertex-v1')+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
     while(Date.now()<s.deadline_ms-30000){
       if(fs.existsSync(dir+'/stop-requested'))throw new Error('Cancellation requested');
       const phase=await retrySsh(()=>remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi'));
@@ -193,7 +210,7 @@ async function watchdog(){
     await sleep(5000);
   }
 }
-if(command==='prepare')await prepare();
+if(command==='prepare'||command==='prepare-actions')await prepare();
 else if(command==='launch')await launch();
 else if(command==='control')await control();
 else if(command==='watchdog')await watchdog();

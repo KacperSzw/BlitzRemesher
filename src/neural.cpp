@@ -1,10 +1,11 @@
 #include "neural_internal.hpp"
+#include "neural_action.hpp"
 #include "chain_hooks.hpp"
 #include <chrono>
 namespace blitz {
 struct NeuralModel::Impl {neural::WeightsData weights;NeuralOptions options;std::string hash;};
 NeuralModel::NeuralModel(const char* file,const NeuralOptions& options) {
-    if(!file||!file[0]||options.device<0||options.memory_mib<128||options.memory_mib>65536)throw std::invalid_argument("invalid neural model options");
+    if(!file||!file[0]||options.device<0||options.memory_mib<128||options.memory_mib>65536||!options.action_trials||options.action_trials>65536)throw std::invalid_argument("invalid neural model options");
     if(!neural_available(options.device))throw NeuralUnavailable("neural mode requires an available CUDA device and a BLITZ_CUDA build");
 #ifdef BLITZ_CUDA
     auto value=std::make_unique<Impl>();value->options=options;value->weights=neural::load_weights(file,&value->hash);impl_=std::move(value);
@@ -44,8 +45,10 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
         throw std::invalid_argument("CPU research proposal options are unsupported in neural mode");
     NeuralStats local;auto& counters=stats?*stats:local;auto& options=model.impl_->options;auto& weights=model.impl_->weights;
     using Clock=std::chrono::steady_clock;auto nanos=[](auto start){return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-start).count());};
-    auto start=Clock::now();auto g=neural::graph(source);
-    auto embedding=neural::encode_mesh_cuda(g,weights,options,settings.cancelled);
+    auto start=Clock::now();neural::Graph g;std::vector<float> embedding;
+    std::unique_ptr<neural::ActionCuda> action_network;
+    if(weights.architecture==neural::schema){g=neural::graph(source);embedding=neural::encode_mesh_cuda(g,weights,options,settings.cancelled);}
+    else action_network=std::make_unique<neural::ActionCuda>(weights,options);
     counters.encode_ns=nanos(start);
     // All proposals use the shared source encoding. The conditioned head predicts a
     // complete retention/representative field for each requested size and target.
@@ -61,6 +64,19 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
         bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
         auto m=evaluate_cuda(a,b,bounds,bounded,options,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
+    if(action_network)hooks.propose_guarded=[&](MeshView input,MeshView fixed_source,MeshView previous,const Bounds& bounds,const ReduceSettings& rs,const EvalSettings& source_eval,const EvalSettings& adjacent_eval){
+        auto begin=Clock::now();auto nested_before=counters.inference_ns+counters.gpu_audit_ns;neural::ActionStats stats;
+        auto rank=[&](const neural::ActionState&,std::span<const neural::ActionRecord> actions){auto t=Clock::now();std::vector<float> x;x.reserve(actions.size()*neural::action_features);
+            for(auto& a:actions)x.insert(x.end(),a.x.begin(),a.x.end());auto values=action_network->predict(x);std::vector<float> scores(actions.size());
+            for(size_t i=0;i<scores.size();++i)scores[i]=values[i*neural::action_outputs];counters.inference_ns+=nanos(t);return scores;};
+        auto gate=[&](MeshView candidate){auto a=hooks.evaluate(fixed_source,candidate,bounds,source_eval);if(!a.complete||!a.passed)return false;
+            auto b=hooks.evaluate(previous,candidate,bounds,adjacent_eval);return b.complete&&b.passed;};
+        auto candidate=neural::execute_actions(input,neural::condition(source_eval,adjacent_eval.limit,double(rs.target_triangles)/input.triangles()),rs.target_triangles,options.action_trials,rank,gate,&stats,s.cancelled);
+        if(rs.output==OutputMode::Rebuild){candidate.data=copy_mesh(candidate.view(input));compact(candidate.data);candidate.shared_vertices=false;}
+        auto elapsed=nanos(begin),nested=counters.inference_ns+counters.gpu_audit_ns-nested_before;counters.decode_ns+=elapsed-std::min(elapsed,nested);
+        ++counters.decoded;counters.legal_collapses+=stats.accepted;counters.rejected_collapses+=stats.rejected;counters.action_ranked+=stats.ranked;counters.action_trials+=stats.trials;
+        return candidate;
+    };
     hooks.confirm=[&](Result& r){auto begin=Clock::now();bool good=true;
         for(size_t i=1;i<r.lods.size()&&good;++i) {
             auto& lod=r.lods[i];EvalSettings e;e.profile=s.profile;e.weights=s.weights;e.views=s.audit_views;e.supersample=s.audit_supersample;e.max_supersample=s.max_supersample;

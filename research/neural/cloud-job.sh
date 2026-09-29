@@ -19,7 +19,13 @@ finish() {
 trap finish EXIT
 setup_deadline_ms=$1
 training_deadline_ms=$2
+export BLITZ_ACTION_V2=0
+if [[ "${4:-vertex-v1}" == action-v2 ]]; then export BLITZ_ACTION_V2=1; fi
 setup_seconds=$((setup_deadline_ms / 1000 - $(date +%s)))
 ((setup_seconds > 0))
 timeout --signal=TERM --kill-after=10s "${setup_seconds}s" bash research/neural/cloud-setup.sh
-node research/neural/cloud-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"
+if [[ "$BLITZ_ACTION_V2" == 1 ]]; then
+  node research/neural/action-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"
+else
+  node research/neural/cloud-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"
+fi

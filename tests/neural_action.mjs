@@ -9,7 +9,8 @@ import {freshConditions} from '../research/neural/action-curriculum.mjs';
 import {evaluateSaved,fullPilotFits} from '../research/neural/action-evaluate.mjs';
 import {write} from '../research/neural/runpod-api.mjs';
 import {actionBudget,actionAccrued,continuationBudget,continuationAuthorization} from '../research/neural/action-budget.mjs';
-import {endpointDecision,pilotDecision,actionHealth} from '../research/neural/action-gates.mjs';
+import {endpointDecision,pilotDecision,actionHealth,comparisonMethods,auditRowsHealthy} from '../research/neural/action-gates.mjs';
+const trainedHealth=args=>({complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn',step:Number(args[args.indexOf('--steps')+1]),steps_this_segment:8192});
 test('cumulative rental cap includes previous spend, storage allowance and reserve',()=>{
   for(const rate of [1.8,2.1,2.5])for(const billed of [1.9,2.75,4.2]){
     const b=actionBudget({rate,billed,minutes:60});assert.ok(b.maximum_total_usd<=10);assert.ok(b.prior_assumed_usd>=billed);assert.ok(b.reserve_usd>=1);
@@ -90,6 +91,51 @@ test('fresh curriculum is confined to frozen training identities and covers a th
   const categories=new Set();for(const c of freshConditions){assert.ok(allowed.has(c.asset));categories.add(corpus.find(a=>a.id===c.asset).category);}
   assert.equal(categories.size,3);
 });
+test('screening fixes one seed and one control without satisfying the full pilot',()=>{
+  const models=['one','two','three'],screen=comparisonMethods(models,'screening');
+  assert.deepEqual(screen.map(m=>m.name),['constant','learned-0']);
+  assert.ok(screen.every(m=>m.model===models[0]&&m.seed===1));
+  assert.equal(pilotDecision(screen).passed,false);
+  for(const scenario of ['pilot','diagnostic']){
+    const methods=comparisonMethods(models,scenario);
+    assert.equal(methods.length,9);assert.equal(methods.filter(m=>m.ranking==='learned').length,3);
+    assert.equal(methods.filter(m=>m.ranking==='shuffled').length,3);
+  }
+  assert.throws(()=>comparisonMethods(models,'unknown'));
+  assert.throws(()=>comparisonMethods(models.slice(1),'screening'));
+});
+test('audit health requires every identity, complete rows and clean numerical/resource verdicts',()=>{
+  const assets=[{id:'a'},{id:'b'}],rows=assets.map(a=>({...a,complete:true,neural:{}}));
+  assert.equal(auditRowsHealthy(rows,assets),true);
+  for(const bad of [[],rows.slice(1),[rows[0],rows[0]],[rows[0],{...rows[1],id:'c'}],
+    [rows[0],{...rows[1],complete:false}],[rows[0],{...rows[1],failed:true}],
+    [rows[0],{...rows[1],neural:undefined}]])assert.equal(auditRowsHealthy(bad,assets),false);
+  for(const field of ['resource_failures','confirmation_resources','confirmation_cancelled','confirmation_nonfinite','confirmation_disagreements'])
+    assert.equal(auditRowsHealthy([rows[0],{...rows[1],neural:{[field]:1}}],assets),false);
+});
+test('a slow complete H200 baseline reaches verified labels, training and bounded screening',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-screening-'));let baselines=0,preparations=0,updates=0,audits=0;
+  try{const result=await staged({root,deadline:Date.now()+32*60000,phase:()=>{},execute:async(name,args)=>{
+    if(name==='blitz'){
+      ++baselines;const out=args[3],assets=JSON.parse(fs.readFileSync(args[1])).assets;
+      write(out+'/summary.json',{complete:true,seconds:448});
+      for(const a of assets)write(out+'/rows/'+a.id+'.json',{id:a.id,complete:true,neural:{}});
+    }else if(name==='blitz-neural-action-prepare'){
+      ++preparations;assert.equal(updates,0);
+      write(args[1]+'/index.json',{complete:true,reference_confirmed:true,preceding_lod_emitted:true,source_triangles:100,previous_triangles:90});
+    }else if(name==='blitz-neural-action-train'){
+      ++updates;assert.equal(preparations,4);write(args[1]+'/latest.json',trainedHealth(args));
+    }else{
+      ++audits;assert.equal(name,'node');assert.equal(args[args.indexOf('--scenario')+1],'screening');
+      assert.equal(args[args.indexOf('--action-trials')+1],'8');assert.equal(args[args.indexOf('--neural-confirmation')+1],'gpu');
+      assert.ok(!args.includes('--previous'));write(args[1]+'/report.json',{complete:true,gate:{passed:false,reason:'screening_only'},persisted:false});
+    }
+  }});assert.equal(baselines,1);assert.equal(updates,6);assert.equal(audits,2);
+  assert.equal(result.training_steps,6*8192);assert.equal(result.complete,true);
+  assert.equal(result.quality_proven,false);assert.equal(result.generalization_gate_passed,false);
+  assert.equal(result.stop_reason,'two_screening_checkpoints_complete');
+  }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
 test('fresh labels must be confirmed before staged optimizer updates',async()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-labels-'));let calls=0;
   try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},diagnostic:true,refresh:true,execute:async(name,args)=>{
@@ -99,7 +145,7 @@ test('fresh labels must be confirmed before staged optimizer updates',async()=>{
 test('diagnostic training resumes for a second checkpoint and never claims pilot superiority',async()=>{
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-stages-'));let updates=0,audits=0;
   try{const result=await generalize({root,deadline:Date.now()+300000,phase:()=>{},diagnostic:true,execute:async(name,args)=>{
-    if(name==='blitz-neural-action-train'){++updates;assert.equal(Number(args[args.indexOf('--steps')+1]),updates<=3?8192:16384);write(args[1]+'/latest.json',{complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn'});}
+    if(name==='blitz-neural-action-train'){++updates;assert.equal(Number(args[args.indexOf('--steps')+1]),updates<=3?8192:16384);write(args[1]+'/latest.json',trainedHealth(args));}
     else{++audits;assert.equal(name,'node');assert.equal(args[args.indexOf('--neural-confirmation')+1],'gpu');assert.equal(args[args.indexOf('--scenario')+1],'diagnostic');assert.ok(!args.includes('--previous'));write(args[1]+'/report.json',{complete:true,gate:{passed:false,reason:'diagnostic_only'},persisted:false});}
   }});assert.equal(updates,6);assert.equal(audits,2);assert.equal(result.complete,true);assert.equal(result.generalization_gate_passed,false);assert.equal(result.quality_proven,false);
   }finally{fs.rmSync(root,{recursive:true,force:true});}
@@ -109,7 +155,7 @@ test('an incomplete matched pilot prevents a second cloud training stage',async(
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-action-'));let updates=0,audits=0,preparations=0;
   try{const result=await generalize({root,deadline:Date.now()+120000,phase:()=>{},reusePrepared,execute:async(name,args)=>{
     if(name==='blitz-neural-action-prepare'){++preparations;write(args[1]+'/index.json',{complete:true,reference_confirmed:true,preceding_lod_emitted:true,source_triangles:100,previous_triangles:90});}
-    else if(name==='blitz-neural-action-train'){++updates;write(args[1]+'/latest.json',{complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn'});}
+    else if(name==='blitz-neural-action-train'){++updates;write(args[1]+'/latest.json',trainedHealth(args));}
     else{assert.equal(name,'node');++audits;write(args[1]+'/report.json',{complete:false,gate:{passed:false,reason:'incomplete'},persisted:false});}
   }});assert.equal(preparations,reusePrepared?0:6);assert.equal(updates,3);assert.equal(audits,1);assert.equal(JSON.parse(fs.readFileSync(root+'/curriculum/progress.json')).complete,true);assert.equal(result.complete,false);assert.equal(result.generalization_gate_passed,false);assert.equal(result.stop_reason,'incomplete_matched_pilot');
   }finally{fs.rmSync(root,{recursive:true,force:true});}

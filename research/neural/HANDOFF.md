@@ -5,6 +5,24 @@ Branch: `research/neural-lod-gpu`. The primary worktree is separate.
 
 ## Current milestone
 
+The H200 full-settings baseline is now complete and healthy on both diagnostic
+meshes, with all 19 remote tests passing. Shelves took 34.020 seconds (2.41x faster
+than optimized Blackwell, exact output and audit parity); moon rock took 413.364
+seconds. The run then stopped without training because its schedule reserved
+over an hour for nine comparisons. Its archive is verified and all resources
+were deleted. Conservative additional spend is $2.217003 of the new $8.
+
+The corrected plan in [ACCELERATION.md](ACCELERATION.md) trains all three seeds
+after verified labels, then screens seed 101 against constant ranking on the
+same two assets with full visual settings. All nine methods and all three seeds
+are still required for the separate full-pilot quality gate. The new H200 rental
+cap is 60 minutes; including previous spending, storage and a $1 reserve its
+maximum additional reservation is $7.827003. Thirty Node contracts and both
+affected CTests pass. No optimizer steps have run locally or in either new
+rental at this commit. Next directory: `runs/neural/runpod-action-screening-h200-01`.
+
+### Earlier attempts in this milestone
+
 The user has authorized **$8 more** for staged GPU optimization and training.
 The active plan is now [ACCELERATION.md](ACCELERATION.md). Exact GPU distance
 and appearance work is faster on the bounded smoke; label preparation reuses

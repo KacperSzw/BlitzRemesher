@@ -5,6 +5,22 @@ export function actionHealth(h){
     h.first_loss>=0&&h.last_loss>=0&&h.gradient_norm>=0&&h.parameter_change>0&&
     h.preferred_membership>=0&&h.preferred_membership<=1;
 }
+export function comparisonMethods(models,scenario){
+  if(models.length!==3||!['pilot','diagnostic','screening'].includes(scenario))throw new Error('Invalid comparison selection');
+  const learned=models.map((model,i)=>({name:'learned-'+i,ranking:'learned',model,seed:i+1}));
+  const constant={name:'constant',ranking:'constant',model:models[0],seed:1};
+  // Screening is deliberately one fixed seed against one control. It cannot
+  // satisfy the three-seed/full-control pilot decision below.
+  if(scenario==='screening')return [constant,learned[0]];
+  return [...learned,constant,...models.map((model,i)=>({name:'shuffled-'+i,ranking:'shuffled',model,seed:i+1})),
+    {name:'shortest',ranking:'shortest',model:models[0],seed:1},{name:'current-plane',ranking:'current-plane',model:models[0],seed:1}];
+}
+export function auditRowsHealthy(rows,assets){
+  return rows.length===assets.length&&new Set(rows.map(r=>r.id)).size===assets.length&&
+    assets.every(a=>rows.some(r=>r.id===a.id))&&rows.every(r=>r.complete&&!r.failed&&r.neural&&
+      !r.neural.resource_failures&&!r.neural.confirmation_resources&&!r.neural.confirmation_cancelled&&
+      !r.neural.confirmation_nonfinite&&!r.neural.confirmation_disagreements);
+}
 export function endpointDecision(history){
   if(!history.length)return {stop:false,passed:false};
   for(const row of history)if(!row.health?.finite||!row.health.restored||!row.health.optimizer_restored||!row.proof?.complete)

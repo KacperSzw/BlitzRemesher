@@ -20,7 +20,7 @@ export const profiles=Object.freeze({
     staged_rental_minutes:150,staged_experiment_minutes:110}),
   h200:Object.freeze({...blackwell,id:'h200',gpu:'NVIDIA H200',catalog_vram_gb:141,
     device_memory_mib:130000,compute_capability:'9.0',cuda_architecture:90,gpu_hourly_usd_cap:4.60,
-    staged_rental_minutes:80,staged_experiment_minutes:40})
+    staged_rental_minutes:60,staged_experiment_minutes:40})
 });
 const selected=process.env.BLITZ_RUNPOD_PROFILE??'blackwell';
 if(!Object.hasOwn(profiles,selected))throw new Error('Unknown bounded RunPod profile');

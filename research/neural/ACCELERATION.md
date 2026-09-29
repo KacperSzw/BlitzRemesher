@@ -14,8 +14,9 @@
    a full-settings shelves/moon-rock diagnostic before any optimizer steps.
 5. Add four frozen training-only label shards: intermediate pixel sizes and a
    rock category. Require verified labels and audited preceding LODs where used.
-   Train three independent seeds to 8,192 updates, audit all nine methods, then
-   resume to 16,384 updates and repeat if the first comparison completed and
+   Train three independent seeds to 8,192 updates, screen seed 101 against
+   constant ranking on both full-settings assets, then resume all three to
+   16,384 updates and repeat if the first comparison completed and
    the remaining time covers it. All optimizer steps execute remotely.
 6. Every training checkpoint verifies finite values, native/FP64 export parity
    and exact model/AdamW restoration. Health failures or incomplete comparisons
@@ -26,6 +27,9 @@ budgets from `action-pilot.json`; only its runtime allowance increases to ten
 minutes per method. Each comparison is capped at 45 minutes. Two diagnostic
 assets cannot prove the eight-asset pilot gate or release quality. Healthy
 optimization and lower training loss also cannot establish LOD generalization.
+The initial nine-method schedule was replaced after the measured H200 baseline
+showed it could not fit the remaining authorization. Screening is explicitly
+unscored; the nine-method, three-seed full-pilot gate remains separate.
 
 ## Local findings
 
@@ -136,4 +140,47 @@ keeps all audit and optimizer health gates.
 ```sh
 BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-staged-h200-01
 BLITZ_RUNPOD_PROFILE=h200 BLITZ_RUNPOD_DATA_CENTER=AP-JP-1 node research/neural/runpod.mjs launch runs/neural/runpod-action-staged-h200-01
+```
+
+## H200 outcome and corrected scheduling
+
+Revision `d7a00fd` passed all 19 remote CTests. Both full-settings assets
+completed: shelves **34.020 s**, moon rock **413.364 s**, total **447.383 s**.
+Shelves output hashes and all per-LOD measurements exactly match the optimized
+Blackwell result; elapsed time is 2.41x faster. Mean retained triangle ratios
+were 0.999454744 and 0.986509858 respectively. No resource, nonfinite or
+confirmation disagreement occurred. These are one saved model's measurements,
+not a learned-versus-control quality comparison.
+
+The old scheduling guard reserved nine times that baseline plus 20 minutes
+before allowing any optimizer work. It therefore refused training within the
+40-minute experiment. This was a scheduling error for the requested quick
+training milestone. The run ended after 18.904 rental minutes, with collected,
+checksummed evidence and provider-verified deletion of compute and storage.
+See [H200 evidence](evidence/audit-acceleration-v3/cloud-h200/).
+
+The corrected staged workflow trains after a healthy baseline and verified
+fresh labels. Its first comparison is fixed constant ranking followed by seed
+101 at identical full visual settings and eight action trials per proposal.
+Each screening method can use at most 12 minutes, allowing margin beyond the
+measured 7.46-minute baseline; the absolute experiment deadline takes precedence.
+All three seeds still train and must satisfy numerical/export/optimizer restore
+checks plus the exact requested update count. A second checkpoint is conditional
+on completion and measured remaining time. No incomplete screening or training
+metric can satisfy the full pilot gate. Regression tests reproduce the old
+447-second-baseline scheduling failure and cover missing/duplicate/cancelled
+audit rows. Thirty Node contracts and both affected CTests pass; C++ is unchanged
+since the earlier sanitizer/memory checks and full local/remote CTest passes.
+
+Conservative additional spending through these two rentals is **$2.217003**.
+The next H200 rental is capped at **60 minutes**, including setup and collection.
+The experiment is at most 40 minutes, shortened by the absolute rental cutoff
+when setup uses more than ten minutes. At the $4.60 hourly compute cap plus
+storage allowance, prior spending + $4.61 rental + $1 reserve = **$7.827003**,
+within the user's additional $8. No resources remain active while implementing
+and testing this correction. Commit and push before creating the next rental.
+
+```sh
+BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs prepare-action-staged runs/neural/runpod-action-screening-h200-01
+BLITZ_RUNPOD_PROFILE=h200 node research/neural/runpod.mjs launch runs/neural/runpod-action-screening-h200-01
 ```

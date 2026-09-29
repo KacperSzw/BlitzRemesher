@@ -121,6 +121,23 @@ with the evidence. Native/FP64 export tolerance remains 2e-4.
 
 ## Approved remote experiment
 
+Remote validation of revision `1b7bcfb` passed on the full Blackwell device:
+all 22 CTests, CUDA memcheck, exact eager/captured weights, exact checkpoint and
+curriculum continuation, cross-GPU replay, and the two-asset development smoke.
+The saved-input replay matched native outputs exactly; FP64 maximum difference
+was 8.61e-7. Evidence is in `evidence/gpu-refactor-remote`.
+
+| Remote matched work | Measured time |
+| --- | --- |
+| 1,024 updates, captured / eager (median device window) | 0.126 / 0.429 s; 3.42× |
+| Captured checkpoint/verification overhead | About 0.28 s per 1,024 updates, plus 0.086 s capture |
+| 3,042-triangle topology CPU / GPU (median) | 50.0 / 11.8 ms; 4.23× |
+| Eight candidate audits, uncached / cached | 54–58 / 32.6–32.8 ms; exact metrics, 96 / 54 rasters |
+
+The two-hour learning window began at 20:09:04 UTC on 2026-09-29 after the
+measured architecture report was written. Its result is pending; validation and
+throughput do not establish learned reduction quality.
+
 The user authorized **up to $8 additional**, covering validation and a **two-hour
 full learning cycle**, including new examples, updates and quality audits. The
 new grant is anchored at the reconciled conservative $11.25963675 ledger, not at

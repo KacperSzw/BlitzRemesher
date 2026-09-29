@@ -17,27 +17,33 @@ assets, no SCORE. CPU final confirmation took 136.878 seconds and GPU audits
 162.975 seconds. See [raw evidence](evidence/action-audit-v2/manifest.json).
 This was a runtime failure, not evidence that learned ranking improved LODs.
 
-The next run directory is `runs/neural/runpod-action-evaluation-01`. Check for
-`rental.json` before assuming it has launched:
+The evaluation run is `runs/neural/runpod-action-evaluation-01`; it has also
+ended, with results collected/checksummed and all cloud resources deleted:
 
 ```sh
 node research/neural/runpod.mjs status runs/neural/runpod-action-evaluation-01
 ```
 
-The diagnostic uses shelves and moon rock 02 across all nine models/controls
-with the full visual settings. Its score is always null. Only a complete,
-healthy diagnostic with enough remaining time permits a frozen eight-asset
-pilot. Training is never started. Remote output is under
-`/workspace/results/action-v2-evaluate`; `phase.json`, scenario
-`progress.json`, `report.json` and `result.json` record live progress and
-completion. A resource, numeric or disagreement failure stops the comparison.
+Revision `2a45fc4` passed all 17 remote evaluation-build CTests. The first
+model completed shelves in 144.485 seconds, including 15.339 seconds of GPU
+confirmation and zero CPU confirmation. Its mean retained ratio was
+0.999454744. Moon rock 02 reached the shared five-minute method cutoff after
+155.511 seconds and is cancelled. The run stopped before the remaining eight
+methods or full pilot. No new training occurred and no comparison SCORE exists.
 
-The cumulative cloud cap remains $10. Before this evaluation, the conservative
-ledger plus prior estimate was $4.899. A 90-minute rental at the $2.50/hour
-cap, storage allowance and $1 reserve fits under $9.664 cumulative. Actual
-billing/resources are reconciled again by launch. The controller and independent
-watchdog collect/checksum evidence and terminate compute; a failed collection
-preserves its volume. Durable state, not an old timestamp here, owns the cutoff.
+GPU utilization averaged 97.54% across 301 samples. GPU audits consumed almost
+all generation time; topology/feature work was 0.120/0.244 seconds for
+shelves/rock. The CPU confirmation bottleneck is removed in the selected GPU
+mode. The next step is GPU stage profiling (raster, distance, appearance), then
+a measured optimization before repeating the full-settings comparison.
+See [remote outcome](evidence/action-audit-v2/cloud/outcome.json) and [AUDIT.md](AUDIT.md).
+
+The cumulative cloud cap remains $10. The conservative ledger is now $5.513;
+this evaluation used 14.69 rental minutes (about $0.512 quoted compute, before
+storage). The fixed 90-minute reservation plus $1 reserve no longer fits the
+remaining cap. Do not repeat it blindly: a future bounded run needs a smaller
+reservation or a user-authorized budget change. The current run's cleanup was
+verified at 13:42:30 UTC with zero pods and volumes remaining.
 
 ## Established evidence
 

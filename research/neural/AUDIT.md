@@ -114,3 +114,35 @@ reservation. An independent watchdog enforces the cutoff; collection verifies
 the archive checksum before volume deletion. The launcher reconciles live
 resources and cumulative spend against the existing $10 authorization,
 including a $1 reserve. Read durable rental state for actual deadlines/costs.
+
+## Remote outcome
+
+Revision `2a45fc4` ran on the approved RTX PRO 6000 Blackwell. All 17
+evaluation-build CTests passed. The first method completed shelves in 144.485
+seconds: 128.634 seconds of proposal auditing, 15.339 seconds of final GPU
+confirmation and zero CPU confirmation. Topology/feature work was 0.120 seconds;
+inference 0.117 seconds. There were no resource or numeric failures. The mean
+retained ratio was 0.999454744 (only 0.0545% reduction across scheduled LODs).
+
+The second mesh reached the shared five-minute method deadline after 155.511
+seconds, with 155.224 seconds spent auditing on the GPU. It is cancelled and
+unscored. The runner stopped after this incomplete method; the remaining eight
+methods and full pilot were not run. The complete comparison and learning
+advantage therefore remain unproven. GPU utilization averaged 97.54% over 301
+one-second samples, with peak device usage of 1,611 MiB. No training occurred.
+
+The archive was collected and its SHA-256 verified; both pod and volume were
+deleted at 13:42:30 UTC. Provider reads confirmed zero remaining resources.
+The 14.69-minute rental represents about $0.512 compute at the quoted rate,
+before storage. The conservative cumulative experiment ledger is $5.513.
+See [cloud/outcome.json](evidence/action-audit-v2/cloud/outcome.json) and the
+adjacent raw rows, telemetry and reports.
+
+The remaining measured cost is GPU auditing. Profile GPU rasterization,
+distance transforms and appearance matching separately before implementing
+another optimization. Consider bounded reference-image/field reuse or work
+shared across candidate audits if those stages dominate. Scalar synchronization
+can still be measured, but CPU topology work is below 0.3 seconds per attempted
+asset here. Do not start more training or weaken visual gates to compensate
+for this incomplete evaluation. A future rental must fit the newly updated
+ledger; the current fixed 90-minute reservation no longer fits the $10 cap.

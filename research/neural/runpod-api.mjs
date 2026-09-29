@@ -20,6 +20,16 @@ export function apiKey(file){
   if(!key||/\s/.test(key))throw new Error('API key file is empty or malformed');
   return key;
 }
+// Only callers with repeatable SSH operations use this; never retry API creates.
+export async function retrySsh(operation,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),attempts=4){
+  for(let attempt=1;;++attempt){
+    try{return await operation();}
+    catch(error){
+      if((error.ssh_exit!==255&&!error.ssh_timeout)||attempt>=attempts)throw error;
+      await wait(2000);
+    }
+  }
+}
 export class Api {
   constructor(key,fetcher=fetch){this.key=key;this.fetcher=fetcher;}
   async request(method,resource,body){

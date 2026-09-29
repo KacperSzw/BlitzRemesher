@@ -5,11 +5,24 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue,rentalDeadlines} from '../research/neural/runpod-api.mjs';
+import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue,rentalDeadlines,retrySsh} from '../research/neural/runpod-api.mjs';
 import {deployment,verifyDevice} from '../research/neural/runpod-profile.mjs';
 const gpu={id:GPU,memory:96,secure:true,price:{secure:2.09},dataCenters:[{id:'EU-1',availability:'HIGH'}]};
 const centers=[{id:'EU-1',networkVolumeTypes:['STANDARD']}];
 const initial=()=>({name:'test-unique',quote:chooseQuote([gpu],centers),setup_deadline_ms:1800000,deadline_ms:7200000});
+test('repeatable SSH calls recover transport failures, preserve command failures and stop retrying',async()=>{
+  let calls=0,waits=0;
+  const network=Object.assign(new Error('connection timeout'),{ssh_exit:255});
+  const result=await retrySsh(async()=>{if(++calls<3)throw network;return 'ready';},async()=>{++waits;});
+  assert.equal(result,'ready');assert.equal(calls,3);assert.equal(waits,2);
+  for(const code of [1,2]){
+    calls=0;const command=Object.assign(new Error('command failed'),{ssh_exit:code});
+    await assert.rejects(retrySsh(async()=>{++calls;throw command;},async()=>{}),/command failed/);
+    assert.equal(calls,1);
+  }
+  calls=0;await assert.rejects(retrySsh(async()=>{++calls;throw network;},async()=>{},3),/connection timeout/);
+  assert.equal(calls,3);
+});
 test('recovery can shorten a rental to its original cutoff without extending the budget',()=>{
   const started=12340000,originalEnd=started+90*60000;
   const limits=rentalDeadlines(started,originalEnd);

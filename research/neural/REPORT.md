@@ -354,3 +354,13 @@ can follow collection. The Netherlands allocation produced no runtime/SSH
 readiness for over 12 minutes, before any source upload. It was terminated and
 its known-empty volume deleted. A catalog-validated location override permits
 returning to the already exercised Iceland location. **21 Node tests** pass.
+
+Iceland subsequently had no compatible inventory; a North Carolina allocation
+became ready and restored the bundle. During setup one SSH connection timed out;
+the next connection succeeded less than two seconds later, but the controller
+had already entered cleanup. Added up to four bounded retries for repeatable
+monitoring, checksums, downloads and the marker-protected job launch. Remote
+command failures still fail immediately, and cloud create calls are never
+retried by this helper. **22 Node tests** pass, including recovery from transport
+failures, preservation of command failures and exhaustion of the retry limit.
+The terminated Pod's persistent volume retains the uploaded source and data.

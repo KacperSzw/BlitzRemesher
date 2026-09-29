@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
-import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines} from './runpod-api.mjs';
+import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines,retrySsh} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
 
 const [command,directory]=process.argv.slice(2);
@@ -97,15 +97,15 @@ async function remote(endpoint,command,{input,output,timeout=60000}={}){
     if(code===0)return resolve();
     // Private diagnostic file, never echoed to journals or sent to the provider.
     fs.appendFileSync(dir+'/transport-errors.jsonl',JSON.stringify({at:Date.now(),code,signal,timed_out:timedOut,stderr:diagnostic})+'\n',{mode:0o600});
-    reject(new Error(`SSH failed (exit ${code}, signal ${signal}, timeout ${timedOut}); see transport-errors.jsonl`));
+    reject(Object.assign(new Error(`SSH failed (exit ${code}, signal ${signal}, timeout ${timedOut}); see transport-errors.jsonl`),{ssh_exit:code,ssh_timeout:timedOut}));
   });});return data.trim();}
   finally{clearTimeout(timer);if(fd!==undefined)fs.closeSync(fd);}
 }
 async function collect(endpoint,deadline){
   const left=()=>Math.max(1,deadline-Date.now());
-  const checksum=(await remote(endpoint,'cat /workspace/results.tar.gz.sha256',{timeout:Math.min(15000,left())})).split(/\s/)[0];
+  const checksum=(await retrySsh(()=>remote(endpoint,'cat /workspace/results.tar.gz.sha256',{timeout:Math.min(15000,left())}))).split(/\s/)[0];
   if(!/^[a-f0-9]{64}$/.test(checksum))throw new Error('Remote result checksum missing');
-  await remote(endpoint,'cat /workspace/results.tar.gz',{output:dir+'/results.tar.gz.part',timeout:left()});
+  await retrySsh(()=>remote(endpoint,'cat /workspace/results.tar.gz',{output:dir+'/results.tar.gz.part',timeout:left()}));
   if(await sha(dir+'/results.tar.gz.part')!==checksum)throw new Error('Downloaded results checksum mismatch');
   fs.renameSync(dir+'/results.tar.gz.part',dir+'/results.tar.gz');
   write(dir+'/collection.json',{verified:true,sha256:checksum,at:Date.now()});
@@ -137,7 +137,7 @@ async function control(){
       rental.commit({phase:'upload'});
       await remote(endpoint,'cat > /workspace/input.tar',{input:dir+'/input.tar',timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
       rental.commit({phase:'verify-upload'});
-      const actual=(await remote(endpoint,'sha256sum /workspace/input.tar')).split(/\s/)[0];
+      const actual=(await retrySsh(()=>remote(endpoint,'sha256sum /workspace/input.tar'))).split(/\s/)[0];
       if(actual!==prepared.archive_sha256)throw new Error('Uploaded input checksum mismatch');
       rental.commit({phase:'restore'});
       await remote(endpoint,'cd /workspace && tar --no-same-owner --no-same-permissions -xf input.tar && sha256sum --quiet --check inputs.sha256 && if [ ! -d project/.git ]; then git clone source.bundle project; fi && cd project && git checkout '+sh(prepared.revision)+' && cp -r /workspace/assets/data/. data/ && rm /workspace/input.tar', {timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
@@ -145,12 +145,12 @@ async function control(){
     }
     rental.commit({phase:'start-job'});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
-    await remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' > /workspace/launch.log 2>&1 < /dev/null & fi'));
+    await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
     while(Date.now()<s.deadline_ms-30000){
       if(fs.existsSync(dir+'/stop-requested'))throw new Error('Cancellation requested');
-      const phase=await remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi');
+      const phase=await retrySsh(()=>remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi'));
       if(phase==='training'&&!s.setup_complete){
-        const timing=JSON.parse(await remote(endpoint,'cat /workspace/results/setup-complete.json'));
+        const timing=JSON.parse(await retrySsh(()=>remote(endpoint,'cat /workspace/results/setup-complete.json')));
         if(!Number.isFinite(timing.at)||!Number.isFinite(timing.training_deadline_ms)||timing.training_deadline_ms> s.training_deadline_ms)
           throw new Error('Invalid remote training deadline');
         rental.commit({setup_complete:true,phase:'training',training_started_at:timing.at,training_deadline_ms:timing.training_deadline_ms,

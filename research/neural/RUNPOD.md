@@ -49,6 +49,8 @@ health failures can stop early. Both the local controller and an
 independent user systemd watchdog request termination. Durable create intents,
 unique resource names and reconciliation prevent blind duplicate provisioning
 after a timeout. Unknown create outcomes stay unresolved until reconciled.
+Repeatable SSH monitoring and downloads tolerate up to four transport failures;
+command errors still stop the run. Cloud create requests are not blindly retried.
 
 **Keep this workstation awake and online until termination is confirmed.** The
 watchdog is local; a power loss or a provider/network outage can delay API

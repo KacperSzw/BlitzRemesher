@@ -38,9 +38,11 @@ WeightsData load_weights(const std::filesystem::path&,std::string* hash=nullptr)
 void save_weights(const std::filesystem::path&,const WeightsData&);
 std::string sha256(std::span<const std::byte>);
 std::string file_sha256(const std::filesystem::path&);
-std::vector<float> encode_cuda(const Graph&,const WeightsData&,const NeuralOptions&);
+struct NumericLayer;
+using NumericTrace=std::vector<NumericLayer>;
+std::vector<float> encode_cuda(const Graph&,const WeightsData&,const NeuralOptions&,NumericTrace* = nullptr);
 std::vector<float> encode_mesh_cuda(const Graph&,const WeightsData&,const NeuralOptions&,const std::function<bool()>& = {});
-Prediction predict_cuda(std::span<const float>,const std::array<float,conditions>&,const WeightsData&,const NeuralOptions&);
+Prediction predict_cuda(std::span<const float>,const std::array<float,conditions>&,const WeightsData&,const NeuralOptions&,NumericTrace* = nullptr);
 Raster raster_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions& = {});
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);

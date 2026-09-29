@@ -4,15 +4,11 @@ Branch: `research/neural-lod-gpu`, based on `7466a9e`. The sibling worktree
 leaves the primary checkout available to other agents. Implementation precedes
 the ten-hour experiment budget. No held-out asset is used for training or tuning.
 
-Current status (2026-09-29 08:57 UTC): the from-scratch two-hour Secure Cloud RTX
-PRO 6000 experiment is running and has passed its health gate at update 8,192:
-93.27% mean GPU activity, p10 91%, decreasing training loss, exact checkpoint
-restore and native export agreement. It continued past update 10,240. See
-RUNPOD.md for the active run, absolute cutoffs and collection commands, and
-REPORT.md for measured evidence. Local training is stopped. At 09:02 UTC the
-first trained checkpoint (25,000 updates) also completed all eight development
-assets with eight unreduced fallbacks and SCORE 0. Training continued toward
-50,000 updates; useful LOD quality remains unproven.
+Current status (2026-09-29): the cloud run stopped at update 52,224 on its
+native export check (0.000214 > 0.0002). Both complete 25k/50k pilots had SCORE 0.
+Results were collected and verified; compute and storage were deleted.
+Local training is stopped. The new staged implementation is in V2.md;
+the following list records the original v1 work, not a running experiment.
 
 1. Establish CPU tests; add deterministic graph/decoder fixtures and explicit
    unavailable behavior. Verify source stream immutability and endpoint IDs.
@@ -49,11 +45,9 @@ assets with eight unreduced fallbacks and SCORE 0. Training continued toward
    causes, visit remaining assets, stop fixed-limit retries, retain null SCORE
    for incomplete audits, and prevent reuse across different model hashes.
 
-Next handoff: let the bounded cloud run finish, confirm checksum-verified result
-collection and resource deletion, then inspect its complete development pilots.
-If reductions remain absent, diagnose the curriculum/decoder before buying more
-training time. Test one hypothesis on deterministic fixtures and the frozen
-development pilot. Remote GPU options and costs are in CLOUD_GPU.md.
+Next handoff: follow V2.md's evidence gates. A lower teacher loss did not yield
+useful LODs. Preserve the old model reader and unchanged visual limits while
+replacing terminal-vertex labels with current-state directed actions.
 
 Runtime objectives: pass both source and adjacent visual gates; minimize triangles
 within the existing storage tradeoff; use pre-depth geometric overlap only to

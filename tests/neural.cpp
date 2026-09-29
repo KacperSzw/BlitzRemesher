@@ -1,4 +1,5 @@
 #include "neural_internal.hpp"
+#include "neural_numeric.hpp"
 #include "chain_hooks.hpp"
 #include "blitz/render_cost.hpp"
 #include "blitz/blitz.h"
@@ -12,6 +13,20 @@ Mesh grid(unsigned side=9) {
     for(unsigned y=0;y+1<side;++y)for(unsigned x=0;x+1<side;++x){uint32_t a=y*side+x;m.indices.insert(m.indices.end(),{a,a+1,a+side,a+1,a+side+1,a+side});}m.double_sided={1};return m;
 }
 void graph_contracts() {
+    for(double bad:{NAN,INFINITY,-INFINITY}){std::array<double,2>a{0,bad},b{};require(!neural::legacy_numeric_pass(neural::numeric_difference(a,b)),"nonfinite prediction escaped numeric gate");}
+    std::array<double,1>a{0},b{.0003};require(!neural::legacy_numeric_pass(neural::numeric_difference(a,b)),"legacy tolerance silently widened");
+    auto numeric_graph=neural::graph(grid(4).view());neural::WeightsData w;w.values.resize(neural::weight_count);size_t at=0;
+    for(unsigned l=0;l<5;++l){for(unsigned j=0;j<neural::layer_out[l];++j)w.values[at+size_t(neural::layer_in[l])*neural::layer_out[l]+j]=float(l+1);at+=size_t(neural::layer_out[l])*(neural::layer_in[l]+1);}
+    auto trace=neural::reference_fp64(numeric_graph,{},w);for(auto value:trace.back().values)require(value==5,"FP64 bias oracle wrong");
+    std::fill(w.values.begin(),w.values.end(),0);at=0;
+    for(unsigned l=0;l<5;++l){w.values[at+(l==0?neural::features:0)]=1;at+=size_t(neural::layer_out[l])*(neural::layer_in[l]+1);}
+    neural::Graph directed;directed.flags.resize(3);directed.offsets={0,2,3,3};directed.neighbors={1,2,0};directed.x.resize(3*neural::features);
+    directed.x[0]=2;directed.x[neural::features]=4;directed.x[2*neural::features]=8;
+    auto numeric_result=neural::reference_fp64(directed,{},w).back().values;
+    require(numeric_result[0]==6&&numeric_result[4]==2&&numeric_result[8]==0,"oracle changed directed mean or isolated-vertex semantics");
+    auto full=neural::reference_fp64(numeric_graph,{},w).back().values;uint32_t root_id=5;auto sub=neural::patch(numeric_graph,{&root_id,1});
+    auto partial=neural::reference_fp64(sub.graph,{},w).back().values;require(full[root_id*4]==partial[0],"three-hop core differs from full graph");
+    auto corrupt=numeric_graph;corrupt.neighbors.front()=uint32_t(corrupt.size());bool invalid=false;try{neural::validate_graph(corrupt);}catch(const std::invalid_argument&){invalid=true;}require(invalid,"numeric oracle accepted invalid adjacency");
     for(auto [screen,initial,maximum,expected]:{std::tuple{312.0674954763457,4,32,16},std::tuple{242.,8,32,32},std::tuple{242.01,8,32,16},std::tuple{350.,3,32,12},std::tuple{200.,3,23,23},std::tuple{1024.,8,32,8}}) {
         EvalSettings e;e.screen_size=screen;e.supersample=uint8_t(initial);e.max_supersample=uint8_t(maximum);
         require(neural::bounded_refinement(e)==expected,"bounded refinement lost sequence, sample boundary or initial resolution");

@@ -1,5 +1,4 @@
-#include "neural_data.hpp"
-#include <torch/torch.h>
+#include "neural_network.hpp"
 #include <c10/cuda/CUDACachingAllocator.h>
 #include <cuda_runtime.h>
 #include <random>
@@ -12,14 +11,6 @@
 using namespace blitz;using namespace blitz::neural;using namespace blitz::neural::training;
 static volatile std::sig_atomic_t stopped=0;static void stop(int){stopped=1;}
 using Clock=std::chrono::steady_clock;
-struct NetworkImpl:torch::nn::Module {
-    std::vector<torch::nn::Linear> layer;
-    NetworkImpl(){for(int i=0;i<5;++i)layer.push_back(register_module("layer"+std::to_string(i),torch::nn::Linear(layer_in[i],layer_out[i])));}
-    torch::Tensor encode(torch::Tensor x,const torch::Tensor& from,const torch::Tensor& to,const torch::Tensor& degree){
-        for(unsigned i=0;i<3;++i){auto mean=torch::zeros_like(x);mean.index_add_(0,from,x.index_select(0,to));x=torch::relu(layer[i]->forward(torch::cat({x,mean/degree},1)));}return x;
-    }
-    torch::Tensor head(torch::Tensor x,const torch::Tensor& c){return layer[4]->forward(torch::relu(layer[3]->forward(torch::cat({x,c},1))));}
-};TORCH_MODULE(Network);
 struct Batch {
     torch::Tensor x,from,to,degree,conditions,core,target;
     Patch first;std::array<float,neural::conditions> first_condition{};
@@ -87,14 +78,28 @@ void save_checkpoint(const fs::path& path,Network& net,torch::optim::AdamW& opti
 uint64_t load_checkpoint(const fs::path& path,Network& net,torch::optim::AdamW& optimizer,torch::Device device) {
     torch::serialize::InputArchive all,model,state;all.load_from(path.string(),device);all.read("model",model);all.read("optimizer",state);net->load(model);optimizer.load(state);torch::Tensor step;all.read("step",step);return step.item<int64_t>();
 }
-double verify_native(Network& net,const Batch& batch,const WeightsData& w,torch::Device device) {
+double verify_native(Network& net,const Batch& batch,const WeightsData& w,torch::Device device,const fs::path& bundle) {
     torch::NoGradGuard guard;auto& g=batch.first.graph;std::vector<int64_t> from,to;std::vector<float> degree;
+    Asset input;input.graph=g;Example example;example.condition=batch.first_condition;example.representative.resize(g.size());std::iota(example.representative.begin(),example.representative.end(),0);example.retained.resize(g.size(),1);input.examples.push_back(std::move(example));
+    save_asset(bundle/"input.bin",input);
+    write_json(bundle/"failure.json",{{"complete",false},{"stage","native verification pending"},{"step_input_ids",batch.first.ids},{"core",batch.first.core},{"input_sha256",file_sha256(bundle/"input.bin")},{"model_sha256",file_sha256(bundle/"model.blzn")},{"checkpoint_sha256",file_sha256(bundle/"checkpoint.pt")}});
     for(uint32_t i=0;i<g.size();++i){degree.push_back(float(std::max(1u,g.offsets[i+1]-g.offsets[i])));for(auto k=g.offsets[i];k<g.offsets[i+1];++k){from.push_back(i);to.push_back(g.neighbors[k]);}}
     auto x=tensor(g.x,{int64_t(g.size()),features},torch::kFloat32,device),src=tensor(from,{int64_t(from.size())},torch::kInt64,device),dst=tensor(to,{int64_t(to.size())},torch::kInt64,device),deg=tensor(degree,{int64_t(g.size()),1},torch::kFloat32,device);
     std::vector<float> cs;for(size_t i=0;i<g.size();++i)cs.insert(cs.end(),batch.first_condition.begin(),batch.first_condition.end());auto cond=tensor(cs,{int64_t(g.size()),neural::conditions},torch::kFloat32,device);
-    auto expected=net->head(net->encode(x,src,dst,deg),cond).to(torch::kCPU).contiguous();auto encoded=encode_cuda(g,w,{});auto native=predict_cuda(encoded,batch.first_condition,w,{});
-    double maximum=0;auto* reference=expected.data_ptr<float>();for(size_t i=0;i<native.values.size();++i)maximum=std::max(maximum,double(std::abs(native.values[i]-reference[i])));
-    if(!std::isfinite(maximum)||maximum>2e-4)throw std::runtime_error("native export differs from LibTorch: "+std::to_string(maximum));return maximum;
+    auto expected=net->head(net->encode(x,src,dst,deg),cond).to(torch::kCPU).contiguous();torch::save(expected,bundle/"torch-output.pt");
+    auto encoded=encode_cuda(g,w,{});auto native=predict_cuda(encoded,batch.first_condition,w,{});
+    const auto reference=doubles(expected);std::vector<double> actual(native.values.begin(),native.values.end());
+    auto diff=numeric_difference(reference,actual);json heads=json::array();
+    for(unsigned h=0;h<outputs;++h){std::vector<double>a,b;for(size_t i=h;i<reference.size();i+=outputs)a.push_back(reference[i]);for(size_t i=h;i<actual.size();i+=outputs)b.push_back(actual[i]);heads.push_back(difference_json(numeric_difference(a,b)));}
+    if(!legacy_numeric_pass(diff)) {
+        auto native_tensor=torch::from_blob(native.values.data(),{int64_t(g.size()),outputs},torch::kFloat32).clone();torch::save(native_tensor,bundle/"native-output.pt");
+        write_json(bundle/"failure.json",{{"complete",true},{"training_started_by_replay",false},{"step_input_ids",batch.first.ids},{"core",batch.first.core},
+            {"input_sha256",file_sha256(bundle/"input.bin")},{"model_sha256",file_sha256(bundle/"model.blzn")},{"checkpoint_sha256",file_sha256(bundle/"checkpoint.pt")},
+            {"torch_output_sha256",file_sha256(bundle/"torch-output.pt")},{"native_output_sha256",file_sha256(bundle/"native-output.pt")},
+            {"libtorch",TORCH_VERSION},{"absolute_threshold",2e-4},{"difference",difference_json(diff)},{"heads",heads}});
+        throw std::runtime_error("native export differs from LibTorch: "+std::to_string(diff.maximum)+"; replay bundle: "+bundle.string());
+    }
+    return diff.maximum;
 }
 uint64_t unsigned_option(const char* text) {
     std::string value(text);size_t used=0;
@@ -116,7 +121,7 @@ int main(int argc,char** argv){try {
     fs::path dataset=argv[1],run=argv[2],initialize;uint64_t steps=5120,checkpoint_every=100,core=4096,batch_count=4,workers=2,memory_mib=5120,check_prefetch=0;double minutes=50;
     for(int i=3;i<argc;i+=2){if(i+1==argc)throw std::invalid_argument("missing option");std::string k=argv[i];if(k=="--steps")steps=unsigned_option(argv[i+1]);else if(k=="--segment-minutes")minutes=std::stod(argv[i+1]);else if(k=="--core")core=unsigned_option(argv[i+1]);else if(k=="--batch")batch_count=unsigned_option(argv[i+1]);else if(k=="--checkpoint-every")checkpoint_every=unsigned_option(argv[i+1]);else if(k=="--workers")workers=unsigned_option(argv[i+1]);else if(k=="--gpu-memory-mib")memory_mib=unsigned_option(argv[i+1]);else if(k=="--check-prefetch")check_prefetch=unsigned_option(argv[i+1]);else if(k=="--initialize")initialize=argv[i+1];else throw std::invalid_argument("unknown option "+k);}
     if(!steps||!checkpoint_every||!core||core>8192||!batch_count||batch_count>128||!workers||workers>8||memory_mib<512||memory_mib>131072||check_prefetch>32||!(minutes>0&&minutes<=50))throw std::invalid_argument("invalid training bounds");
-    if(!torch::cuda::is_available())throw NeuralUnavailable("LibTorch CUDA unavailable");torch::set_num_threads(4);torch::manual_seed(0xB1172026);torch::Device device(torch::kCUDA,0);
+    if(!torch::cuda::is_available())throw NeuralUnavailable("LibTorch CUDA unavailable");ieee_fp32();torch::set_num_threads(4);torch::manual_seed(0xB1172026);torch::Device device(torch::kCUDA,0);
     if(!check_prefetch){
         size_t free=0,total=0;auto result=cudaMemGetInfo(&free,&total);if(result!=cudaSuccess)throw std::runtime_error(cudaGetErrorString(result));
         if(free<1024ull*1024*1024)throw std::runtime_error("less than 1 GiB GPU memory is available");
@@ -147,7 +152,13 @@ int main(int argc,char** argv){try {
     Prefetch prefetch(assets,step,steps,uint32_t(core),uint32_t(batch_count),uint32_t(workers));
     auto checkpoint=[&]{
         auto name="step-"+std::to_string(step);auto weights=exported(net,{{"schema",schema},{"step",step},{"contract",contract},{"training_library",TORCH_VERSION},{"quality","experimental; finite-camera audits required"}});
-        double native_error=verify_native(net,batch,weights,device);auto checkpoint_path=run/(name+".pt");save_checkpoint(checkpoint_path,net,optimizer,step);save_weights(run/(name+".blzn"),weights);
+        // Keep the last validated checkpoint intact while capturing the exact state
+        // under examination. A failed forward comparison must remain replayable.
+        const auto bundle=run/"forensic"/name;fs::create_directories(bundle);
+        save_checkpoint(bundle/"checkpoint.pt",net,optimizer,step);save_weights(bundle/"model.blzn",weights);
+        double native_error=verify_native(net,batch,weights,device,bundle);auto checkpoint_path=run/(name+".pt");
+        fs::rename(bundle/"checkpoint.pt",checkpoint_path);fs::rename(bundle/"model.blzn",run/(name+".blzn"));
+        for(auto file:{"input.bin","torch-output.pt","failure.json"})fs::remove(bundle/file);fs::remove(bundle);
         Network restored;restored->to(device);torch::optim::AdamW restored_optimizer(restored->parameters(),torch::optim::AdamWOptions(.001).weight_decay(.0001));if(load_checkpoint(checkpoint_path,restored,restored_optimizer,device)!=step)throw std::runtime_error("restore step mismatch");
         {torch::NoGradGuard guard;for(size_t i=0;i<net->parameters().size();++i){
             auto a=net->parameters()[i],b=restored->parameters()[i];if(!torch::equal(a,b))throw std::runtime_error("checkpoint parameter restore mismatch");

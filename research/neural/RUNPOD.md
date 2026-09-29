@@ -5,7 +5,15 @@ RTX PRO 6000 Blackwell Server Edition (full 96 GB GPU). Local training is not pa
 existing model's audited pilot still has SCORE 0; this migration does not change
 the curriculum, decoder, quality limits, or release status.
 
-## Active run and handoff — 2026-09-29
+## Closed run — 2026-09-29
+
+**Current status:** this run ended early at 09:07:44 UTC, update 52,224,
+on native export disagreement. Latest validated checkpoint: 51,200.
+Collection was checksum verified; compute termination and volume deletion
+are recorded in `collection.json` and `rental.json`. There is no active run.
+The 25k and 50k complete pilots both returned SCORE 0. See V2.md before any
+new rental; its cumulative $10 budget supersedes the older per-run schedule.
+The timing and commands below describe the closed experiment.
 
 The run in `runs/neural/runpod-pro6000-saturated` passed its initial health gate
 and continued training at 08:57 UTC. Source revision: `2aca84e`; batch 64, eight

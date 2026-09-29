@@ -5,9 +5,11 @@ leaves the primary checkout available to other agents. Implementation precedes
 the ten-hour experiment budget. No held-out asset is used for training or tuning.
 
 Current status (2026-09-29): implementation and audit recovery are validated;
-training is stopped by explicit user request. The saved-model pilot returns
+local training is stopped. A from-scratch two-hour Secure Cloud RTX 5090
+experiment is now authorized; see RUNPOD.md for the staged deployment and gates.
+The saved-model pilot returns
 eight unreduced fallbacks. The numbered implementation steps below are completed
-except for establishing useful LOD quality. Future training needs a new request.
+except for establishing useful LOD quality. Remote health must be measured.
 
 1. Establish CPU tests; add deterministic graph/decoder fixtures and explicit
    unavailable behavior. Verify source stream immutability and endpoint IDs.
@@ -32,7 +34,7 @@ except for establishing useful LOD quality. Future training needs a new request.
 7. Measure sustained training utilization separately from CUDA mesh scoring.
    Compare useful core vertices/second while retaining the same compact network.
    Batch connected graphs and overlap bounded pinned-host preparation with CUDA.
-   Require at least 30 telemetry samples, mean GPU utilization >=90%, tenth
+   Require at least 60 seconds of telemetry, mean GPU utilization >=90%, tenth
    percentile >=85%, finite gradients, decreasing mean training loss, exact model
    and AdamW moment restoration, and native export error <=2e-4. Continue the
    detached service after the health gate. Audit each 25,000-update stage and

@@ -239,3 +239,32 @@ remain resource-limited failures/fallbacks. The finite fixtures do not prove
 universal bitwise CPU/GPU equivalence; CPU confirmation remains part of production
 acceptance. Release evidence still requires the held-out audit after model and
 configuration are frozen.
+# RTX 5090 deployment implementation — 2026-09-29
+
+Added the staged Runpod controller/runbook in `RUNPOD.md`: committed-source and
+checksummed original-data packaging, explicit from-scratch training, 2/4-worker
+and 64/128-batch calibration, pinned CUDA 12.9 image and LibTorch, independent
+local systemd termination watchdog, two-hour absolute rental deadline, and
+checksum-verified result collection before deleting persistent storage. REST v2
+catalog, Pod, and network-volume shapes were checked against the live official
+OpenAPI schema. The management credential remains local.
+
+Validation (no local training):
+
+- CUDA build and CTest: **13/13 passed**.
+- Portable ASan/UBSan CTest: **8/8 passed**.
+- Node runner/cloud contracts: **14/14 passed**; cover scratch arguments,
+  calibration correctness filtering, sustained telemetry, price/hardware caps,
+  ambiguous create recovery without duplicate allocation, setup/hard deadlines,
+  failed termination, volume retention, and paginated REST responses.
+- Nontraining ordered-prefetch comparison: 12 batches starting at step 7 with
+  each of 1, 2 and 4 workers; all tensors and parity patches match serial
+  preparation across multiple ring-buffer wraparounds.
+- Invalid worker/memory/batch/step bounds rejected before dataset access.
+- Node/Bash syntax checks and `git diff --check` passed.
+
+Authenticated read-only preflight returned RTX 5090 Secure Cloud list price
+**$0.99/GPU-hour**, with **availability NONE**, both with and without the CUDA
+12.9 host filter. No paid resource was created. The remote image build,
+calibration, sustained GPU utilization and model quality remain unverified until
+an actual allocation is available. The earlier SCORE 0 result still stands.

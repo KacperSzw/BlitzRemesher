@@ -53,15 +53,15 @@ Batch make_batch(const std::vector<Asset>& assets,uint64_t step,uint32_t core_co
     batch.core=tensor(core,{int64_t(core.size())},torch::kInt64,device);batch.target=tensor(targets,{int64_t(core.size()),outputs},torch::kFloat32,device);
     batch.preparation_seconds=std::chrono::duration<double>(Clock::now()-begin).count();return batch;
 }
-// Four pinned host batches bound storage. Two CPU packers keep CUDA supplied.
+// Four pinned host batches bound storage. Up to four CPU packers supply CUDA.
 // Slots are consumed in step order regardless of completion order, preserving sampling.
 // Workers own no model/device tensors; asset storage outlives their joined threads.
 class Prefetch {
     std::mutex mutex;std::condition_variable ready;std::array<std::optional<Batch>,4> slots;
     uint64_t producing,consuming;bool stopping=false;std::exception_ptr failure;std::vector<std::thread> workers;
 public:
-    Prefetch(const std::vector<Asset>& assets,uint64_t first,uint64_t end,uint32_t core,uint32_t count):producing(first),consuming(first){
-        try{for(unsigned i=0;i<2;++i)workers.emplace_back([&,end,core,count]{
+    Prefetch(const std::vector<Asset>& assets,uint64_t first,uint64_t end,uint32_t core,uint32_t count,uint32_t worker_count):producing(first),consuming(first){
+        try{for(unsigned i=0;i<worker_count;++i)workers.emplace_back([&,end,core,count]{
             try{for(;;){uint64_t step;
                 {std::unique_lock lock(mutex);ready.wait(lock,[&]{return stopping||producing>=end||producing-consuming<slots.size();});if(stopping||producing>=end)return;step=producing++;}
                 auto batch=make_batch(assets,step,core,count,torch::kCPU);
@@ -95,19 +95,37 @@ double verify_native(Network& net,const Batch& batch,const WeightsData& w,torch:
     double maximum=0;auto* reference=expected.data_ptr<float>();for(size_t i=0;i<native.values.size();++i)maximum=std::max(maximum,double(std::abs(native.values[i]-reference[i])));
     if(!std::isfinite(maximum)||maximum>2e-4)throw std::runtime_error("native export differs from LibTorch: "+std::to_string(maximum));return maximum;
 }
+uint64_t unsigned_option(const char* text) {
+    std::string value(text);size_t used=0;
+    if(value.empty()||value.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("expected unsigned integer");
+    auto result=std::stoull(value,&used);if(used!=value.size())throw std::invalid_argument("invalid integer");return result;
+}
 int main(int argc,char** argv){try {
     std::signal(SIGINT,stop);std::signal(SIGTERM,stop);if(argc<3)throw std::invalid_argument("blitz-neural-train DATASET RUN [--steps 5120] [--segment-minutes 50] [--core 4096] [--batch 4] [--checkpoint-every 100]");
-    fs::path dataset=argv[1],run=argv[2],initialize;uint64_t steps=5120,checkpoint_every=100;uint32_t core=4096,batch_count=4;double minutes=50;
-    for(int i=3;i<argc;i+=2){if(i+1==argc)throw std::invalid_argument("missing option");std::string k=argv[i];if(k=="--steps")steps=std::stoull(argv[i+1]);else if(k=="--segment-minutes")minutes=std::stod(argv[i+1]);else if(k=="--core")core=std::stoul(argv[i+1]);else if(k=="--batch")batch_count=std::stoul(argv[i+1]);else if(k=="--checkpoint-every")checkpoint_every=std::stoull(argv[i+1]);else if(k=="--initialize")initialize=argv[i+1];else throw std::invalid_argument("unknown option "+k);}
-    if(!steps||!checkpoint_every||!core||core>8192||!batch_count||batch_count>128||!(minutes>0&&minutes<=50))throw std::invalid_argument("invalid training bounds");
+    fs::path dataset=argv[1],run=argv[2],initialize;uint64_t steps=5120,checkpoint_every=100,core=4096,batch_count=4,workers=2,memory_mib=5120,check_prefetch=0;double minutes=50;
+    for(int i=3;i<argc;i+=2){if(i+1==argc)throw std::invalid_argument("missing option");std::string k=argv[i];if(k=="--steps")steps=unsigned_option(argv[i+1]);else if(k=="--segment-minutes")minutes=std::stod(argv[i+1]);else if(k=="--core")core=unsigned_option(argv[i+1]);else if(k=="--batch")batch_count=unsigned_option(argv[i+1]);else if(k=="--checkpoint-every")checkpoint_every=unsigned_option(argv[i+1]);else if(k=="--workers")workers=unsigned_option(argv[i+1]);else if(k=="--gpu-memory-mib")memory_mib=unsigned_option(argv[i+1]);else if(k=="--check-prefetch")check_prefetch=unsigned_option(argv[i+1]);else if(k=="--initialize")initialize=argv[i+1];else throw std::invalid_argument("unknown option "+k);}
+    if(!steps||!checkpoint_every||!core||core>8192||!batch_count||batch_count>128||!workers||workers>4||memory_mib<512||memory_mib>131072||check_prefetch>16||!(minutes>0&&minutes<=50))throw std::invalid_argument("invalid training bounds");
     if(!torch::cuda::is_available())throw NeuralUnavailable("LibTorch CUDA unavailable");torch::set_num_threads(4);torch::manual_seed(0xB1172026);torch::Device device(torch::kCUDA,0);
-    size_t free=0,total=0;cudaMemGetInfo(&free,&total);if(free<1024ull*1024*1024)throw std::runtime_error("less than 1 GiB GPU memory is available");
-    c10::cuda::CUDACachingAllocator::setMemoryFraction(double(std::min<size_t>(5ull*1024*1024*1024,free-512*1024*1024))/total,0);
+    if(!check_prefetch){
+        size_t free=0,total=0;auto result=cudaMemGetInfo(&free,&total);if(result!=cudaSuccess)throw std::runtime_error(cudaGetErrorString(result));
+        if(free<1024ull*1024*1024)throw std::runtime_error("less than 1 GiB GPU memory is available");
+        c10::cuda::CUDACachingAllocator::setMemoryFraction(double(std::min<size_t>(memory_mib*1048576,free-512*1024*1024))/total,0);
+    }
     auto index=read_json(dataset/"index.json");if(!index.value("complete",false)||index["assets"].empty())throw std::invalid_argument("training dataset is incomplete");
-    fs::create_directories(run);json contract={{"dataset_sha256",file_sha256(dataset/"index.json")},{"dataset_contract",index.at("contract_sha256")},{"schema",schema},{"seed",0xB1172026u},{"core",core},{"batch",batch_count},{"learning_rate",.001},{"weight_decay",.0001},{"binary_sha256",file_sha256("/proc/self/exe")}};
+    fs::create_directories(run);json contract={{"dataset_sha256",file_sha256(dataset/"index.json")},{"dataset_contract",index.at("contract_sha256")},{"schema",schema},{"seed",0xB1172026u},{"core",core},{"batch",batch_count},{"workers",workers},{"gpu_memory_mib",memory_mib},{"learning_rate",.001},{"weight_decay",.0001},{"binary_sha256",file_sha256("/proc/self/exe")}};
     if(!initialize.empty())contract["initialize_sha256"]=file_sha256(initialize);
     if(fs::exists(run/"contract.json")&&read_json(run/"contract.json")!=contract)throw std::invalid_argument("training contract differs; use a new run directory");write_json(run/"contract.json",contract);
     std::vector<Asset> assets;for(auto& row:index["assets"]){auto path=dataset/row.at("path").get<std::string>();if(file_sha256(path)!=row.at("sha256").get<std::string>())throw std::invalid_argument("training shard checksum mismatch");assets.push_back(load_asset(path));}
+    if(check_prefetch){
+        // Nontraining check: compare ordered batches after multiple ring wraparounds.
+        Prefetch prefetch(assets,7,7+check_prefetch,uint32_t(core),uint32_t(batch_count),uint32_t(workers));
+        for(uint64_t i=7;i<7+check_prefetch;++i){auto actual=prefetch.next(),expected=make_batch(assets,i,uint32_t(core),uint32_t(batch_count),torch::kCPU);
+            for(auto member:{&Batch::x,&Batch::from,&Batch::to,&Batch::degree,&Batch::conditions,&Batch::core,&Batch::target})
+                if(!torch::equal(actual.*member,expected.*member))throw std::runtime_error("prefetch changed ordered sampling");
+            if(actual.first.ids!=expected.first.ids||actual.first_condition!=expected.first_condition)throw std::runtime_error("prefetch changed parity patch");
+        }
+        std::cout<<json({{"prefetch_checked",check_prefetch},{"workers",workers},{"training_started",false}}).dump()<<std::endl;return 0;
+    }
     Network net;net->to(device);
     if(!initialize.empty()){auto w=load_weights(initialize);torch::NoGradGuard guard;size_t at=0;for(auto& layer:net->layer)for(auto value:{layer->weight,layer->bias}){auto t=torch::from_blob(w.values.data()+at,value.sizes(),torch::kFloat32).to(device);value.copy_(t);at+=value.numel();}}
     torch::optim::AdamW optimizer(net->parameters(),torch::optim::AdamWOptions(.001).weight_decay(.0001));uint64_t step=0;
@@ -115,7 +133,7 @@ int main(int argc,char** argv){try {
     auto start=Clock::now();auto elapsed=[&]{return std::chrono::duration<double>(Clock::now()-start).count();};auto start_step=step;double first_loss=0,last_loss=0,loss_sum=0,gradient_norm=0;uint64_t measured=0;
     auto initial=net->parameters().front().detach().clone();std::ofstream log(run/"metrics.jsonl",std::ios::app);Batch batch;
     json health;bool wrote=false;uint64_t trained_vertices=0;double preparation_seconds=0,wait_seconds=0;
-    Prefetch prefetch(assets,step,steps,core,batch_count);
+    Prefetch prefetch(assets,step,steps,uint32_t(core),uint32_t(batch_count),uint32_t(workers));
     auto checkpoint=[&]{
         auto name="step-"+std::to_string(step);auto weights=exported(net,{{"schema",schema},{"step",step},{"contract",contract},{"training_library",TORCH_VERSION},{"quality","experimental; finite-camera audits required"}});
         double native_error=verify_native(net,batch,weights,device);auto checkpoint_path=run/(name+".pt");save_checkpoint(checkpoint_path,net,optimizer,step);save_weights(run/(name+".blzn"),weights);

@@ -1,11 +1,12 @@
 # Neural LOD path
 
-Status, 2026-09-29: training is stopped at the user's request. The audit failure
+Status, 2026-09-29: local training is stopped. The audit failure
 is fixed and the saved 25,000-update model completes the eight-asset pilot, with
 eight unreduced fallbacks (SCORE 0). No release-quality model is claimed. See
 [the incident report](REPORT.md#audit-failure-and-repair--2026-09-29) and
-[remote GPU options and costs](CLOUD_GPU.md). Commands below are for a future
-explicitly requested experiment.
+[remote GPU options and costs](CLOUD_GPU.md). The requested two-hour RTX 5090
+deployment is described in [the Runpod runbook](RUNPOD.md). Its remote training
+health and LOD quality must be measured on the actual allocation.
 
 This is an experimental, separately selected generator. A compact three-layer
 graph network predicts retention logits and representative displacements. A
@@ -161,8 +162,15 @@ The original failed run is preserved in `runs/neural/sustained`; the repaired
 audit and interrupted continuation are in `runs/neural/recovered`. Both are
 inactive. The latter saved model and AdamW state at update 26,459. Its historical
 deadline remains 2026-09-29 06:19:33 UTC. Use a new run directory for a new budget.
-When snapshotting runners, include `audit.mjs` beside `train.mjs` or `run.mjs`.
+When snapshotting runners, include `audit.mjs` and `training.mjs` beside `train.mjs`.
 Inputs and executable hashes must still match on resume.
+
+Use `--from-scratch` in place of the initial model argument to start with random
+weights and fresh AdamW state. The C++ trainer accepts `--workers 1..4` and
+`--gpu-memory-mib 512..131072` (defaults 2 and 5120); the latter still reserves
+512 MiB of initially free device memory. `--check-prefetch 1..16` compares ordered
+host batches with serial preparation and exits without constructing or training
+a network. It still needs the CUDA-enabled LibTorch pinned-memory allocator.
 
 Benchmark exit 2 denotes an incomplete time segment. Exit 3 reports fixed
 resource limits, preserving all blocked asset IDs and null SCORE. The runner

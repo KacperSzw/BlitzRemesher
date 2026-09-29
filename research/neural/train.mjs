@@ -4,10 +4,11 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {auditProgress} from './audit.mjs';
+import {initialization,trainerArguments,checkpointHealthy,trainingWindow} from './training.mjs';
 
-if(process.argv.length<5)throw new Error('train.mjs RUN DATASET INITIAL_MODEL [DEADLINE_MS]');
+if(process.argv.length<5)throw new Error('train.mjs RUN DATASET {--from-scratch|INITIAL_MODEL} [DEADLINE_MS]');
 const root=process.cwd(), run=path.resolve(process.argv[2]);
-const dataset=path.resolve(process.argv[3]), initialize=path.resolve(process.argv[4]);
+const dataset=path.resolve(process.argv[3]), initial=initialization(process.argv[4]), initialize=initial===null?null:path.resolve(initial);
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const write=(p,j)=>{fs.writeFileSync(p+'.part',JSON.stringify(j,null,2)+'\n');fs.renameSync(p+'.part',p);};
 const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -30,7 +31,7 @@ fs.mkdirSync(bin,{recursive:true});
 for(const name of ['blitz','blitz-neural-train'])if(!fs.existsSync(path.join(bin,name))){
   fs.copyFileSync(path.join(root,'build/neural',name),path.join(bin,name));fs.chmodSync(path.join(bin,name),0o755);
 }
-const contract={dataset,index_sha256:hash(path.join(dataset,'index.json')),initialize,initialize_sha256:hash(initialize),
+const contract={dataset,index_sha256:hash(path.join(dataset,'index.json')),initialize,initialize_sha256:initialize===null?null:hash(initialize),
   training_sha256:hash(configPath),audit_sha256:hash(auditPath),pilot_sha256:hash('research/pilot.json'),
   corpus_sha256:hash('research/corpus.json'),protocol_sha256:hash('research/PROTOCOL.md'),
   binaries:Object.fromEntries(['blitz','blitz-neural-train'].map(n=>[n,hash(path.join(bin,n))]))};
@@ -78,8 +79,7 @@ async function train(steps){
   for(;;){
     const latest=path.join(training,'latest.json');
     if(fs.existsSync(latest)&&read(latest).step>=steps)return read(latest);
-    await execute(path.join(bin,'blitz-neural-train'),[dataset,training,'--initialize',initialize,'--steps',String(steps),
-      '--segment-minutes',minutes(),'--checkpoint-every',String(config.checkpoint_every),'--core',String(config.core),'--batch',String(config.batch)],'training');
+    await execute(path.join(bin,'blitz-neural-train'),trainerArguments(dataset,training,initialize,config,steps,minutes()),'training');
     const health=read(latest);if(health.step<=previous)throw new Error('Training made no progress');previous=health.step;
   }
 }
@@ -94,23 +94,27 @@ async function audit(manifest,split,model,label){
 }
 try{
   // Test the full frozen audit path before reporting a training run as ready.
-  const latestPath=path.join(training,'latest.json'), prior=fs.existsSync(latestPath)?read(latestPath):null;
+  const latestPath=path.join(training,'latest.json');
+  if(initialize===null&&!fs.existsSync(latestPath))await train(config.bootstrap_steps??100);
+  const prior=fs.existsSync(latestPath)?read(latestPath):null;
   const readinessModel=prior?path.join(training,prior.model):initialize;
   const readinessHash=hash(readinessModel), readinessLabel='audit-readiness-'+readinessHash;
   const readiness=await audit('research/pilot.json','development',readinessModel,readinessLabel);
   write(path.join(run,'audit-readiness.json'),{complete:true,model_sha256:readinessHash,directory:readinessLabel,summary:readiness});
   const healthPath=path.join(run,'health.json');
   if(!fs.existsSync(healthPath)){
-    const health=await train(config.health_steps);
+    let health=await train(config.health_steps),utilization=trainingWindow(samples);
+    // A faster GPU must still provide a full minute of measured training.
+    while((utilization.samples<61||utilization.seconds<60)&&health.step<config.stage_steps-1){
+      health=await train(Math.min(config.stage_steps-1,health.step+config.health_steps));
+      utilization=trainingWindow(samples);
+    }
     const metrics=fs.readFileSync(path.join(training,'metrics.jsonl'),'utf8').trim().split('\n').map(JSON.parse);
     const mean=values=>values.reduce((sum,value)=>sum+value,0)/values.length;
-    const window=samples.filter(s=>s.phase==='training').slice(-60), sorted=window.map(s=>s.gpu).sort((a,b)=>a-b);
     const first=mean(metrics.slice(0,256).map(m=>m.loss)),last=mean(metrics.slice(-256).map(m=>m.loss));
-    const utilization={samples:window.length,mean:mean(sorted),p10:sorted[Math.floor(sorted.length*.1)],
-      minimum:sorted[0],maximum:sorted.at(-1),mean_power_w:mean(window.map(s=>s.power_w)),peak_device_memory_mib:Math.max(...window.map(s=>s.memory_mib))};
-    if(!health.finite||!health.restored||!health.optimizer_restored||health.native_max_abs_error>2e-4||health.parameter_change<=0||last>=first)
+    if(!checkpointHealthy(health)||!Number.isFinite(first)||!Number.isFinite(last)||last>=first)
       throw new Error('Training health gate failed');
-    if(window.length<30||utilization.mean<90||utilization.p10<85)throw new Error('Sustained GPU utilization gate failed');
+    if(utilization.samples<61||utilization.seconds<60||utilization.mean<90||utilization.p10<85)throw new Error('Sustained GPU utilization gate failed');
     write(healthPath,{...health,mean_first_256:first,mean_last_256:last,gpu:utilization});
     stamp('healthy',{health:'health.json',checkpoint:path.join('training',health.checkpoint)});
   }

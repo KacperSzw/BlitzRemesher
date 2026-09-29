@@ -1,0 +1,113 @@
+# Bounded RTX 5090 experiment
+
+This implements the approved from-scratch experiment on one Runpod Secure Cloud
+RTX 5090 (32 GB). Local training is not part of deployment validation. The
+existing model's audited pilot still has SCORE 0; this migration does not change
+the curriculum, decoder, quality limits, or release status.
+
+## Steps and gates
+
+1. **Prepare locally.** Commit and push this branch. `prepare` refuses unpushed
+   or uncommitted source. Package its Git bundle, the original 66-asset teacher
+   dataset, and the frozen development pilot plus validation assets. Check each
+   shard/file against its manifest. No refined labels, old models, AdamW state,
+   held-out assets, or credentials enter the upload.
+2. **Provision within the budget.** Query REST v2 catalog availability and the
+   current Secure Cloud GPU list price. Refuse anything above $1/GPU-hour or a
+   different GPU. Require 8 vCPU and 32 GB host RAM, a 50 GB container disk and a
+   20 GB STANDARD network volume in the same data center. Recheck the allocated
+   hardware and hourly rate. No spot instance or GPU substitution.
+3. **Set up and calibrate within 30 minutes.** Use the pinned official base image
+   and LibTorch archive. Build native CUDA for architecture 120, run CTest and a
+   nontraining ordered-prefetch check, then compare batch sizes 64/128 with 2/4
+   preparation workers. Calibration gets at most five minutes and a 12 GiB
+   LibTorch allocator cap. Select useful core vertices/second only among trials
+   passing finite-gradient, parameter-update, exact checkpoint/AdamW restore,
+   and native-export parity checks. Discard their weights before the real run.
+4. **Train and audit.** Start random weights with the fixed seed, checkpoint after
+   100 updates, complete all eight readiness assets, then require decreasing
+   moving-average loss and at least 60 seconds of training telemetry (mean GPU
+   utilization >=90%, p10 >=85%). Each 25,000-update stage gets the frozen pilot.
+   Stop at 100,000 updates or two stages without score improvement. Select at
+   most two viable checkpoints using validation; never tune against held-out.
+5. **Collect and terminate.** Stop training at minute 110, download the immutable
+   results archive and verify SHA-256. Delete the Pod, confirm termination, then
+   delete the volume only after verified collection. Failure to collect retains
+   the volume and its ongoing storage charge for recovery.
+
+The two-hour clock starts immediately before provisioning (slightly earlier than
+Pod creation). Image pull, upload, build, calibration, audits and downloads all
+count. Completion and failures terminate early. Both the local controller and an
+independent user systemd watchdog request termination. Durable create intents,
+unique resource names and reconciliation prevent blind duplicate provisioning
+after a timeout. Unknown create outcomes stay unresolved until reconciled.
+
+**Keep this workstation awake and online until termination is confirmed.** The
+watchdog is local; a power loss or a provider/network outage can delay API
+termination beyond the target deadline. No unsupported provider timer is assumed.
+Services restart after failure and at the next user session with the original
+absolute deadline. They never extend the budget. Do not disable the watchdog to
+stop training: use the stop command below. The API key stays local and is never
+included in Pod environment variables, shell command arguments, or result logs.
+
+The 12 GiB cap covers Torch allocations, not CUDA contexts, native evaluator
+scratch, or driver memory. Four pinned host slots remain bounded. The remote
+training supervisor samples process-group RSS and stops above 24 GiB; this is a
+sampled guard, not a kernel memory reservation. Compilation uses two workers.
+CPU packing, mesh decoding, and final audits still run on CPU.
+
+## Commands
+
+From this worktree with Node, Git, SSH, tar and user systemd available:
+
+```sh
+node research/neural/runpod.mjs prepare runs/neural/runpod-5090-first
+node research/neural/runpod.mjs launch runs/neural/runpod-5090-first
+node research/neural/runpod.mjs status runs/neural/runpod-5090-first
+node research/neural/runpod.mjs stop runs/neural/runpod-5090-first
+```
+
+`prepare` is offline except for checking the pushed Git revision. `launch` rents
+the approved resources; don't invoke it just to validate the scripts. Before
+launch, save the account API key in `~/.config/blitz/runpod-api-key` with mode 600.
+The account needs sufficient credit and permission to read catalog resources and
+create/read/delete Pods and network volumes. A dedicated SSH identity is created
+locally; only its public key reaches the Pod. No manual template deployment or
+SSH setup is needed after onboarding.
+
+`rental.json` records IDs, quote, absolute deadlines and termination confirmation;
+`watchdog.json` records independent cleanup attempts; `collection.json` confirms
+the downloaded archive checksum. The control service name is `<rental-name>-control`
+and the independent watchdog is `<rental-name>-watchdog`. Inspect them with
+`systemctl --user status` / `journalctl --user -u`. An interrupted controller can
+be restarted with `systemctl --user restart <rental-name>-control`; do not launch
+another experiment directory as a recovery action.
+
+`results.tar.gz` contains bootstrap/build and CTest logs, package/compiler/GPU
+versions, calibration measurements, the experiment's source provenance, per-step
+loss/gradient/timing data, GPU telemetry, model and optimizer checkpoints, audit
+rows and the final report. A finite-camera audit and a healthy training loop are
+separate from demonstrating a useful reduction. Incomplete audits stay unscored.
+
+## Pinned dependencies and provider references
+
+- Image: `runpod/base:1.0.7-cuda1290-ubuntu2404` at
+  `sha256:c776d549e38023c51a28c25267e029ec2aa53a525c87a934b77694d76572c629`.
+- LibTorch 2.10.0 cu128 CXX11 ABI, SHA-256
+  `429aa9fead3cf3d557e7c310442a1fae3879cdc14a469ff452043b39b61666a9`;
+  the native compiler is CUDA 12.9. Driver >=575.51.03 is checked.
+- Ubuntu apt dependency versions are recorded after installation; its rolling
+  repository packages are not digest-pinned. Remote compatibility is established
+  by the actual build, CTest and native/Torch comparison, not by the image alone.
+- [REST v2 overview](https://docs.runpod.io/api-reference-v2/overview),
+  [live OpenAPI schema](https://api.runpod.io/v2/openapi.json),
+  [GPU catalog](https://docs.runpod.io/api-reference-v2/catalog/list-gpu-types),
+  [Pod creation](https://docs.runpod.io/api-reference-v2/pods/create-a-pod),
+  [network volume creation](https://docs.runpod.io/api-reference-v2/network-volumes/create-a-network-volume),
+  [credentials](https://docs.runpod.io/get-started/credentials).
+
+At the GPU price cap, two hours cost at most $2 for GPU time, plus container disk,
+network storage and applicable taxes. Catalog price and actual Pod rate are both
+checked; the API does not offer an atomic client price ceiling, so a quote change
+can result in a short rejected allocation before deletion. Preserved network
+storage continues billing until explicitly recovered and deleted.

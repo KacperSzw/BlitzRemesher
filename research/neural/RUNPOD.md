@@ -86,7 +86,10 @@ SSH setup is needed after onboarding.
 
 `rental.json` records IDs, quote, absolute deadlines and termination confirmation;
 `watchdog.json` records independent cleanup attempts; `collection.json` confirms
-the downloaded archive checksum. The control service name is `<rental-name>-control`
+the downloaded archive checksum. `transport-errors.jsonl` retains private SSH
+failure diagnostics, while `rental.json` identifies the setup phase. Extraction
+does not preserve workstation ownership on the provider's network volume.
+The control service name is `<rental-name>-control`
 and the independent watchdog is `<rental-name>-watchdog`. Inspect them with
 `systemctl --user status` / `journalctl --user -u`. An interrupted controller can
 be restarted with `systemctl --user restart <rental-name>-control`; do not launch

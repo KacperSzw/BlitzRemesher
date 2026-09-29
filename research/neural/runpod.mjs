@@ -86,13 +86,19 @@ function sshArgs(endpoint){
 async function remote(endpoint,command,{input,output,timeout=60000}={}){
   const fd=output?fs.openSync(output,'w'):undefined;
   const child=spawn('ssh',[...sshArgs(endpoint),command],{stdio:['pipe',fd??'pipe','pipe']});
-  let data='';child.stdout?.on('data',chunk=>{data+=chunk;if(data.length>1024*1024)child.kill('SIGKILL');});
-  child.stderr.on('data',()=>{}); // Do not echo provider startup environment into local logs.
+  let data='',diagnostic='',timedOut=false;
+  child.stdout?.on('data',chunk=>{data+=chunk;if(data.length>1024*1024)child.kill('SIGKILL');});
+  child.stderr.on('data',chunk=>{diagnostic=(diagnostic+chunk).slice(-8192);});
   if(input){const stream=fs.createReadStream(input);stream.on('error',()=>child.kill('SIGKILL'));stream.pipe(child.stdin);child.once('close',()=>stream.destroy());}
   else child.stdin.end();
   child.stdin.on('error',()=>{});
-  const timer=setTimeout(()=>child.kill('SIGKILL'),timeout);
-  try{await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',code=>code===0?resolve():reject(new Error('SSH command failed or timed out')));});return data.trim();}
+  const timer=setTimeout(()=>{timedOut=true;child.kill('SIGKILL');},timeout);
+  try{await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',(code,signal)=>{
+    if(code===0)return resolve();
+    // Private diagnostic file, never echoed to journals or sent to the provider.
+    fs.appendFileSync(dir+'/transport-errors.jsonl',JSON.stringify({at:Date.now(),code,signal,timed_out:timedOut,stderr:diagnostic})+'\n',{mode:0o600});
+    reject(new Error(`SSH failed (exit ${code}, signal ${signal}, timeout ${timedOut}); see transport-errors.jsonl`));
+  });});return data.trim();}
   finally{clearTimeout(timer);if(fd!==undefined)fs.closeSync(fd);}
 }
 async function collect(endpoint,deadline){
@@ -111,6 +117,7 @@ async function control(){
   try{
     if(Date.now()>=s.deadline_ms||fs.existsSync(dir+'/stop-requested'))throw new Error('Rental deadline/cancellation reached');
     sync('systemctl',['--user','is-active',s.name+'-watchdog.service']);
+    rental.commit({phase:'provisioning'});
     await rental.volume();await rental.pod(fs.readFileSync(dir+'/identity.pub','utf8'));
     let endpoint=s.endpoint;
     while(!endpoint&&Date.now()<s.setup_deadline_ms){
@@ -120,25 +127,30 @@ async function control(){
       await sleep(10000);
     }
     if(!endpoint)throw new Error('Setup deadline reached before SSH became available');
-    rental.commit({endpoint});
+    rental.commit({endpoint,phase:'ssh'});
     for(;;){
       try{await remote(endpoint,'true',{timeout:15000});break;}
       catch(error){if(Date.now()+15000>=s.setup_deadline_ms)throw error;await sleep(5000);}
     }
     if(!s.uploaded){
       const prepared=read(dir+'/prepared.json');
+      rental.commit({phase:'upload'});
       await remote(endpoint,'cat > /workspace/input.tar',{input:dir+'/input.tar',timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
+      rental.commit({phase:'verify-upload'});
       const actual=(await remote(endpoint,'sha256sum /workspace/input.tar')).split(/\s/)[0];
       if(actual!==prepared.archive_sha256)throw new Error('Uploaded input checksum mismatch');
-      await remote(endpoint,'cd /workspace && tar -xf input.tar && sha256sum --quiet --check inputs.sha256 && if [ ! -d project/.git ]; then git clone source.bundle project; fi && cd project && git checkout '+sh(prepared.revision)+' && cp -a /workspace/assets/data/. data/ && rm /workspace/input.tar', {timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
+      rental.commit({phase:'restore'});
+      await remote(endpoint,'cd /workspace && tar --no-same-owner --no-same-permissions -xf input.tar && sha256sum --quiet --check inputs.sha256 && if [ ! -d project/.git ]; then git clone source.bundle project; fi && cd project && git checkout '+sh(prepared.revision)+' && cp -r /workspace/assets/data/. data/ && rm /workspace/input.tar', {timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
       rental.commit({uploaded:true});
     }
+    rental.commit({phase:'start-job'});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
     await remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' > /workspace/launch.log 2>&1 < /dev/null & fi'));
     while(Date.now()<s.deadline_ms-30000){
       if(fs.existsSync(dir+'/stop-requested'))throw new Error('Cancellation requested');
       const phase=await remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi');
-      if(phase==='training'&&!s.setup_complete)rental.commit({setup_complete:true});
+      if(phase==='training'&&!s.setup_complete)rental.commit({setup_complete:true,phase:'training'});
+      if(phase==='setup'&&s.phase!=='setup')rental.commit({phase:'setup'});
       if(phase==='finished'){await collect(endpoint,s.deadline_ms-15000);break;}
       if(!s.setup_complete&&Date.now()>=s.setup_deadline_ms)throw new Error('Setup exceeded 30 minutes');
       await sleep(10000);

@@ -292,3 +292,16 @@ Local validation, with no local training:
 
 Remote setup, training health, utilization and quality still require the actual
 run. This hardware change does not alter the model, curriculum or audit limits.
+
+### Network-volume extraction correction
+
+The first allocation was terminated after extraction failed, with its persistent
+volume retained. On the replacement Pod, the original archive matched its
+SHA-256, and replaying extraction reproduced `tar` exit 2: the network volume
+rejects restoring uid 1000/gid 100 (`Operation not permitted`). Extraction now
+uses `--no-same-owner --no-same-permissions`; audit assets are copied without
+preserving ownership. The controller also records setup phases and retains
+bounded SSH stderr in a private local diagnostic log, so cleanup does not hide
+the original failure. All 17 Node contracts and Node syntax checks passed.
+The replacement reuses the existing volume only after confirming the first Pod
+was deleted, and retains the original setup/training/rental deadlines.

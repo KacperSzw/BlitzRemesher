@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {auditProgress} from '../research/neural/audit.mjs';
-import {initialization,trainerArguments,checkpointHealthy,trainingWindow,selectCalibration,trainingDeadline,shouldTrainStage} from '../research/neural/training.mjs';
+import {initialization,trainerArguments,checkpointHealthy,gpuSaturated,trainingWindow,selectCalibration,trainingDeadline,shouldTrainStage} from '../research/neural/training.mjs';
 test('the requested full window continues past stalled audits and the step cap',()=>{
   const config={max_steps:60,max_stalled_pilots:3};
   assert.equal(shouldTrainStage(config,20,1),true);
@@ -31,12 +31,18 @@ test('scratch never passes an initializer; warm start remains explicit',()=>{
   }
 });
 const health={finite:true,restored:true,optimizer_restored:true,native_max_abs_error:1e-5,parameter_change:.02,gradient_norm:.3};
-test('calibration selects useful throughput only among correctly restored models',()=>{
-  const trial={health,measured_steps:20,vertices_per_second:100};
+test('calibration selects useful throughput among restored models with sustained GPU evidence',()=>{
+  const gpu={samples:70,seconds:69,mean:96,p10:92};
+  const trial={health,gpu,measured_steps:20,vertices_per_second:100};
   const fast={...trial,vertices_per_second:200};
   assert.equal(selectCalibration([trial,fast,{...trial,vertices_per_second:500,health:{...health,optimizer_restored:false}}]),fast);
   for(const h of [{...health,native_max_abs_error:NaN},{...health,gradient_norm:0},{...health,parameter_change:0}])assert.equal(checkpointHealthy(h),false);
   assert.throws(()=>selectCalibration([{...trial,measured_steps:0}]),/No calibration/);
+  for(const insufficient of [undefined,{...gpu,samples:20},{...gpu,seconds:30},{...gpu,mean:83},{...gpu,p10:74}]){
+    assert.equal(gpuSaturated(insufficient),false);
+    assert.equal(selectCalibration([trial,{...fast,gpu:insufficient}]),trial);
+    assert.throws(()=>selectCalibration([{...fast,gpu:insufficient}]),/No calibration/);
+  }
 });
 test('utilization evidence needs measured time and excludes audit activity',()=>{
   const samples=Array.from({length:61},(_,i)=>({at:new Date(i*1000).toISOString(),phase:'training',gpu:95,power_w:300,memory_mib:1000}));

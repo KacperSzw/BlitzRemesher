@@ -37,8 +37,9 @@ except for establishing useful LOD quality. Remote health must be measured.
    Require at least 60 seconds of telemetry, mean GPU utilization >=90%, tenth
    percentile >=85%, finite gradients, decreasing mean training loss, exact model
    and AdamW moment restoration, and native export error <=2e-4. Continue the
-   detached service after the health gate. Audit each 25,000-update stage and
-   stop after two stages without a better complete development pilot score.
+   detached service after the health gate. Audit each 25,000-update stage.
+   The subsequently requested two-hour cloud window continues through flat
+   pilots; numerical health and deadline failures retain their stop behavior.
 8. Exercise the full frozen eight-asset audit before declaring the experiment
    ready. Bound only optional candidate refinement to fitting raster sizes;
    reject uncertain bounds and preserve final CPU confirmation. Record resource

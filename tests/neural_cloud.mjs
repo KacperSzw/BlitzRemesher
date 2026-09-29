@@ -91,12 +91,12 @@ test('Pod request is pinned and forwards only the public key',()=>{
   assert.deepEqual(body.ports,['22/tcp']);assert.equal(body.mounts.network[0].volumeId,'volume1');
 });
 test('actual allocation must satisfy hardware and rate caps',()=>{
-  const pod={cloud:'SECURE',cost:2.10,gpu:{id:GPU,count:1,memory:32,vcpuCount:8}};
+  const pod={cloud:'SECURE',cost:2.10,gpu:{id:GPU,count:1,memory:deployment.host_ram_gb,vcpuCount:deployment.vcpus}};
   verifyPod(pod);
   // Runpod's Pod gpu.memory is host RAM; 32 GB is valid with a 96 GB GPU.
-  verifyPod({...pod,gpu:{...pod.gpu,memory:64,vcpuCount:16}});
+  verifyPod({...pod,gpu:{...pod.gpu,memory:64,vcpuCount:deployment.vcpus*2}});
   for(const wrong of [{...pod,cost:2.52},{...pod,cost:undefined},{...pod,gpu:{...pod.gpu,id:GPU+' MIG 2g.48gb'}},
-    {...pod,gpu:{...pod.gpu,count:2}},{...pod,gpu:{...pod.gpu,vcpuCount:4}},
+    {...pod,gpu:{...pod.gpu,count:2}},{...pod,gpu:{...pod.gpu,vcpuCount:deployment.vcpus-1}},
     {...pod,gpu:{...pod.gpu,memory:undefined}}])assert.throws(()=>verifyPod(wrong));
 });
 test('remote hardware validation requires a full device and a valid compatible driver',()=>{

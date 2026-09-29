@@ -14,16 +14,17 @@ the curriculum, decoder, quality limits, or release status.
    held-out assets, or credentials enter the upload.
 2. **Provision within the budget.** Query REST v2 catalog availability and the
    current Secure Cloud GPU list price. Refuse anything above $2.50/GPU-hour or a
-   different GPU. Require 8 vCPU and 32 GB host RAM, a 50 GB container disk and a
+   different GPU. Require 16 vCPU and 32 GB host RAM, a 50 GB container disk and a
    20 GB STANDARD network volume in the same data center. Recheck the allocated
    hardware and hourly rate. No spot instance or GPU substitution.
 3. **Set up and calibrate within 30 minutes.** Use the pinned official base image
    and LibTorch archive. Build native CUDA for architecture 120, run CTest and a
-   nontraining ordered-prefetch check, then compare batch sizes 64/128 with 2/4
-   preparation workers. Calibration gets at most five minutes and a 12 GiB
+   nontraining ordered-prefetch check, then compare batch/worker pairs 64/4,
+   64/8 and 128/8 for 75 seconds each. Calibration gets at most five minutes and a 12 GiB
    LibTorch allocator cap. Select useful core vertices/second only among trials
    passing finite-gradient, parameter-update, exact checkpoint/AdamW restore,
-   and native-export parity checks. Discard their weights before the real run.
+   native-export parity checks and at least 60 seconds of sustained GPU use
+   (mean >=90%, p10 >=85%). Discard their weights before the real run.
 4. **Train and audit.** Start random weights with the fixed seed, checkpoint after
    100 updates, complete all eight readiness assets, then require decreasing
    moving-average loss and at least 60 seconds of training telemetry (mean GPU
@@ -61,7 +62,7 @@ stop training: use the stop command below. The API key stays local and is never
 included in Pod environment variables, shell command arguments, or result logs.
 
 The 12 GiB cap covers Torch allocations, not CUDA contexts, native evaluator
-scratch, or driver memory. Four pinned host slots remain bounded. The remote
+scratch, or driver memory. Four to eight pinned host slots remain bounded. The remote
 training supervisor samples process-group RSS and stops above 24 GiB; this is a
 sampled guard, not a kernel memory reservation. Compilation uses two workers.
 CPU packing, mesh decoding, and final audits still run on CPU.

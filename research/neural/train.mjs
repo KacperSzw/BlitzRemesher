@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn, execFileSync} from 'node:child_process';
 import {auditProgress} from './audit.mjs';
-import {initialization,trainerArguments,checkpointHealthy,trainingWindow,shouldTrainStage} from './training.mjs';
+import {initialization,trainerArguments,checkpointHealthy,gpuSaturated,trainingWindow,shouldTrainStage} from './training.mjs';
 
 if(process.argv.length<5)throw new Error('train.mjs RUN DATASET {--from-scratch|INITIAL_MODEL} [DEADLINE_MS]');
 const root=process.cwd(), run=path.resolve(process.argv[2]);
@@ -112,10 +112,12 @@ try{
     const metrics=fs.readFileSync(path.join(training,'metrics.jsonl'),'utf8').trim().split('\n').map(JSON.parse);
     const mean=values=>values.reduce((sum,value)=>sum+value,0)/values.length;
     const first=mean(metrics.slice(0,256).map(m=>m.loss)),last=mean(metrics.slice(-256).map(m=>m.loss));
+    const evidence={...health,mean_first_256:first,mean_last_256:last,gpu:utilization};
+    write(path.join(run,'health-attempt.json'),evidence);
     if(!checkpointHealthy(health)||!Number.isFinite(first)||!Number.isFinite(last)||last>=first)
       throw new Error('Training health gate failed');
-    if(utilization.samples<61||utilization.seconds<60||utilization.mean<90||utilization.p10<85)throw new Error('Sustained GPU utilization gate failed');
-    write(healthPath,{...health,mean_first_256:first,mean_last_256:last,gpu:utilization});
+    if(!gpuSaturated(utilization))throw new Error('Sustained GPU utilization gate failed');
+    write(healthPath,evidence);
     stamp('healthy',{health:'health.json',checkpoint:path.join('training',health.checkpoint)});
   }
   const candidates=[];let best=0,stalled=0;

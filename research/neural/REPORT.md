@@ -364,3 +364,29 @@ command failures still fail immediately, and cloud create calls are never
 retried by this helper. **22 Node tests** pass, including recovery from transport
 failures, preservation of command failures and exhaustion of the retry limit.
 The terminated Pod's persistent volume retains the uploaded source and data.
+
+### Measured Blackwell utilization correction
+
+The replacement completed all **14 remote CTests**, ordered prefetch, calibration,
+and the full eight-asset readiness audit. At update 8,192, loss/gradients were
+finite, model and AdamW restoration were exact, native export error was
+**3.82e-6**, and training processed **17.95 million core vertices/second**. The
+last 61-second GPU window averaged **83.24%**, with **p10 74%**: the sustained
+utilization gate correctly stopped the run. This was not a healthy-run success.
+The readiness pilot retained eight unreduced fallbacks and SCORE 0. The results
+archive was collected and verified (`def4a6ccca65f4109eb31a19811d77dd6edb5c689730f3d1740c8b4a4833da94`),
+then the Pod and volume were deleted.
+
+CPU preparation averaged 43.5 ms/batch and the consumer waited 1.30 ms/update.
+The bounded ordered queue now supports up to eight workers/slots, and cloud
+allocation requires at least 16 vCPUs. Calibration compares 64/4, 64/8 and 128/8
+batch/worker pairs for 75 seconds each, using the production checkpoint cadence.
+It records GPU telemetry and selects throughput only among candidates meeting
+the unchanged sustained-utilization gate. The initial health segment is longer
+to avoid restarting the trainer halfway through the measured minute. Failed
+health evidence is now saved explicitly as `health-attempt.json`.
+
+Local validation, without training: **14/14 CUDA CTests**, **8/8 portable
+ASan/UBSan CTests**, **22/22 Node contracts**, and an eight-worker ordered-prefetch
+comparison over 28 batches (multiple ring wraparounds) passed. New remote
+utilization and useful mesh reduction remain to be demonstrated.

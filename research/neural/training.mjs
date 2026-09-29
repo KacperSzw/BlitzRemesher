@@ -25,6 +25,9 @@ export function checkpointHealthy(h) {
     Number.isFinite(h.parameter_change)&&h.parameter_change>0&&
     Number.isFinite(h.gradient_norm)&&h.gradient_norm>0;
 }
+export function gpuSaturated(gpu) {
+  return gpu?.samples>=61&&gpu.seconds>=60&&gpu.mean>=90&&gpu.p10>=85;
+}
 export function trainingWindow(samples) {
   const window=[];
   for(const sample of [...samples].reverse()){
@@ -40,8 +43,8 @@ export function trainingWindow(samples) {
     mean_power_w:mean(window.map(s=>s.power_w)),peak_device_memory_mib:Math.max(0,...window.map(s=>s.memory_mib))};
 }
 export function selectCalibration(trials) {
-  const passing=trials.filter(t=>checkpointHealthy(t.health)&&t.measured_steps>=16&&
+  const passing=trials.filter(t=>checkpointHealthy(t.health)&&gpuSaturated(t.gpu)&&t.measured_steps>=16&&
     Number.isFinite(t.vertices_per_second)&&t.vertices_per_second>0);
-  if(!passing.length)throw new Error('No calibration candidate passed checkpoint and parity checks');
+  if(!passing.length)throw new Error('No calibration candidate passed checkpoint, parity and sustained GPU checks');
   return passing.sort((a,b)=>b.vertices_per_second-a.vertices_per_second)[0];
 }

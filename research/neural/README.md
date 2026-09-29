@@ -166,9 +166,9 @@ When snapshotting runners, include `audit.mjs` and `training.mjs` beside `train.
 Inputs and executable hashes must still match on resume.
 
 Use `--from-scratch` in place of the initial model argument to start with random
-weights and fresh AdamW state. The C++ trainer accepts `--workers 1..4` and
+weights and fresh AdamW state. The C++ trainer accepts `--workers 1..8` and
 `--gpu-memory-mib 512..131072` (defaults 2 and 5120); the latter still reserves
-512 MiB of initially free device memory. `--check-prefetch 1..16` compares ordered
+512 MiB of initially free device memory. `--check-prefetch 1..32` compares ordered
 host batches with serial preparation and exits without constructing or training
 a network. It still needs the CUDA-enabled LibTorch pinned-memory allocator.
 

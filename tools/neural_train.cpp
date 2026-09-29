@@ -54,14 +54,14 @@ Batch make_batch(const std::vector<Asset>& assets,uint64_t step,uint32_t core_co
     batch.core=tensor(core,{int64_t(core.size())},torch::kInt64,device);batch.target=tensor(targets,{int64_t(core.size()),outputs},torch::kFloat32,device);
     batch.preparation_seconds=std::chrono::duration<double>(Clock::now()-begin).count();return batch;
 }
-// Four pinned host batches bound storage. Up to four CPU packers supply CUDA.
+// Four to eight pinned host slots bound storage as CPU packers supply CUDA.
 // Slots are consumed in step order regardless of completion order, preserving sampling.
 // Workers own no model/device tensors; asset storage outlives their joined threads.
 class Prefetch {
-    std::mutex mutex;std::condition_variable ready;std::array<std::optional<Batch>,4> slots;
+    std::mutex mutex;std::condition_variable ready;std::vector<std::optional<Batch>> slots;
     uint64_t producing,consuming;bool stopping=false;std::exception_ptr failure;std::vector<std::thread> workers;
 public:
-    Prefetch(const std::vector<Asset>& assets,uint64_t first,uint64_t end,uint32_t core,uint32_t count,uint32_t worker_count):producing(first),consuming(first){
+    Prefetch(const std::vector<Asset>& assets,uint64_t first,uint64_t end,uint32_t core,uint32_t count,uint32_t worker_count):slots(std::max(4u,worker_count)),producing(first),consuming(first){
         try{for(unsigned i=0;i<worker_count;++i)workers.emplace_back([&,end,core,count]{
             try{for(;;){uint64_t step;
                 {std::unique_lock lock(mutex);ready.wait(lock,[&]{return stopping||producing>=end||producing-consuming<slots.size();});if(stopping||producing>=end)return;step=producing++;}
@@ -115,7 +115,7 @@ int main(int argc,char** argv){try {
     std::signal(SIGINT,stop);std::signal(SIGTERM,stop);if(argc<3)throw std::invalid_argument("blitz-neural-train DATASET RUN [--steps 5120] [--segment-minutes 50] [--core 4096] [--batch 4] [--checkpoint-every 100]");
     fs::path dataset=argv[1],run=argv[2],initialize;uint64_t steps=5120,checkpoint_every=100,core=4096,batch_count=4,workers=2,memory_mib=5120,check_prefetch=0;double minutes=50;
     for(int i=3;i<argc;i+=2){if(i+1==argc)throw std::invalid_argument("missing option");std::string k=argv[i];if(k=="--steps")steps=unsigned_option(argv[i+1]);else if(k=="--segment-minutes")minutes=std::stod(argv[i+1]);else if(k=="--core")core=unsigned_option(argv[i+1]);else if(k=="--batch")batch_count=unsigned_option(argv[i+1]);else if(k=="--checkpoint-every")checkpoint_every=unsigned_option(argv[i+1]);else if(k=="--workers")workers=unsigned_option(argv[i+1]);else if(k=="--gpu-memory-mib")memory_mib=unsigned_option(argv[i+1]);else if(k=="--check-prefetch")check_prefetch=unsigned_option(argv[i+1]);else if(k=="--initialize")initialize=argv[i+1];else throw std::invalid_argument("unknown option "+k);}
-    if(!steps||!checkpoint_every||!core||core>8192||!batch_count||batch_count>128||!workers||workers>4||memory_mib<512||memory_mib>131072||check_prefetch>16||!(minutes>0&&minutes<=50))throw std::invalid_argument("invalid training bounds");
+    if(!steps||!checkpoint_every||!core||core>8192||!batch_count||batch_count>128||!workers||workers>8||memory_mib<512||memory_mib>131072||check_prefetch>32||!(minutes>0&&minutes<=50))throw std::invalid_argument("invalid training bounds");
     if(!torch::cuda::is_available())throw NeuralUnavailable("LibTorch CUDA unavailable");torch::set_num_threads(4);torch::manual_seed(0xB1172026);torch::Device device(torch::kCUDA,0);
     if(!check_prefetch){
         size_t free=0,total=0;auto result=cudaMemGetInfo(&free,&total);if(result!=cudaSuccess)throw std::runtime_error(cudaGetErrorString(result));

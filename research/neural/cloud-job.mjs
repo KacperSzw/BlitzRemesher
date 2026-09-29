@@ -2,13 +2,13 @@
 import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
-import {trainerArguments,selectCalibration,trainingDeadline as cutoff} from './training.mjs';
+import {trainerArguments,selectCalibration,trainingWindow,trainingDeadline as cutoff} from './training.mjs';
 
 const setupDeadline=Number(process.argv[2]),latestTrainingDeadline=Number(process.argv[3]),trainingMinutes=Number(process.argv[4]);
 if(!Number.isFinite(setupDeadline)||!Number.isFinite(latestTrainingDeadline)||!Number.isFinite(trainingMinutes)||trainingMinutes<=0)
   throw new Error('Missing absolute deadlines or training duration');
 const results='/workspace/results',dataset='/workspace/dataset',run=results+'/experiment';
-const base={core:4096,bootstrap_steps:100,health_steps:4096,checkpoint_every:1024,
+const base={core:4096,bootstrap_steps:100,health_steps:8192,checkpoint_every:1024,
   stage_steps:25000,max_steps:100000,max_stalled_pilots:2,train_until_deadline:true,hours:2,gpu_memory_mib:12288};
 let active,cancelled=false;
 for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{cancelled=true;if(active)process.kill(-active.pid,'SIGTERM');});
@@ -40,18 +40,31 @@ async function execute(command,args,log,deadline){
 }
 
 const calibrationDeadline=Math.min(Date.now()+5*60000,setupDeadline),trials=[];
-for(const batch of [64,128])for(const workers of [2,4]){
-  const dir=`${results}/calibration/b${batch}-w${workers}`,config={...base,batch,workers,checkpoint_every:128};
+for(const [batch,workers] of [[64,4],[64,8],[128,8]]){
+  const dir=`${results}/calibration/b${batch}-w${workers}`,config={...base,batch,workers};
   fs.mkdirSync(dir,{recursive:true});
-  const start=Date.now();
+  const start=Date.now(),samples=[],telemetry=fs.createWriteStream(dir+'/gpu.jsonl');let pending='',monitorError;
+  const monitor=spawn('nvidia-smi',['--query-gpu=utilization.gpu,power.draw,memory.used','--format=csv,noheader,nounits','-l','1']);
+  monitor.on('error',error=>{monitorError=String(error);});
+  monitor.stdout.on('data',chunk=>{
+    pending+=chunk.toString();let at;
+    while((at=pending.indexOf('\n'))>=0){
+      const values=pending.slice(0,at).split(',').map(Number);pending=pending.slice(at+1);
+      if(values.length!==3||values.some(v=>!Number.isFinite(v)))continue;
+      const [gpu,power_w,memory_mib]=values,row={at:new Date().toISOString(),phase:'training',gpu,power_w,memory_mib};
+      samples.push(row);telemetry.write(JSON.stringify(row)+'\n');
+    }
+  });
   try{
     const outcome=await execute('build/neural/blitz-neural-train',
-      trainerArguments(dataset,dir,null,config,512,.6),dir+'/train.log',Math.min(start+65000,calibrationDeadline));
+      trainerArguments(dataset,dir,null,config,1000000,1.25),dir+'/train.log',Math.min(start+90000,calibrationDeadline));
+    if(monitorError)throw new Error(monitorError);
     const health=read(dir+'/latest.json');
     const metrics=fs.readFileSync(dir+'/metrics.jsonl','utf8').trim().split('\n').map(JSON.parse).slice(16);
     const seconds=metrics.reduce((sum,r)=>sum+r.seconds,0),vertices=metrics.reduce((sum,r)=>sum+r.core_vertices,0);
-    trials.push({batch,workers,...outcome,health,measured_steps:metrics.length,vertices_per_second:vertices/seconds,elapsed_seconds:(Date.now()-start)/1000});
-  }catch(error){trials.push({batch,workers,error:String(error),elapsed_seconds:(Date.now()-start)/1000});}
+    trials.push({batch,workers,...outcome,health,gpu:trainingWindow(samples),measured_steps:metrics.length,vertices_per_second:vertices/seconds,elapsed_seconds:(Date.now()-start)/1000});
+  }catch(error){trials.push({batch,workers,error:String(error),gpu:trainingWindow(samples),elapsed_seconds:(Date.now()-start)/1000});}
+  finally{monitor.kill('SIGTERM');telemetry.end();}
   write(results+'/calibration.json',{complete:false,trials});
 }
 const best=selectCalibration(trials.filter(t=>(t.code===0||t.code===2)&&t.reason!=='host_memory_budget'));

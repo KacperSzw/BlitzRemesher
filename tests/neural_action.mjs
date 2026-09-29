@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {generalize} from '../research/neural/action-generalize.mjs';
+import {staged} from '../research/neural/action-staged.mjs';
+import {freshConditions} from '../research/neural/action-curriculum.mjs';
 import {evaluateSaved,fullPilotFits} from '../research/neural/action-evaluate.mjs';
 import {write} from '../research/neural/runpod-api.mjs';
-import {actionBudget,actionAccrued} from '../research/neural/action-budget.mjs';
+import {actionBudget,actionAccrued,continuationBudget,continuationAuthorization} from '../research/neural/action-budget.mjs';
 import {endpointDecision,pilotDecision,actionHealth} from '../research/neural/action-gates.mjs';
 test('cumulative rental cap includes previous spend, storage allowance and reserve',()=>{
   for(const rate of [1.8,2.1,2.5])for(const billed of [1.9,2.75,4.2]){
@@ -24,6 +26,20 @@ test('cumulative rental cap includes previous spend, storage allowance and reser
   const evaluation={...stopped,name:'evaluation',experiment:'action-v2-evaluate'};
   assert.equal(actionAccrued([stopped,pilot,evaluation,evaluation],3601000,2),4);
   assert.throws(()=>actionBudget({billed:2,rate:2.5,minutes:90,additionalAccrued:3}));
+});
+test('additional authorization counts earlier rentals and retries without adding to the old ceiling',()=>{
+  const base=continuationAuthorization.baseline_usd,accrued=base-2.75;
+  for(const rate of [1.9,2.5])for(const minutes of [60,120,150]){
+    const b=continuationBudget({billed:4,rate,minutes,additionalAccrued:accrued});
+    assert.ok(b.maximum_additional_usd<=8);assert.equal(b.cap_usd,base+8);
+    assert.equal(b.prior_assumed_usd,base);
+  }
+  const retry=continuationBudget({billed:4,rate:2,minutes:60,additionalAccrued:accrued+1});
+  assert.equal(retry.prior_assumed_usd,base+1);
+  assert.throws(()=>continuationBudget({billed:4,rate:2,additionalAccrued:0}),/missing earlier/);
+  assert.throws(()=>continuationBudget({billed:base+7,rate:2,additionalAccrued:accrued}),/cap/);
+  assert.throws(()=>continuationBudget({billed:4,rate:2,additionalAccrued:accrued+7}),/cap/);
+  assert.equal(actionAccrued([{name:'new',experiment:'action-v2-staged',started_at:0,terminated_at:1800000,compute_terminated:true}],0,2),1);
 });
 test('action health rejects unverified updates and unchanged or nonfinite parameters',()=>{
   const health={complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9};
@@ -52,6 +68,37 @@ test('cloud continuation stops before training when the preceding LOD is unverif
   try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},reusePrepared:false,execute:async(name,args)=>{
     ++calls;assert.equal(name,'blitz-neural-action-prepare');write(args[1]+'/index.json',{complete:true,reference_confirmed:false});
   }}),/audited preceding LOD/);assert.equal(calls,1);}finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('staged continuation refuses training after missing, cancelled or unhealthy baseline rows',async()=>{
+  for(const failure of ['missing','cancelled','resource','nonfinite','disagreement']){
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-staged-'));let calls=0;
+    try{const result=await staged({root,deadline:Date.now()+4800000,phase:()=>{},execute:async(name,args)=>{
+      ++calls;assert.equal(name,'blitz');assert.equal(args[args.indexOf('--neural-confirmation')+1],'gpu');
+      const out=args[3],assets=JSON.parse(fs.readFileSync(args[1])).assets;
+      write(out+'/summary.json',{complete:true,seconds:10});
+      for(const a of failure==='missing'?assets.slice(0,1):assets)write(out+'/rows/'+a.id+'.json',{id:a.id,complete:failure!=='cancelled',neural:{resource_failures:Number(failure==='resource'),confirmation_nonfinite:Number(failure==='nonfinite'),confirmation_disagreements:Number(failure==='disagreement')}});
+    }});assert.equal(calls,1);assert.equal(result.training_steps,0);assert.equal(result.complete,false);
+    }finally{fs.rmSync(root,{recursive:true,force:true});}
+  }
+});
+test('fresh curriculum is confined to frozen training identities and covers a third category',()=>{
+  const corpus=JSON.parse(fs.readFileSync(new URL('../research/corpus.json',import.meta.url))).assets,allowed=new Set(JSON.parse(fs.readFileSync(new URL('../research/neural/training-manifest.json',import.meta.url))).assets.map(a=>a.id));
+  const categories=new Set();for(const c of freshConditions){assert.ok(allowed.has(c.asset));categories.add(corpus.find(a=>a.id===c.asset).category);}
+  assert.equal(categories.size,3);
+});
+test('fresh labels must be confirmed before staged optimizer updates',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-labels-'));let calls=0;
+  try{await assert.rejects(generalize({root,deadline:Date.now()+120000,phase:()=>{},diagnostic:true,refresh:true,execute:async(name,args)=>{
+    ++calls;assert.equal(name,'blitz-neural-action-prepare');write(args[1]+'/index.json',{complete:true,reference_confirmed:false});
+  }}),/Fresh curriculum/);assert.equal(calls,1);}finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+test('diagnostic training resumes for a second checkpoint and never claims pilot superiority',async()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-stages-'));let updates=0,audits=0;
+  try{const result=await generalize({root,deadline:Date.now()+300000,phase:()=>{},diagnostic:true,execute:async(name,args)=>{
+    if(name==='blitz-neural-action-train'){++updates;assert.equal(Number(args[args.indexOf('--steps')+1]),updates<=3?8192:16384);write(args[1]+'/latest.json',{complete:true,finite:true,restored:true,optimizer_restored:true,native_max_abs:1e-5,fp64_max_abs:2e-5,first_loss:1,last_loss:.2,gradient_norm:.3,parameter_change:.1,preferred_membership:.9,model:'model.blzn'});}
+    else{++audits;assert.equal(name,'node');assert.equal(args[args.indexOf('--neural-confirmation')+1],'gpu');assert.equal(args[args.indexOf('--scenario')+1],'diagnostic');assert.ok(!args.includes('--previous'));write(args[1]+'/report.json',{complete:true,gate:{passed:false,reason:'diagnostic_only'},persisted:false});}
+  }});assert.equal(updates,6);assert.equal(audits,2);assert.equal(result.complete,true);assert.equal(result.generalization_gate_passed,false);assert.equal(result.quality_proven,false);
+  }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
 test('an incomplete matched pilot prevents a second cloud training stage',async()=>{
   for(const reusePrepared of [false,true]){

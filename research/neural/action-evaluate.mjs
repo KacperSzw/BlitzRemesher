@@ -11,13 +11,17 @@ export function fullPilotFits(report,remainingMs){
   const duration=report.runs.reduce((sum,r)=>sum+r.wall_seconds,0)*1000;
   return Number.isFinite(duration)&&duration>0&&duration*8+60000<remainingMs;
 }
-export async function evaluateSaved({root,execute,deadline,phase}){
+export function savedActionModels(){
   const evidence=fileURLToPath(new URL('./evidence/action-curriculum-v2',import.meta.url)),models=[];
   for(const seed of [101,202,303]){
     const model=evidence+`/seed-${seed}-step-8192.blzn`,health=read(evidence+`/health-${seed}.json`);
     if(!actionHealth(health)||health.step!==8192||crypto.createHash('sha256').update(fs.readFileSync(model)).digest('hex')!==health.model_sha256)throw new Error('Saved evaluation model is unverified');
     models.push(model);
   }
+  return models;
+}
+export async function evaluateSaved({root,execute,deadline,phase}){
+  const models=savedActionModels();
   const result={complete:false,training_steps:0,quality_proven:false,generalization_gate_passed:false};
   const run=async scenario=>{
     phase('audit');write(root+'/progress.json',{phase:'audit',scenario,at:Date.now()});

@@ -13,7 +13,7 @@ int main(int argc,char** argv){try{
     if(!states||states>4096||previous_steps>4096||memory_mib<128||memory_mib>65536||!std::isfinite(minutes)||minutes<=0||minutes>50||!std::isfinite(pixels)||pixels<16||pixels>512||!std::isfinite(source_limit)||source_limit<=0||source_limit>16||!std::isfinite(adjacent_limit)||adjacent_limit<=0||adjacent_limit>16)throw std::invalid_argument("invalid bounded preparation settings");
     NeuralOptions options;options.memory_mib=uint32_t(memory_mib);NeuralStats audit_stats;
     fs::path output=argv[2];if(fs::exists(output/"index.json"))throw std::invalid_argument("choose a fresh action dataset directory");fs::create_directories(output);
-    auto [mesh,metadata]=training_mesh(argv[1]);auto source=mesh.view();const auto bounds=blitz::bounds(source);
+    auto [mesh,metadata]=training_mesh(argv[1]);auto source=mesh.view();const auto bounds=blitz::bounds(source);AuditCuda audit(options,source);
     auto start=std::chrono::steady_clock::now();auto seconds=[&]{return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};auto cancel=[&]{return bool(stopped)||seconds()>minutes*60;};
     auto e=action_eval(previous_steps?std::min(512.,pixels*2):pixels,source_limit);e.cancelled=cancel;auto adjacent=e;adjacent.limit=adjacent_limit;
     ActionState state(source);ActionData data;std::mt19937 random(0xB1172026);Lod previous;MeshView previous_view=source;bool emitted=false;
@@ -36,7 +36,7 @@ int main(int argc,char** argv){try{
         if(policy){std::vector<float> x;for(auto& row:rows)x.insert(x.end(),row.x.begin(),row.x.end());logits=policy->predict(x);auto order=teacher;std::stable_sort(order.begin(),order.end(),[&](auto a,auto b){return logits[a*3]>logits[b*3];});add(order,4);}else add(shuffled,4);
         auto first=data.labels.size();json state_trace={{"revision",step},{"triangles",state.view().triangles()},{"previous_triangles",previous_view.triangles()},{"pixels",e.screen_size},{"target_fraction",fraction},{"legal_actions",rows.size()},{"queries",json::array()}};
         std::vector<uint32_t> safe;double best=INFINITY;
-        for(auto i:selected){auto candidate=state.trial(rows[i].action);auto a=evaluate_cuda(source,candidate.view(source),bounds,e,options,&audit_stats),b=evaluate_cuda(previous_view,candidate.view(source),bounds,adjacent,options,&audit_stats);++queries;
+        for(auto i:selected){auto candidate=state.trial(rows[i].action);auto a=audit.evaluate(source,candidate.view(source),bounds,e,&audit_stats),b=audit.evaluate(previous_view,candidate.view(source),bounds,adjacent,&audit_stats);++queries;
             if(!action_audit_known(a,e)||!action_audit_known(b,adjacent)){auto& f=audit_stats.first_resource_failure;write_json(output/"incomplete.json",{{"state",state_trace},{"queries",queries},{"cancelled",cancel()},{"resource_limited",a.resource_limited||b.resource_limited},{"gpu_peak_bytes",audit_stats.gpu_peak_bytes},{"resource_kind",int(f.kind)},{"requested_bytes",f.requested},{"limit_bytes",f.limit}});throw std::runtime_error("action audit has no verdict; no label or score assigned");}
             auto label=uint8_t(Queried|(a.passed?SourcePass:0)|(b.passed?AdjacentPass:0));if(a.passed&&b.passed){safe.push_back(i);best=std::min(best,costs[i]);}
             data.x.insert(data.x.end(),rows[i].x.begin(),rows[i].x.end());data.labels.push_back(label);data.from.push_back(rows[i].action.from);data.to.push_back(rows[i].action.to);
@@ -50,6 +50,7 @@ int main(int argc,char** argv){try{
     }
     bool complete=!cancel()&&(data.states()==states+previous_steps||exhausted)&&(!previous_steps||emitted);save_actions(output/"actions.bin",data);
     auto final=evaluate(source,state.view(),bounds,e),adjacent_final=evaluate(previous_view,state.view(),bounds,adjacent);complete&=final.complete&&final.passed&&adjacent_final.complete&&adjacent_final.passed;
+    write_json(output/"audit-stats.json",{{"gpu_peak_bytes",audit_stats.gpu_peak_bytes},{"gpu_allocations",audit_stats.gpu_allocations},{"gpu_buffer_reuses",audit_stats.gpu_buffer_reuses},{"gpu_upload_bytes",audit_stats.gpu_upload_bytes},{"gpu_download_bytes",audit_stats.gpu_download_bytes},{"gpu_evaluations",audit_stats.gpu_evaluations},{"gpu_measurement_cache_hits",audit_stats.gpu_measurement_cache_hits}});
     write_json(output/"trajectory.json",trace);write_json(output/"index.json",{{"schema",action_schema},{"complete",complete},{"asset",argv[1]},{"category",metadata.at("category")},{"contract_sha256",file_sha256(output/"contract.json")},{"path","actions.bin"},{"sha256",file_sha256(output/"actions.bin")},{"states",data.states()},{"queries",queries},{"accepted",accepted},{"source_triangles",source.triangles()},{"teacher_triangles",state.view().triangles()},{"reference_confirmed",final.complete&&final.passed&&adjacent_final.complete&&adjacent_final.passed},{"preceding_lod_emitted",emitted},{"previous_triangles",previous_view.triangles()},{"seconds",seconds()},{"training_started",false}});
     return complete?0:2;
 }catch(const std::exception& e){std::cerr<<"action preparation: "<<e.what()<<'\n';return 1;}}

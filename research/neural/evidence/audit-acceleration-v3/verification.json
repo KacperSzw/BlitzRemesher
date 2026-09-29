@@ -1,0 +1,28 @@
+{
+  "local_optimizer_steps": 0,
+  "ctest": {
+    "passed": 19,
+    "total": 19
+  },
+  "asan_ubsan": {
+    "passed": 5,
+    "total": 5,
+    "tests": [
+      "neural-contracts",
+      "neural-action-contracts",
+      "coverage-cache-contracts",
+      "contracts",
+      "precision-contracts"
+    ]
+  },
+  "node": {
+    "passed": 26,
+    "total": 26
+  },
+  "baseline_revision": "58d2002",
+  "cuda_source_sha256": "8d027a7d628fb7d0e6d0e9f1e6f0307e0cc56bdb980be809d2accb37b955b271",
+  "notes": [
+    "Initial full CTest caught relative test/diagnostic manifest paths; resolved against module URLs before the passing full run.",
+    "All timings use a shared RTX 2080 and a bounded diagnostic; no SCORE or remote speed guarantee."
+  ]
+}

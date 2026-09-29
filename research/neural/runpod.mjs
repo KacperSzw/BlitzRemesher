@@ -7,10 +7,11 @@ import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
 import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines,retrySsh} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
-import {actionBudget,actionAccrued} from './action-budget.mjs';
+import {actionBudget,actionAccrued,continuationBudget} from './action-budget.mjs';
+import {freshConditions} from './action-curriculum.mjs';
 
 const [command,directory]=process.argv.slice(2);
-if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|prepare-action-pilot|prepare-action-evaluation|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
+if(!directory)throw new Error('runpod.mjs {prepare|prepare-actions|prepare-action-pilot|prepare-action-evaluation|prepare-action-staged|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]');
 const dir=path.resolve(directory),root=process.cwd(),statePath=dir+'/rental.json';
 const keyFile=path.join(os.homedir(),'.config/blitz/runpod-api-key');
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -35,7 +36,7 @@ async function prepare(){
     files.push({path:destination,sha256:actual,bytes:fs.statSync(target).size});
   };
   const evaluation=command==='prepare-action-evaluation';
-  const actions=['prepare-actions','prepare-action-pilot','prepare-action-evaluation'].includes(command);
+  const actions=['prepare-actions','prepare-action-pilot','prepare-action-evaluation','prepare-action-staged'].includes(command);
   if(!actions){const dataset=root+'/runs/neural/first-pass/data',index=read(dataset+'/index.json');
   if(!index.complete||index.assets.length!==66||await sha(dataset+'/index.json')!=='4faabd8f7411e6dfbc1fd0357e143f6627a6248e73b5c2421a947396cad1e5d7')
     throw new Error('Expected the approved original 66-asset teacher dataset');
@@ -48,6 +49,7 @@ async function prepare(){
     for(const asset of read(manifest).assets.filter(a=>a.split===split))for(const file of asset.files)auditFiles.set(file.path,file.sha256);
   }
   if(actions&&!evaluation){const selected=new Set(['ph_sweet_potato','ph_painted_wooden_bench']);
+    if(command==='prepare-action-staged')for(const c of freshConditions)selected.add(c.asset);
     const allowed=new Set(read(root+'/research/neural/training-manifest.json').assets.map(a=>a.id));
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');
@@ -58,8 +60,8 @@ async function prepare(){
   fs.writeFileSync(stage+'/inputs.sha256',files.map(f=>`${f.sha256}  ${f.path}`).join('\n')+'\n');
   sync('tar',['-cf',dir+'/input.tar','-C',stage,'.']);
   fs.mkdirSync(dir+'/control',{recursive:true});
-  for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs','action-budget.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
-  write(dir+'/prepared.json',{revision,branch,deployment,experiment:evaluation?'action-v2-evaluate':command==='prepare-action-pilot'?'action-v2-pilot':actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
+  for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs','action-budget.mjs','action-curriculum.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
+  write(dir+'/prepared.json',{revision,branch,deployment,experiment:command==='prepare-action-staged'?'action-v2-staged':evaluation?'action-v2-evaluate':command==='prepare-action-pilot'?'action-v2-pilot':actions?'action-v2':'vertex-v1',archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
   fs.rmSync(stage,{recursive:true});
   console.log('Prepared checksummed '+(evaluation?'evaluation source, saved models and development pilot':actions?'action proof source/training meshes and development pilot':'source, original training shards, pilot and validation assets')+': '+dir);
 }
@@ -75,18 +77,19 @@ async function launch(){
   if(await sha(dir+'/input.tar')!==prepared.archive_sha256)throw new Error('Prepared archive changed');
   const api=new Api(apiKey(keyFile)),quote=await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER);
   let budget;
-  if(['action-v2','action-v2-pilot','action-v2-evaluate'].includes(prepared.experiment)){
+  if(['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged'].includes(prepared.experiment)){
     const [pods,volumes,bill]=await Promise.all([api.pods(),api.request('GET','/network-volumes'),api.request('GET','/billing')]);
     if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
     const ledger=fs.readdirSync(root+'/runs/neural',{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>root+'/runs/neural/'+e.name+'/rental.json').filter(f=>fs.existsSync(f)).map(read);
-    budget=actionBudget({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
+    const continuation=prepared.experiment==='action-v2-staged';
+    budget=(continuation?continuationBudget:actionBudget)({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:continuation?150:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
   }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
   const requested=process.argv[4]===undefined?undefined:Number(process.argv[4]);
   const deadlines=rentalDeadlines(started,budget?Math.min(requested??Infinity,started+budget.minutes*60000):requested);
-  if(budget)deadlines.training_minutes=prepared.experiment==='action-v2'?20:50;
+  if(budget)deadlines.training_minutes=prepared.experiment==='action-v2-staged'?110:prepared.experiment==='action-v2'?20:50;
   write(statePath,{name,quote,deployment,experiment:prepared.experiment,budget,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);
@@ -217,7 +220,7 @@ async function watchdog(){
     await sleep(5000);
   }
 }
-if(['prepare','prepare-actions','prepare-action-pilot','prepare-action-evaluation'].includes(command))await prepare();
+if(['prepare','prepare-actions','prepare-action-pilot','prepare-action-evaluation','prepare-action-staged'].includes(command))await prepare();
 else if(command==='launch')await launch();
 else if(command==='control')await control();
 else if(command==='watchdog')await watchdog();

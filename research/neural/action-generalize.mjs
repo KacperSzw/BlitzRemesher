@@ -4,9 +4,10 @@ import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {read,write} from './runpod-api.mjs';
 import {endpointDecision,actionHealth} from './action-gates.mjs';
+import {freshConditions} from './action-curriculum.mjs';
 const evidence=fileURLToPath(new URL('./evidence/action-v2',import.meta.url));
 const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
-export async function generalize({root,execute,deadline,phase,reusePrepared=true}){
+export async function generalize({root,execute,deadline,phase,reusePrepared=true,diagnostic=false,refresh=false}){
   const manifest=read(evidence+'/manifest.json'),seeds=[101,202,303];
   for(const seed of seeds){
     if(!endpointDecision(read(evidence+`/history-${seed}.json`)).passed)throw new Error('Missing persisted endpoint proof');
@@ -38,6 +39,16 @@ export async function generalize({root,execute,deadline,phase,reusePrepared=true
     datasets.push(name);write(data+'/progress.json',{complete:false,datasets,at:Date.now()});
   }
   }
+  if(refresh){
+    phase('preparation');
+    for(const c of freshConditions){
+      const name='fresh-'+c.asset+'-'+c.pixels,out=data+'/'+name;
+      await execute('blitz-neural-action-prepare',[c.asset,out,'--states',String(c.states),'--previous-steps',String(c.previous),'--pixels',String(c.pixels),'--source-limit','3','--adjacent-limit',String(c.adjacent),'--model',evidence+'/seed-101-step-8192.blzn','--gpu-memory-mib','16384','--minutes','4'],root+'/fresh-prepare.log',4.5);
+      const index=read(out+'/index.json');
+      if(!index.complete||!index.reference_confirmed||c.previous&&(!index.preceding_lod_emitted||index.previous_triangles>=index.source_triangles))throw new Error('Fresh curriculum lacks confirmed labels or preceding LOD');
+      datasets.push(name);write(data+'/progress.json',{complete:false,datasets,at:Date.now()});
+    }
+  }
   write(data+'/index.json',{datasets});
   write(data+'/progress.json',{complete:true,datasets,at:Date.now()});
   let previous,previousDuration=0;
@@ -56,8 +67,9 @@ export async function generalize({root,execute,deadline,phase,reusePrepared=true
     phase('audit');write(root+'/progress.json',{phase:'audit',stage,at:Date.now()});const began=Date.now(),out=root+'/pilot-'+stage;
     const minutes=Math.min(45,(deadline-Date.now()-20000)/60000);
     if(minutes<1){result.stop_reason='insufficient_time_for_matched_pilot';break;}
-    const args=['research/neural/action-pilot.mjs',out,...models,'--minutes',String(minutes),'--action-trials','8','--action-batch','32','--gpu-memory-mib','16384'];
-    if(previous)args.push('--previous',previous);
+    const args=['research/neural/action-pilot.mjs',out,...models,'--minutes',String(minutes),'--action-trials','8','--action-batch','32','--gpu-memory-mib','16384','--neural-confirmation','gpu'];
+    if(diagnostic)args.push('--scenario','diagnostic','--method-minutes','10');
+    if(previous&&!diagnostic)args.push('--previous',previous);
     await execute('node',args,root+`/pilot-${stage}.log`,minutes+.1);
     const report=read(out+'/report.json');previousDuration=Date.now()-began;
     result.stages.push({stage,health,report:out+'/report.json',gate:report.gate,complete:report.complete,persisted:report.persisted});
@@ -65,9 +77,9 @@ export async function generalize({root,execute,deadline,phase,reusePrepared=true
     if(!report.complete){result.stop_reason='incomplete_matched_pilot';break;}
     previous=out+'/report.json';
     if(report.persisted){result.generalization_gate_passed=true;result.stop_reason='matched_advantage_persisted';break;}
-    if(stage===2)result.stop_reason='two_checkpoints_without_persisted_advantage';
+    if(stage===2)result.stop_reason=diagnostic?'two_diagnostic_checkpoints_complete':'two_checkpoints_without_persisted_advantage';
   }
   result.complete=result.generalization_gate_passed||result.stages.length===2&&result.stages.every(s=>s.complete);
-  result.next_phase=result.generalization_gate_passed?'profile_training_and_audits':'inspect_matched_pilot_evidence';
+  result.next_phase=result.generalization_gate_passed?'profile_training_and_audits':diagnostic?'inspect_diagnostics_before_full_pilot':'inspect_matched_pilot_evidence';
   return result;
 }

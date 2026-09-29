@@ -5,6 +5,17 @@ Branch: `research/neural-lod-gpu`. The primary worktree is separate.
 
 ## Current milestone
 
+The user has authorized **$8 more** for staged GPU optimization and training.
+The active plan is now [ACCELERATION.md](ACCELERATION.md). Exact GPU distance
+and appearance work is faster on the bounded smoke; label preparation reuses
+its GPU audit workspace. A new `prepare-action-staged` mode checks full-settings
+diagnostics before refreshing training labels and training/auditing two short
+checkpoints. The hard rental reservation is at most $7.275 of this new grant.
+No new remote rental has started at this commit; local optimizer steps are zero.
+
+The following records describe the preceding evaluation milestone and its old
+budget, for context:
+
 Follow [AUDIT.md](AUDIT.md): GPU final confirmation, resident mesh data,
 recycled audit buffers, exact completed-audit caching, failure replay and an
 evaluation-only comparison of three saved models. No new optimizer steps are

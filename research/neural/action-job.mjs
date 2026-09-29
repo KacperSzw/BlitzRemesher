@@ -5,9 +5,10 @@ import {read,write} from './runpod-api.mjs';
 import {endpointDecision} from './action-gates.mjs';
 import {generalize} from './action-generalize.mjs';
 import {evaluateSaved} from './action-evaluate.mjs';
+import {staged} from './action-staged.mjs';
 const [setup,latest,minutes]=process.argv.slice(2,5).map(Number),experiment=process.argv[5]??'action-v2';
-const pilot=experiment==='action-v2-pilot',evaluation=experiment==='action-v2-evaluate';
-if(!['action-v2','action-v2-pilot','action-v2-evaluate'].includes(experiment)||![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>((pilot||evaluation)?50:20))throw new Error('Invalid action experiment deadline');
+const pilot=experiment==='action-v2-pilot',evaluation=experiment==='action-v2-evaluate',continuation=experiment==='action-v2-staged';
+if(!['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged'].includes(experiment)||![setup,latest,minutes].every(Number.isFinite)||Date.now()>=setup||minutes<=0||minutes>(continuation?110:(pilot||evaluation)?50:20))throw new Error('Invalid action experiment deadline');
 const started=Date.now(),deadline=Math.min(latest,started+minutes*60000),results='/workspace/results',root=results+'/'+experiment;
 fs.mkdirSync(root,{recursive:true});write(results+'/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
 let active,cancelled=false,phase='preparation';
@@ -29,7 +30,8 @@ async function execute(name,args,log,maximumMinutes){
 }
 const result={schema:2,started,deadline,complete:false,endpoint_gate_passed:false,seeds:[],quality_proven:false};
 try{
-  if(evaluation){Object.assign(result,await evaluateSaved({root,execute,deadline,phase:setPhase}));}
+  if(continuation){Object.assign(result,await staged({root,execute,deadline,phase:setPhase}));}
+  else if(evaluation){Object.assign(result,await evaluateSaved({root,execute,deadline,phase:setPhase}));}
   else if(pilot){Object.assign(result,await generalize({root,execute,deadline,phase:setPhase}));}
   else {
   const data=root+'/proof-data';await execute('blitz-neural-action-prepare',['ph_sweet_potato',data,'--states','64','--pixels','32','--minutes','4'],root+'/prepare.log',4.5);

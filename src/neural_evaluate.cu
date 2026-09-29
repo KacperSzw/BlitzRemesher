@@ -126,14 +126,36 @@ __global__ void initialize(const Pixel* a,const Pixel* b,float* da,float* db,Sum
     __shared__ cub::BlockReduce<Summary,256>::TempStorage storage;auto reduced=cub::BlockReduce<Summary,256>(storage).Reduce(local,AddSummary{});
     if(threadIdx.x==0){atomicAdd(&s->ca,reduced.ca);atomicAdd(&s->cb,reduced.cb);atomicAdd(&s->changed,reduced.changed);atomicAdd(&s->total,reduced.total);max_double(&s->normal,reduced.normal);}
 }
-// Exact separable squared Euclidean distance transform. One independent line per
-// CUDA thread, with disjoint global stacks; no approximation or jump flooding.
-__global__ void edt(const float* in,float* out,int* stack,double* boundaries,int size,bool columns) {
+// Transposing lets adjacent lanes visit adjacent pixels in both separable
+// passes. The padded shared tile also avoids bank conflicts on the write pass.
+__global__ void transpose(const float* in,float* out,int size) {
+    __shared__ float tile[32][33];
+    int x=int(blockIdx.x)*32+int(threadIdx.x),y=int(blockIdx.y)*32+int(threadIdx.y);
+    for(int j=0;j<32;j+=8)if(x<size&&y+j<size)tile[threadIdx.y+j][threadIdx.x]=in[size_t(y+j)*size+x];
+    __syncthreads();
+    x=int(blockIdx.y)*32+int(threadIdx.x);y=int(blockIdx.x)*32+int(threadIdx.y);
+    for(int j=0;j<32;j+=8)if(x<size&&y+j<size)out[size_t(y+j)*size+x]=tile[threadIdx.x][threadIdx.y+j];
+}
+// The first pass sees only zero/1e15f coverage values. The nearest foreground
+// site on either side therefore gives the same squared distance as the general
+// lower envelope. At the raster cap, all finite distances are far below 1e15f;
+// an empty column remains exactly that sentinel. Square before rounding to float.
+__global__ void edt_binary(const float* in,float* out,int size) {
     int line=int(blockIdx.x*blockDim.x+threadIdx.x);if(line>=size)return;
-    int* v=stack+size_t(line)*size;double* z=boundaries+size_t(line)*(size+1);int k=0;v[0]=0;z[0]=-CUDART_INF;z[1]=CUDART_INF;
-    int stride=columns?size:1;size_t start=columns?size_t(line):size_t(line)*size;
-    for(int q=1;q<size;++q){double s;for(;;){int p=v[k];s=((double(in[start+q*stride])+double(q)*q)-(double(in[start+p*stride])+double(p)*p))/(2*(q-p));if(s>z[k]||k==0)break;--k;}++k;v[k]=q;z[k]=s;z[k+1]=CUDART_INF;}
-    k=0;for(int q=0;q<size;++q){while(z[k+1]<q)++k;double d=q-v[k];out[start+q*stride]=float(d*d+in[start+v[k]*stride]);}
+    int nearest=-1;
+    for(int q=0;q<size;++q){size_t i=size_t(q)*size+line;if(in[i]==0)nearest=q;double d=q-nearest;out[i]=nearest<0?1e15f:float(d*d);}
+    nearest=size;
+    for(int q=size-1;q>=0;--q){size_t i=size_t(q)*size+line;if(in[i]==0)nearest=q;double d=nearest-q;if(nearest<size)out[i]=fminf(out[i],float(d*d));}
+}
+// Exact separable squared Euclidean distance transform. One independent column
+// per thread. Stack entries are [depth][column], so nearby lanes share memory
+// transactions. Arithmetic and float rounding match the original row/column
+// implementation; the two transposes change only the memory layout.
+__global__ void edt(const float* in,float* out,int* stack,double* boundaries,int size) {
+    int line=int(blockIdx.x*blockDim.x+threadIdx.x);if(line>=size)return;
+    int* v=stack+line;double* z=boundaries+line;int k=0;v[0]=0;z[0]=-CUDART_INF;z[size]=CUDART_INF;
+    for(int q=1;q<size;++q){double s;for(;;){int p=v[size_t(k)*size];s=((double(in[size_t(q)*size+line])+double(q)*q)-(double(in[size_t(p)*size+line])+double(p)*p))/(2*(q-p));if(s>z[size_t(k)*size]||k==0)break;--k;}++k;v[size_t(k)*size]=q;z[size_t(k)*size]=s;z[size_t(k+1)*size]=CUDART_INF;}
+    k=0;for(int q=0;q<size;++q){while(z[size_t(k+1)*size]<q)++k;int p=v[size_t(k)*size];double d=q-p;out[size_t(q)*size+line]=float(d*d+in[size_t(p)*size+line]);}
 }
 __global__ void directed_coverage(const Pixel* from,const float* to,Summary* summary,size_t n) {
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;double value=i<n&&from[i].covered?double(to[i]):0;
@@ -145,14 +167,27 @@ __device__ double sample(const Pixel& a,const Pixel& b,double spatial,int profil
     if(profile&&weights.normal>0){double cosine=fmin(1.,fmax(-1.,dp(a.normal,b.normal)/fmax(1e-30,len(a.normal)*len(b.normal))));double angle=detail::metric_acos(cosine)*weights.normal;cost+=angle*angle;}
     if(profile==2){double x=double(a.color.x)-b.color.x,y=double(a.color.y)-b.color.y,z=double(a.color.z)-b.color.z;cost+=weights.color*weights.color*(x*x+y*y+z*z);if(a.material!=b.material)cost+=weights.material*weights.material;}return cost;
 }
-__global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,int size,int ss,double limit,int profile,Weights weights) {
-    size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=size_t(size)*size||!from[i].visible)return;
-    if(profile==0||(!weights.normal&&(profile!=2||(!weights.color&&!weights.material))))return;
-    auto p=from[i];double best=to[i].visible?sample(p,to[i],0,profile,weights):CUDART_INF;if(best<=1e-18)return;
+__device__ double appearance_pixel(const Pixel* from,const Pixel* to,size_t i,int size,int ss,double limit,int profile,Weights weights) {
+    if(i>=size_t(size)*size||!from[i].visible)return 0;
+    if(profile==0||(!weights.normal&&(profile!=2||(!weights.color&&!weights.material))))return 0;
+    auto p=from[i];double best=to[i].visible?sample(p,to[i],0,profile,weights):CUDART_INF;if(best<=1e-18)return 0;
     int x=int(i%size),y=int(i/size),radius=int(fmin(double(size),ceil(limit*ss)));double limit2=limit*limit,invs2=1./(ss*ss);
+    // Any other sample has spatial cost at least invs2 and nonnegative attribute
+    // cost. Keep the computed center cost (including its rounding), but avoid a
+    // search that cannot improve it. The center itself was already evaluated.
+    if(best<=invs2)return best>limit2?CUDART_INF:best;
     int r=int(fmin(double(radius),ceil(sqrt(fmin(best,limit2))*ss)));
-    for(int yy=max(0,y-r);yy<=min(size-1,y+r);++yy)for(int xx=max(0,x-r);xx<=min(size-1,x+r);++xx){auto& q=to[size_t(yy)*size+xx];if(!q.visible)continue;double dx=x-xx,dy=y-yy,spatial=(dx*dx+dy*dy)*invs2;if(spatial>=best||spatial>limit2)continue;best=fmin(best,sample(p,q,spatial,profile,weights));}
-    max_double(&summary->attribute,best>limit2?CUDART_INF:best);
+    for(int yy=max(0,y-r);yy<=min(size-1,y+r);++yy)for(int xx=max(0,x-r);xx<=min(size-1,x+r);++xx){if(xx==x&&yy==y)continue;auto& q=to[size_t(yy)*size+xx];if(!q.visible)continue;double dx=x-xx,dy=y-yy,spatial=(dx*dx+dy*dy)*invs2;if(spatial>=best||spatial>limit2)continue;best=fmin(best,sample(p,q,spatial,profile,weights));}
+    return best>limit2?CUDART_INF:best;
+}
+__global__ void appearance(const Pixel* from,const Pixel* to,Summary* summary,int size,int ss,double limit,int profile,Weights weights) {
+    size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;
+    double value=appearance_pixel(from,to,i,size,ss,limit,profile,weights);
+    // Every lane participates, including invisible/out-of-image pixels. Preserve
+    // exact nonnegative maxima while issuing only one global atomic per block.
+    __shared__ cub::BlockReduce<double,256>::TempStorage storage;
+    double maximum=cub::BlockReduce<double,256>(storage).Reduce(value,cub::Max());
+    if(threadIdx.x==0&&maximum>0)max_double(&summary->attribute,maximum);
 }
 Measurement measure(Device& device,const UploadedMesh& a,const UploadedMesh& b,const Bounds& bounds,const Camera& camera,const EvalSettings& config,uint8_t ss) {
     auto x=render(device,a,bounds,camera,config.screen_size,ss,config.force_two_sided),y=render(device,b,bounds,camera,config.screen_size,ss,config.force_two_sided);
@@ -160,7 +195,11 @@ Measurement measure(Device& device,const UploadedMesh& a,const UploadedMesh& b,c
     initialize<<<blocks(n),256>>>(x.pixels.p,y.pixels.p,da.p,db.p,summary.p,n);check(cudaGetLastError());auto s=summary.download()[0];
     if(s.changed&&bool(s.ca)==bool(s.cb)) {
         for(auto pair:{std::pair{da.p,y.pixels.p},std::pair{db.p,x.pixels.p}}) {
-            edt<<<blocks(size),256>>>(pair.first,temp.p,stack.p,boundaries.p,size,false);edt<<<blocks(size),256>>>(temp.p,pair.first,stack.p,boundaries.p,size,true);
+            dim3 tiles((size+31)/32,(size+31)/32),threads(32,8);
+            transpose<<<tiles,threads>>>(pair.first,temp.p,size);
+            edt_binary<<<(size+63)/64,64>>>(temp.p,pair.first,size);
+            transpose<<<tiles,threads>>>(pair.first,temp.p,size);
+            edt<<<(size+63)/64,64>>>(temp.p,pair.first,stack.p,boundaries.p,size);
             directed_coverage<<<blocks(n),256>>>(pair.second,pair.first,summary.p,n);check(cudaGetLastError());
         }
         s=summary.download()[0];

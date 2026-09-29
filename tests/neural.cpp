@@ -105,6 +105,20 @@ void cuda_contracts() {
         require(cpu.passed==gpu.passed&&cpu.complete==gpu.complete,"CUDA decision mismatch");require(cpu.views_evaluated==gpu.views_evaluated,"CUDA view order mismatch");
         require((!std::isfinite(cpu.error)&&!std::isfinite(gpu.error))||std::abs(cpu.error-gpu.error)<1e-5,"CUDA metric mismatch");require(cpu.changed_area==gpu.changed_area,"CUDA changed area mismatch");
     }
+    // Holes and unequal edges exercise both distance-transform directions, empty
+    // scan lines and lower-envelope backtracking. Extents straddle tile/block
+    // boundaries; compare exact float-distance results with the CPU evaluator.
+    for(unsigned pattern=0;pattern<3;++pattern) {
+        auto cut=m;cut.indices.clear();
+        for(size_t face=0;face<m.view().triangles();++face)
+            if((face*7+pattern*3)%11>pattern+1)cut.indices.insert(cut.indices.end(),m.indices.begin()+face*3,m.indices.begin()+face*3+3);
+        for(double screen:{23.,24.,25.,57.,58.,59.,121.}) {
+            EvalSettings e;e.profile=Profile::Coverage;e.screen_size=screen;e.views={3,1,1901+pattern};e.supersample=e.max_supersample=uint8_t(pattern+1);e.limit=100;
+            auto cpu=evaluate(m.view(),cut.view(),b,e),gpu=evaluate_cuda(m.view(),cut.view(),b,e,options);
+            require(cpu.coverage>0&&cpu.complete&&gpu.complete,"distance fixture must finish with a nonzero distance");
+            require(cpu.coverage==gpu.coverage&&cpu.coverage_upper==gpu.coverage_upper&&cpu.changed_area==gpu.changed_area&&cpu.passed==gpu.passed,"distance-transform CPU/GPU result differs");
+        }
+    }
     // Reused workspace and topology must not reuse stale contents or settings.
     auto endpoint=m.view();std::vector<uint32_t> endpoint_indices(m.indices.begin()+3,m.indices.end());endpoint.indices=endpoint_indices;
     neural::AuditCuda workspace(options,m.view());EvalSettings reuse;reuse.screen_size=20;reuse.views={3,1,765};reuse.supersample=2;reuse.max_supersample=4;reuse.limit=4;

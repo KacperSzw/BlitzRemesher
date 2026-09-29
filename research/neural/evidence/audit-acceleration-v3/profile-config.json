@@ -1,0 +1,77 @@
+{
+  "attribute_importance": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "audit_supersample": 8,
+  "audit_views": {
+    "orthographic": 6,
+    "perspective": 2,
+    "seed": 2971082790
+  },
+  "base_pixels": 256,
+  "beam_width": 1,
+  "candidate_budget": 2,
+  "coupled_wedges": true,
+  "force_scalar": false,
+  "last_pixels": 16,
+  "levels": 4,
+  "max_changed_area": 0.5,
+  "max_lod0_delta_px": 3,
+  "max_supersample": 8,
+  "meters_per_unit": 1,
+  "normal_importance": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "objective": "quadric",
+  "pixels_per_meter": 512,
+  "profile": "attributes",
+  "prune": false,
+  "research": {
+    "adaptive_targets": false,
+    "boundary_placement": false,
+    "boundary_weight": 0,
+    "chain": "direct",
+    "component_candidates": false,
+    "coverage_cache_mib": 256,
+    "independent_seams": false,
+    "output": null,
+    "topology_fallback": false,
+    "trace": false
+  },
+  "search_supersample": 2,
+  "search_views": {
+    "orthographic": 3,
+    "perspective": 1,
+    "seed": 2971082788
+  },
+  "transition": [
+    [
+      0,
+      2
+    ],
+    [
+      1,
+      3
+    ]
+  ],
+  "triangle_overhead_bps": 0,
+  "weights": {
+    "color": 4,
+    "material": 4,
+    "normal": 5.729577951308232
+  }
+}

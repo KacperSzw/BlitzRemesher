@@ -1,7 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Api,Rental,GPU,IMAGE,chooseQuote,podRequest,verifyPod,terminationDue} from '../research/neural/runpod-api.mjs';
-const gpu={id:GPU,memory:32,secure:true,price:{secure:.8},dataCenters:[{id:'EU-1',availability:'HIGH'}]};
+import {deployment,verifyDevice} from '../research/neural/runpod-profile.mjs';
+const gpu={id:GPU,memory:96,secure:true,price:{secure:2.09},dataCenters:[{id:'EU-1',availability:'HIGH'}]};
 const centers=[{id:'EU-1',networkVolumeTypes:['STANDARD']}];
 const initial=()=>({name:'test-unique',quote:chooseQuote([gpu],centers),setup_deadline_ms:1800000,deadline_ms:7200000});
 class MockApi {
@@ -27,11 +28,12 @@ class MockApi {
   }
 }
 test('reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage',()=>{
-  for(const invalid of [{...gpu,id:'RTX 4090'},{...gpu,memory:24},{...gpu,secure:false},
-    {...gpu,price:{secure:1.01}},{...gpu,price:{secure:NaN}},{...gpu,dataCenters:[{id:'EU-1',availability:'NONE'}]}])
+  for(const invalid of [{...gpu,id:'NVIDIA GeForce RTX 5090'},{...gpu,id:GPU+' MIG 2g.48gb'},
+    {...gpu,memory:48},{...gpu,secure:false},
+    {...gpu,price:{secure:2.51}},{...gpu,price:{secure:NaN}},{...gpu,dataCenters:[{id:'EU-1',availability:'NONE'}]}])
     assert.throws(()=>chooseQuote([invalid],centers));
   assert.throws(()=>chooseQuote([gpu],[]));
-  assert.equal(chooseQuote([gpu],centers).gpu_hourly_usd,.8);
+  for(const rate of [1.9,2.09,2.5])assert.equal(chooseQuote([{...gpu,price:{secure:rate}}],centers).gpu_hourly_usd,rate);
 });
 test('Pod request is pinned and forwards only the public key',()=>{
   const s={...initial(),volume_id:'volume1'},body=podRequest(s,'ssh-ed25519 public-test\n');
@@ -41,10 +43,25 @@ test('Pod request is pinned and forwards only the public key',()=>{
   assert.deepEqual(body.ports,['22/tcp']);assert.equal(body.mounts.network[0].volumeId,'volume1');
 });
 test('actual allocation must satisfy hardware and rate caps',()=>{
-  const pod={cloud:'SECURE',cost:.91,gpu:{id:GPU,count:1,memory:32,vcpuCount:8}};
+  const pod={cloud:'SECURE',cost:2.10,gpu:{id:GPU,count:1,memory:32,vcpuCount:8}};
   verifyPod(pod);
-  for(const wrong of [{...pod,cost:2},{...pod,cost:undefined},{...pod,gpu:{...pod.gpu,count:2}},{...pod,gpu:{...pod.gpu,vcpuCount:4}},
+  // Runpod's Pod gpu.memory is host RAM; 32 GB is valid with a 96 GB GPU.
+  verifyPod({...pod,gpu:{...pod.gpu,memory:64,vcpuCount:16}});
+  for(const wrong of [{...pod,cost:2.52},{...pod,cost:undefined},{...pod,gpu:{...pod.gpu,id:GPU+' MIG 2g.48gb'}},
+    {...pod,gpu:{...pod.gpu,count:2}},{...pod,gpu:{...pod.gpu,vcpuCount:4}},
     {...pod,gpu:{...pod.gpu,memory:undefined}}])assert.throws(()=>verifyPod(wrong));
+});
+test('remote hardware validation requires a full device and a valid compatible driver',()=>{
+  const profile={gpu:'Fixture GPU',compute_capability:'12.0',device_memory_mib:90000,minimum_driver:[575,51,3]};
+  for(const memory of [95000,98000])for(const driver of ['575.51.03','575.52.01','580.0.0'])
+    assert.equal(verifyDevice(`Fixture GPU, 12.0, ${memory}, ${driver}`,profile).memory_mib,memory);
+  for(const row of ['Fixture GPU, 12.0, 48000, 580.0.0','Fixture GPU MIG, 12.0, 98000, 580.0.0',
+    'Fixture GPU, 9.0, 98000, 580.0.0','Fixture GPU, 12.0, N/A, 580.0.0',
+    'Fixture GPU, 12.0, 98000, N/A','Fixture GPU, 12.0, 98000, 574.99.99',
+    'Fixture GPU, 12.0, 98000, 575.51.02','Fixture GPU, 12.0, 98000, 580.0.0\nFixture GPU, 12.0, 98000, 580.0.0'])
+    assert.throws(()=>verifyDevice(row,profile));
+  assert.equal(deployment.gpu,'NVIDIA RTX PRO 6000 Blackwell Server Edition');
+  assert.equal(verifyDevice(`${deployment.gpu}, 12.0, 97280, 580.0.0`).compute_capability,'12.0');
 });
 test('lost create response is reconciled after restart without a second rental or deadline reset',async()=>{
   const api=new MockApi();api.lost=true;let durable;

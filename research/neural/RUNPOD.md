@@ -1,7 +1,7 @@
-# Bounded RTX 5090 experiment
+# Bounded RTX PRO 6000 experiment
 
 This implements the approved from-scratch experiment on one Runpod Secure Cloud
-RTX 5090 (32 GB). Local training is not part of deployment validation. The
+RTX PRO 6000 Blackwell Server Edition (full 96 GB GPU). Local training is not part of deployment validation. The
 existing model's audited pilot still has SCORE 0; this migration does not change
 the curriculum, decoder, quality limits, or release status.
 
@@ -13,7 +13,7 @@ the curriculum, decoder, quality limits, or release status.
    shard/file against its manifest. No refined labels, old models, AdamW state,
    held-out assets, or credentials enter the upload.
 2. **Provision within the budget.** Query REST v2 catalog availability and the
-   current Secure Cloud GPU list price. Refuse anything above $1/GPU-hour or a
+   current Secure Cloud GPU list price. Refuse anything above $2.50/GPU-hour or a
    different GPU. Require 8 vCPU and 32 GB host RAM, a 50 GB container disk and a
    20 GB STANDARD network volume in the same data center. Recheck the allocated
    hardware and hourly rate. No spot instance or GPU substitution.
@@ -58,15 +58,22 @@ training supervisor samples process-group RSS and stops above 24 GiB; this is a
 sampled guard, not a kernel memory reservation. Compilation uses two workers.
 CPU packing, mesh decoding, and final audits still run on CPU.
 
+The shared `runpod-profile.mjs` fixes the GPU identity, 96 GB catalog VRAM,
+90,000 MiB minimum reported device memory, compute capability 12.0, and price
+cap. The API Pod `gpu.memory` field describes host RAM, which remains a separate
+32 GB minimum. The profile is copied with the local controller and archived
+source; a bundle prepared for another profile cannot be launched. The observed
+$2.09/hour rate gives $4.18 for two GPU hours before storage and applicable tax.
+
 ## Commands
 
 From this worktree with Node, Git, SSH, tar and user systemd available:
 
 ```sh
-node research/neural/runpod.mjs prepare runs/neural/runpod-5090-first
-node research/neural/runpod.mjs launch runs/neural/runpod-5090-first
-node research/neural/runpod.mjs status runs/neural/runpod-5090-first
-node research/neural/runpod.mjs stop runs/neural/runpod-5090-first
+node research/neural/runpod.mjs prepare runs/neural/runpod-pro6000-first
+node research/neural/runpod.mjs launch runs/neural/runpod-pro6000-first
+node research/neural/runpod.mjs status runs/neural/runpod-pro6000-first
+node research/neural/runpod.mjs stop runs/neural/runpod-pro6000-first
 ```
 
 `prepare` is offline except for checking the pushed Git revision. `launch` rents
@@ -108,7 +115,7 @@ separate from demonstrating a useful reduction. Incomplete audits stay unscored.
   [network volume creation](https://docs.runpod.io/api-reference-v2/network-volumes/create-a-network-volume),
   [credentials](https://docs.runpod.io/get-started/credentials).
 
-At the GPU price cap, two hours cost at most $2 for GPU time, plus container disk,
+At the GPU price cap, two hours cost at most $5 for GPU time, plus container disk,
 network storage and applicable taxes. Catalog price and actual Pod rate are both
 checked; the API does not offer an atomic client price ceiling, so a quote change
 can result in a short rejected allocation before deletion. Preserved network

@@ -4,7 +4,7 @@ Status, 2026-09-29: local training is stopped. The audit failure
 is fixed and the saved 25,000-update model completes the eight-asset pilot, with
 eight unreduced fallbacks (SCORE 0). No release-quality model is claimed. See
 [the incident report](REPORT.md#audit-failure-and-repair--2026-09-29) and
-[remote GPU options and costs](CLOUD_GPU.md). The requested two-hour RTX 5090
+[remote GPU options and costs](CLOUD_GPU.md). The requested two-hour RTX PRO 6000
 deployment is described in [the Runpod runbook](RUNPOD.md). Its remote training
 health and LOD quality must be measured on the actual allocation.
 

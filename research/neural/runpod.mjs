@@ -6,6 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
 import {Api,Rental,apiKey,read,write,verifyPod,terminationDue} from './runpod-api.mjs';
+import {deployment} from './runpod-profile.mjs';
 
 const [command,directory]=process.argv.slice(2);
 if(!directory)throw new Error('runpod.mjs {prepare|launch|status|stop|control|watchdog} RUN_DIRECTORY');
@@ -47,8 +48,8 @@ async function prepare(){
   fs.writeFileSync(stage+'/inputs.sha256',files.map(f=>`${f.sha256}  ${f.path}`).join('\n')+'\n');
   sync('tar',['-cf',dir+'/input.tar','-C',stage,'.']);
   fs.mkdirSync(dir+'/control',{recursive:true});
-  for(const name of ['runpod.mjs','runpod-api.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
-  write(dir+'/prepared.json',{revision,branch,archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
+  for(const name of ['runpod.mjs','runpod-api.mjs','runpod-profile.mjs'])fs.copyFileSync(root+'/research/neural/'+name,dir+'/control/'+name);
+  write(dir+'/prepared.json',{revision,branch,deployment,archive_sha256:await sha(dir+'/input.tar'),archive_bytes:fs.statSync(dir+'/input.tar').size,files:files.length});
   fs.rmSync(stage,{recursive:true});
   console.log('Prepared checksummed source, original training shards, pilot and validation assets: '+dir);
 }
@@ -60,12 +61,13 @@ function installService(name,mode){
 async function launch(){
   if(fs.existsSync(statePath))throw new Error('This rental already has durable state; services resume it without creating another Pod');
   const prepared=read(dir+'/prepared.json');
+  if(JSON.stringify(prepared.deployment)!==JSON.stringify(deployment))throw new Error('Prepared GPU profile differs; prepare a new bundle');
   if(await sha(dir+'/input.tar')!==prepared.archive_sha256)throw new Error('Prepared archive changed');
   const api=new Api(apiKey(keyFile)),quote=await api.quote();
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
-  write(statePath,{name,quote,revision:prepared.revision,started_at:started,
+  write(statePath,{name,quote,deployment,revision:prepared.revision,started_at:started,
     setup_deadline_ms:started+30*60000,training_deadline_ms:started+110*60000,deadline_ms:started+120*60000});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);

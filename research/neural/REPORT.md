@@ -269,3 +269,26 @@ Authenticated read-only preflight returned RTX 5090 Secure Cloud list price
 12.9 host filter. No paid resource was created. The remote image build,
 calibration, sustained GPU utilization and model quality remain unverified until
 an actual allocation is available. The earlier SCORE 0 result still stands.
+
+## RTX PRO 6000 deployment profile — 2026-09-29
+
+Switched the authorized rental to one full **RTX PRO 6000 Blackwell Server
+Edition, 96 GB**, because the RTX 5090 was unavailable. The shared deployment
+profile is archived with the source and copied with the local controller. It
+checks the catalog identity/VRAM, allocated host RAM and price separately, then
+requires the actual device name, compute capability 12.0, at least 90,000 MiB
+device memory and a CUDA 12.9 compatible driver before building. Old bundles
+with another profile cannot launch. The two-hour deadline remains unchanged;
+the GPU price ceiling is $2.50/hour ($5 for two hours before storage and tax).
+
+Local validation, with no local training:
+
+- Node runner/cloud contracts: **17/17 passed**, including full-device identity,
+  driver boundaries, distinct host/device memory requirements, rate rejection,
+  provisioning reconciliation and storage retention/cleanup.
+- CUDA build and CTest: **13/13 passed**.
+- Portable ASan/UBSan CTest: **8/8 passed**.
+- Bash/Node syntax checks and `git diff --check` passed.
+
+Remote setup, training health, utilization and quality still require the actual
+run. This hardware change does not alter the model, curriculum or audit limits.

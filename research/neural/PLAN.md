@@ -5,7 +5,7 @@ leaves the primary checkout available to other agents. Implementation precedes
 the ten-hour experiment budget. No held-out asset is used for training or tuning.
 
 Current status (2026-09-29): implementation and audit recovery are validated;
-local training is stopped. A from-scratch two-hour Secure Cloud RTX 5090
+local training is stopped. A from-scratch two-hour Secure Cloud RTX PRO 6000
 experiment is now authorized; see RUNPOD.md for the staged deployment and gates.
 The saved-model pilot returns
 eight unreduced fallbacks. The numbered implementation steps below are completed

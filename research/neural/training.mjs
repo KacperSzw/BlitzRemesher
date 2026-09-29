@@ -1,4 +1,9 @@
 // Shared contracts for the sustained runner and bounded cloud calibration.
+export function trainingDeadline(started,latest,minutes){
+  if(!Number.isFinite(started)||!Number.isFinite(latest)||!Number.isFinite(minutes)||minutes<=0||latest<=started)
+    throw new Error('Invalid training window');
+  return Math.min(latest,started+minutes*60000);
+}
 export function initialization(argument) {
   if(!argument)throw new Error('Specify --from-scratch or an initial model');
   return argument==='--from-scratch'?null:argument;

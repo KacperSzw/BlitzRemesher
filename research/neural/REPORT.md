@@ -334,3 +334,15 @@ being skipped. Local CUDA CTest is now **14/14 passed** and portable ASan/UBSan
 remains **8/8 passed**. Remote diagnostics now include trainer shared-library
 dependencies. The failed allocation and storage were deleted after verified
 collection; no remote training has yet been claimed.
+
+### User-authorized training window extension
+
+The user subsequently requested **two hours for training**, allowing the earlier
+cutoff to move. Provisioning/build/calibration now have a separate 30-minute
+allowance and collection has ten minutes. Training's two-hour window starts
+after calibration, subject to the allocation's reserved absolute limit. The
+controller records that measured start and shortens its independent watchdog
+deadline accordingly. The maximum new allocation is 160 minutes; at the observed
+$2.09/hour that is $5.57 before storage/tax, plus the earlier failed allocations.
+All **20 Node contracts** pass, including the delayed training start and shortened
+absolute limit. Numerical health and final LOD quality remain separate gates.

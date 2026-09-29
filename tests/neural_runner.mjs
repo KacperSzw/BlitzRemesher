@@ -1,7 +1,16 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {auditProgress} from '../research/neural/audit.mjs';
-import {initialization,trainerArguments,checkpointHealthy,trainingWindow,selectCalibration} from '../research/neural/training.mjs';
+import {initialization,trainerArguments,checkpointHealthy,trainingWindow,selectCalibration,trainingDeadline} from '../research/neural/training.mjs';
+test('training gets its requested window after setup within the reserved absolute cutoff',()=>{
+  const started=1234567;
+  for(const minutes of [15,120]){
+    assert.equal(trainingDeadline(started,started+180*60000,minutes),started+minutes*60000);
+    assert.equal(trainingDeadline(started,started+5*60000,minutes),started+5*60000);
+  }
+  for(const args of [[NaN,2,1],[1,Infinity,2],[2,1,3],[1,2,0],[1,2,NaN]])
+    assert.throws(()=>trainingDeadline(...args));
+});
 test('scratch never passes an initializer; warm start remains explicit',()=>{
   for(const batch of [3,8]){
     const config={batch,core:128,checkpoint_every:7,workers:4,gpu_memory_mib:2048};

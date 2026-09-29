@@ -22,4 +22,4 @@ training_deadline_ms=$2
 setup_seconds=$((setup_deadline_ms / 1000 - $(date +%s)))
 ((setup_seconds > 0))
 timeout --signal=TERM --kill-after=10s "${setup_seconds}s" bash research/neural/cloud-setup.sh
-node research/neural/cloud-job.mjs "$setup_deadline_ms" "$training_deadline_ms"
+node research/neural/cloud-job.mjs "$setup_deadline_ms" "$training_deadline_ms" "$3"

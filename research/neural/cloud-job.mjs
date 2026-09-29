@@ -2,10 +2,11 @@
 import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
-import {trainerArguments,selectCalibration} from './training.mjs';
+import {trainerArguments,selectCalibration,trainingDeadline as cutoff} from './training.mjs';
 
-const setupDeadline=Number(process.argv[2]),trainingDeadline=Number(process.argv[3]);
-if(!Number.isFinite(setupDeadline)||!Number.isFinite(trainingDeadline))throw new Error('Missing absolute deadlines');
+const setupDeadline=Number(process.argv[2]),latestTrainingDeadline=Number(process.argv[3]),trainingMinutes=Number(process.argv[4]);
+if(!Number.isFinite(setupDeadline)||!Number.isFinite(latestTrainingDeadline)||!Number.isFinite(trainingMinutes)||trainingMinutes<=0)
+  throw new Error('Missing absolute deadlines or training duration');
 const results='/workspace/results',dataset='/workspace/dataset',run=results+'/experiment';
 const base={core:4096,bootstrap_steps:100,health_steps:4096,checkpoint_every:1024,
   stage_steps:25000,max_steps:100000,max_stalled_pilots:2,hours:2,gpu_memory_mib:12288};
@@ -59,7 +60,8 @@ if(Date.now()>=setupDeadline)throw new Error('Setup exceeded 30-minute allowance
 fs.mkdirSync(run,{recursive:true});
 if(fs.existsSync(run+'/training'))throw new Error('Fresh cloud experiment directory already has training state');
 write(run+'/training.json',{...base,batch:best.batch,workers:best.workers});
-write(results+'/setup-complete.json',{at:Date.now(),training_deadline_ms:trainingDeadline});
+const started=Date.now(),trainingDeadline=cutoff(started,latestTrainingDeadline,trainingMinutes);
+write(results+'/setup-complete.json',{at:started,training_minutes:trainingMinutes,training_deadline_ms:trainingDeadline});
 const outcome=await execute(process.execPath,['research/neural/train.mjs',run,dataset,'--from-scratch',String(trainingDeadline)],results+'/experiment.log',trainingDeadline+15000);
 write(results+'/job.json',outcome);
 process.exitCode=outcome.code===0?0:1;

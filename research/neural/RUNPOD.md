@@ -30,16 +30,19 @@ the curriculum, decoder, quality limits, or release status.
    utilization >=90%, p10 >=85%). Each 25,000-update stage gets the frozen pilot.
    Stop at 100,000 updates or two stages without score improvement. Select at
    most two viable checkpoints using validation; never tune against held-out.
-5. **Collect and terminate.** Stop training at minute 110, download the immutable
+5. **Collect and terminate.** Allow two hours after setup/calibration, download the immutable
    results archive and verify SHA-256. Delete the Pod, confirm termination, then
    delete the volume only after verified collection. Failure to collect retains
    the volume and its ongoing storage charge for recovery.
    A definitive rejected Pod request also deletes its newly created, unattached
    empty volume; an ambiguous create response requires reconciliation.
 
-The two-hour clock starts immediately before provisioning (slightly earlier than
-Pod creation). Image pull, upload, build, calibration, audits and downloads all
-count. Completion and failures terminate early. Both the local controller and an
+The user extended the budget to a two-hour training window after setup on
+2026-09-29. Setup/calibration have up to 30 minutes; collection gets ten more.
+The initial maximum rental is 160 minutes. Once setup finishes, the controller
+shortens the final cutoff to the actual training deadline plus collection time.
+The training window includes bootstrap, readiness and periodic quality audits;
+existing failure and stalled-quality gates can stop early. Both the local controller and an
 independent user systemd watchdog request termination. Durable create intents,
 unique resource names and reconciliation prevent blind duplicate provisioning
 after a timeout. Unknown create outcomes stay unresolved until reconciled.
@@ -78,7 +81,7 @@ node research/neural/runpod.mjs stop runs/neural/runpod-pro6000-first
 
 `launch` accepts an optional absolute deadline in milliseconds after the run
 directory to shorten a replacement rental to the original budget cutoff. It
-cannot extend a rental beyond two hours and keeps ten minutes for collection.
+cannot extend a rental beyond 160 minutes and keeps ten minutes for collection.
 Confirm the previous Pod is deleted before launching a replacement. Each new
 allocation has at most 30 minutes for setup, within that shared final cutoff.
 
@@ -124,7 +127,7 @@ separate from demonstrating a useful reduction. Incomplete audits stay unscored.
   [network volume creation](https://docs.runpod.io/api-reference-v2/network-volumes/create-a-network-volume),
   [credentials](https://docs.runpod.io/get-started/credentials).
 
-At the GPU price cap, two hours cost at most $5 for GPU time, plus container disk,
+At the GPU price cap, 160 minutes cost at most $6.67 for GPU time, plus container disk,
 network storage and applicable taxes. Catalog price and actual Pod rate are both
 checked; the API does not offer an atomic client price ceiling, so a quote change
 can result in a short rejected allocation before deletion. Preserved network

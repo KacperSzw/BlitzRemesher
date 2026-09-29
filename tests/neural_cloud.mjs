@@ -16,12 +16,13 @@ test('recovery can shorten a rental to its original cutoff without extending the
   assert.equal(limits.deadline_ms,originalEnd);
   assert.equal(limits.training_deadline_ms,originalEnd-10*60000);
   assert.ok(limits.setup_deadline_ms<=started+30*60000);
-  for(const minutes of [15,45,120]){
+  for(const minutes of [15,45,160]){
     const d=rentalDeadlines(started,started+minutes*60000);
     assert.ok(d.setup_deadline_ms<=d.training_deadline_ms);
     assert.ok(d.training_deadline_ms<d.deadline_ms);
   }
-  for(const deadline of [NaN,Infinity,started,started+10*60000,started+121*60000])
+  assert.equal(rentalDeadlines(started).training_minutes,120);
+  for(const deadline of [NaN,Infinity,started,started+10*60000,started+161*60000])
     assert.throws(()=>rentalDeadlines(started,deadline));
 });
 test('status succeeds with optional state files absent and reports every available record',()=>{

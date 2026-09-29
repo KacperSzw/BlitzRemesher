@@ -4,7 +4,8 @@ export const deployment=Object.freeze({
   catalog_vram_gb:96,device_memory_mib:90000,compute_capability:'12.0',cuda_architecture:120,
   minimum_driver:[575,51,3],minimum_cuda:'12.9',
   host_ram_gb:32,vcpus:8,gpu_hourly_usd_cap:2.50,
-  container_disk_gb:50,network_volume_gb:20
+  container_disk_gb:50,network_volume_gb:20,
+  setup_minutes:30,training_minutes:120,collection_minutes:10
 });
 
 export function verifyDevice(csv,profile=deployment){

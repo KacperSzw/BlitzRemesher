@@ -145,11 +145,17 @@ async function control(){
     }
     rental.commit({phase:'start-job'});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
-    await remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' > /workspace/launch.log 2>&1 < /dev/null & fi'));
+    await remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' > /workspace/launch.log 2>&1 < /dev/null & fi'));
     while(Date.now()<s.deadline_ms-30000){
       if(fs.existsSync(dir+'/stop-requested'))throw new Error('Cancellation requested');
       const phase=await remote(endpoint,'if [ -f /workspace/job-finished ]; then echo finished; elif [ -f /workspace/results/setup-complete.json ]; then echo training; else echo setup; fi');
-      if(phase==='training'&&!s.setup_complete)rental.commit({setup_complete:true,phase:'training'});
+      if(phase==='training'&&!s.setup_complete){
+        const timing=JSON.parse(await remote(endpoint,'cat /workspace/results/setup-complete.json'));
+        if(!Number.isFinite(timing.at)||!Number.isFinite(timing.training_deadline_ms)||timing.training_deadline_ms> s.training_deadline_ms)
+          throw new Error('Invalid remote training deadline');
+        rental.commit({setup_complete:true,phase:'training',training_started_at:timing.at,training_deadline_ms:timing.training_deadline_ms,
+          deadline_ms:Math.min(s.deadline_ms,timing.training_deadline_ms+deployment.collection_minutes*60000)});
+      }
       if(phase==='setup'&&s.phase!=='setup')rental.commit({phase:'setup'});
       if(phase==='finished'){await collect(endpoint,s.deadline_ms-15000);break;}
       if(!s.setup_complete&&Date.now()>=s.setup_deadline_ms)throw new Error('Setup exceeded 30 minutes');

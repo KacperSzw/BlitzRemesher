@@ -1,7 +1,6 @@
 #include "neural_update_cuda.hpp"
 #include <cublas_v2.h>
 #include <cublasLt.h>
-#include <cub/block/block_reduce.cuh>
 #include <stdexcept>
 #include <string>
 
@@ -11,11 +10,14 @@ void blas(cublasStatus_t s){if(s!=CUBLAS_STATUS_SUCCESS)throw std::runtime_error
 __global__ void bias_activation(float* x,const float* bias,uint32_t rows,uint32_t width,bool relu){
     auto i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=rows*width)return;float v=x[i]+bias[i%width];x[i]=relu&&v<0?0:v;
 }
-// One block/channel: deterministic reduction and derivative overwrite, no
-// atomics, zero-fill or separate autograd accumulation buffer.
+// Eight adjacent channels per block make the row-major reads/writes coalesced.
+// Warp and block reductions stay deterministic; no atomics or zero-fill.
 __global__ void derivative_bias(float* dy,const float* activation,float* bias,uint32_t rows,uint32_t width){
-    float sum=0;for(uint32_t row=threadIdx.x;row<rows;row+=blockDim.x){auto i=size_t(row)*width+blockIdx.x;float g=dy[i];if(activation&&activation[i]<=0)g=0;dy[i]=g;sum+=g;}
-    __shared__ cub::BlockReduce<float,256>::TempStorage temp;sum=cub::BlockReduce<float,256>(temp).Sum(sum);if(threadIdx.x==0)bias[blockIdx.x]=sum;
+    uint32_t channel=blockIdx.x*8+threadIdx.x%8;float sum=0;
+    if(channel<width)for(uint32_t row=threadIdx.x/8;row<rows;row+=32){auto i=size_t(row)*width+channel;float g=dy[i];if(activation&&activation[i]<=0)g=0;dy[i]=g;sum+=g;}
+    sum+=__shfl_down_sync(0xffffffffu,sum,16);sum+=__shfl_down_sync(0xffffffffu,sum,8);
+    __shared__ float partial[64];if((threadIdx.x&31)<8)partial[(threadIdx.x/32)*8+threadIdx.x%8]=sum;__syncthreads();
+    if(threadIdx.x<8&&channel<width){sum=0;for(unsigned warp=0;warp<8;++warp)sum+=partial[warp*8+threadIdx.x];bias[channel]=sum;}
 }
 struct Forward {
     cublasLtMatmulDesc_t operation{};cublasLtMatrixLayout_t a{},b{},d{};cublasLtMatmulAlgo_t algorithm{};bool fused{};
@@ -64,7 +66,7 @@ void fused_mlp_forward(FusedMlp* p,cudaStream_t stream){auto& b=p->buffers;p->st
 }
 void fused_mlp_backward(FusedMlp* p,cudaStream_t stream){auto& b=p->buffers;p->stream(stream);
     for(int l=2;l>=0;--l){int in=l?64:128,out=l==2?12:64;auto* x=l?b.hidden[l-1]:b.input;auto* dy=l==2?b.derivative:b.delta[l];
-        derivative_bias<<<out,256,0,stream>>>(dy,l==2?nullptr:b.hidden[l],b.gradient[l*2+1],b.rows,out);
+        derivative_bias<<<(out+7)/8,256,0,stream>>>(dy,l==2?nullptr:b.hidden[l],b.gradient[l*2+1],b.rows,out);
         p->multiply(CUBLAS_OP_N,CUBLAS_OP_T,in,out,b.rows,x,in,dy,out,b.gradient[l*2],in);
         if(l)p->multiply(CUBLAS_OP_N,CUBLAS_OP_N,in,b.rows,out,b.parameter[l*2],in,dy,out,b.delta[l-1],in);
     }

@@ -1,0 +1,1010 @@
+{
+  "score": null,
+  "cycle_complete": true,
+  "database_sha256": "4c458047ce4b3a6de9b1110cbe9e9f5a81a0602a7e859d3dbe6c63f1b24c0e15",
+  "cycle_sha256": "0f98c06575a7556d365438e8cdb45e78fc8b719e6f6f7478fb887283815d2927",
+  "note": "Instrumented single run on a shared GPU. GPU durations are sums of activity intervals. Host API calls include GPU waits; background checkpoint times overlap. These are not additive wall-time categories.",
+  "cycle_seconds": 6.536869442,
+  "phase_seconds": {
+    "teacher": 2.129146986,
+    "training": 2.190766344,
+    "quality_audit": 1.7950597430000002
+  },
+  "unattributed_seconds": 0.4218963689999997,
+  "training_parts": {
+    "append_seconds": 0.04909320799999999,
+    "capture_seconds": 0.013273519000000001,
+    "update_seconds": 2.053259064,
+    "checkpoint_seconds": 0.06810899100000001
+  },
+  "checkpoint": {
+    "bytes": 5869606,
+    "local_wait_seconds": 0.000002034,
+    "publish_seconds": 0.89721242,
+    "published": 24,
+    "serialize_seconds": 0.017829614000000004,
+    "snapshot_seconds": 0.01227092,
+    "verify_seconds": 0.04529950500000001,
+    "wait_seconds": 0.043607119
+  },
+  "training_graph": {
+    "calls": 307200,
+    "seconds": 1.9108389809999995,
+    "updates": 12288,
+    "kernels_per_update": 25,
+    "kernels": [
+      {
+        "name": "blitz::neural::training::<unnamed>::derivative_bias(float *, const float *, float *, unsigned int, unsigned int)",
+        "calls": 36864,
+        "seconds": 0.456756659
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::gather_resident(const blitz::neural::training::ResidentRoot *, float *, unsigned char *, float *, const unsigned int *, const blitz::neural::training::UpdateState *, unsigned int, unsigned int, unsigned int)",
+        "calls": 12288,
+        "seconds": 0.25046574
+      },
+      {
+        "name": "volta_sgemm_32x128_tn",
+        "calls": 24576,
+        "seconds": 0.23173648300000002
+      },
+      {
+        "name": "volta_sgemm_64x32_sliced1x4_nt",
+        "calls": 24576,
+        "seconds": 0.196885426
+      },
+      {
+        "name": "volta_sgemm_32x128_nn",
+        "calls": 24576,
+        "seconds": 0.132253021
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::norm_finish(const float *, unsigned int, blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)",
+        "calls": 12288,
+        "seconds": 0.091447342
+      },
+      {
+        "name": "volta_sgemm_32x32_sliced1x4_nt",
+        "calls": 12288,
+        "seconds": 0.083937807
+      },
+      {
+        "name": "volta_sgemm_32x32_sliced1x4_tn",
+        "calls": 12288,
+        "seconds": 0.082199279
+      },
+      {
+        "name": "void cublasLt::epilogue::impl::globalKernel<(int)8, (int)32, float, float, float, (bool)1, (bool)1, (int)1>(int, int, long, T3 *, cublasLtEpilogue_t, int, T4 *, long, void *, long, long, long, T5 *, long, int *)",
+        "calls": 24576,
+        "seconds": 0.079945492
+      },
+      {
+        "name": "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, float, float, float, (bool)1, (bool)0, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)",
+        "calls": 36864,
+        "seconds": 0.07642142
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::placement_gradient(const float *, const unsigned char *, const float *, const unsigned int *, float *, float *, const blitz::neural::training::UpdateState *, unsigned int, blitz::neural::training::UpdateSettings)",
+        "calls": 12288,
+        "seconds": 0.048236235
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::norm_parts(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, float *, const blitz::neural::training::UpdateState *)",
+        "calls": 12288,
+        "seconds": 0.040006281000000005
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::adam(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, const blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)",
+        "calls": 12288,
+        "seconds": 0.039722852
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::placement_denominators(const unsigned char *, blitz::neural::training::UpdateState *, unsigned int, unsigned int)",
+        "calls": 12288,
+        "seconds": 0.033936258000000004
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::select_resident_states(const blitz::neural::training::ResidentRoot *, unsigned int *, const blitz::neural::training::UpdateState *, unsigned int)",
+        "calls": 12288,
+        "seconds": 0.032341158
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::sum_loss(const float *, blitz::neural::training::UpdateState *, unsigned int)",
+        "calls": 12288,
+        "seconds": 0.017474469
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::finish(blitz::neural::training::UpdateState *)",
+        "calls": 12288,
+        "seconds": 0.017073059
+      }
+    ]
+  },
+  "other_cuda": {
+    "calls": 51802,
+    "seconds": 1.5340238630000005,
+    "kernels": [
+      {
+        "name": "blitz::neural::<unnamed>::appearance(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, const blitz::Vec3 *, const blitz::Vec3 *, blitz::neural::<unnamed>::Summary *, int, int, double, int, blitz::Weights, bool, float)",
+        "calls": 3716,
+        "seconds": 0.9294756260000001
+      },
+      {
+        "name": "blitz::neural::clip_draw(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *, blitz::Bounds, blitz::Camera, unsigned int, unsigned char, unsigned int)",
+        "calls": 6105,
+        "seconds": 0.106088499
+      },
+      {
+        "name": "blitz::neural::<unnamed>::initialize(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, float *, float *, blitz::neural::<unnamed>::Summary *, unsigned long)",
+        "calls": 1858,
+        "seconds": 0.062192619000000005
+      },
+      {
+        "name": "blitz::neural::<unnamed>::predicate_initialize(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, unsigned int, unsigned int *, unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, blitz::Weights, float)",
+        "calls": 4018,
+        "seconds": 0.054364521000000006
+      },
+      {
+        "name": "blitz::neural::<unnamed>::enumerate(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const unsigned int *, blitz::neural::<unnamed>::Edit *, unsigned char *, unsigned int, bool)",
+        "calls": 97,
+        "seconds": 0.04397492
+      },
+      {
+        "name": "blitz::neural::unpack_targets(unsigned long long, unsigned long long, unsigned long long, blitz::neural::AuditPixel *, blitz::Vec3 *, unsigned int, unsigned long long, blitz::neural::RasterDebugPixel *)",
+        "calls": 2040,
+        "seconds": 0.040656617000000006
+      },
+      {
+        "name": "kernelColor(short2 *, short2 *, int)",
+        "calls": 391,
+        "seconds": 0.038676807
+      },
+      {
+        "name": "void blitz::neural::<unnamed>::predicate_search<(bool)1>(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, const unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, int, double, int, blitz::Weights)",
+        "calls": 4018,
+        "seconds": 0.021059617000000003
+      },
+      {
+        "name": "blitz::neural::<unnamed>::single_edit(blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, unsigned int, unsigned int, unsigned int, unsigned int *)",
+        "calls": 270,
+        "seconds": 0.020282308000000002
+      },
+      {
+        "name": "blitz::neural::<unnamed>::vertex_features(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Bounds, float *)",
+        "calls": 97,
+        "seconds": 0.019519525000000003
+      },
+      {
+        "name": "blitz::neural::<unnamed>::directed_coverage(const blitz::neural::AuditPixel *, const float *, blitz::neural::<unnamed>::Summary *, unsigned long)",
+        "calls": 642,
+        "seconds": 0.015896898
+      },
+      {
+        "name": "blitz::neural::<unnamed>::rank_actions(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, float *, unsigned int *, blitz::NeuralRanking, double, unsigned int, unsigned int, unsigned int)",
+        "calls": 81,
+        "seconds": 0.015651297
+      },
+      {
+        "name": "blitz::neural::<unnamed>::place_vertices(blitz::neural::DeviceMeshView, blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const blitz::neural::Placement *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Vec3 *, blitz::Vec3 *, blitz::Vec2 *, blitz::ColorRGBA8 *, blitz::Vec4 *)",
+        "calls": 780,
+        "seconds": 0.015091906
+      },
+      {
+        "name": "blitz::neural::<unnamed>::validate_placement(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const blitz::Vec3 *, const blitz::Vec3 *, const blitz::Vec2 *, unsigned int *)",
+        "calls": 780,
+        "seconds": 0.010442338
+      },
+      {
+        "name": "blitz::neural::<unnamed>::select_batch(blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const unsigned int *, unsigned int *, unsigned char *, unsigned int, unsigned int, unsigned char)",
+        "calls": 34,
+        "seconds": 0.009732992000000001
+      },
+      {
+        "name": "blitz::neural::gather_draw_status(blitz::neural::DrawStatusSources, unsigned int *)",
+        "calls": 5513,
+        "seconds": 0.00964634
+      },
+      {
+        "name": "blitz::neural::<unnamed>::fill_action_features(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, blitz::Bounds, unsigned int, float *, unsigned int, unsigned int, const unsigned int *)",
+        "calls": 81,
+        "seconds": 0.009184483
+      },
+      {
+        "name": "kernelMergeBands(short2 *, short2 *, short2 *, int, int)",
+        "calls": 1955,
+        "seconds": 0.008832544000000001
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortOnesweepKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int, int, int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T7 *, T7 *, T5 *, const T5 *, T3 *, const T3 *, T4 *, const T4 *, T6, int, int, T8)",
+        "calls": 976,
+        "seconds": 0.006886945
+      },
+      {
+        "name": "blitz::neural::<unnamed>::npp_mask(const blitz::neural::AuditPixel *, unsigned char *, unsigned long)",
+        "calls": 391,
+        "seconds": 0.006762915
+      },
+      {
+        "name": "kernelFloodDown(short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.00648445
+      },
+      {
+        "name": "blitz::neural::<unnamed>::connected_fans(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, unsigned int *, unsigned char *)",
+        "calls": 97,
+        "seconds": 0.006470753
+      },
+      {
+        "name": "blitz::neural::draw_streams(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *)",
+        "calls": 772,
+        "seconds": 0.006286112000000001
+      },
+      {
+        "name": "void blitz::neural::<unnamed>::predicate_search<(bool)0>(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, const unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, int, double, int, blitz::Weights)",
+        "calls": 4018,
+        "seconds": 0.005801794000000001
+      },
+      {
+        "name": "kernelUpdateVertical(short2 *, short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.005746305
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::GpuActionState::Proposal *, const blitz::neural::Placement *)",
+        "calls": 216,
+        "seconds": 0.005615715
+      },
+      {
+        "name": "void initInputVoronoi<unsigned char>(T1 *, unsigned long, T1, T1, short2 *, double *, double *, int, NppiSize, NppiSize)",
+        "calls": 391,
+        "seconds": 0.004806307
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortOnesweepKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, unsigned int, int, int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T7 *, T7 *, T5 *, const T5 *, T3 *, const T3 *, T4 *, const T4 *, T6, int, int, T8)",
+        "calls": 204,
+        "seconds": 0.00441696
+      },
+      {
+        "name": "kernelFloodUp(short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.004367905
+      },
+      {
+        "name": "blitz::neural::draw_bounds(blitz::neural::DeviceMeshView, blitz::neural::DrawMetadata *, bool)",
+        "calls": 772,
+        "seconds": 0.003864352
+      },
+      {
+        "name": "kernelProximatePoints(short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.003831104
+      },
+      {
+        "name": "blitz::neural::<unnamed>::sort_lists(const unsigned int *, unsigned int *, unsigned int)",
+        "calls": 388,
+        "seconds": 0.0032681290000000003
+      },
+      {
+        "name": "kernelDoubleToSingleList(short2 *, short2 *, short2 *, int)",
+        "calls": 391,
+        "seconds": 0.002808704
+      },
+      {
+        "name": "blitz::neural::<unnamed>::npp_squared(const short2 *, float *, unsigned int)",
+        "calls": 391,
+        "seconds": 0.002352032
+      },
+      {
+        "name": "blitz::neural::<unnamed>::copy_trial(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const unsigned int *, unsigned int *, unsigned short *, unsigned int)",
+        "calls": 650,
+        "seconds": 0.0019050240000000002
+      },
+      {
+        "name": "kernelCreateForwardPointers(short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.001696608
+      },
+      {
+        "name": "blitz::neural::<unnamed>::keep_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int)",
+        "calls": 650,
+        "seconds": 0.001667456
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::detail::InputValue<unsigned int, unsigned int *>, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)",
+        "calls": 650,
+        "seconds": 0.001506881
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)",
+        "calls": 72,
+        "seconds": 0.001437857
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceSelectSweepKernel<cub::CUB_200802_SM_750::detail::select::policy_hub<blitz::neural::<unnamed>::Edit, unsigned char, int, (bool)0, (bool)0, (bool)0>::Policy1000, blitz::neural::<unnamed>::Edit *, unsigned char *, blitz::neural::<unnamed>::Edit *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, cub::CUB_200802_SM_750::NullType, cub::CUB_200802_SM_750::NullType, int, cub::CUB_200802_SM_750::detail::select::streaming_context_t<long, (bool)1>, (bool)0, (bool)0>(T2, T3, T4, T5, T6, T7, T8, T9, int, T10, cub::CUB_200802_SM_750::detail::vsmem_t)",
+        "calls": 97,
+        "seconds": 0.0012408
+      },
+      {
+        "name": "kernelPropagateInterband(short2 *, short2 *, int, int)",
+        "calls": 391,
+        "seconds": 0.00103344
+      },
+      {
+        "name": "blitz::neural::<unnamed>::apply_map(const blitz::neural::<unnamed>::Edit *, const unsigned int *, const blitz::neural::<unnamed>::State *, unsigned int *)",
+        "calls": 650,
+        "seconds": 0.000981984
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanInitKernel<cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>>(T1, int)",
+        "calls": 1038,
+        "seconds": 0.0009208010000000001
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortHistogramKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T4 *, const T3 *, T4, int, int, T5)",
+        "calls": 122,
+        "seconds": 0.000811713
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::NullType, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)",
+        "calls": 388,
+        "seconds": 0.0007579840000000001
+      },
+      {
+        "name": "volta_sgemm_32x32_sliced1x4_tn",
+        "calls": 171,
+        "seconds": 0.000753216
+      },
+      {
+        "name": "blitz::neural::<unnamed>::scatter_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)",
+        "calls": 194,
+        "seconds": 0.000733632
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceReduceByKeyKernel<cub::CUB_200802_SM_750::detail::rle::encode::policy_hub<unsigned int, unsigned long>::Policy1000, unsigned long *, unsigned long *, thrust::THRUST_200802_SM_750_NS::constant_iterator<unsigned int, int, thrust::THRUST_200802_SM_750_NS::use_default>, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, cuda::std::__4::equal_to<void>, cuda::std::__4::plus<void>, int, unsigned int>(T2, T3, T4, T5, T6, T7, int, T8, T9, T10)",
+        "calls": 194,
+        "seconds": 0.0007157120000000001
+      },
+      {
+        "name": "blitz::neural::<unnamed>::edge_keys(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned long *, unsigned int *, unsigned int *, unsigned int)",
+        "calls": 194,
+        "seconds": 0.0006174080000000001
+      },
+      {
+        "name": "blitz::neural::<unnamed>::activate(float *, const float *, unsigned int, unsigned int, bool)",
+        "calls": 288,
+        "seconds": 0.000562816
+      },
+      {
+        "name": "blitz::neural::<unnamed>::scatter_edges(blitz::neural::<unnamed>::TopologyView, unsigned int *, unsigned int *, unsigned int)",
+        "calls": 194,
+        "seconds": 0.0005524480000000001
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)",
+        "calls": 30,
+        "seconds": 0.000550976
+      },
+      {
+        "name": "blitz::neural::<unnamed>::assign_trial(const unsigned int *, blitz::neural::Placement *, blitz::neural::Placement, blitz::neural::DeviceTrialStatus *, const unsigned int *)",
+        "calls": 392,
+        "seconds": 0.000475008
+      },
+      {
+        "name": "blitz::neural::<unnamed>::decode_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const float *, blitz::neural::Placement *, const unsigned int *, unsigned int)",
+        "calls": 65,
+        "seconds": 0.00045126400000000005
+      },
+      {
+        "name": "blitz::neural::<unnamed>::edge_degrees(const unsigned long *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)",
+        "calls": 194,
+        "seconds": 0.00044246400000000005
+      },
+      {
+        "name": "volta_sgemm_64x64_tn",
+        "calls": 20,
+        "seconds": 0.00041136000000000005
+      },
+      {
+        "name": "blitz::neural::<unnamed>::assign_placement(const unsigned int *, blitz::neural::Placement *, blitz::neural::Placement)",
+        "calls": 324,
+        "seconds": 0.000381312
+      },
+      {
+        "name": "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4, (int)4, (bool)1, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>>(cublasGemmSmallNParams<T9, T10, T11, T1>)",
+        "calls": 162,
+        "seconds": 0.000326688
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortHistogramKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T4 *, const T3 *, T4, int, int, T5)",
+        "calls": 51,
+        "seconds": 0.00028633600000000004
+      },
+      {
+        "name": "blitz::neural::<unnamed>::copy_commit(unsigned int *, unsigned short *, const unsigned int *, const unsigned short *, const unsigned int *, unsigned int)",
+        "calls": 67,
+        "seconds": 0.000190816
+      },
+      {
+        "name": "blitz::neural::<unnamed>::lookup_vertices(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int, unsigned int *, bool)",
+        "calls": 28,
+        "seconds": 0.00018745600000000002
+      },
+      {
+        "name": "blitz::neural::<unnamed>::insert_vertices(blitz::neural::DeviceMeshView, unsigned int *, unsigned int, bool)",
+        "calls": 28,
+        "seconds": 0.000176128
+      },
+      {
+        "name": "blitz::neural::<unnamed>::verdict(blitz::neural::<unnamed>::State *, bool)",
+        "calls": 128,
+        "seconds": 0.000175488
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, unsigned int *>(T1, int, T2)",
+        "calls": 194,
+        "seconds": 0.000172416
+      },
+      {
+        "name": "volta_sgemm_32x128_tn",
+        "calls": 16,
+        "seconds": 0.000156224
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortExclusiveSumKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, unsigned int>(T2 *)",
+        "calls": 122,
+        "seconds": 0.000145856
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::derivative_bias(float *, const float *, float *, unsigned int, unsigned int)",
+        "calls": 9,
+        "seconds": 0.00010220800000000001
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_selection(const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int, unsigned int)",
+        "calls": 54,
+        "seconds": 0.00009606400000000001
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, unsigned int *>(T1, int, T2)",
+        "calls": 97,
+        "seconds": 0.00009312
+      },
+      {
+        "name": "blitz::neural::<unnamed>::commit_faces(blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int)",
+        "calls": 67,
+        "seconds": 0.000068768
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_records(const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::Action *, unsigned int)",
+        "calls": 54,
+        "seconds": 0.00006768
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortExclusiveSumKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, unsigned int>(T2 *)",
+        "calls": 51,
+        "seconds": 0.000065824
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::launch_clamp_scalar(at::TensorIteratorBase &, c10::Scalar, c10::Scalar, at::native::detail::ClampLimits)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "calls": 48,
+        "seconds": 0.00006272000000000001
+      },
+      {
+        "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<bool, at::native::func_wrapper_t<bool, at::native::and_kernel_cuda(at::TensorIterator &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 12)]::operator ()() const::[lambda(bool, bool) (instance 1)]>, unsigned int, bool, (int)4, (int)4>>(T3)",
+        "calls": 18,
+        "seconds": 0.000059456
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::gather_resident(const blitz::neural::training::ResidentRoot *, float *, unsigned char *, float *, const unsigned int *, const blitz::neural::training::UpdateState *, unsigned int, unsigned int, unsigned int)",
+        "calls": 3,
+        "seconds": 0.000054272000000000005
+      },
+      {
+        "name": "volta_sgemm_64x32_sliced1x4_nt",
+        "calls": 6,
+        "seconds": 0.000044000000000000006
+      },
+      {
+        "name": "blitz::neural::<unnamed>::mark_seams(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int *)",
+        "calls": 14,
+        "seconds": 0.00003104
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AbsFunctor<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "calls": 18,
+        "seconds": 0.0000304
+      },
+      {
+        "name": "volta_sgemm_32x128_nn",
+        "calls": 6,
+        "seconds": 0.000029728
+      },
+      {
+        "name": "blitz::neural::<unnamed>::record_rank(blitz::neural::<unnamed>::State *)",
+        "calls": 27,
+        "seconds": 0.000026816000000000002
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUnaryFunctor<float, float, bool, at::native::<unnamed>::CompareEqFunctor<float>>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+        "calls": 18,
+        "seconds": 0.000022688
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BinaryFunctor<bool, bool, bool, at::native::binary_internal::MulFunctor<bool>>, std::array<char *, (unsigned long)3>>(int, T2, T3)",
+        "calls": 18,
+        "seconds": 0.000020736000000000003
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::BinaryFunctor<float, float, bool, at::native::<unnamed>::CompareEqFunctor<float>>, std::array<char *, (unsigned long)3>>(int, T2, T3)",
+        "calls": 18,
+        "seconds": 0.00002048
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<char *, (unsigned long)1>>(int, T2, T3)",
+        "calls": 20,
+        "seconds": 0.000019872000000000002
+      },
+      {
+        "name": "volta_sgemm_32x32_sliced1x4_nt",
+        "calls": 3,
+        "seconds": 0.00001984
+      },
+      {
+        "name": "void cublasLt::epilogue::impl::globalKernel<(int)8, (int)32, float, float, float, (bool)1, (bool)1, (int)1>(int, int, long, T3 *, cublasLtEpilogue_t, int, T4 *, long, void *, long, long, long, T5 *, long, int *)",
+        "calls": 6,
+        "seconds": 0.000018752000000000003
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::norm_finish(const float *, unsigned int, blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)",
+        "calls": 3,
+        "seconds": 0.00001664
+      },
+      {
+        "name": "void at::native::<unnamed>::CatArrayBatchedCopy_vectorized<at::native::<unnamed>::OpaqueType<(unsigned int)4>, unsigned int, (int)1, (int)128, (int)1, (int)16, (int)4>(char *, at::native::<unnamed>::CatArrInputTensorMetadata<T1, T2, T4, T5>, at::native::<unnamed>::TensorSizeStride<T2, (unsigned int)4>, int, T2)",
+        "calls": 7,
+        "seconds": 0.000016448000000000002
+      },
+      {
+        "name": "void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, float, float, float, (bool)1, (bool)0, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)",
+        "calls": 9,
+        "seconds": 0.000016224000000000003
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::placement_gradient(const float *, const unsigned char *, const float *, const unsigned int *, float *, float *, const blitz::neural::training::UpdateState *, unsigned int, blitz::neural::training::UpdateSettings)",
+        "calls": 3,
+        "seconds": 0.000011328
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::adam(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, const blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)",
+        "calls": 3,
+        "seconds": 0.000008384
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::norm_parts(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, float *, const blitz::neural::training::UpdateState *)",
+        "calls": 3,
+        "seconds": 0.000007904000000000001
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::select_resident_states(const blitz::neural::training::ResidentRoot *, unsigned int *, const blitz::neural::training::UpdateState *, unsigned int)",
+        "calls": 3,
+        "seconds": 0.000007296
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::placement_denominators(const unsigned char *, blitz::neural::training::UpdateState *, unsigned int, unsigned int)",
+        "calls": 3,
+        "seconds": 0.000007264
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::sum_loss(const float *, blitz::neural::training::UpdateState *, unsigned int)",
+        "calls": 3,
+        "seconds": 0.000004192
+      },
+      {
+        "name": "blitz::neural::training::<unnamed>::finish(blitz::neural::training::UpdateState *)",
+        "calls": 3,
+        "seconds": 0.0000030080000000000003
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)2, at::native::FillFunctor<long>, std::array<char *, (unsigned long)1>>(int, T2, T3)",
+        "calls": 2,
+        "seconds": 0.000001984
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<unsigned char>, std::array<char *, (unsigned long)1>>(int, T2, T3)",
+        "calls": 2,
+        "seconds": 0.000001824
+      },
+      {
+        "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>>(int, T2, T3)",
+        "calls": 1,
+        "seconds": 9.92e-7
+      }
+    ]
+  },
+  "cuda_api": [
+    {
+      "name": "cudaMemcpy_v3020",
+      "calls": 15185,
+      "seconds": 3.011503793
+    },
+    {
+      "name": "cudaMemcpyAsync_v3020",
+      "calls": 2045,
+      "seconds": 1.7294451830000002
+    },
+    {
+      "name": "cudaGraphLaunch_v10000",
+      "calls": 12288,
+      "seconds": 0.29587414700000003
+    },
+    {
+      "name": "cudaLaunchKernel_v7000",
+      "calls": 51827,
+      "seconds": 0.268209515
+    },
+    {
+      "name": "cudaMemGetInfo_v3020",
+      "calls": 1,
+      "seconds": 0.164392154
+    },
+    {
+      "name": "cudaFree_v3020",
+      "calls": 1962,
+      "seconds": 0.078222938
+    },
+    {
+      "name": "cudaMalloc_v3020",
+      "calls": 1927,
+      "seconds": 0.04528308
+    },
+    {
+      "name": "cudaMemsetAsync_v3020",
+      "calls": 8669,
+      "seconds": 0.028157792
+    },
+    {
+      "name": "cudaMemset_v3020",
+      "calls": 5955,
+      "seconds": 0.020862686000000002
+    },
+    {
+      "name": "cudaStreamSynchronize_v3020",
+      "calls": 1266,
+      "seconds": 0.019787995000000003
+    },
+    {
+      "name": "cudaWaitExternalSemaphoresAsync_v11020",
+      "calls": 5513,
+      "seconds": 0.015453074
+    },
+    {
+      "name": "cudaSignalExternalSemaphoresAsync_v11020",
+      "calls": 5513,
+      "seconds": 0.009550455000000001
+    },
+    {
+      "name": "cudaExternalMemoryGetMappedMipmappedArray_v10000",
+      "calls": 52,
+      "seconds": 0.00862774
+    },
+    {
+      "name": "cudaStreamIsCapturing_v10000",
+      "calls": 12294,
+      "seconds": 0.006182443
+    },
+    {
+      "name": "cudaGetDeviceProperties_v12000",
+      "calls": 5,
+      "seconds": 0.004368273000000001
+    },
+    {
+      "name": "cudaImportExternalMemory_v10000",
+      "calls": 64,
+      "seconds": 0.003225485
+    },
+    {
+      "name": "cudaMemcpy2DAsync_v3020",
+      "calls": 391,
+      "seconds": 0.0030222530000000004
+    },
+    {
+      "name": "cudaFreeMipmappedArray_v5000",
+      "calls": 52,
+      "seconds": 0.0025510140000000003
+    },
+    {
+      "name": "cudaDeviceSynchronize_v3020",
+      "calls": 157,
+      "seconds": 0.001247337
+    },
+    {
+      "name": "cudaStreamCreateWithPriority_v5050",
+      "calls": 128,
+      "seconds": 0.0012187020000000001
+    },
+    {
+      "name": "cudaDestroyExternalMemory_v10000",
+      "calls": 64,
+      "seconds": 0.001049182
+    },
+    {
+      "name": "cudaExternalMemoryGetMappedBuffer_v10000",
+      "calls": 12,
+      "seconds": 0.000724687
+    },
+    {
+      "name": "cudaHostAlloc_v3020",
+      "calls": 2,
+      "seconds": 0.000630283
+    },
+    {
+      "name": "cuGetProcAddress_v2",
+      "calls": 2095,
+      "seconds": 0.00034611500000000003
+    },
+    {
+      "name": "cudaEventCreateWithFlags_v3020",
+      "calls": 558,
+      "seconds": 0.00031356200000000003
+    },
+    {
+      "name": "cudaCreateSurfaceObject_v5000",
+      "calls": 52,
+      "seconds": 0.000290325
+    },
+    {
+      "name": "cudaEventDestroy_v3020",
+      "calls": 540,
+      "seconds": 0.000240923
+    },
+    {
+      "name": "cudaDestroySurfaceObject_v5000",
+      "calls": 52,
+      "seconds": 0.000184577
+    },
+    {
+      "name": "cudaImportExternalSemaphore_v10000",
+      "calls": 1,
+      "seconds": 0.000157822
+    },
+    {
+      "name": "cudaGraphInstantiateWithFlags_v11040",
+      "calls": 1,
+      "seconds": 0.00010835800000000001
+    },
+    {
+      "name": "cudaDestroyExternalSemaphore_v10000",
+      "calls": 1,
+      "seconds": 0.00010075100000000001
+    },
+    {
+      "name": "cudaGraphExecDestroy_v10000",
+      "calls": 1,
+      "seconds": 0.000032902000000000004
+    },
+    {
+      "name": "cuInit",
+      "calls": 7,
+      "seconds": 0.000009177
+    },
+    {
+      "name": "cudaGraphDestroy_v10000",
+      "calls": 1,
+      "seconds": 0.0000068790000000000005
+    },
+    {
+      "name": "cuModuleGetLoadingMode",
+      "calls": 6,
+      "seconds": 0.000003412
+    },
+    {
+      "name": "cudaStreamBeginCapture_v10000",
+      "calls": 1,
+      "seconds": 0.0000025
+    },
+    {
+      "name": "cudaStreamEndCapture_v10000",
+      "calls": 1,
+      "seconds": 0.00000215
+    },
+    {
+      "name": "cudaGetDriverEntryPoint_v11030",
+      "calls": 2,
+      "seconds": 0.000001782
+    },
+    {
+      "name": "cudaGraphGetNodes_v10000",
+      "calls": 1,
+      "seconds": 0.000001333
+    },
+    {
+      "name": "cudaStreamGetCaptureInfo_v2_v11030",
+      "calls": 1,
+      "seconds": 9.79e-7
+    }
+  ],
+  "vulkan_api": [
+    {
+      "name": "vkCreateDevice",
+      "calls": 1,
+      "seconds": 0.087513375
+    },
+    {
+      "name": "vkQueueSubmit2",
+      "calls": 5513,
+      "seconds": 0.037837708000000005
+    },
+    {
+      "name": "vkDestroyDevice",
+      "calls": 1,
+      "seconds": 0.018692459
+    },
+    {
+      "name": "vkCmdPipelineBarrier2",
+      "calls": 31117,
+      "seconds": 0.007252459
+    },
+    {
+      "name": "vkBeginCommandBuffer",
+      "calls": 5513,
+      "seconds": 0.007223874000000001
+    },
+    {
+      "name": "vkCmdBindPipeline",
+      "calls": 12210,
+      "seconds": 0.006957892
+    },
+    {
+      "name": "vkDeviceWaitIdle",
+      "calls": 27,
+      "seconds": 0.005958794000000001
+    },
+    {
+      "name": "vkAllocateMemory",
+      "calls": 90,
+      "seconds": 0.005415120000000001
+    },
+    {
+      "name": "vkFreeMemory",
+      "calls": 90,
+      "seconds": 0.005027496
+    },
+    {
+      "name": "vkEndCommandBuffer",
+      "calls": 5513,
+      "seconds": 0.004231713000000001
+    },
+    {
+      "name": "vkWaitForFences",
+      "calls": 5512,
+      "seconds": 0.004056767
+    },
+    {
+      "name": "vkGetMemoryFdKHR",
+      "calls": 64,
+      "seconds": 0.002917165
+    },
+    {
+      "name": "vkAllocateDescriptorSets",
+      "calls": 4,
+      "seconds": 0.0006957370000000001
+    },
+    {
+      "name": "vkCreateSemaphore",
+      "calls": 1,
+      "seconds": 0.000415293
+    },
+    {
+      "name": "vkCreateImage",
+      "calls": 78,
+      "seconds": 0.00032193600000000004
+    },
+    {
+      "name": "vkDestroySemaphore",
+      "calls": 1,
+      "seconds": 0.000313826
+    },
+    {
+      "name": "vkUpdateDescriptorSets",
+      "calls": 772,
+      "seconds": 0.00020830500000000002
+    },
+    {
+      "name": "vkCreateGraphicsPipelines",
+      "calls": 2,
+      "seconds": 0.00020225900000000002
+    },
+    {
+      "name": "vkCreateFence",
+      "calls": 1,
+      "seconds": 0.000180439
+    },
+    {
+      "name": "vkDestroyFence",
+      "calls": 1,
+      "seconds": 0.00012557600000000002
+    },
+    {
+      "name": "vkCreateImageView",
+      "calls": 78,
+      "seconds": 0.000103416
+    },
+    {
+      "name": "vkCmdBindDescriptorSets",
+      "calls": 49,
+      "seconds": 0.000059818
+    },
+    {
+      "name": "vkBindImageMemory",
+      "calls": 78,
+      "seconds": 0.000046794
+    },
+    {
+      "name": "vkGetSemaphoreFdKHR",
+      "calls": 1,
+      "seconds": 0.000042371000000000005
+    },
+    {
+      "name": "vkCreateBuffer",
+      "calls": 12,
+      "seconds": 0.000013753
+    },
+    {
+      "name": "vkCreateShaderModule",
+      "calls": 4,
+      "seconds": 0.000012788
+    },
+    {
+      "name": "vkAllocateCommandBuffers",
+      "calls": 1,
+      "seconds": 0.000006837000000000001
+    },
+    {
+      "name": "vkBindBufferMemory",
+      "calls": 12,
+      "seconds": 0.000002486
+    },
+    {
+      "name": "vkCreateCommandPool",
+      "calls": 1,
+      "seconds": 0.0000012310000000000002
+    },
+    {
+      "name": "Create Vulkan Queue",
+      "calls": 1,
+      "seconds": 1e-9
+    },
+    {
+      "name": "GpuMetrics",
+      "calls": 2,
+      "seconds": 0
+    }
+  ],
+  "vulkan_gpu": [
+    {
+      "name": "vkQueueSubmit",
+      "calls": 5513,
+      "seconds": 0.135525222
+    }
+  ],
+  "copies": [
+    {
+      "kind": 1,
+      "calls": 645,
+      "bytes": 23011827,
+      "seconds": 0.0018182080000000002
+    },
+    {
+      "kind": 2,
+      "calls": 15796,
+      "bytes": 13801444,
+      "seconds": 0.013454144000000001
+    },
+    {
+      "kind": 8,
+      "calls": 1180,
+      "bytes": 653972896,
+      "seconds": 0.003149601
+    }
+  ]
+}

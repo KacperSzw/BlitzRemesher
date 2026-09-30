@@ -5,7 +5,7 @@ import {hash,modelPayload} from './refactor-cycle.mjs';
 const [root,model,checkpoint,control]=process.argv.slice(2);
 if(!root||!model||!checkpoint||fs.existsSync(root))throw Error('measure-prepared.mjs FRESH_DIRECTORY MODEL CHECKPOINT');
 fs.mkdirSync(root,{recursive:true});
-const variants=control?[{name:'control',batch:1,backend:'reference',binary:control},{name:'serial',batch:1,backend:'reference'},{name:'batch2',batch:2,backend:'reference'},{name:'combined',batch:2,backend:'fused'}]:[{name:'serial',batch:1,backend:'reference'},{name:'batch2',batch:2,backend:'reference'},{name:'batch4',batch:4,backend:'reference'},{name:'combined',batch:4,backend:'fused'}];
+const variants=control==='native'?[{name:'batch2',batch:2,backend:'reference'},{name:'combined',batch:2,backend:'fused'}]:control?[{name:'control',batch:1,backend:'reference',binary:control},{name:'serial',batch:1,backend:'reference'},{name:'batch2',batch:2,backend:'reference'},{name:'combined',batch:2,backend:'fused'}]:[{name:'serial',batch:1,backend:'reference'},{name:'batch2',batch:2,backend:'reference'},{name:'batch4',batch:4,backend:'reference'},{name:'combined',batch:4,backend:'fused'}];
 const result={complete:false,score:null,storage:'fp32 control (packed quality failures measured separately)',binary_sha256:hash('build/neural/blitz-neural-cycle'),model_sha256:hash(model),checkpoint_sha256:hash(checkpoint),runs:[]};
 for(let repeat=0;repeat<5;repeat++)for(const v of repeat%2?[...variants].reverse():variants){
   const dir=root+'/'+v.name+'-'+repeat,fd=fs.openSync(dir+'.log','w');const start=performance.now();

@@ -3,7 +3,7 @@
 Implementation and local validation are complete. **The two-hour campaign has
 not been launched. Full packed training is not ready:** the moon-rock inference
 fixture still fails its unchanged visual gate, and the larger frozen preparation
-pilot contains visible failures. Remote validation is being prepared separately.
+pilot contains visible failures. Remote validation is packaged separately; advertised stock has repeatedly disappeared at the controller’s fresh availability check. No rental has started.
 
 ```mermaid
 flowchart TD
@@ -60,9 +60,41 @@ Batch 4 was slower and had higher memory pressure; it is available for profiling
 
 A representative default run splits into teacher preparation (~1.93 s), training
 including capture/checkpoints (~2.41 s), and final quality audits (~1.56 s).
+A subsequent coalesced gradient-reduction change passed the same numerical and
+resume checks. In five fresh alternating runs, native updates took 1.904 s versus
+2.281 s for reference (16.5% less); total cycles took 6.232 s versus 6.456 s
+(3.5% less). Shared GPU load changed between series, so compare within each
+series. The native backend remains optional.
+
 Detailed per-asset, per-phase, capture, checkpoint, transfer and allocation records
 are in [the raw comparison](evidence/prepared-local/timings.json). Final quality
 checking and optimizer execution now consume more time than teacher preparation.
+
+## GPU trace and remaining cost
+
+The final Nsight run used 25 kernels/update, down from the previous 42 (40.5%
+fewer). cuBLASLt implements some requested epilogues with auxiliary kernels;
+requesting an epilogue does not guarantee one kernel on this GPU. The trace
+hierarchy below is summed GPU activity, **not additive wall-clock phases**:
+
+```text
+CUDA training graph                         1.871 s / 12,288 updates
+  Activation derivative + bias gradients    0.391 s
+  Sampler, GEMMs, loss and Adam              1.480 s
+Other CUDA work                             1.676 s
+  Exact appearance                          1.062 s (63.4% of other CUDA)
+  Draw clipping                             0.107 s
+  Comparison initialization                 0.066 s
+  Sparse predicate initialization           0.054 s
+  Target unpacking                          0.044 s
+  Remaining topology, coverage, copies etc.  0.343 s
+Vulkan raster workload                      0.140 s
+```
+
+[Full trace aggregates](evidence/prepared-local/trace-final.json) contain every
+kernel, CUDA/Vulkan API group, transfer count and training subphase. Profiling
+adds overhead and the workstation is shared. Exact appearance and gradient
+reduction remain the clearest GPU bottlenecks.
 
 ## Correctness and preparation
 
@@ -95,10 +127,14 @@ checking and optimizer execution now consume more time than teacher preparation.
   include representation failures, exhausted search, final audit failures and
   memory limits. No failed asset was replaced. See
   [the complete initial pilot](evidence/prepared-local/pilot12-initial.json).
+  A final repeat also passed 39/48 and is retained in
+  [pilot12-final.json](evidence/prepared-local/pilot12-final.json); memory pressure
+  changed which resource-limited cases failed. Neither incomplete pilot has a SCORE.
 
 Local checks: 28/28 CTests; 13/13 ASan/UBSan CTests; focused Vulkan, GPU-action,
 replay and resident tests after the final logic changes; CUDA memcheck reports
-zero errors for reference and native resident update contracts. Tests cover
+zero errors for reference and native resident update contracts and the Vulkan
+draw/batch contracts. Tests cover
 candidate batches 1/2/4, invalid placements, cutoff pruning, source immutability,
 checkpoint freeze/restore, NaN rejection, counters above one million and overflow.
 

@@ -2,9 +2,10 @@
 #include "neural_json.hpp"
 #include "neural_data.hpp"
 #include "neural_cuda.cuh"
+#include "neural_audit_settings.hpp"
 namespace blitz::neural::training {
 inline void audit_model(const fs::path& manifest_path,const fs::path& model_path,const fs::path& settings_path,const fs::path& output){
-    if(fs::exists(output))throw std::invalid_argument("model audit output exists");auto manifest=read_json(manifest_path),config=read_json(settings_path);auto settings=settings_json(config);NeuralOptions options;options.raster_backend=NeuralRasterBackend::Vulkan;options.memory_mib=config.value("gpu_memory_mib",4096u);options.action_trials=8;options.action_batch=16;
+    if(fs::exists(output))throw std::invalid_argument("model audit output exists");auto manifest=read_json(manifest_path),config=read_json(settings_path);NeuralOptions options;options.raster_backend=NeuralRasterBackend::Vulkan;options.memory_mib=4096;options.action_trials=8;options.action_batch=16;auto settings=model_audit_settings(config,options);
     bool complete=true;json report={{"complete",false},{"score",nullptr},{"gpu_memory_mib",options.memory_mib},{"model_sha256",file_sha256(model_path)},{"manifest_sha256",file_sha256(manifest_path)},{"settings_sha256",file_sha256(settings_path)},{"rows",json::array()}};auto start=std::chrono::steady_clock::now();
     gpu::StreamScope stream;MemoryScope memory(options);AuditSession session(options);
     for(const auto& asset:manifest.at("assets")){

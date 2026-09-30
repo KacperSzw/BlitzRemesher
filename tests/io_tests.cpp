@@ -1,4 +1,5 @@
 #include "blitz/io.hpp"
+#include "../tools/neural_audit_settings.hpp"
 #include <fstream>
 #include <iostream>
 #include <bit>
@@ -82,6 +83,19 @@ int main() {
         std::ofstream(dir/"triangle.stl")<<"solid t\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid t\n";
         CHECK(load_mesh(dir/"triangle.stl").indices.size()==3);
         auto config=settings_json(Settings{});CHECK(settings_json(settings_json(config))==config);
+        for(uint32_t memory:{256u,8192u}) {
+            NeuralOptions options;options.memory_mib=memory;
+            auto visual=nlohmann::json{{"profile","coverage"},{"max_lod0_delta_px",2.5}};
+            CHECK(model_audit_settings(visual,options).max_lod0_delta_px==2.5&&options.memory_mib==memory);
+            auto input=visual;input["gpu_memory_mib"]=memory*2;
+            auto parsed=model_audit_settings(input,options);
+            CHECK(options.memory_mib==memory*2&&settings_json(parsed)==settings_json(settings_json(visual)));
+            CHECK(input.at("gpu_memory_mib")==memory*2);
+            input["typo_visual_setting"]=1;throws([&]{model_audit_settings(input,options);});
+            for(auto bad:{nlohmann::json(0),nlohmann::json(-1),nlohmann::json(2.5),nlohmann::json("512"),nlohmann::json(uint64_t(UINT32_MAX)+1)}) {
+                visual["gpu_memory_mib"]=bad;throws([&]{model_audit_settings(visual,options);});
+            }
+        }
         CHECK(!config.contains("output")&&!config.contains("chain"));
         throws([&]{settings_json(nlohmann::json{{"output","reuse"}});});
         auto legacy=settings_json(nlohmann::json{{"output","reuse"},{"chain","progressive"}},true);

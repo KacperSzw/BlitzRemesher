@@ -1,0 +1,45 @@
+✔ repeatable SSH calls recover transport failures, preserve command failures and stop retrying (5.849816ms)
+✔ recovery can shorten a rental to its original cutoff without extending the budget (0.375563ms)
+✔ status succeeds with optional state files absent and reports every available record (132.524179ms)
+✔ reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage (0.83222ms)
+✔ Pod request is pinned and forwards only the public key (1.784121ms)
+✔ actual allocation must satisfy hardware and rate caps (0.318645ms)
+✔ remote hardware validation requires a full device and a valid compatible driver (0.465726ms)
+✔ each selected profile binds quote, Pod allocation, native architecture and rate cap (0.827024ms)
+✔ lost create response is reconciled after restart without a second rental or deadline reset (1.286888ms)
+✔ ambiguous provisioning must not be reported as terminated when no response is visible yet (0.39927ms)
+✔ deadlines prevent creation; API errors retain storage and retryable termination (0.570171ms)
+✔ independent watchdog enforces setup and hard deadlines regardless of controller progress (0.171975ms)
+✔ a definitive provisioning rejection cleans up the new empty volume (0.321247ms)
+✔ lost volume response is reconciled and cleaned without another volume create (0.269392ms)
+✔ REST handles empty deletions, missing resources, errors and cursor pagination (22.718042ms)
+✔ expanded selections preserve original assets and accept multiple valid group counts (1.114402ms)
+✔ family leakage, copied geometry, wrong splits, changed originals and invalid sources fail (1.285626ms)
+Frozen pilot selection contracts passed
+✔ tests/neural_pilot.mjs (115.777862ms)
+✔ validation and forensic rentals share the current pinned grant and reserve (1.652022ms)
+✔ prepared plan reaches the real learner without inheriting old pilot settings (0.992494ms)
+✔ preflight rejects incomplete selected work and requires matched complete model audits (112.355933ms)
+✔ hardware validation consumes the existing grant and includes previous validation rentals (5.619844ms)
+✔ new authorization includes historical ledger, future rentals, rate, storage and reserve (1.371138ms)
+✔ a complete learning window cannot be silently shortened after validation (0.381273ms)
+✔ refresh identities remain training-only and include preceding LOD and 128px conditions (0.401713ms)
+✔ model comparison includes all weights but excludes metadata and its checksum (1.328162ms)
+✔ learning cycle excludes incomplete labels, carries optimizer state and audits the final model (2503.955834ms)
+✔ the requested full window continues past stalled audits and the step cap (1.031308ms)
+✔ training gets its requested window after setup within the reserved absolute cutoff (0.379718ms)
+✔ scratch never passes an initializer; warm start remains explicit (5.192969ms)
+✔ calibration selects useful throughput among restored models with sustained GPU evidence (0.573913ms)
+✔ utilization evidence needs measured time and excludes audit activity (0.894617ms)
+✔ resource limits identify the asset immediately and retain the unscored summary (0.312773ms)
+✔ deadline progress resumes; stagnation stops; a complete audit finishes (0.168172ms)
+✔ a processed batch containing bake exceptions cannot pass readiness (0.155672ms)
+✔ larger policies require matching successful audits for every independent seed (11.725982ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2621.30523

@@ -62,7 +62,13 @@ async function prepare(){
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');
   }
-  if(refactor)await copy(root+'/runs/neural/runpod-gpu-refactor-01/final-model.blzn','initial-model.blzn','9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185');
+  if(refactor){
+    if(read(root+'/research/neural/next-training.json').launch!==true)throw new Error('Next training is not authorized');
+    for(const name of ['training','validation'])for(const asset of read(root+'/research/neural/corpus-v2/'+name+'.json').assets)for(const file of asset.files)auditFiles.set(file.path,file.sha256);
+    await copy(root+'/runs/neural/runpod-gpu-refactor-01/final-model.blzn','initial-model.blzn','9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185');
+    const source=process.env.BLITZ_REPLAY_CYCLE;if(!source)throw new Error('Previous collected cycle is required for the model comparison');const journal=read(source+'/latest.json');
+    await copy(source+'/'+relative(journal.checkpoint)+'/model.blzn','previous-model.blzn');
+  }
   if(pipeline){
     const source=process.env.BLITZ_REPLAY_CYCLE;if(!source)throw new Error('BLITZ_REPLAY_CYCLE must identify the collected run');
     const latest=read(source+'/latest.json');
@@ -207,7 +213,7 @@ async function control(){
       if(phase==='finished'){rental.commit({phase:'collecting'});await collect(endpoint,s.deadline_ms-15000);break;}
       if(phase==='training'&&(s.experiment?.startsWith('action-v2')||s.experiment==='gpu-refactor')){
         const live=await retrySsh(()=>remote(endpoint,'if [ -f /workspace/results/phase.json ]; then cat /workspace/results/phase.json; else echo null; fi'));
-        const p=JSON.parse(live);if(p&&['validation','preparation','training','audit','finished','coverage-contracts','matched-coverage-benchmark','coverage-curriculum-validation','resident-learning-cycle'].includes(p.phase)&&p.phase!==s.phase)rental.commit({phase:p.phase});
+        const p=JSON.parse(live);if(p&&['validation','preparation','training','audit','finished','coverage-contracts','matched-coverage-benchmark','coverage-curriculum-validation','expanded-training-preflight','resident-learning-cycle','final-validation-comparison'].includes(p.phase)&&p.phase!==s.phase)rental.commit({phase:p.phase});
       }
       if(!s.setup_complete&&Date.now()>=s.setup_deadline_ms)throw new Error('Setup exceeded its bounded deadline');
       await sleep(10000);

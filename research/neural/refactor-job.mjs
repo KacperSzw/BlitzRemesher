@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
 import {validateCoverage,coverageArchitecture} from './coverage-validation.mjs';
-import {persistentLearningCycle} from './resident-cycle.mjs';
+import {persistentLearningCycle,validatePreparedLearning} from './resident-cycle.mjs';
 const [setup,latest,minutes]=process.argv.slice(2).map(Number),started=Date.now(),results='/workspace/results',root=results+'/gpu-refactor';
 if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||minutes!==150)throw new Error('Invalid refactor rental deadline');
-const deadline=Math.min(latest,started+minutes*60000);if(deadline-started<130*60000+15000)throw new Error('Full learning plus finalization no longer fit');
+const deadline=Math.min(latest,started+minutes*60000);if(deadline-started<134*60000+15000)throw new Error('Full learning plus finalization no longer fit');
 fs.mkdirSync(root,{recursive:true});write(results+'/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
-let phase='validation',active,cancelled=false,activeDeadline=Math.min(started+20*60000,deadline-130*60000-15000);
+let phase='validation',active,cancelled=false,activeDeadline=Math.min(started+16*60000,deadline-134*60000-15000);
 const setPhase=value=>{phase=value;write(results+'/phase.json',{phase,at:Date.now()});};setPhase(phase);
 const terminate=child=>{if(child&&!child.exitCode)try{process.kill(-child.pid,'SIGTERM');}catch(e){if(e.code!=='ESRCH')throw e;}};
 for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{cancelled=true;terminate(active);});
@@ -31,12 +31,17 @@ const result={started,deadline,complete:false,validation_passed:false,quality_pr
 try{
   await execute('compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-action-gpu-tests'],root+'/memcheck.log',2);
   const ctx={root,execute,phase:setPhase,latest:deadline},validation=await validateCoverage(ctx);
-  result.validation_passed=true;result.architecture_written_at=Date.now();
+  result.preflight=await validatePreparedLearning(ctx,validation);result.validation_passed=true;result.architecture_written_at=Date.now();
   fs.writeFileSync(root+'/ARCHITECTURE.md',coverageArchitecture(validation));
 
   activeDeadline=deadline;
   result.cycle=await persistentLearningCycle(ctx,validation);result.complete=result.cycle.complete;
   if(!result.complete)throw new Error('Learning cycle did not meet completion contracts');
+  setPhase('final-validation-comparison');
+  const finalAudit=root+'/final-model-audit.json';
+  await execute('blitz-neural-cycle',['--audit-model',read('research/neural/next-training.json').validation_selection,root+'/resident-cycle/'+result.cycle.checkpoint+'/model.blzn',result.preflight.settings,finalAudit],root+'/final-model-audit.log',4);
+  result.final_audit=read(finalAudit);result.complete=result.complete&&result.final_audit.complete;
+  if(!result.complete)throw new Error('Final model comparison incomplete');
   if(monitorError)throw new Error(monitorError);
-}catch(error){result.error=String(error);process.exitCode=1;}
+}catch(error){result.complete=false;result.error=String(error);process.exitCode=1;}
 finally{result.finished=Date.now();if(fs.existsSync(root+'/cycle.json'))result.cycle=read(root+'/cycle.json');write(root+'/result.json',result);write(results+'/job.json',{code:process.exitCode??0,experiment:'gpu-refactor',result:root+'/result.json'});setPhase('finished');monitor.kill('SIGTERM');telemetry.end();}

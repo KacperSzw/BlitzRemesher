@@ -21,5 +21,5 @@ assert.ok(pilotReady(pilot));for(const field of ['complete','reference_confirmed
 for(const status of ['resource_failure','unknown_audit','cancelled','representation_failure']){const invalid=structuredClone(pilot);invalid.conditions[0].result.status=status;assert.ok(!pilotReady(invalid));}
 const empty=structuredClone(pilot);for(const row of empty.conditions)if(row.result.category==='stress')row.result.states=0;assert.ok(!pilotReady(empty));
 const {pretrainingBudget,pretrainingAuthorization}=await import('../research/neural/action-budget.mjs');
-const base=pretrainingAuthorization.baseline_usd;for(const rate of [.6,1.1,2.1]){const quote=pretrainingBudget({billed:base-1,rate,additionalAccrued:base-2.75});assert.ok(quote.maximum_total_usd<=base+8);assert.equal(quote.maximum_rental_usd,3*(rate+.01));}
-assert.throws(()=>pretrainingBudget({billed:base+1,rate:2.1,additionalAccrued:base-2.75}),/cap/);assert.throws(()=>pretrainingBudget({billed:base,rate:2.11,additionalAccrued:base-2.75}),/180-minute/);
+const base=pretrainingAuthorization.baseline_usd;for(const rate of [.6,1.1,2.1]){const quote=pretrainingBudget({billed:base-1,rate,additionalAccrued:base-2.75});assert.ok(quote.maximum_total_usd<=base+pretrainingAuthorization.additional_usd);assert.equal(quote.maximum_rental_usd,3*(rate+.01));}
+assert.throws(()=>pretrainingBudget({billed:base+pretrainingAuthorization.additional_usd,rate:2.1,additionalAccrued:base-2.75}),/cap/);assert.throws(()=>pretrainingBudget({billed:base,rate:2.11,additionalAccrued:base-2.75}),/180-minute/);

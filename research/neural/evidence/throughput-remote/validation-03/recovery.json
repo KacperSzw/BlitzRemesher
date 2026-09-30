@@ -1,0 +1,35 @@
+{
+  "complete": true,
+  "score": null,
+  "rows": [
+    {
+      "name": "resumed",
+      "interrupt": true,
+      "code": 2,
+      "signalled": true,
+      "seconds": 2.398
+    },
+    {
+      "name": "resumed",
+      "interrupt": false,
+      "code": 0,
+      "signalled": false,
+      "seconds": 8.725
+    },
+    {
+      "name": "continuous",
+      "interrupt": false,
+      "code": 0,
+      "signalled": false,
+      "seconds": 9.378
+    }
+  ],
+  "interruption": {
+    "condition": 2,
+    "step": "checkpoints/step-8576"
+  },
+  "step": 98304,
+  "fresh_states": 48,
+  "policy_identical": true,
+  "labels_identical": true
+}

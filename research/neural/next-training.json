@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "launch": false,
-  "readiness": "pending final remote validation and comparison",
+  "launch": true,
+  "readiness": "authorized; remote large-mesh model audits and selected-configuration preflight must pass before starting",
   "duration_minutes": 120,
   "finalize_minutes": 10,
   "corpus": "research/neural/corpus-v2/corpus.json",
@@ -13,15 +13,39 @@
   "storage": "packed",
   "states_per_episode": 16,
   "updates_per_shard": 128,
-  "updates_selection": "provisional; compare 32,128,512,2048 with fresh-state and quality metrics",
+  "updates_selection": "128 updates per fresh shard; retain the configuration used in sustained validation. Wider/replay ablations deferred.",
   "hidden_width": 64,
-  "width_quality_gate": {"validation_seeds":[101,211,307],"minimum_triangle_reduction":0.05,"maximum_generation_time_ratio":2},
-  "workers": "choose from final L40S timings; maximum 3",
-  "candidate_batch": "choose from final L40S timings; maximum 8",
+  "width_quality_gate": {
+    "validation_seeds": [
+      101,
+      211,
+      307
+    ],
+    "minimum_triangle_reduction": 0.05,
+    "maximum_generation_time_ratio": 2
+  },
+  "workers": 2,
+  "candidate_batch": 4,
   "checkpoint_seconds": 60,
-  "episode_start_mix": {"source":0.5,"audited_policy_trajectory":0.25,"audited_simplifier":0.25},
-  "retained_fraction_targets": [1,0.75,0.5,0.25],
+  "episode_start_mix": {
+    "source": 0.5,
+    "audited_policy_trajectory": 0.25,
+    "audited_simplifier": 0.25
+  },
+  "retained_fraction_targets": [
+    1,
+    0.75,
+    0.5,
+    0.25
+  ],
   "missing_or_rejected_seed": "use source and record the unavailable band",
   "source_reference": "original immutable FP32 LOD0",
-  "score_partial_runs": false
+  "score_partial_runs": false,
+  "authorization": "User requested completion of validation and two-hour training on 2026-09-30; same additional grant increased to $10.",
+  "gpu_memory_mib": 16384,
+  "update_backend": "fused",
+  "configuration_reason": "Two workers/four lanes passed sustained learning and remained among the fastest configurations in both remote matrices. Small differences between four and eight lanes do not establish the best schedule for the expanded corpus.",
+  "initialization": "Verified saved initializer 9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185; fresh Adam state; previous interrupted checkpoint audited separately.",
+  "validation_evidence": "research/neural/evidence/throughput-remote/validation-03",
+  "final_validation": "Compare exact starting and final models on all 20 validation groups with identical bounded generation budgets; no release holdout."
 }

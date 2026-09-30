@@ -4,7 +4,10 @@ The accepted next-run plan targets 100 independent training source groups and
 20 validation groups, packed preparation, deeper audited training states,
 concurrent teacher/learner work and time-based checkpoints. Core geometry and
 network arithmetic remain FP32; visual and numerical limits are unchanged.
-The next two-hour run must remain unlaunched during this preparation.
+On 2026-09-30 the user authorized completing validation and then starting a
+two-hour full learning cycle, and increased the same additional grant to $10.
+`next-training.json` records the selected settings. The cloud job still requires
+its preflight gates to pass before starting the 120-minute learning clock.
 
 ## Previous run and first gate
 
@@ -42,7 +45,7 @@ finite, same-shape, maximum absolute difference <= 2e-4 contract.
 - Run local correctness, fixed-work comparisons and validation-only remote proof.
 - Publish timings, bottlenecks, selected configuration and next-run readiness.
 
-`pipeline-validation` rentals use the current pinned $8 grant, including prior
+`pipeline-validation` rentals use the current pinned grant, including prior
 attempts and a $1 reserve. Their entry point cannot launch the long training run.
 The first forensic rental is capped at 35 minutes including setup/collection;
 final pipeline validation is capped at 60 minutes.
@@ -208,3 +211,67 @@ seconds across workers. The next large throughput opportunity is batching
 candidate/camera work to reduce host readbacks and interop handoffs. Increasing
 network width does not address those waits. Full raw evidence is retained in
 the checksum-verified archive referenced by `validation-02/collection.json`.
+
+## Final preparation and authorized launch
+
+The third L40S validation (`010a4ee`) passed 32/32 CTests, Vulkan validation,
+optimizer and action-kernel Compute Sanitizer checks, cancellation accuracy,
+16,384-update checkpoint continuation, and exact interrupted/resumed recovery.
+All 100 training conditions qualified again (95 fresh states, five valid empty
+conditions). The new inference tile-size fixture passed, including one-row tiles,
+placement/reuse, learned and geometric rankings. The archived run remains marked
+incomplete: both final model-audit invocations rejected the runner-only memory
+setting before any drawing. The parser now extracts that field before parsing
+visual settings; CPU and ASan/UBSan fixtures protect range validation, immutable
+input, unchanged visual settings, and rejection of unrelated unknown fields.
+
+The unprofiled sustained test produced 4,227 fresh states and 33,920 updates in
+65.180 seconds, including startup and final audits (60-second learning window).
+It published six verified checkpoints. One-second telemetry measured 79.85%
+mean GPU activity, 91% peak, and 1,076 MiB maximum memory during that phase.
+Activity is not percent of theoretical arithmetic throughput. The exact starting
+policy versus the final policy produced 375 versus 310 triangles for shelves
+(source 524), and 3,048 versus 3,048 for the rock (source 3,304), with identical
+bounded coverage audit settings. These two assets do not establish generalization
+or shading quality. Raw evidence is in `evidence/throughput-remote/validation-03`;
+its pod and volume are deleted after checksum-verified collection.
+
+| Additive learner wall time | Seconds |
+|---|---:|
+| Wait for audited teacher examples | 53.838 |
+| Training windows | 5.081 |
+| Final quality audits | 4.577 |
+| Startup/finalization remainder | 1.683 |
+
+Optimizer execution within the training windows took 4.340 seconds, about
+128 microseconds per update. Across two overlapping teachers, candidate audits
+took 63.454 seconds out of 99.461 seconds of teacher work. Teacher durations
+must not be added to learner wall time. Candidate construction took 3.831 s,
+features/proposals 3.831 s, packing/baseline 5.832 s, commits 1.697 s, state setup
+0.138 s, load/session 0.014 s, and other preparation 16.529 s. The remaining
+4.134 s covers worker completion/publication overhead.
+
+[Interactive timing hierarchy and architecture](viewer/throughput.html) contains
+both local and remote fixed-work matrices. The latest L40S matrix produced
+identical labels for all configurations: 96 states and 768 updates took 2.935 s
+with one worker/one lane, 2.074 s with two workers/four lanes, and 2.021 s with two
+workers/eight lanes. Rankings changed slightly across rentals, so training retains
+the sustained-tested two-worker/four-lane configuration. Width 64, 16 states per
+episode, 128 updates per shard, compact data and packed meshes remain selected.
+No wider-policy quality claim is made.
+
+The launch bundle includes all 100 training and 20 validation groups. Before the
+long run it executes a full curriculum pass with the selected settings and
+repeats the previous-checkpoint/initializer audits at matching workspace caps.
+A failure leaves the long run unstarted. Learning then receives its own full
+120 minutes, with 60-second checkpoints, half-hour coverage/shading diagnostics,
+and extra finalization time. A final 20-group audit compares the saved initializer
+and final policy with identical bounded generation settings. Initial weights
+come from the verified saved initializer; Adam is fresh. The interrupted older
+checkpoint remains a separate comparison rather than an implicit resume.
+
+The next major optimization remains batching candidate/camera audits to reduce
+CPU readbacks and CUDA/Vulkan handoffs. Optimizer-only work is roughly 6.7% of
+this measured wall time, so increasing network width or tuning the optimizer
+cannot remove the dominant wait for examples. Further optimization does not
+need to delay the authorized training once its remaining preflight passes.

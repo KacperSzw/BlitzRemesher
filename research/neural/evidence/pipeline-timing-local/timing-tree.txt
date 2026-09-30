@@ -1,0 +1,194 @@
+Complete local learning pass  40.226 s
+├─ Teacher processes · 6 conditions  21.426 s
+│  ├─ Bench · 32px  1.991 s
+│  │  ├─ Teacher loop, final confirmation and dataset export  825.085 ms
+│  │  └─ Process / loading / resident setup / teardown remainder  1.166 s
+│  ├─ Sweet potato · 64px  1.165 s
+│  │  ├─ Teacher loop, final confirmation and dataset export  905.919 ms
+│  │  └─ Process / loading / resident setup / teardown remainder  259.360 ms
+│  ├─ Boulder · 128px  3.294 s
+│  │  ├─ Teacher loop, final confirmation and dataset export  3.016 s
+│  │  └─ Process / loading / resident setup / teardown remainder  277.868 ms
+│  ├─ Bench · 128px · 2 preceding states at 256px  7.761 s
+│  │  ├─ Teacher loop, final confirmation and dataset export  7.495 s
+│  │  └─ Process / loading / resident setup / teardown remainder  265.832 ms
+│  ├─ Sweet potato · 128px · 2 preceding states at 256px  2.939 s
+│  │  ├─ Teacher loop, final confirmation and dataset export  2.655 s
+│  │  └─ Process / loading / resident setup / teardown remainder  284.249 ms
+│  └─ Boulder · 64px · 2 preceding states at 128px  4.275 s
+│     ├─ Teacher loop, final confirmation and dataset export  3.998 s
+│     └─ Process / loading / resident setup / teardown remainder  277.424 ms
+├─ Optimizer processes · 6 segments  11.214 s
+│  ├─ Process / loading / packing / upload / restore / teardown remainder  5.143 s
+│  ├─ CUDA graph warmup and capture  358.308 ms
+│  ├─ Optimizer update windows · 12,288 updates  4.657 s
+│  ├─ Checkpoint / export / native and FP64 checks / restore verification  1.042 s
+│  └─ Loop logging / remaining bookkeeping  14.383 ms
+├─ Quality diagnostic · constant and learned  7.033 s
+│  ├─ constant ranking  3.952 s
+│  │  ├─ Shelves  1.104 s
+│  │  │  ├─ Mesh loading  115.651 µs
+│  │  │  ├─ LOD generation  1.103 s
+│  │  │  │  ├─ Encode / resident setup  117.683 ms
+│  │  │  │  ├─ Ranking / inference  15.108 ms
+│  │  │  │  ├─ Topology / decoding excluding nested audit and inference  12.150 ms
+│  │  │  │  ├─ Candidate / chain GPU audits  941.537 ms
+│  │  │  │  ├─ Final GPU confirmation  56.312 µs
+│  │  │  │  └─ Other / uninstrumented remainder  16.542 ms
+│  │  │  ├─ Mesh export  353.841 µs
+│  │  │  └─ Other / uninstrumented remainder  353.191 µs
+│  │  ├─ Moon rock  2.706 s
+│  │  │  ├─ Mesh loading  194.882 µs
+│  │  │  ├─ LOD generation  2.704 s
+│  │  │  │  ├─ Encode / resident setup  293.687 µs
+│  │  │  │  ├─ Ranking / inference  11.226 ms
+│  │  │  │  ├─ Topology / decoding excluding nested audit and inference  26.579 ms
+│  │  │  │  ├─ Candidate / chain GPU audits  2.526 s
+│  │  │  │  ├─ Final GPU confirmation  119.788 ms
+│  │  │  │  └─ Other / uninstrumented remainder  19.729 ms
+│  │  │  ├─ Mesh export  832.176 µs
+│  │  │  └─ Other / uninstrumented remainder  1.142 ms
+│  │  └─ Other / uninstrumented remainder  141.835 ms
+│  └─ learned ranking  3.081 s
+│     ├─ Shelves  1.462 s
+│     │  ├─ Mesh loading  113.609 µs
+│     │  ├─ LOD generation  1.461 s
+│     │  │  ├─ Encode / resident setup  178.033 ms
+│     │  │  ├─ Ranking / inference  11.094 ms
+│     │  │  ├─ Topology / decoding excluding nested audit and inference  12.444 ms
+│     │  │  ├─ Candidate / chain GPU audits  1.245 s
+│     │  │  ├─ Final GPU confirmation  53.737 µs
+│     │  │  └─ Other / uninstrumented remainder  14.209 ms
+│     │  ├─ Mesh export  367.381 µs
+│     │  └─ Other / uninstrumented remainder  356.265 µs
+│     ├─ Moon rock  1.483 s
+│     │  ├─ Mesh loading  192.604 µs
+│     │  ├─ LOD generation  1.481 s
+│     │  │  ├─ Encode / resident setup  297.272 µs
+│     │  │  ├─ Ranking / inference  11.184 ms
+│     │  │  ├─ Topology / decoding excluding nested audit and inference  13.160 ms
+│     │  │  ├─ Candidate / chain GPU audits  1.440 s
+│     │  │  ├─ Final GPU confirmation  188.867 µs
+│     │  │  └─ Other / uninstrumented remainder  15.928 ms
+│     │  ├─ Mesh export  729.271 µs
+│     │  └─ Other / uninstrumented remainder  1.099 ms
+│     └─ Other / uninstrumented remainder  135.726 ms
+└─ Controller / GPU telemetry / reports  553.611 ms
+
+Teacher GPU kernel time · separate bench 256 → 128px replay  6.006 s
+├─ Appearance / normal and attribute matching  2.290 s
+│  └─ appearance  2.290 s
+├─ Coverage distance and summary  2.199 s
+│  ├─ edt  1.470 s
+│  ├─ edt_binary  442.457 ms
+│  ├─ initialize  185.856 ms
+│  ├─ directed_coverage  63.696 ms
+│  └─ transpose  36.739 ms
+├─ Raster visibility and attributes  1.151 s
+│  └─ raster  1.151 s
+├─ Projection / triangle setup / bins / dirty tiles  163.032 ms
+│  ├─ triangles  80.863 ms
+│  ├─ dirty_tiles  32.165 ms
+│  ├─ project  25.202 ms
+│  ├─ scatter  20.591 ms
+│  └─ ranges  4.211 ms
+├─ CUB sorting / scans / compaction across raster and topology  170.227 ms
+│  ├─ DeviceRadixSortOnesweepKernel  136.073 ms
+│  ├─ DeviceRadixSortHistogramKernel  17.016 ms
+│  ├─ DeviceScanKernel  8.371 ms
+│  ├─ DeviceRadixSortExclusiveSumKernel  4.114 ms
+│  ├─ DeviceScanInitKernel  3.847 ms
+│  ├─ DeviceRadixSortSingleTileKernel  429.652 µs
+│  ├─ DeviceRadixSortSingleTileKernel  179.528 µs
+│  ├─ DeviceScanKernel  77.029 µs
+│  ├─ DeviceReduceByKeyKernel  64.228 µs
+│  ├─ DeviceSelectSweepKernel  25.922 µs
+│  ├─ DeviceCompactInitKernel  19.714 µs
+│  └─ DeviceCompactInitKernel  10.080 µs
+└─ Placement / topology / features / policy  33.351 ms
+   ├─ place_vertices  13.602 ms
+   ├─ validate_placement  6.948 ms
+   ├─ copy_trial  1.943 ms
+   ├─ enumerate  1.862 ms
+   ├─ keep_faces  1.595 ms
+   ├─ apply_map  1.453 ms
+   ├─ vertex_features  1.425 ms
+   ├─ assign_placement  1.161 ms
+   ├─ teacher_placements  1.025 ms
+   ├─ connected_fans  599.741 µs
+   ├─ rank_actions  523.418 µs
+   ├─ fill_action_features  429.142 µs
+   ├─ sort_lists  278.956 µs
+   ├─ single_edit  124.419 µs
+   ├─ void gemmSN_TN_kernel  60.193 µs
+   ├─ decode_placements  56.483 µs
+   ├─ edge_keys  37.344 µs
+   ├─ scatter_faces  36.640 µs
+   ├─ activate  36.514 µs
+   ├─ scatter_edges  36.097 µs
+   ├─ edge_degrees  35.970 µs
+   ├─ teacher_selection  16.097 µs
+   ├─ lookup_vertices  15.265 µs
+   ├─ copy_commit  15.072 µs
+   ├─ teacher_records  12.001 µs
+   ├─ insert_vertices  11.104 µs
+   ├─ commit_faces  9.952 µs
+   └─ mark_seams  2.528 µs
+
+One optimizer update · mean active GPU kernel time  358.079 µs
+├─ Sample states and gather packed features  33.913 µs
+│  ├─ Kernel 1: select_states  3.095 µs
+│  └─ Kernel 2: gather_packed  30.818 µs
+├─ Clear parameter gradients  9.812 µs
+│  ├─ Kernel 3: vectorized_elementwise_kernel  1.344 µs
+│  ├─ Kernel 4: vectorized_elementwise_kernel  1.339 µs
+│  ├─ Kernel 5: vectorized_elementwise_kernel  1.643 µs
+│  ├─ Kernel 6: vectorized_elementwise_kernel  1.532 µs
+│  ├─ Kernel 7: vectorized_elementwise_kernel  1.428 µs
+│  └─ Kernel 8: vectorized_elementwise_kernel  2.525 µs
+├─ Forward MLP · 128 → 64 → 64 → 12  105.433 µs
+│  ├─ Layer 1 · matrix / bias / ReLU  46.336 µs
+│  │  ├─ Kernel 9: volta_sgemm_64x64_tn  30.285 µs
+│  │  ├─ Kernel 10: elementwise_kernel  10.759 µs
+│  │  └─ Kernel 11: vectorized_elementwise_kernel  5.293 µs
+│  ├─ Layer 2 · matrix / bias / ReLU  37.096 µs
+│  │  ├─ Kernel 12: volta_sgemm_64x64_tn  20.961 µs
+│  │  ├─ Kernel 13: elementwise_kernel  9.717 µs
+│  │  └─ Kernel 14: vectorized_elementwise_kernel  6.417 µs
+│  └─ Output layer · matrix / bias  22.001 µs
+│     ├─ Kernel 15: volta_sgemm_32x128_tn  14.270 µs
+│     └─ Kernel 16: elementwise_kernel  7.731 µs
+├─ Masked placement loss and output derivative  12.574 µs
+│  ├─ Kernel 17: placement_denominators  4.491 µs
+│  ├─ Kernel 18: placement_gradient  5.985 µs
+│  └─ Kernel 19: sum_loss  2.098 µs
+├─ Backpropagation  178.365 µs
+│  ├─ Output layer and hidden activation gradient  55.396 µs
+│  │  ├─ Kernel 20: reduce_kernel  15.545 µs
+│  │  ├─ Kernel 21: vectorized_elementwise_kernel  1.657 µs
+│  │  ├─ Kernel 22: volta_sgemm_64x32_sliced1x4_nt  9.092 µs
+│  │  ├─ Kernel 23: void cublasLt::splitKreduce_kernel  3.415 µs
+│  │  ├─ Kernel 24: volta_sgemm_32x128_nn  9.761 µs
+│  │  ├─ Kernel 25: vectorized_elementwise_kernel  2.287 µs
+│  │  └─ Kernel 26: vectorized_elementwise_kernel  13.638 µs
+│  ├─ Hidden layer and input activation gradient  68.523 µs
+│  │  ├─ Kernel 27: reduce_kernel  10.819 µs
+│  │  ├─ Kernel 28: vectorized_elementwise_kernel  2.120 µs
+│  │  ├─ Kernel 29: volta_sgemm_64x32_sliced1x4_nt  15.772 µs
+│  │  ├─ Kernel 30: void cublasLt::splitKreduce_kernel  3.182 µs
+│  │  ├─ Kernel 31: volta_sgemm_64x64_nn  18.698 µs
+│  │  ├─ Kernel 32: vectorized_elementwise_kernel  1.796 µs
+│  │  └─ Kernel 33: vectorized_elementwise_kernel  16.136 µs
+│  └─ First layer parameter gradients  54.447 µs
+│     ├─ Kernel 34: reduce_kernel  12.188 µs
+│     ├─ Kernel 35: vectorized_elementwise_kernel  1.606 µs
+│     ├─ Kernel 36: volta_sgemm_64x32_sliced1x4_nt  32.224 µs
+│     ├─ Kernel 37: void cublasLt::splitKreduce_kernel  5.343 µs
+│     └─ Kernel 38: vectorized_elementwise_kernel  3.085 µs
+├─ Gradient norm and clipping scale  11.182 µs
+│  ├─ Kernel 39: norm_parts  3.910 µs
+│  └─ Kernel 40: norm_finish  7.272 µs
+├─ AdamW parameters and moments  5.350 µs
+│  └─ Kernel 41: adam  5.350 µs
+└─ Update counters  1.449 µs
+   └─ Kernel 42: finish  1.449 µs

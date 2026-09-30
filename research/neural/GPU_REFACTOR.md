@@ -20,6 +20,142 @@ flowchart LR
     A --> E["CPU: schedule, checkpoint, export"]
 ```
 
+## Current local FP32 pipeline timings (2026-09-30)
+
+A fresh complete local pass on **RTX 2080 8 GiB**, driver 595.71.05,
+revision `af30b55`, took **40.226 s**. Other applications occupied about
+2.4 GiB before the pass. Production positions, raster attributes and training
+remain FP32; existing FP64 arithmetic in the exact audit remains unchanged.
+
+The pass generates eight target states in each of the six existing curriculum
+conditions, plus six preceding-LOD states: **54 states and 12,288 updates**.
+Each shard is followed by 2,048 updates, batch 512, carrying AdamW state from
+the previous checkpoint. One constant/learned quality diagnostic follows all
+six conditions. The native teacher workspace cap is 1,024 MiB. This is one
+bounded timing pass, not a quality score, confidence interval, or measurement
+of long-run time shares: the two-hour controller normally audits every 30
+minutes and grows its per-condition state budget up to 64.
+
+Open the **[expandable timing hierarchy](evidence/pipeline-timing-local/timings.html)**
+for every recorded stage, per-asset details, and all 42 captured update kernels.
+The [plain text tree](evidence/pipeline-timing-local/timing-tree.txt),
+[raw cycle report](evidence/pipeline-timing-local/cycle-report.json),
+[derived measurements](evidence/pipeline-timing-local/timings.json), and
+[trace/input hashes](evidence/pipeline-timing-local/provenance.json) accompany it.
+
+```mermaid
+flowchart TD
+    C["Complete local pass: 40.226 s"]
+    C --> T["Teacher processes: 21.426 s · 53.3%"]
+    T --> TC["Teacher loops + confirmation + export: 18.895 s"]
+    T --> TS["Startup / setup / teardown remainder: 2.530 s"]
+    C --> U["Trainer processes: 11.214 s · 27.9%"]
+    U --> US["Startup / load / restore / teardown remainder: 5.143 s"]
+    U --> UC["Graph warmup + capture: 0.358 s"]
+    U --> UU["12,288 updates: 4.657 s · 379 µs each"]
+    U --> UK["24 checkpoint/export/restore checks: 1.042 s"]
+    U --> UL["Other loop bookkeeping: 0.014 s"]
+    C --> Q["Quality diagnostic: 7.033 s · 17.5%"]
+    Q --> QC["Constant: 3.952 s"]
+    Q --> QL["Learned: 3.081 s"]
+    C --> O["Controller + telemetry + reporting: 0.554 s"]
+```
+
+All values above are additive wall-time measurements or explicitly calculated
+remainders. Setup includes loading, packing, transfers, CUDA initialization,
+checkpoint restoration and teardown; those components were not separately
+instrumented. Neither a remainder nor a host synchronization interval is a
+measurement of idle GPU time.
+
+| Teacher condition | Source triangles | States | Teacher core | Whole process |
+| --- | ---: | ---: | ---: | ---: |
+| Bench, 32px | 630 | 8 | 0.825 s | 1.991 s |
+| Sweet potato, 64px | 2,042 | 8 | 0.906 s | 1.165 s |
+| Boulder, 128px | 59,066 | 8 | 3.016 s | 3.294 s |
+| Bench, 256px preceding → 128px target | 630 | 2 + 8 | 7.495 s | 7.761 s |
+| Sweet potato, 256px preceding → 128px target | 2,042 | 2 + 8 | 2.655 s | 2.939 s |
+| Boulder, 128px preceding → 64px target | 59,066 | 2 + 8 | 3.998 s | 4.275 s |
+
+The slowest condition and final optimizer segment were replayed separately
+under Nsight Systems (`cuda-graph-trace=node`). Both replayed teacher payload
+and final parameter payload match the unprofiled run exactly. Their GPU
+durations below are **separate measurements**, not additional children of the
+40.226 s pass. No production timers or synchronization were added.
+
+```text
+Bench 256→128px teacher replay: 6,005.85 ms summed GPU kernel time
+├─ Appearance / normal and attribute matching        2,289.54 ms  38.1%
+├─ Coverage distance and summary                    2,199.06 ms  36.6%
+│  ├─ General distance transform                    1,470.31 ms
+│  ├─ Binary distance transform                       442.46 ms
+│  ├─ Initialize / normal summary                     185.86 ms
+│  ├─ Directed coverage reduction                      63.70 ms
+│  └─ Transposes                                       36.74 ms
+├─ Raster visibility and attributes                 1,150.65 ms  19.2%
+├─ Sorting / scans / compaction                       170.23 ms   2.8%
+├─ Projection / setup / bins / dirty tiles            163.03 ms   2.7%
+└─ Placement / topology / features / policy            33.35 ms   0.6%
+
+One optimizer update: 358.08 µs mean active GPU kernel time
+├─ State sampling and packed feature gather            33.91 µs
+│  ├─ Select states                                    3.10 µs
+│  └─ Gather / unpack                                 30.82 µs
+├─ Clear parameter gradients                           9.81 µs
+├─ Forward MLP                                       105.43 µs
+│  ├─ Layer 1: 128→64                                 46.34 µs
+│  ├─ Layer 2: 64→64                                  37.10 µs
+│  └─ Output: 64→12                                   22.00 µs
+├─ Masked placement loss / output derivative           12.57 µs
+├─ Backpropagation                                   178.37 µs
+│  ├─ Output layer + hidden activation gradient        55.40 µs
+│  ├─ Hidden layer + input activation gradient         68.52 µs
+│  └─ First layer parameter gradients                  54.45 µs
+├─ Gradient norm / clipping scale                      11.18 µs
+├─ AdamW                                               5.35 µs
+└─ Update counters                                     1.45 µs
+```
+
+The update trace contains 2,048 graph executions, each with 42 kernels. The
+358.08 µs sum excludes memory operations and gaps. Across the six unprofiled
+segments the measured update window averages **379.0 µs/update**, or
+**2,639 updates/s**; the final segment alone is 370.3 µs/update. The 54-state
+packed resident dataset occupies 334,368 bytes (326.5 KiB).
+
+Appearance plus coverage account for **74.7%** of kernel time in the larger
+teacher condition; rasterization alone is 19.2%. That is the main measured
+GPU optimization target. Repeated trainer process/setup costs are also visible
+at 5.143 s in this short pass. Transfers are small: the teacher trace moves
+0.537 MB device-to-host in 7.243 ms and 0.213 MB host-to-device in 0.026 ms.
+Its 9,193 blocking `cudaMemcpy` API calls occupy 6.608 s on the CPU largely
+waiting for GPU work. Adding that wait to kernel time would double-count it;
+it is not evidence that transferring half a megabyte takes six seconds.
+
+All six shards and optimizer segments completed, including 24 verified
+checkpoint exports/restorations. Both quality diagnostics completed with zero
+resource/confirmation failures; unreduced fallback levels remain reported.
+With more GPU memory available, **all 22 CTest checks now pass**, and the
+CUDA audit memcheck finishes with **zero errors**, resolving the prior local
+allocation-limited checks below. Logs are retained with the measurements.
+No remote GPU spending or model promotion occurred in this timing run.
+
+Reproduce the bounded cycle in a fresh directory using a compatible v3 model
+and optimizer checkpoint (the recorded input step is 224,768):
+
+```sh
+nix develop .#neural -c node research/neural/pipeline-profile.mjs \
+  runs/neural/pipeline-timing-repeat/cycle MODEL.blzn CHECKPOINT.pt START_STEP
+```
+
+The exact replay binary/arguments are in
+[`profiles.json`](evidence/pipeline-timing-local/profiles.json). Capture each
+sequentially with `nsys profile --trace=cuda --sample=none --cpuctxsw=none
+--cuda-graph-trace=node`, export SQLite, and retain the four `nsys stats`
+reports (`cuda_gpu_kern_sum`, `cuda_api_sum`, `cuda_gpu_mem_time_sum`,
+`cuda_gpu_mem_size_sum`). The offline report generator
+`node research/neural/pipeline-timing.mjs RUN_DIRECTORY FRESH_OUTPUT_DIRECTORY`
+checks every tree total and replay hash and rejects an unexpected kernel
+sequence before assigning the detailed update-stage labels.
+
 ## Local teacher acceleration and precision experiments (2026-09-30)
 
 The completed remote cycle spent 96% of its time generating teacher examples.

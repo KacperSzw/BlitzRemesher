@@ -1,0 +1,103 @@
+{
+  "score": null,
+  "sources": [
+    {
+      "path": "cycle/report.json",
+      "saved_as": "cycle-report.json",
+      "sha256": "9304e343bd0573298668f5f8ee55ca7f867499b7b3916b4b91c3f474b2656a3b"
+    },
+    {
+      "path": "profiles.json",
+      "saved_as": "profiles.json",
+      "sha256": "992e85a1038bf9c46c3b8433eeb80a9adfdaee7c4fb74d7aafceec9f90b6b753"
+    },
+    {
+      "path": "profile-teacher/index.json",
+      "saved_as": "profile-teacher-index.json",
+      "sha256": "cb84a6f6f6782db4ca39de4c3b258546fcd9324986578626804c397f9085d6b9"
+    },
+    {
+      "path": "profile-training/latest.json",
+      "saved_as": "profile-training-latest.json",
+      "sha256": "d6725c99df109c75aa13f4adae407380da2df80f526355af7d71f687bd498ee4"
+    },
+    {
+      "path": "ctest.log",
+      "saved_as": "ctest.log",
+      "sha256": "63e9478ba2cb99342ba5663f21f4b99942ce553f6566836795f6ed864b3b09df"
+    },
+    {
+      "path": "cuda-memcheck-audits.log",
+      "saved_as": "cuda-memcheck-audits.log",
+      "sha256": "47739041109a0c5f8447ab1ea4f828f8fd71d9a0be67aaafa1864a4ee0b06d67"
+    },
+    {
+      "path": "teacher-stats_cuda_gpu_kern_sum.csv",
+      "saved_as": "teacher-stats_cuda_gpu_kern_sum.csv",
+      "sha256": "4c917e4bf018039502648344d5d2f8feb8048c564ba23746ee9b9c55d97583f2"
+    },
+    {
+      "path": "teacher-stats_cuda_api_sum.csv",
+      "saved_as": "teacher-stats_cuda_api_sum.csv",
+      "sha256": "fba50e3682f6645e7bbd75986ddffa752468e4a13c8c6a79f4d479993f344823"
+    },
+    {
+      "path": "teacher-stats_cuda_gpu_mem_time_sum.csv",
+      "saved_as": "teacher-stats_cuda_gpu_mem_time_sum.csv",
+      "sha256": "f0ffd4293612e89006ac74037868c202842a1c5e8aec5dafe04f459678988bf9"
+    },
+    {
+      "path": "teacher-stats_cuda_gpu_mem_size_sum.csv",
+      "saved_as": "teacher-stats_cuda_gpu_mem_size_sum.csv",
+      "sha256": "1914177a5930fd21e2b09e27a4a082ab49d5938e80fc389eb9ce86ddf3ec92e0"
+    },
+    {
+      "path": "training-stats_cuda_gpu_kern_sum.csv",
+      "saved_as": "training-stats_cuda_gpu_kern_sum.csv",
+      "sha256": "ea13b9138b46baf6a15ccd3c174270e8a8e4c727c29031b9ab17e7df1f405bdb"
+    },
+    {
+      "path": "training-stats_cuda_api_sum.csv",
+      "saved_as": "training-stats_cuda_api_sum.csv",
+      "sha256": "00370db4e1e4ef15640c42798097271fc318aecdf684b2a694e5c9e8abdda9e0"
+    },
+    {
+      "path": "training-stats_cuda_gpu_mem_time_sum.csv",
+      "saved_as": "training-stats_cuda_gpu_mem_time_sum.csv",
+      "sha256": "658529e212e19d5ac428ae4a07db67f58918699f0015a2c2d436fa67e0e50eea"
+    },
+    {
+      "path": "training-stats_cuda_gpu_mem_size_sum.csv",
+      "saved_as": "training-stats_cuda_gpu_mem_size_sum.csv",
+      "sha256": "8c709bb46d93520fac2a02d6646bffc5e792b3cb54655476b1a9f6f350d32612"
+    }
+  ],
+  "local_traces": [
+    {
+      "path": "runs/neural/pipeline-timing-local/teacher-trace.sqlite",
+      "sha256": "bc40dbcf7cf6e67be423681da732c5f490dcb2a12e09df0c124e18800d8ce90d"
+    },
+    {
+      "path": "runs/neural/pipeline-timing-local/teacher-trace.nsys-rep",
+      "sha256": "91d5186ad99fb7b4865333ccff94ffad7bb152090c20405df749f6f83699c9ba"
+    },
+    {
+      "path": "runs/neural/pipeline-timing-local/training-trace.sqlite",
+      "sha256": "87f3b9e2e92e8ce8f6f05f95bf17e8740f0bd8e49d31a6bb187f01744109409f"
+    },
+    {
+      "path": "runs/neural/pipeline-timing-local/training-trace.nsys-rep",
+      "sha256": "cd908faad14e351d23f9c4b515ee3af5c84cb37ea46460ad8570c5e5fedba5f7"
+    }
+  ],
+  "scripts": [
+    {
+      "path": "research/neural/pipeline-profile.mjs",
+      "sha256": "530427f2510d02cdbd7961ff1d3d80faffe6eaf2ee967c4841fab72245d8de6a"
+    },
+    {
+      "path": "research/neural/pipeline-timing.mjs",
+      "sha256": "683d8531f68ab0fa7c6e88bc0ba1bf0bae5ccb04ed24407b4f279e355c42bd5e"
+    }
+  ]
+}

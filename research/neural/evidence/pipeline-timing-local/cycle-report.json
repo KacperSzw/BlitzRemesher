@@ -1,0 +1,2507 @@
+{
+  "revision": "af30b553735bc3eac13c874fd56189074303d9e2",
+  "score": null,
+  "complete": true,
+  "precision": "IEEE FP32; existing FP64 audit arithmetic retained",
+  "started": "2026-09-30T07:31:00.916Z",
+  "initial_model_sha256": "9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185",
+  "initial_checkpoint_sha256": "d44d2f8591ae2abb75f4af790577e57cb0bbd45fd2212ee8e6301c85ebf421ed",
+  "initial_step": 224768,
+  "states_per_condition": 8,
+  "pool": 4,
+  "updates_per_segment": 2048,
+  "batch": 512,
+  "teacher_memory_mib": 1024,
+  "conditions": [
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 32,
+      "previous": 0
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 64,
+      "previous": 0
+    },
+    {
+      "asset": "ph_namaqualand_boulder_04",
+      "pixels": 128,
+      "previous": 0
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 128,
+      "previous": 2
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 128,
+      "previous": 2
+    },
+    {
+      "asset": "ph_namaqualand_boulder_04",
+      "pixels": 64,
+      "previous": 2
+    }
+  ],
+  "phases": [
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_painted_wooden_bench",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-0",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "32",
+        "--previous-steps",
+        "0",
+        "--seed",
+        "101",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/runpod-gpu-refactor-01/final-model.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2331 MiB, 8192 MiB, 11 %",
+      "code": 0,
+      "wall_seconds": 1.9907442409999998,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2322 MiB, 8192 MiB, 62 %",
+      "condition": {
+        "asset": "ph_painted_wooden_bench",
+        "pixels": 32,
+        "previous": 0
+      },
+      "index": {
+        "accepted": 8,
+        "asset": "ph_painted_wooden_bench",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 53,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 23138,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 104552,
+          "gpu_evaluations": 636,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 29083538,
+          "gpu_rasters": 1247,
+          "gpu_reference_render_hits": 1167,
+          "gpu_upload_bytes": 49556,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "manufactured",
+        "complete": true,
+        "contract_sha256": "940defa94fc17fc9d071f34fc9bcf0f751a2ba6d28eb947a5d694c85579b5aaa",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 630,
+        "queries": 652,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 0.825085487,
+        "sha256": "4edd357c1f4f2f8e4c89a130bc5e853a716c0ca8b13073ff1f965bcfd2a75f89",
+        "source_triangles": 630,
+        "states": 8,
+        "teacher_triangles": 614,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 22,
+        "identical_adjacent_audits": 73,
+        "pruned_candidates": 572
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-0",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/runpod-gpu-refactor-01/final-checkpoint.pt",
+        "--steps",
+        "226816",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2322 MiB, 8192 MiB, 62 %",
+      "code": 0,
+      "wall_seconds": 3.1471728279999995,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2410 MiB, 8192 MiB, 70 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.100589715,
+        "checkpoint": "step-226816.pt",
+        "checkpoint_seconds": 0.17505691899999998,
+        "checkpoint_sha256": "b2c9ba2783c4a4978ead2bda5841cbac84080a59f8dbafb2addf10322c38bb8b",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.03515937179327011,
+        "fp64_max_abs": 0.000014768952616428521,
+        "gradient_norm": 0.008289380930364132,
+        "last_loss": 0.0037785854656249285,
+        "model": "step-226816.blzn",
+        "model_sha256": "0f43e15ad1ce4c746ddd60950f612380834073cbc5b758c4089b26a834a255a2",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 0.12627458572387695,
+        "preferred_membership": 1,
+        "preferred_states": 8,
+        "proof_passed": false,
+        "resident_data_bytes": 49536,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.98857631,
+        "states": 8,
+        "step": 226816,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.811213069,
+        "updates_per_second": 2524.61415904531
+      },
+      "model_payload_sha256": "44f48b424f193a2e091e695e5212523ab94c6722bbc58196226c1334a191d3c1"
+    },
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_sweet_potato",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-1",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "64",
+        "--previous-steps",
+        "0",
+        "--seed",
+        "102",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-0/step-226816.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2410 MiB, 8192 MiB, 70 %",
+      "code": 0,
+      "wall_seconds": 1.165279211,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2406 MiB, 8192 MiB, 18 %",
+      "condition": {
+        "asset": "ph_sweet_potato",
+        "pixels": 64,
+        "previous": 0
+      },
+      "index": {
+        "accepted": 8,
+        "asset": "ph_sweet_potato",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 53,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 22644,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 102264,
+          "gpu_evaluations": 652,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 54604404,
+          "gpu_rasters": 1221,
+          "gpu_reference_render_hits": 1141,
+          "gpu_upload_bytes": 113428,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "organic",
+        "complete": true,
+        "contract_sha256": "bacb84aa7640f30b2344dea2bd8220f7bd3bd6c24e9390e4bef0e25fa4397ec2",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 2042,
+        "queries": 651,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 0.905919354,
+        "sha256": "e119d61da20fe869c7782f68d120d0032d999d4ef347bfc5bbeba1f7beb1bce3",
+        "source_triangles": 2042,
+        "states": 8,
+        "teacher_triangles": 2026,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 0,
+        "identical_adjacent_audits": 45,
+        "pruned_candidates": 606
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-1",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-0/step-226816.pt",
+        "--steps",
+        "228864",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2405 MiB, 8192 MiB, 80 %",
+      "code": 0,
+      "wall_seconds": 1.6354449799999993,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2398 MiB, 8192 MiB, 44 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.051875201,
+        "checkpoint": "step-228864.pt",
+        "checkpoint_seconds": 0.14389513499999992,
+        "checkpoint_sha256": "174ae7020f3fc5376d4884f7e13bea9bfa46c5e251e1896b192f8d11680310be",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.6423541307449341,
+        "fp64_max_abs": 0.000012161402215937755,
+        "gradient_norm": 0.012500034645199776,
+        "last_loss": 0.004285256378352642,
+        "model": "step-228864.blzn",
+        "model_sha256": "c4b2f1b8a2d0f21117cc0fbbac6d1fc7db9b83b541debd3b4892b2167b2cfda8",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 0.43147802352905273,
+        "preferred_membership": 1,
+        "preferred_states": 16,
+        "proof_passed": false,
+        "resident_data_bytes": 99072,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.937863955,
+        "states": 16,
+        "step": 228864,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.7913873620000003,
+        "updates_per_second": 2587.86038081816
+      },
+      "model_payload_sha256": "d7642895046bc2b4b3a7b2f232361adebe7ded87b670f5754ba9e1738c37e261"
+    },
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_namaqualand_boulder_04",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-2",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "128",
+        "--previous-steps",
+        "0",
+        "--seed",
+        "103",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-1/step-228864.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2398 MiB, 8192 MiB, 44 %",
+      "code": 0,
+      "wall_seconds": 3.294139559000001,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2390 MiB, 8192 MiB, 82 %",
+      "condition": {
+        "asset": "ph_namaqualand_boulder_04",
+        "pixels": 128,
+        "previous": 0
+      },
+      "index": {
+        "accepted": 8,
+        "asset": "ph_namaqualand_boulder_04",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 48,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 29128,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 132272,
+          "gpu_evaluations": 629,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 228788502,
+          "gpu_rasters": 1562,
+          "gpu_reference_render_hits": 1482,
+          "gpu_upload_bytes": 3101356,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "rocks",
+        "complete": true,
+        "contract_sha256": "d09c3bbc07e91a7a4a61277a54c0d3516e3808cc4c37c9248198e4e40272960e",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 59066,
+        "queries": 628,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 3.016271602,
+        "sha256": "1693955de9c915b43433004c4f241cafaff41da6458ee1898681dcba2407e040",
+        "source_triangles": 59066,
+        "states": 8,
+        "teacher_triangles": 59050,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 0,
+        "identical_adjacent_audits": 88,
+        "pruned_candidates": 540
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-2",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-1/step-228864.pt",
+        "--steps",
+        "230912",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2390 MiB, 8192 MiB, 82 %",
+      "code": 0,
+      "wall_seconds": 1.6589752429999989,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2404 MiB, 8192 MiB, 42 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.052112222,
+        "checkpoint": "step-230912.pt",
+        "checkpoint_seconds": 0.16750402399999986,
+        "checkpoint_sha256": "94e2c1625087be5ceb9c3bbc4cf961f051c7a2996cd3e200057f2da310f36a0b",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.9082529544830322,
+        "fp64_max_abs": 0.000024318276899304436,
+        "gradient_norm": 0.011139909736812115,
+        "last_loss": 0.005394435953348875,
+        "model": "step-230912.blzn",
+        "model_sha256": "5bd062ce8ccbde07ed285d942a379149083f37f0d7121951f1a8bb88d75c31a1",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 0.5826895236968994,
+        "preferred_membership": 1,
+        "preferred_states": 24,
+        "proof_passed": false,
+        "resident_data_bytes": 148608,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.950482947,
+        "states": 24,
+        "step": 230912,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.7805737679999999,
+        "updates_per_second": 2623.71102381191
+      },
+      "model_payload_sha256": "5a124efdf4ace6b6dda1321d5c379a5ab98fc60cc15bf94b475fe669923e5cba"
+    },
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_painted_wooden_bench",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-3",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "128",
+        "--previous-steps",
+        "2",
+        "--seed",
+        "104",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-2/step-230912.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2404 MiB, 8192 MiB, 42 %",
+      "code": 0,
+      "wall_seconds": 7.761245060000001,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2393 MiB, 8192 MiB, 87 %",
+      "condition": {
+        "asset": "ph_painted_wooden_bench",
+        "pixels": 128,
+        "previous": 2
+      },
+      "index": {
+        "accepted": 10,
+        "asset": "ph_painted_wooden_bench",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 110,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 67987,
+          "gpu_candidate_render_hits": 628,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 337288,
+          "gpu_evaluations": 886,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 720226649,
+          "gpu_rasters": 3445,
+          "gpu_reference_render_hits": 3842,
+          "gpu_upload_bytes": 99336,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "manufactured",
+        "complete": true,
+        "contract_sha256": "3e89c6095dd129cf23c262e0c1eb02a0feaac1b79568e3de47c431e3c13720f2",
+        "path": "actions.bin",
+        "preceding_lod_emitted": true,
+        "previous_triangles": 626,
+        "queries": 800,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 7.49541344,
+        "sha256": "fd3874ffce339c26333e3064e5ffe99ad0ae38d24199974c8b8bef8da5bf8ca9",
+        "source_triangles": 630,
+        "states": 10,
+        "teacher_triangles": 610,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 22,
+        "identical_adjacent_audits": 27,
+        "pruned_candidates": 666
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-3",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-2/step-230912.pt",
+        "--steps",
+        "232960",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2393 MiB, 8192 MiB, 87 %",
+      "code": 0,
+      "wall_seconds": 1.5818903180000015,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2394 MiB, 8192 MiB, 61 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.0507166,
+        "checkpoint": "step-232960.pt",
+        "checkpoint_seconds": 0.18303001600000007,
+        "checkpoint_sha256": "5372f2c36dd5d1fe85f7db1b294a561403446fb53e5e7730f6dd85f7854f4357",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.3979073762893677,
+        "fp64_max_abs": 0.000032057105840976874,
+        "gradient_norm": 1.8070886135101318,
+        "last_loss": 0.01454787328839302,
+        "model": "step-232960.blzn",
+        "model_sha256": "41b00da2bc85266625388e0d2e2a9157b2cb20a30eeb242bfed85ac57d6873e0",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 0.5690939426422119,
+        "preferred_membership": 1,
+        "preferred_states": 34,
+        "proof_passed": false,
+        "resident_data_bytes": 210528,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.942138833,
+        "states": 34,
+        "step": 232960,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.7565585589999997,
+        "updates_per_second": 2706.994687505744
+      },
+      "model_payload_sha256": "9792f044b777862eacdb7f8eb0639091d14cb753478437840be6c4af819b38b6"
+    },
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_sweet_potato",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-4",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "128",
+        "--previous-steps",
+        "2",
+        "--seed",
+        "105",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-3/step-232960.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2394 MiB, 8192 MiB, 61 %",
+      "code": 0,
+      "wall_seconds": 2.938941415999998,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2384 MiB, 8192 MiB, 82 %",
+      "condition": {
+        "asset": "ph_sweet_potato",
+        "pixels": 128,
+        "previous": 2
+      },
+      "index": {
+        "accepted": 10,
+        "asset": "ph_sweet_potato",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 95,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 30545,
+          "gpu_candidate_render_hits": 384,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 153768,
+          "gpu_evaluations": 868,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 504338161,
+          "gpu_rasters": 1542,
+          "gpu_reference_render_hits": 1734,
+          "gpu_upload_bytes": 226984,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "organic",
+        "complete": true,
+        "contract_sha256": "09dbef501728df0c20bda72e1637a29d949350b75bb256bdb14c590c5761f414",
+        "path": "actions.bin",
+        "preceding_lod_emitted": true,
+        "previous_triangles": 2038,
+        "queries": 818,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 2.654692185,
+        "sha256": "6130198d040fb0170e1a7bf0ece8a5bdf60a4253abff6794c39e00dded3b0454",
+        "source_triangles": 2042,
+        "states": 10,
+        "teacher_triangles": 2022,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 0,
+        "identical_adjacent_audits": 11,
+        "pruned_candidates": 760
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-4",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-3/step-232960.pt",
+        "--steps",
+        "235008",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2394 MiB, 8192 MiB, 82 %",
+      "code": 0,
+      "wall_seconds": 1.579511838999999,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2395 MiB, 8192 MiB, 40 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.051940317,
+        "checkpoint": "step-235008.pt",
+        "checkpoint_seconds": 0.18318923300000006,
+        "checkpoint_sha256": "83142c390b575136825836980762d220f05e96af75ac4eb6c1739df2a7ad210a",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.3822541832923889,
+        "fp64_max_abs": 0.00001208227965587838,
+        "gradient_norm": 0.05612839758396149,
+        "last_loss": 0.008029929362237453,
+        "model": "step-235008.blzn",
+        "model_sha256": "2b488bddda10940fb71a2938c16047a8e79a602511d397babc8843b522d08a71",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 1.33051598072052,
+        "preferred_membership": 1,
+        "preferred_states": 44,
+        "proof_passed": false,
+        "resident_data_bytes": 272448,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.944408454,
+        "states": 44,
+        "step": 235008,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.7589241959999999,
+        "updates_per_second": 2698.55673438036
+      },
+      "model_payload_sha256": "a64d9de1a28c0d7eae68f1d77b803c5f63cbd9d2bec5fcdf1274f63b5e9eb3ab"
+    },
+    {
+      "phase": "teacher",
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "binary_sha256": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+      "args": [
+        "ph_namaqualand_boulder_04",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data/shard-5",
+        "--states",
+        "8",
+        "--pool",
+        "4",
+        "--pixels",
+        "64",
+        "--previous-steps",
+        "2",
+        "--seed",
+        "106",
+        "--model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-4/step-235008.blzn",
+        "--gpu-memory-mib",
+        "1024",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2395 MiB, 8192 MiB, 40 %",
+      "code": 0,
+      "wall_seconds": 4.275316277000002,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2471 MiB, 8192 MiB, 81 %",
+      "condition": {
+        "asset": "ph_namaqualand_boulder_04",
+        "pixels": 64,
+        "previous": 2
+      },
+      "index": {
+        "accepted": 10,
+        "asset": "ph_namaqualand_boulder_04",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 92,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 38027,
+          "gpu_candidate_render_hits": 720,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 204248,
+          "gpu_evaluations": 883,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 273671900,
+          "gpu_rasters": 1817,
+          "gpu_reference_render_hits": 2409,
+          "gpu_upload_bytes": 6202816,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "rocks",
+        "complete": true,
+        "contract_sha256": "fcf7d6dc9362afde60afe051408345442d6d08fdf18fcd479349ed0def29af36",
+        "path": "actions.bin",
+        "preceding_lod_emitted": true,
+        "previous_triangles": 59062,
+        "queries": 791,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 3.99789242,
+        "sha256": "66877379e577736bb46a5fedf3c5c46de11fd0ba82a6470f6ff12121619de54f",
+        "source_triangles": 59066,
+        "states": 10,
+        "teacher_triangles": 59046,
+        "training_started": false
+      },
+      "reuse": {
+        "duplicate_proposals": 0,
+        "identical_adjacent_audits": 15,
+        "pruned_candidates": 687
+      },
+      "healthy": true
+    },
+    {
+      "phase": "training",
+      "binary": "build/neural/blitz-neural-action-train",
+      "binary_sha256": "4aadb3206cb6db46f33a6658f4bc87589da2edd91cac573345358429e71042cd",
+      "args": [
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/data",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-5",
+        "--warmstart",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-4/step-235008.pt",
+        "--steps",
+        "237056",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--minutes",
+        "1"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2471 MiB, 8192 MiB, 81 %",
+      "code": 0,
+      "wall_seconds": 1.6114498039999998,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2479 MiB, 8192 MiB, 47 %",
+      "health": {
+        "architecture": 3,
+        "backend": "captured",
+        "capture_seconds": 0.051074376,
+        "checkpoint": "step-237056.pt",
+        "checkpoint_seconds": 0.18897618400000016,
+        "checkpoint_sha256": "a8df4c81e4736368823870d14a2e6e5df779fb0e7ccbb382da81cb085495cf5b",
+        "complete": true,
+        "finite": true,
+        "first_loss": 0.23854534327983856,
+        "fp64_max_abs": 0.000014874097274297782,
+        "gradient_norm": 0.03841385245323181,
+        "last_loss": 0.007442701142281294,
+        "model": "step-237056.blzn",
+        "model_sha256": "5549d05f6836dace34c793a8f54f4d87af4efa928c153e0c0ed962c90c698cb9",
+        "native_max_abs": 0,
+        "optimizer_restored": true,
+        "parameter_change": 0.5291962623596191,
+        "preferred_membership": 1,
+        "preferred_states": 54,
+        "proof_passed": false,
+        "resident_data_bytes": 334368,
+        "restored": true,
+        "sampler": 1,
+        "seconds": 0.949629215,
+        "states": 54,
+        "step": 237056,
+        "steps_this_segment": 2048,
+        "update_seconds": 0.7584086570000002,
+        "updates_per_second": 2700.3911164479227
+      },
+      "model_payload_sha256": "d2aa59b983cd2f9aeaa05dc79394defe5a26770809f1b3ac25b35dff3e2a54d6"
+    },
+    {
+      "phase": "quality_audit",
+      "binary": "build/neural/blitz",
+      "binary_sha256": "07b3a83d32c77c2ae7d7a5ea0a55f8b3bef9237fe53c8faf47e5e3e2d0fd7493",
+      "args": [
+        "bench",
+        "research/neural/action-diagnostic.json",
+        "research/neural/refactor-smoke.json",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/audit-constant",
+        "--neural-model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-5/step-237056.blzn",
+        "--neural-control",
+        "constant",
+        "--ranking-seed",
+        "101",
+        "--action-trials",
+        "8",
+        "--action-batch",
+        "16",
+        "--gpu-memory-mib",
+        "1024",
+        "--neural-confirmation",
+        "gpu",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2479 MiB, 8192 MiB, 47 %",
+      "code": 0,
+      "wall_seconds": 3.951823449999996,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2468 MiB, 8192 MiB, 87 %",
+      "summary": {
+        "blocked_assets": [],
+        "categories": {
+          "manufactured": {
+            "count": 1,
+            "mean_ratio": 0.9961832061068703
+          },
+          "rocks": {
+            "count": 1,
+            "mean_ratio": 0.9957627118644068
+          }
+        },
+        "complete": true,
+        "completed": 2,
+        "expected": 2,
+        "failed_assets": [],
+        "fallbacks": 0,
+        "run_sha256": "2c1ca9e7df8d74c579b662ff2a59c871201707adc94d35c8118843b551bb69ef",
+        "score": null,
+        "score_eligible": false,
+        "seconds": 3.809988319
+      },
+      "assets": [
+        {
+          "attributes_sha256": "73ccd9f598f63270c711228ec2221fc945c3432cc32f63d62c4240bf0fc98e7e",
+          "canonical_attributes_sha256": "115878901878d23b3d824723fb20971dc74f23e93fbc4c4c56b15e77309f1be7",
+          "category": "manufactured",
+          "complete": true,
+          "coverage_cache": {
+            "bypasses": 0,
+            "field_hits": 0,
+            "fields": 0,
+            "mask_hits": 0,
+            "peak_bytes": 0,
+            "rasters": 0
+          },
+          "export_seconds": 0.000353841,
+          "fallback": false,
+          "final_ratio": 0.9961832061068703,
+          "generation_seconds": 1.103076878,
+          "id": "ph_painted_wooden_shelves",
+          "last_three_ratio": 0.9961832061068703,
+          "load_seconds": 0.000115651,
+          "neural": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 3108,
+            "action_trials": 32,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0.012150402000000001,
+            "decoded": 4,
+            "encode_seconds": 0.117682795,
+            "fallback_levels": 1,
+            "first_resource_failure": null,
+            "gpu_allocations": 126,
+            "gpu_audit_seconds": 0.941537374,
+            "gpu_buffer_reuses": 5868,
+            "gpu_candidate_render_hits": 42,
+            "gpu_confirmation_seconds": 0.000056312000000000006,
+            "gpu_download_bytes": 23824,
+            "gpu_evaluations": 26,
+            "gpu_measurement_cache_hits": 5,
+            "gpu_peak_bytes": 502270846,
+            "gpu_rasters": 364,
+            "gpu_reference_render_hits": 138,
+            "gpu_upload_bytes": 55596,
+            "inference_seconds": 0.015107525,
+            "legal_collapses": 2,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 234,
+            "resource_failures": 0
+          },
+          "numerics": {
+            "nonfinite_costs": 0,
+            "nonfinite_solves": 0,
+            "position_fallbacks": 0,
+            "singular_solves": 0,
+            "solve_attempts": 0
+          },
+          "output_sha256": "526126d9ce325e90a586a134ee143147a93ccbf0274be6cfcdc17284c353d7d9",
+          "peak_rss_kib": 290436,
+          "ratio": 0.9961832061068703,
+          "result": {
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                },
+                "triangles": [
+                  524,
+                  522,
+                  522
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00026689543418167955,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181807520460394,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53810489355934,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00026689543418167955,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181807520460394,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53810489355934,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0002658412927482293,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 0.9571077811865476,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.47192327344752,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 5
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 1,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 12552,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 30088
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          "run_sha256": "2c1ca9e7df8d74c579b662ff2a59c871201707adc94d35c8118843b551bb69ef",
+          "seconds": 1.103899561,
+          "source_files": [
+            {
+              "bytes": 20680,
+              "path": "data/polyhaven/painted_wooden_shelves/painted_wooden_shelves.bin",
+              "sha256": "894c032cda1c5668014c87b15ddcc42bccaede15e369e59f628d5219d38edf5f",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_shelves/painted_wooden_shelves.bin"
+            },
+            {
+              "bytes": 2858,
+              "path": "data/polyhaven/painted_wooden_shelves/source.gltf",
+              "sha256": "f4d9ffc04ad1e9ce3155522ac962c336bf1fa74b4a27b8a5fd4c8bdb81c2e8f6",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_shelves/painted_wooden_shelves_1k.gltf"
+            }
+          ],
+          "stage_seconds": {
+            "distance": 0,
+            "raster": 0,
+            "reduction": 0.636480092
+          }
+        },
+        {
+          "attributes_sha256": "aa28cf8a86a6c912d9d58d49e11fceeabf7292a52f67b41cd646f22e218936ff",
+          "canonical_attributes_sha256": "9846f60d19579d10df377be4069e7aa9c9148977e34ebb56caceb1d410e59edd",
+          "category": "rocks",
+          "complete": true,
+          "coverage_cache": {
+            "bypasses": 0,
+            "field_hits": 0,
+            "fields": 0,
+            "mask_hits": 0,
+            "peak_bytes": 0,
+            "rasters": 0
+          },
+          "export_seconds": 0.000832176,
+          "fallback": false,
+          "final_ratio": 0.9939467312348669,
+          "generation_seconds": 2.703919387,
+          "id": "ph_moon_rock_02",
+          "last_three_ratio": 0.9957627118644068,
+          "load_seconds": 0.000194882,
+          "neural": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 75110,
+            "action_trials": 32,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0.026578739,
+            "decoded": 4,
+            "encode_seconds": 0.000293687,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 141,
+            "gpu_audit_seconds": 2.5263038140000003,
+            "gpu_buffer_reuses": 10980,
+            "gpu_candidate_render_hits": 171,
+            "gpu_confirmation_seconds": 0.11978812600000001,
+            "gpu_download_bytes": 47736,
+            "gpu_evaluations": 44,
+            "gpu_measurement_cache_hits": 4,
+            "gpu_peak_bytes": 703910937,
+            "gpu_rasters": 648,
+            "gpu_reference_render_hits": 321,
+            "gpu_upload_bytes": 409278,
+            "inference_seconds": 0.011226192000000001,
+            "legal_collapses": 32,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 243,
+            "resource_failures": 0
+          },
+          "numerics": {
+            "nonfinite_costs": 0,
+            "nonfinite_solves": 0,
+            "position_fallbacks": 0,
+            "singular_solves": 0,
+            "solve_attempts": 0
+          },
+          "output_sha256": "0a51413e33e21c598322f053579b6cad23cec4a117a89b58d4621c62d142de47",
+          "peak_rss_kib": 292100,
+          "ratio": 0.9957627118644068,
+          "result": {
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 58784,
+                  "index_bytes": 118608,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 236496
+                },
+                "triangles": [
+                  3304,
+                  3296,
+                  3284
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                },
+                "triangles": [
+                  3304,
+                  3296,
+                  3296
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.000017614704755529916,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8126605877929127,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.73766415125128,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000017614704755529916,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8126605877929127,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.73766415125128,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.0008329583425086408,
+                  "changed_area_worst_view": 1,
+                  "complete": true,
+                  "coverage_px": 0.9013878188659973,
+                  "coverage_upper_px": 1.6084956000525448,
+                  "error_px": 2.595441794737809,
+                  "nonfinite_error": false,
+                  "normal_degrees": 36.83074472581961,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "reference_triangles": 3284,
+                "screen_pixels": 128,
+                "shared_vertices": false,
+                "source": {
+                  "changed_area": 0.0008329583425086408,
+                  "changed_area_worst_view": 1,
+                  "complete": true,
+                  "coverage_px": 0.9013878188659973,
+                  "coverage_upper_px": 1.6084956000525448,
+                  "error_px": 2.595441794737809,
+                  "nonfinite_error": false,
+                  "normal_degrees": 36.83074472581961,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3284,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 3.741730955585251,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9070197470348254,
+                  "negative_winding_faces": 3284
+                },
+                "vertices": 1837
+              }
+            ],
+            "max_changed_area": 0.5,
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0.00031121139033688633,
+                  "changed_area_worst_view": 3,
+                  "complete": false,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.914214562373095,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 48.00024441207912,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 2,
+                  "views_evaluated": 4,
+                  "worst_view": 3
+                }
+              }
+            },
+            "runtime_levels": [
+              0,
+              1,
+              2
+            ],
+            "runtime_lod_count": 3,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 58784,
+                  "index_bytes": 118608,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 236496
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 58784,
+              "index_bytes": 118608,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 236496
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          "run_sha256": "2c1ca9e7df8d74c579b662ff2a59c871201707adc94d35c8118843b551bb69ef",
+          "seconds": 2.706088758,
+          "source_files": [
+            {
+              "bytes": 78928,
+              "path": "data/polyhaven/moon_rock_02/moon_rock_02.bin",
+              "sha256": "3ba6af10eebb46347e4e0c9d3e2a836d1328525d9d47e82b798a13d9ca2b216f",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/moon_rock_02/moon_rock_02.bin"
+            },
+            {
+              "bytes": 2782,
+              "path": "data/polyhaven/moon_rock_02/source.gltf",
+              "sha256": "fada2419ab6de440c24081bf06545f37c41c3d4f8bb57fc4d1ba45bdb35baf5d",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/moon_rock_02/moon_rock_02_1k.gltf"
+            }
+          ],
+          "stage_seconds": {
+            "distance": 0,
+            "raster": 0,
+            "reduction": 1.7946550250000002
+          }
+        }
+      ],
+      "healthy": true
+    },
+    {
+      "phase": "quality_audit",
+      "binary": "build/neural/blitz",
+      "binary_sha256": "07b3a83d32c77c2ae7d7a5ea0a55f8b3bef9237fe53c8faf47e5e3e2d0fd7493",
+      "args": [
+        "bench",
+        "research/neural/action-diagnostic.json",
+        "research/neural/refactor-smoke.json",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/audit-learned",
+        "--neural-model",
+        "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-5/step-237056.blzn",
+        "--neural-control",
+        "learned",
+        "--ranking-seed",
+        "101",
+        "--action-trials",
+        "8",
+        "--action-batch",
+        "16",
+        "--gpu-memory-mib",
+        "1024",
+        "--neural-confirmation",
+        "gpu",
+        "--minutes",
+        "2"
+      ],
+      "gpu_before": "NVIDIA GeForce RTX 2080, 595.71.05, 2468 MiB, 8192 MiB, 87 %",
+      "code": 0,
+      "wall_seconds": 3.0809292819999974,
+      "gpu_after": "NVIDIA GeForce RTX 2080, 595.71.05, 2456 MiB, 8192 MiB, 87 %",
+      "summary": {
+        "blocked_assets": [],
+        "categories": {
+          "manufactured": {
+            "count": 1,
+            "mean_ratio": 0.9847328244274809
+          },
+          "rocks": {
+            "count": 1,
+            "mean_ratio": 0.9939467312348669
+          }
+        },
+        "complete": true,
+        "completed": 2,
+        "expected": 2,
+        "failed_assets": [],
+        "fallbacks": 0,
+        "run_sha256": "e0f3465fb93fda3c700c91f10c1573edcad71d57b63232631cc430d66513418a",
+        "score": null,
+        "score_eligible": false,
+        "seconds": 2.9452029910000004
+      },
+      "assets": [
+        {
+          "attributes_sha256": "7d45fb95becc61f0ebc54db6d8675364eba62014e34682f315a365a5707a711a",
+          "canonical_attributes_sha256": "115878901878d23b3d824723fb20971dc74f23e93fbc4c4c56b15e77309f1be7",
+          "category": "manufactured",
+          "complete": true,
+          "coverage_cache": {
+            "bypasses": 0,
+            "field_hits": 0,
+            "fields": 0,
+            "mask_hits": 0,
+            "peak_bytes": 0,
+            "rasters": 0
+          },
+          "export_seconds": 0.000367381,
+          "fallback": false,
+          "final_ratio": 0.9694656488549618,
+          "generation_seconds": 1.461262105,
+          "id": "ph_painted_wooden_shelves",
+          "last_three_ratio": 0.9847328244274809,
+          "load_seconds": 0.000113609,
+          "neural": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 4070,
+            "action_trials": 32,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0.012444277,
+            "decoded": 4,
+            "encode_seconds": 0.178033131,
+            "fallback_levels": 1,
+            "first_resource_failure": null,
+            "gpu_allocations": 109,
+            "gpu_audit_seconds": 1.245427886,
+            "gpu_buffer_reuses": 6484,
+            "gpu_candidate_render_hits": 91,
+            "gpu_confirmation_seconds": 0.000053737000000000004,
+            "gpu_download_bytes": 27896,
+            "gpu_evaluations": 31,
+            "gpu_measurement_cache_hits": 4,
+            "gpu_peak_bytes": 426423516,
+            "gpu_rasters": 389,
+            "gpu_reference_render_hits": 177,
+            "gpu_upload_bytes": 68582,
+            "inference_seconds": 0.011094408,
+            "legal_collapses": 16,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 262,
+            "resource_failures": 0
+          },
+          "numerics": {
+            "nonfinite_costs": 0,
+            "nonfinite_solves": 0,
+            "position_fallbacks": 0,
+            "singular_solves": 0,
+            "solve_attempts": 0
+          },
+          "output_sha256": "4e332a58c1e67d1b739ffc8888f163460b4b1d85bc0fa63bb1563862b50d04ca",
+          "peak_rss_kib": 290284,
+          "ratio": 0.9847328244274809,
+          "result": {
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12384,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29920
+                },
+                "triangles": [
+                  524,
+                  524,
+                  508
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 17536,
+                  "index_bytes": 12576,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 47648
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00020573544707455624,
+                  "changed_area_worst_view": 7,
+                  "complete": true,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.2071077811865474,
+                  "error_px": 1.2071077811865474,
+                  "nonfinite_error": false,
+                  "normal_degrees": 111.22181364501067,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 2
+                },
+                "reference_triangles": 508,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00020573544707455624,
+                  "changed_area_worst_view": 7,
+                  "complete": true,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.2071077811865474,
+                  "error_px": 1.2071077811865474,
+                  "nonfinite_error": false,
+                  "normal_degrees": 111.22181364501067,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 2
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 508,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.8707366686901075,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5221117134618563,
+                  "negative_winding_faces": 508
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0.0005510856387082552,
+                  "changed_area_worst_view": 0,
+                  "complete": false,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.914214562373095,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 89.363828026592,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 2,
+                  "views_evaluated": 1,
+                  "worst_view": 0
+                }
+              }
+            },
+            "runtime_levels": [
+              0,
+              2
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12384,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29920
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12384,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29920
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 12384,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 29920
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          "run_sha256": "e0f3465fb93fda3c700c91f10c1573edcad71d57b63232631cc430d66513418a",
+          "seconds": 1.46209936,
+          "source_files": [
+            {
+              "bytes": 20680,
+              "path": "data/polyhaven/painted_wooden_shelves/painted_wooden_shelves.bin",
+              "sha256": "894c032cda1c5668014c87b15ddcc42bccaede15e369e59f628d5219d38edf5f",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_shelves/painted_wooden_shelves.bin"
+            },
+            {
+              "bytes": 2858,
+              "path": "data/polyhaven/painted_wooden_shelves/source.gltf",
+              "sha256": "f4d9ffc04ad1e9ce3155522ac962c336bf1fa74b4a27b8a5fd4c8bdb81c2e8f6",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_shelves/painted_wooden_shelves_1k.gltf"
+            }
+          ],
+          "stage_seconds": {
+            "distance": 0,
+            "raster": 0,
+            "reduction": 0.9618555500000001
+          }
+        },
+        {
+          "attributes_sha256": "060b1cdd8e1acb320839a67b1c23a63b82333beda75165124ad359a51c8c7a74",
+          "canonical_attributes_sha256": "9846f60d19579d10df377be4069e7aa9c9148977e34ebb56caceb1d410e59edd",
+          "category": "rocks",
+          "complete": true,
+          "coverage_cache": {
+            "bypasses": 0,
+            "field_hits": 0,
+            "fields": 0,
+            "mask_hits": 0,
+            "peak_bytes": 0,
+            "rasters": 0
+          },
+          "export_seconds": 0.000729271,
+          "fallback": false,
+          "final_ratio": 0.9939467312348669,
+          "generation_seconds": 1.481083256,
+          "id": "ph_moon_rock_02",
+          "last_three_ratio": 0.9939467312348669,
+          "load_seconds": 0.000192604,
+          "neural": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 73972,
+            "action_trials": 32,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0.013160234000000002,
+            "decoded": 4,
+            "encode_seconds": 0.000297272,
+            "fallback_levels": 1,
+            "first_resource_failure": null,
+            "gpu_allocations": 121,
+            "gpu_audit_seconds": 1.4403241,
+            "gpu_buffer_reuses": 7529,
+            "gpu_candidate_render_hits": 83,
+            "gpu_confirmation_seconds": 0.000188867,
+            "gpu_download_bytes": 30808,
+            "gpu_evaluations": 31,
+            "gpu_measurement_cache_hits": 5,
+            "gpu_peak_bytes": 526903276,
+            "gpu_rasters": 463,
+            "gpu_reference_render_hits": 188,
+            "gpu_upload_bytes": 273124,
+            "inference_seconds": 0.011184409000000001,
+            "legal_collapses": 17,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 253,
+            "resource_failures": 0
+          },
+          "numerics": {
+            "nonfinite_costs": 0,
+            "nonfinite_solves": 0,
+            "position_fallbacks": 0,
+            "singular_solves": 0,
+            "solve_attempts": 0
+          },
+          "output_sha256": "24a6159ba61297a24617e57880e3e0902461ae81a7b53eabbbace6754da330d5",
+          "peak_rss_kib": 291692,
+          "ratio": 0.9939467312348669,
+          "result": {
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79056,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138160
+                },
+                "triangles": [
+                  3304,
+                  3284,
+                  3284
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00007762046696472926,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.6604797914766483,
+                  "nonfinite_error": false,
+                  "normal_degrees": 42.17945154214506,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 10
+                },
+                "reference_triangles": 3284,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00007762046696472926,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.6604797914766483,
+                  "nonfinite_error": false,
+                  "normal_degrees": 42.17945154214506,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 10
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3284,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9086013200454452,
+                  "negative_winding_faces": 3284
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3284,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00009296272194849865,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.4012845173338904,
+                  "nonfinite_error": false,
+                  "normal_degrees": 43.06618795634274,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 14
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3284,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9086013200454452,
+                  "negative_winding_faces": 3284
+                },
+                "vertices": 1847
+              }
+            ],
+            "max_changed_area": 0.5,
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79056,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138160
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 79056,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 138160
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          "run_sha256": "e0f3465fb93fda3c700c91f10c1573edcad71d57b63232631cc430d66513418a",
+          "seconds": 1.483103631,
+          "source_files": [
+            {
+              "bytes": 78928,
+              "path": "data/polyhaven/moon_rock_02/moon_rock_02.bin",
+              "sha256": "3ba6af10eebb46347e4e0c9d3e2a836d1328525d9d47e82b798a13d9ca2b216f",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/moon_rock_02/moon_rock_02.bin"
+            },
+            {
+              "bytes": 2782,
+              "path": "data/polyhaven/moon_rock_02/source.gltf",
+              "sha256": "fada2419ab6de440c24081bf06545f37c41c3d4f8bb57fc4d1ba45bdb35baf5d",
+              "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/moon_rock_02/moon_rock_02_1k.gltf"
+            }
+          ],
+          "stage_seconds": {
+            "distance": 0,
+            "raster": 0,
+            "reduction": 0.9862274900000001
+          }
+        }
+      ],
+      "healthy": true
+    }
+  ],
+  "final_step": 237056,
+  "states": 54,
+  "final_model": "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-5/step-237056.blzn",
+  "final_checkpoint": "/home/kacper/Projects/BlitzRemesher-neural/runs/neural/pipeline-timing-local/cycle/train-5/step-237056.pt",
+  "wall_seconds": 40.226474795,
+  "finished": "2026-09-30T07:31:41.145Z",
+  "child_seconds": 39.672863508
+}

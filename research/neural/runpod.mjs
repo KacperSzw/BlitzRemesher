@@ -121,7 +121,7 @@ function sshArgs(endpoint){
   if(!endpoint||!/^[a-zA-Z0-9.:-]+$/.test(endpoint.host)||!/^\w+$/.test(endpoint.username)||!Number.isInteger(endpoint.port)||endpoint.port<1||endpoint.port>65535)
     throw new Error('Invalid direct SSH endpoint');
   return ['-i',dir+'/identity','-o','BatchMode=yes','-o','IdentitiesOnly=yes','-o','StrictHostKeyChecking=accept-new',
-    '-o','UserKnownHostsFile='+dir+'/known_hosts','-o','ConnectTimeout=10','-o','ServerAliveInterval=10','-o','ServerAliveCountMax=2',
+    '-o','UserKnownHostsFile='+dir+'/known_hosts','-o','ConnectTimeout=10','-o','ServerAliveInterval=10','-o','ServerAliveCountMax=6',
     '-p',String(endpoint.port),endpoint.username+'@'+endpoint.host];
 }
 async function remote(endpoint,command,{input,output,timeout=60000}={}){
@@ -176,7 +176,9 @@ async function control(){
     if(!s.uploaded){
       const prepared=read(dir+'/prepared.json');
       rental.commit({phase:'upload'});
-      await remote(endpoint,'cat > /workspace/input.tar',{input:dir+'/input.tar',timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
+      // Restarting a failed upload is repeatable. The lock prevents overlapping
+      // remote cats after transport loss; only a completed stream is promoted.
+      await retrySsh(()=>remote(endpoint,"flock /workspace/upload.lock sh -c 'cat > /workspace/input.tar.part && mv /workspace/input.tar.part /workspace/input.tar'",{input:dir+'/input.tar',timeout:Math.max(1,s.setup_deadline_ms-Date.now())}));
       rental.commit({phase:'verify-upload'});
       const actual=(await retrySsh(()=>remote(endpoint,'sha256sum /workspace/input.tar'))).split(/\s/)[0];
       if(actual!==prepared.archive_sha256)throw new Error('Uploaded input checksum mismatch');
@@ -184,7 +186,7 @@ async function control(){
       await remote(endpoint,'cd /workspace && tar --no-same-owner --no-same-permissions -xf input.tar && sha256sum --quiet --check inputs.sha256 && if [ ! -d project/.git ]; then git clone source.bundle project; fi && cd project && git checkout '+sh(prepared.revision)+' && cp -r /workspace/assets/data/. data/ && rm /workspace/input.tar', {timeout:Math.max(1,s.setup_deadline_ms-Date.now())});
       rental.commit({uploaded:true});
     }
-    rental.commit({phase:'start-job'});
+    rental.commit({phase:'start-job',job_requested:true});
     // A remote marker survives SSH loss and controller restarts. Never start twice.
     await retrySsh(()=>remote(endpoint,'flock -o /workspace/launch.lock bash -c '+sh('if [ ! -f /workspace/job-started ]; then touch /workspace/job-started; nohup env BLITZ_RUNPOD_PROFILE='+sh(deployment.id)+' bash /workspace/project/research/neural/cloud-job.sh '+s.setup_deadline_ms+' '+s.training_deadline_ms+' '+s.training_minutes+' '+sh(s.experiment??'vertex-v1')+' > /workspace/launch.log 2>&1 < /dev/null & fi')));
     while(Date.now()<s.deadline_ms-30000){
@@ -207,7 +209,7 @@ async function control(){
       await sleep(10000);
     }
   }catch(error){
-    rental.commit({error:String(error),...(error.detail?{error_detail:error.detail}:{})});console.error(String(error));
+    rental.commit({failure_phase:s.phase,error:String(error),...(error.detail?{error_detail:error.detail}:{})});console.error(String(error));
     // Preserve available evidence on a setup failure or lost SSH session. The
     // watchdog still owns the deadline while this best-effort collection runs.
     if(s.endpoint&&Date.now()<s.deadline_ms-30000){

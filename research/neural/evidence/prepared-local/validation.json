@@ -1,0 +1,46 @@
+{
+  "ctest": {
+    "passed": 28,
+    "failed": 0
+  },
+  "sanitizer_ctest": {
+    "passed": 13,
+    "failed": 0
+  },
+  "resident_cuda_memcheck_errors": 0,
+  "vulkan_cuda_memcheck_errors": 0,
+  "vulkan_validation": {
+    "completed": true,
+    "errors": 0,
+    "warnings": "Unused color and witness shader outputs when those optional attachments are absent. No correctness or synchronization error reported."
+  },
+  "remote": {
+    "completed": false,
+    "reason": "No Secure NVIDIA GeForce RTX 4090 location with standard network storage was available at the final controller launch check.",
+    "resources_created": 0,
+    "additional_spending_usd": 0,
+    "checked_at": "2026-09-30T14:53:43.397Z",
+    "active_pods": 0,
+    "network_volumes": 0,
+    "prepared_revision": "f868d108f3a58c171a2e045bcc0d8adcb12966dd"
+  },
+  "long_training_started": false,
+  "final_resident_ctest": {
+    "passed": 1,
+    "failed": 0,
+    "seconds": 1.84
+  },
+  "packed_failure_replay": {
+    "fixture": "ph_moon_rock_02",
+    "stage": "packing_baseline",
+    "storage": "packed",
+    "raster": "vulkan-v1",
+    "recorded_matches": true,
+    "reproduced": true,
+    "audit_passed": false,
+    "artifact": "moon-packing-failure.json.gz",
+    "uncompressed_sha256": "bc4572e748c2e099212b44d925db6da39131051d715cf642051c9b8d44ad1056",
+    "uncompressed_bytes": 1979685,
+    "result": "moon-replay.json"
+  }
+}

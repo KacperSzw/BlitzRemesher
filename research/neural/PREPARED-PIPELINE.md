@@ -1,6 +1,6 @@
 # Prepared learning pipeline — 2026-09-30
 
-Implementation and local validation are complete. **The two-hour campaign has
+The performance changes are implemented and locally tested. **The two-hour campaign has
 not been launched. Full packed training is not ready:** the moon-rock inference
 fixture still fails its unchanged visual gate, and the larger frozen preparation
 pilot contains visible failures. Remote validation is packaged separately; advertised stock has repeatedly disappeared at the controller’s fresh availability check. No rental has started.
@@ -103,7 +103,11 @@ reduction remain the clearest GPU bottlenecks.
   test protects equal-topology fallback retention.
 - Failure replays record the original source, exact bounds/domain source, actual
   raster/storage modes, cameras and the failed stage, including exceptions during
-  baseline preparation. Legacy replay semantics stay CUDA/FP32.
+  baseline preparation. Legacy replay semantics stay CUDA/FP32. The final
+  moon-rock exception was captured and reproduced with identical GPU measurements;
+  [its replay result](evidence/prepared-local/moon-replay.json) and
+  [compressed input](evidence/prepared-local/moon-packing-failure.json.gz) are retained.
+  This confirms reproduction of the failure, not a passing visual audit.
 - Grid repair is bounded to 256 legal trials, including a small two-edit beam and
   coherent face edits. Every accepted result receives unchanged full gates.
   Moon rock still has two unmatched grazing-face pixels, with nearly opposite
@@ -137,6 +141,15 @@ zero errors for reference and native resident update contracts and the Vulkan
 draw/batch contracts. Tests cover
 candidate batches 1/2/4, invalid placements, cutoff pruning, source immutability,
 checkpoint freeze/restore, NaN rejection, counters above one million and overflow.
+The final resident CTest also passed after coalescing the reduction kernel.
+Vulkan validation reported no correctness or synchronization errors; it does emit
+unused-output warnings when optional color/witness attachments are absent.
+[Validation status](evidence/prepared-local/validation.json) records these limits.
+
+The final remote launch check found no qualifying Secure RTX 4090 location with
+standard network storage. No rental started, and the provider reports zero pods
+and zero network volumes. This work added $0 of rental spending. The immutable
+validation bundle targets commit `f868d10`; remote execution remains unverified.
 
 ## Readiness
 

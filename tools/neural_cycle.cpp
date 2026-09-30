@@ -4,6 +4,7 @@
 #include "neural_update_benchmark.hpp"
 #include "neural_audit_io.hpp"
 #include "neural_cycle_history.hpp"
+#include "neural_cycle_replay.hpp"
 #include <c10/cuda/CUDACachingAllocator.h>
 #include <csignal>
 using namespace blitz;using namespace blitz::neural;using namespace blitz::neural::training;
@@ -14,6 +15,7 @@ int main(int argc,char** argv){try{
     if(argc==2&&std::string_view(argv[1])=="--check"){resident_contracts();return 0;}
     if(argc==5&&std::string_view(argv[1])=="--compare-storage"){storage_proof(argv[2],argv[3],argv[4]);return 0;}
     if(argc==5&&std::string_view(argv[1])=="--benchmark-update"){benchmark_updates(argv[2],argv[3],argv[4]);return 0;}
+    if(argc==5&&std::string_view(argv[1])=="--replay-checkpoint")return replay_cycle_checkpoint(argv[2],argv[3],neural_unsigned(argv[4]));
     if(argc<2)throw std::invalid_argument("blitz-neural-cycle RUN [--passes N] [--states N] [--updates N] [--batch N] [--seed N] [--minutes N] [--initialize MODEL] [--warmstart CHECKPOINT] [--raster-backend cuda|vulkan] [--vertex-storage fp32|position16|packed] [--data-storage compact|fp32] [--dataset-mib N] [--curriculum JSON] [--corpus JSON] [--training-selection JSON] [--mesh-cache DIR] [--checkpoint-scratch DIR] [--view-batch 1..4] [--direct-targets on|off] [--candidate-batch 1|2|4] [--update-backend reference|fused] [--duration-minutes 1..120] [--finalize-minutes N]");
     fs::path run=argv[1],initialize,warmstart,curriculum="research/neural/resident-curriculum.json",checkpoint_scratch,corpus="research/corpus.json",selection="research/neural/training-manifest.json",mesh_cache;bool compact_data=true;uint32_t dataset_mib=0;uint32_t passes=1,states=8,updates=2048,batch=512,seed=101;double minutes=5;bool quality=true,sparse=true;Profile profile=Profile::Attributes;
     NeuralOptions options;options.raster_backend=NeuralRasterBackend::Vulkan;options.memory_mib=2048;options.candidate_batch=2;

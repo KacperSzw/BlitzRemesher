@@ -49,7 +49,20 @@ public:
             else for(const auto& [name,hash]:hashes)sync_checkpoint_file(path/name);
             sync_checkpoint_file(path/"index.json");sync_checkpoint_file(path);sync_checkpoint_file(path.parent_path());if(!journal_path.empty()){journal["step"]=step;journal["checkpoint"]=fs::relative(path,journal_path.parent_path()).string();journal["checkpoint_sha256"]=checksum;auto temporary=journal_path;temporary+=".durable";write_json(temporary,journal);sync_checkpoint_file(temporary);fs::rename(temporary,journal_path);sync_checkpoint_file(journal_path.parent_path());}
             return {{"serialize_seconds",serialize},{"verify_seconds",verify},{"publish_seconds",elapsed(start)},{"bytes",bytes}};
-        }catch(...){try{ready->set_exception(std::current_exception());}catch(const std::future_error&){}throw;}});
+        }catch(...){
+            // Scratch is outside the collected cloud results. Retain failed
+            // numerical probes there too, without publishing a recovery index.
+            auto failure=std::current_exception();std::string reason="unknown checkpoint failure";
+            try{std::rethrow_exception(failure);}catch(const std::exception& e){reason=e.what();}catch(...){}
+            try{
+                auto evidence=(journal_path.empty()?path.parent_path():journal_path.parent_path())/"checkpoint-failures"/path.filename();fs::create_directories(evidence);
+                if(fs::exists(local))for(const auto& file:fs::directory_iterator(local))if(file.is_regular_file()){
+                    auto destination=evidence/file.path().filename();fs::copy_file(file.path(),destination,fs::copy_options::overwrite_existing);sync_checkpoint_file(destination);
+                }
+                write_json(evidence/"failure.json",{{"complete",false},{"step",step},{"error",reason},{"recoverable",false}});sync_checkpoint_file(evidence/"failure.json");sync_checkpoint_file(evidence);
+            }catch(const std::exception& e){reason+="; retaining evidence failed: ";reason+=e.what();}
+            try{ready->set_exception(failure);}catch(const std::future_error&){}throw std::runtime_error(reason);
+        }});
     }
 };
 }

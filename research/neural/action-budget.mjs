@@ -1,7 +1,7 @@
 // Cumulative authorization for the action-learning experiment, in USD.
 export function actionAccrued(states,now=Date.now(),hourlyCap=2.51){
   let total=0;const seen=new Set();
-  for(const s of states){if(!['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged','gpu-refactor','hardware-validation'].includes(s.experiment)||seen.has(s.name))continue;seen.add(s.name);
+  for(const s of states){if(!['action-v2','action-v2-pilot','action-v2-evaluate','action-v2-staged','gpu-refactor','hardware-validation','pipeline-validation'].includes(s.experiment)||seen.has(s.name))continue;seen.add(s.name);
     const end=s.compute_terminated?s.terminated_at:now;
     if(!s.name||!Number.isFinite(s.started_at)||!Number.isFinite(end)||end<s.started_at)throw new Error('Reconcile incomplete action rental ledger');
     const rate=s.deployment?.gpu_hourly_usd_cap===undefined?hourlyCap:s.deployment.gpu_hourly_usd_cap+.01;
@@ -19,6 +19,13 @@ export const refactorAuthorization=Object.freeze({baseline_usd:11.25963675,addit
 // Latest user grant replaces the previous remaining allowance. This reconciled
 // baseline is pinned once; every validation attempt and retry spends this grant.
 export const pretrainingAuthorization=Object.freeze({baseline_usd:17.292720997222222,additional_usd:8});
+export function pipelineValidationBudget({billed,rate,additionalAccrued,minutes=60}){
+  for(const v of [billed,rate,additionalAccrued,minutes])if(!Number.isFinite(v)||v<0)throw new Error('Invalid pipeline validation budget');
+  if(!rate||rate>2.10||![35,60].includes(minutes))throw new Error('Pipeline validation requires a bounded 35 or 60 minute profile');
+  const prior=Math.max(billed,2.75+additionalAccrued),rental=minutes/60*(rate+.01),reserve=1,cap=pretrainingAuthorization.baseline_usd+pretrainingAuthorization.additional_usd;
+  if(prior<pretrainingAuthorization.baseline_usd-1e-9||prior+rental+reserve>cap)throw new Error('Existing pretraining grant would be exceeded');
+  return {authorization:pretrainingAuthorization,cap_usd:cap,provider_billed_usd:billed,additional_accrued_upper_usd:additionalAccrued,prior_assumed_usd:prior,reserve_usd:reserve,maximum_rental_usd:rental,maximum_total_usd:prior+rental+reserve,minutes};
+}
 export function pretrainingBudget({billed,rate,additionalAccrued,minutes=180}){
   for(const v of [billed,rate,additionalAccrued,minutes])if(!Number.isFinite(v)||v<0)throw new Error('Invalid pretraining budget');
   if(!rate||rate>2.10||minutes!==180)throw new Error('Pretraining requires the bounded 180-minute profile');

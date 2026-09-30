@@ -144,9 +144,9 @@ __device__ bool legal(DeviceMeshView m,const State* state,TopologyView t,const u
 __global__ void enumerate(DeviceMeshView m,State* state,TopologyView t,const uint32_t* geometry,Edit* edits,uint8_t* valid,uint32_t capacity,bool placement){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=capacity)return;valid[i]=0;edits[i]={};auto edge=i/2;if(edge>=*t.length||t.edges[edge]==UINT64_MAX)return;
     auto a=uint32_t(t.edges[edge]>>32),b=uint32_t(t.edges[edge]);Edit edit{};edit.from=i%2?b:a;edit.to=i%2?a:b;edit.valid=legal(m,state,t,geometry,edit,placement);edits[i]=edit;valid[i]=edit.valid;}
-__global__ void fill_action_features(DeviceMeshView m,const State* state,TopologyView t,const Edit* edits,const float* vertices,const float* condition,Bounds b,uint32_t original_faces,float* rows,uint32_t capacity,uint32_t width,const uint32_t* selection){
-    uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=capacity)return;auto* x=rows+size_t(i)*width;for(unsigned j=0;j<width;++j)x[j]=0;if(i>=state->actions)return;
-    auto a=edits[selection?selection[i]:i];uint32_t u=a.from,v=a.to,s=a.source[0],z=a.target[0];double scale=b.radius*2;
+__global__ void fill_action_features(DeviceMeshView m,const State* state,TopologyView t,const Edit* edits,const float* vertices,const float* condition,Bounds b,uint32_t original_faces,float* rows,uint32_t capacity,uint32_t width,const uint32_t* selection,uint32_t first){
+    uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=capacity)return;auto* x=rows+size_t(i)*width;for(unsigned j=0;j<width;++j)x[j]=0;uint32_t action=selection?selection[i]:first+i;if(action>=state->actions)return;
+    auto a=edits[action];uint32_t u=a.from,v=a.to,s=a.source[0],z=a.target[0];double scale=b.radius*2;
     for(unsigned j=0;j<24;++j){x[j]=vertices[size_t(s)*24+j];x[24+j]=vertices[size_t(z)*24+j];}for(unsigned j=0;j<8;++j)x[48+j]=condition[j];
     auto d=mul3(sub3(m.positions[v],m.positions[u]),1/scale);x[56]=d.x;x[57]=d.y;x[58]=d.z;x[59]=float(len3(d));for(unsigned j=0;j<3;++j)x[60]+=x[3+j]*x[27+j];
     if(m.uv){x[61]=fminf(16,fmaxf(-16,m.uv[z].x-m.uv[s].x))/16;x[62]=fminf(16,fmaxf(-16,m.uv[z].y-m.uv[s].y))/16;}
@@ -173,11 +173,11 @@ __global__ void copy_trial(DeviceMeshView m,const State* state,const uint32_t* r
 __global__ void commit_faces(State* state,const uint32_t* offsets,uint32_t capacity){state->faces=offsets[capacity];++state->revision;state->accepted+=state->selected;state->accepted_trial=1;state->position=0;}
 __global__ void copy_commit(uint32_t* indices,uint16_t* materials,const uint32_t* trial_indices,const uint16_t* trial_materials,const uint32_t* offsets,uint32_t capacity){
     uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=offsets[capacity])return;for(unsigned j=0;j<3;++j)indices[f*3+j]=trial_indices[f*3+j];if(materials)materials[f]=trial_materials[f];}
-__global__ void rank_actions(DeviceMeshView m,State* state,TopologyView t,const Edit* edits,const float* features,const float* prediction,float* scores,uint32_t* order,NeuralRanking ranking,double scale,uint32_t capacity,uint32_t width,uint32_t outputs){
+__global__ void rank_actions(DeviceMeshView m,State* state,TopologyView t,const Edit* edits,const float* prediction,float* scores,uint32_t* order,NeuralRanking ranking,double scale,uint32_t capacity,uint32_t outputs){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=capacity)return;order[i]=i;scores[i]=-CUDART_INF_F;if(i>=state->actions)return;
     float score=0;if(ranking==NeuralRanking::Learned||ranking==NeuralRanking::Shuffled)score=prediction[size_t(i)*outputs];
-    else if(ranking==NeuralRanking::ShortestEdge)score=-features[size_t(i)*width+59];
-    else if(ranking==NeuralRanking::CurrentPlane){auto e=edits[i];double cost=0;for(uint32_t k=t.face_offsets[e.from];k<t.face_offsets[e.from+1];++k){auto f=t.faces[k];auto p=m.positions[m.indices[f*3]],q=m.positions[m.indices[f*3+1]],r=m.positions[m.indices[f*3+2]];
+    else if(ranking==NeuralRanking::ShortestEdge){auto e=edits[i];score=-float(len3(mul3(sub3(m.positions[e.to],m.positions[e.from]),1/scale)));}
+    else if(ranking==NeuralRanking::CurrentPlane){scale=fmax(1e-20,scale);auto e=edits[i];double cost=0;for(uint32_t k=t.face_offsets[e.from];k<t.face_offsets[e.from+1];++k){auto f=t.faces[k];auto p=m.positions[m.indices[f*3]],q=m.positions[m.indices[f*3+1]],r=m.positions[m.indices[f*3+2]];
         auto normal=cross3(sub3(q,p),sub3(r,p));double weight=len3(normal),distance=dot3(norm3(normal),sub3(m.positions[e.to],p))/scale;cost+=distance*distance*weight/(scale*scale);}score=float(-cost);}
     if(!isfinite(score))atomicExch(&state->error,2u);scores[i]=score;
 }
@@ -272,7 +272,7 @@ __global__ void teacher_placements(DeviceMeshView m,TopologyView topology,const 
 struct DeviceScope {int previous;explicit DeviceScope(int id){check(cudaGetDevice(&previous));check(cudaSetDevice(id));}~DeviceScope(){cudaSetDevice(previous);}};
 }
 struct GpuActionState::Impl {
-    Device device;int id;DeviceMesh mesh;Bounds bounds;uint32_t face_capacity,action_capacity,hash_capacity,source_faces;bool placement;
+    Device device;int id;DeviceMesh mesh;Bounds bounds;uint32_t face_capacity,action_capacity,hash_capacity,source_faces,inference_batch;bool placement;
     std::unique_ptr<DeviceMesh> original;
     Buffer<State> state;Buffer<uint32_t> geometry,canonical,slots,seams;Topology geometric,attribute;
     Buffer<float> vertex_x,conditions_buffer,features_buffer;Buffer<Edit> possible,edits;Buffer<uint8_t> valid;
@@ -289,7 +289,7 @@ struct GpuActionState::Impl {
     std::unique_ptr<Buffer<std::byte>> select_temp,scan_temp,sort_temp;size_t select_bytes{},scan_bytes{},sort_bytes{};State host{};
     uint64_t trial_revision{};bool teacher_policy{},selected_is_action{};Action selected_action{};
     static uint32_t hash_size(size_t vertices){if(vertices>uint32_t(INT_MAX)/2)throw std::length_error("GPU vertex hash exceeds u32");uint32_t n=2;while(n<vertices*2)n*=2;return n;}
-    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization,MeshView origin):device(options,true),id(options.device),mesh(device,m,free&&options.draw_storage()==NeuralVertexStorage::Packed,quantization),bounds(blitz::bounds(origin.positions.count?origin:m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),source_faces(uint32_t(origin.positions.count?origin.triangles():m.triangles())),placement(free),
+    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization,MeshView origin,uint32_t batch):device(options,true),id(options.device),mesh(device,m,free&&options.draw_storage()==NeuralVertexStorage::Packed,quantization),bounds(blitz::bounds(origin.positions.count?origin:m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),source_faces(uint32_t(origin.positions.count?origin.triangles():m.triangles())),inference_batch(batch),placement(free),
         state(device,1),geometry(device,m.positions.count),canonical(device,m.positions.count),slots(device,hash_capacity),seams(device,m.positions.count),geometric(device,uint32_t(m.positions.count),face_capacity),attribute(device,uint32_t(m.positions.count),face_capacity),
         vertex_x(device,m.positions.count*24),conditions_buffer(device,conditions),possible(device,action_capacity),edits(device,action_capacity),valid(device,action_capacity),
         selected(device,64),remap(device,m.positions.count),keep(device,size_t(face_capacity)+1),offsets(device,size_t(face_capacity)+1),trial_indices(device,m.indices.size()),original_indices(device,m.indices.size()),order(device,action_capacity),sorted_order(device,action_capacity),trial_materials(device,m.materials.size()),original_materials(device,m.materials.size()),
@@ -334,7 +334,7 @@ struct GpuActionState::Impl {
     }
     void ensure(Buffer<float>& buffer,size_t size){if(buffer.n<size){buffer={};buffer=Buffer<float>(device,size);}}
     void features(const std::array<float,conditions>& c,uint32_t width=action_features,const uint32_t* selection=nullptr,uint32_t count=0){for(float f:c)if(!std::isfinite(f))throw std::invalid_argument("nonfinite action condition");conditions_buffer.upload(c);uint32_t rows=selection?count:action_capacity;ensure(features_buffer,size_t(rows)*width);
-        fill_action_features<<<blocks(rows),256,0,gpu::stream()>>>(mesh.view,state.p,geometric.view(),edits.p,vertex_x.p,conditions_buffer.p,bounds,source_faces,features_buffer.p,rows,width,selection);check(cudaGetLastError());}
+        fill_action_features<<<blocks(rows),256,0,gpu::stream()>>>(mesh.view,state.p,geometric.view(),edits.p,vertex_x.p,conditions_buffer.p,bounds,source_faces,features_buffer.p,rows,width,selection,0);check(cudaGetLastError());}
     void read(){host=state.download()[0];if(host.error){check(gpu::memset(&state.p->error,0,sizeof(uint32_t)));if(host.error==2)throw std::invalid_argument("nonfinite GPU policy prediction");throw std::invalid_argument("illegal or stale GPU action");}mesh.view.faces=host.faces;}
     void select(Action a){if(selected_is_action&&a==selected_action)return;selected_is_action=false;
         single_edit<<<1,256,0,gpu::stream()>>>(state.p,edits.p,a.from,a.to,a.revision,selected.p);read();selected_action=a;selected_is_action=true;}
@@ -357,10 +357,16 @@ struct GpuActionState::Impl {
     void commit(){if(placement||mesh.precision.n){read();if(host.invalid_placement)throw std::invalid_argument("invalid placement or exact position cap");}if(placement){copy(mesh.positions,trial_positions);copy(mesh.normals,trial_normals);copy(mesh.uv,trial_uv);copy(mesh.colors,trial_colors);copy(mesh.tangents,trial_tangents);}
         copy(mesh.precision,trial_bits);copy_commit<<<blocks(face_capacity),256,0,gpu::stream()>>>(mesh.indices.p,mesh.materials.p,trial_indices.p,trial_materials.p,offsets.p,face_capacity);
         commit_faces<<<1,1,0,gpu::stream()>>>(state.p,offsets.p,face_capacity);read();mesh.view.revision=++trial_revision;rebuild();}
-    void rank(const std::array<float,conditions>& c,ActionCuda* network,NeuralRanking ranking,uint32_t seed){selected_is_action=false;auto architecture=network?network->architecture():action_schema;auto width=policy_inputs(architecture),outputs=policy_outputs(architecture);features(c,width);read();
-        if(ranking==NeuralRanking::Learned||ranking==NeuralRanking::Shuffled||(placement&&architecture==placement_schema)){if(!network)throw std::invalid_argument("missing GPU action network");ensure(prediction,size_t(host.actions)*outputs);network->predict_device(features_buffer.p,prediction.p,host.actions);}
+    void rank(const std::array<float,conditions>& c,ActionCuda* network,NeuralRanking ranking,uint32_t seed){selected_is_action=false;auto architecture=network?network->architecture():action_schema;auto width=policy_inputs(architecture),outputs=policy_outputs(architecture);for(float f:c)if(!std::isfinite(f))throw std::invalid_argument("nonfinite action condition");read();
+        if(ranking==NeuralRanking::Learned||ranking==NeuralRanking::Shuffled||(placement&&architecture==placement_schema)){if(!network)throw std::invalid_argument("missing GPU action network");ensure(prediction,size_t(host.actions)*outputs);
+            // Features are transient policy inputs. Keep only one bounded tile,
+            // while scores and placements retain their stable global action IDs.
+            conditions_buffer.upload(c);ensure(features_buffer,size_t(std::min(host.actions,inference_batch))*width);
+            for(uint32_t first=0;first<host.actions;first+=inference_batch){auto count=std::min(inference_batch,host.actions-first);
+                fill_action_features<<<blocks(count),256,0,gpu::stream()>>>(mesh.view,state.p,geometric.view(),edits.p,vertex_x.p,conditions_buffer.p,bounds,source_faces,features_buffer.p,count,width,nullptr,first);
+                network->predict_device(features_buffer.p,prediction.p+size_t(first)*outputs,count);}}
         if(placement){if(architecture==placement_schema)decode_placements<<<blocks(action_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,edits.p,prediction.p,proposals.p,nullptr,UINT32_MAX,c[3]!=0||c[4]!=0||c[5]!=0);else default_placements<<<blocks(action_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,edits.p,proposals.p);}
-        rank_actions<<<blocks(action_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,geometric.view(),edits.p,features_buffer.p,prediction.p,scores.p,order.p,ranking,std::max(1e-20,bounds.diameter()),action_capacity,width,outputs);
+        rank_actions<<<blocks(action_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,geometric.view(),edits.p,prediction.p,scores.p,order.p,ranking,bounds.diameter(),action_capacity,outputs);
         if(ranking==NeuralRanking::Shuffled)shuffle_scores<<<1,1,0,gpu::stream()>>>(state.p,scores.p,seed);
         check(cub::DeviceRadixSort::SortPairsDescending(sort_temp->p,sort_bytes,scores.p,sorted_scores.p,order.p,sorted_order.p,int(action_capacity),0,32,gpu::stream()));record_rank<<<1,1,0,gpu::stream()>>>(state.p);read();}
     DeviceMeshView trial_view(){uint32_t count;check(gpu::copy(&count,offsets.p+face_capacity,sizeof(count),cudaMemcpyDeviceToHost));auto v=mesh.view;v.indices=trial_indices.p;v.materials=trial_materials.p;v.faces=count;v.revision=++trial_revision;
@@ -369,7 +375,7 @@ struct GpuActionState::Impl {
     Lod download(){read();Lod lod;lod.data.indices.resize(size_t(host.faces)*3);check(gpu::copy(lod.data.indices.data(),mesh.indices.p,lod.data.indices.size()*sizeof(uint32_t),cudaMemcpyDeviceToHost));if(mesh.materials.n){lod.data.materials.resize(host.faces);check(gpu::copy(lod.data.materials.data(),mesh.materials.p,host.faces*sizeof(uint16_t),cudaMemcpyDeviceToHost));}
         if(placement){lod.shared_vertices=false;lod.data.positions=mesh.positions.download();lod.data.normals=mesh.normals.download();lod.data.uv=mesh.uv.download();lod.data.colors=mesh.colors.download();lod.data.tangents=mesh.tangents.download();lod.data.double_sided=mesh.sided.download();lod.data.exact_position_bits=mesh.precision.download();compact(lod.data);}return lod;}
 };
-GpuActionState::GpuActionState(MeshView m,const NeuralOptions& options,bool placement,const VertexBounds* quantization,MeshView origin){if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);if(m.triangles()>uint32_t(INT_MAX)/6)throw std::length_error("GPU action capacity exceeds signed sort range");if(origin.positions.count&&(!origin.triangles()||origin.triangles()>UINT32_MAX))throw std::invalid_argument("episode origin triangle domain");impl_=std::make_unique<Impl>(m,options,placement,quantization,origin);}
+GpuActionState::GpuActionState(MeshView m,const NeuralOptions& options,bool placement,const VertexBounds* quantization,MeshView origin,uint32_t inference_batch){if(!inference_batch||inference_batch>65536)throw std::invalid_argument("inference batch outside 1..65536");if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);if(m.triangles()>uint32_t(INT_MAX)/6)throw std::length_error("GPU action capacity exceeds signed sort range");if(origin.positions.count&&(!origin.triangles()||origin.triangles()>UINT32_MAX))throw std::invalid_argument("episode origin triangle domain");impl_=std::make_unique<Impl>(m,options,placement,quantization,origin,inference_batch);}
 GpuActionState::~GpuActionState(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
 std::vector<ActionRecord> GpuActionState::actions(const std::array<float,conditions>& c){auto& p=*impl_;DeviceScope scope(p.id);p.features(c);p.read();std::vector<Edit> edits(p.host.actions);std::vector<float> x(size_t(p.host.actions)*action_features);std::vector<ActionRecord> out(p.host.actions);
     if(!out.empty()){check(gpu::copy(edits.data(),p.edits.p,edits.size()*sizeof(Edit),cudaMemcpyDeviceToHost));check(gpu::copy(x.data(),p.features_buffer.p,x.size()*sizeof(float),cudaMemcpyDeviceToHost));}
@@ -396,7 +402,7 @@ std::vector<GpuActionState::Proposal> GpuActionState::teacher_proposals(Action a
 std::vector<PlacementRecord> GpuActionState::teacher_actions(const std::array<float,conditions>& c,uint32_t count,uint32_t seed,ActionCuda* policy){auto& p=*impl_;DeviceScope scope(p.id);if(!p.placement||!count||count>16||(policy&&policy->architecture()!=placement_schema))throw std::invalid_argument("invalid teacher pool/policy");p.selected_is_action=false;p.read();count=std::min(count,p.host.actions);if(!count)return {};p.teacher_policy=policy;
     // Selection needs geometry, not a dense feature/prediction tensor for every
     // legal action. Build and infer only the at-most-16 queried rows.
-    rank_actions<<<blocks(p.action_capacity),256,0,gpu::stream()>>>(p.mesh.view,p.state.p,p.geometric.view(),p.edits.p,nullptr,nullptr,p.scores.p,p.order.p,NeuralRanking::CurrentPlane,std::max(1e-20,p.bounds.diameter()),p.action_capacity,placement_features,placement_outputs);
+    rank_actions<<<blocks(p.action_capacity),256,0,gpu::stream()>>>(p.mesh.view,p.state.p,p.geometric.view(),p.edits.p,nullptr,p.scores.p,p.order.p,NeuralRanking::CurrentPlane,std::max(1e-20,p.bounds.diameter()),p.action_capacity,placement_outputs);
     check(cub::DeviceRadixSort::SortPairsDescending(p.sort_temp->p,p.sort_bytes,p.scores.p,p.sorted_scores.p,p.order.p,p.sorted_order.p,int(p.action_capacity),0,32,gpu::stream()));
     teacher_selection<<<1,1,0,gpu::stream()>>>(p.state.p,p.sorted_order.p,p.selected.p,count,seed);p.features(c,placement_features,p.selected.p,count);
     if(policy){p.ensure(p.prediction,size_t(count)*placement_outputs);policy->predict_device(p.features_buffer.p,p.prediction.p,count);decode_placements<<<1,32,0,gpu::stream()>>>(p.mesh.view,p.state.p,p.edits.p,p.prediction.p,p.proposals.p,p.selected.p,count,c[3]!=0||c[4]!=0||c[5]!=0);p.read();}

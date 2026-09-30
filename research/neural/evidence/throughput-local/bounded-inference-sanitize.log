@@ -1,0 +1,59 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+error (ignored): SQLite database '/home/kacper/.cache/nix/eval-cache-v6/62f1a73b8946f49a750d95cbd50c9df9bd85d9392567d8aea5c571134d1018d2.sqlite' is busy
+[0/1] Re-running CMake...
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+[1/23] Building CXX object CMakeFiles/blitzremesher.dir/src/neural.cpp.o
+[2/23] Linking CXX static library libblitzremesher.a
+[3/23] Linking CXX executable blitz
+[4/23] Linking CXX executable blitz-corpus
+[5/23] Linking CXX executable blitz-microbench
+[6/23] Linking CXX executable blitz-precision-bench
+[7/23] Linking CXX executable blitz-probe
+[8/23] Linking CXX executable blitz-lod-report
+[9/23] Linking CXX executable blitz-neural-vertex-storage-tests
+[10/23] Linking CXX executable blitz-tail-audit
+[11/23] Linking CXX executable blitz-neural-compact-tests
+[12/23] Linking CXX executable blitz-neural-tests
+[13/23] Linking CXX executable blitz-neural-action-tests
+[14/23] Linking CXX executable blitz-coverage-cache-tests
+[15/23] Linking CXX executable blitz-hybrid-tests
+[16/23] Linking CXX executable blitz-vegetation-tests
+[17/23] Linking CXX executable blitz-tests
+[18/23] Linking CXX executable blitz-precision-tests
+[19/23] Linking CXX executable blitz-render-cost-tests
+[20/23] Linking CXX executable blitz-c-smoke
+[21/23] Linking CXX executable blitz-io-tests
+[22/23] Linking CXX executable blitz-foliage-tests
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+      Start  5: coverage-cache-contracts
+      Start  6: hybrid-contracts
+ 1/13 Test  #6: hybrid-contracts ...................   Passed    0.70 sec
+      Start  8: contracts
+ 2/13 Test  #8: contracts ..........................   Passed    0.80 sec
+      Start 13: io-contracts
+ 3/13 Test #13: io-contracts .......................   Passed    0.06 sec
+      Start  7: vegetation-contracts
+ 4/13 Test  #7: vegetation-contracts ...............   Passed    0.36 sec
+      Start  9: precision-contracts
+ 5/13 Test  #9: precision-contracts ................   Passed    0.19 sec
+      Start 12: foliage-contracts
+ 6/13 Test #12: foliage-contracts ..................   Passed    0.03 sec
+      Start  4: neural-action-contracts
+ 7/13 Test  #4: neural-action-contracts ............   Passed    0.13 sec
+      Start  2: neural-compact-storage-contracts
+ 8/13 Test  #2: neural-compact-storage-contracts ...   Passed    0.01 sec
+      Start  1: neural-vertex-storage-contracts
+ 9/13 Test  #1: neural-vertex-storage-contracts ....   Passed    0.01 sec
+      Start  3: neural-contracts
+10/13 Test  #3: neural-contracts ...................   Passed    0.02 sec
+      Start 11: c-abi
+11/13 Test #11: c-abi ..............................   Passed    0.01 sec
+      Start 10: render-cost-contracts
+12/13 Test #10: render-cost-contracts ..............   Passed    0.01 sec
+13/13 Test  #5: coverage-cache-contracts ...........   Passed    2.62 sec
+
+100% tests passed, 0 tests failed out of 13
+
+Total Test time (real) =   2.62 sec

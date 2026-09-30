@@ -90,6 +90,19 @@ void episode_features(){auto origin=plane(7),seed=plane(5);NeuralOptions options
     for(const auto& row:rows){auto p=seed.positions[row.action.from];require(std::abs(row.x[66]-32.f/72)<1e-7,"episode progress restarted at LOD0");
         require(std::abs(row.x[0]-(p.x-b.center.x)/(b.radius*2))<2e-6&&std::abs(row.x[1]-(p.y-b.center.y)/(b.radius*2))<2e-6,"episode lost source coordinate normalization");}
 }
+void bounded_inference(){auto mesh=plane(7);NeuralOptions options;options.memory_mib=128;
+    WeightsData weights;weights.architecture=placement_schema;weights.values.resize(placement_weight_count);weights.values[0]=.2f;
+    size_t second=hidden*(placement_features+1),last=second+hidden*(hidden+1);weights.values[second]=.3f;weights.values[last]=.4f;weights.values[last+hidden]=.02f;
+    ActionCuda policy(weights,options,7);std::array<float,conditions> c{};Lod expected;ActionStats reference;
+    for(auto ranking:{NeuralRanking::Learned,NeuralRanking::Shuffled,NeuralRanking::ShortestEdge,NeuralRanking::Constant,NeuralRanking::CurrentPlane})for(bool placement:{false,true}){
+        for(uint32_t chunk:{1024u,1u,7u,64u}){GpuActionState state(mesh.view(),options,placement,nullptr,{},chunk);ActionStats stats;
+            auto result=state.execute(c,mesh.view().triangles()-6,5,&policy,ranking,319,2,[](DeviceMeshView){return true;},&stats);
+            if(chunk==1024){expected=std::move(result);reference=stats;require(stats.accepted>0,"bounded inference fixture did not exercise a decision");}
+            else require(same_mesh_data(expected.view(mesh.view()),result.view(mesh.view()))&&stats.ranked==reference.ranked&&stats.trials==reference.trials&&stats.accepted==reference.accepted&&stats.rejected==reference.rejected,"inference chunk changed ranking, placement or topology");
+        }
+    }
+    for(uint32_t invalid:{0u,65537u}){bool rejected=false;try{GpuActionState state(mesh.view(),options,true,nullptr,{},invalid);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"invalid inference chunk accepted");}
+}
 void strided_upload(){auto m=plane(5);struct Vertex {uint32_t prefix;Vec3 position;uint8_t gap[7];Vec3 normal;};std::vector<Vertex> vertices(m.positions.size());for(size_t i=0;i<vertices.size();++i){vertices[i].position=m.positions[i];vertices[i].normal=m.normals[i];}
     auto view=m.view();view.positions.data=reinterpret_cast<const std::byte*>(&vertices[0].position);view.positions.stride=sizeof(Vertex);view.normals.data=reinterpret_cast<const std::byte*>(&vertices[0].normal);view.normals.stride=sizeof(Vertex);
     NeuralOptions options;options.memory_mib=128;GpuActionState packed(m.view(),options),strided(view,options);auto a=packed.actions({}),b=strided.actions({});require(a.size()==b.size(),"strided upload topology");for(size_t i=0;i<a.size();++i)require(a[i].action==b[i].action&&a[i].x==b[i].x,"strided upload changed features");
@@ -101,5 +114,5 @@ int main(){try{if(!neural_available())return 77;
     Mesh tetra;tetra.positions={{0,0,0},{1,0,0},{0,1,0},{0,0,1}};tetra.indices={0,2,1,0,1,3,0,3,2,1,2,3};parity(tetra,1);
     auto unsafe=plane(5);unsafe.indices.insert(unsafe.indices.end(),{6,7,12,6,7,17,1,1,2});parity(unsafe,3);
     Mesh bow;bow.positions={{0,0,0},{1,0,0},{0,1,0},{-1,0,0},{0,-1,0}};bow.indices={0,1,2,0,3,4};parity(bow,1);
-    executor();placement_contracts();exact_position_contracts();coupled_placement(seam);incremental_audits();sparse_teacher();workspace_budget();strided_upload();episode_features();std::cout<<"GPU action contracts passed\n";return 0;
+    executor();placement_contracts();exact_position_contracts();coupled_placement(seam);incremental_audits();sparse_teacher();workspace_budget();strided_upload();episode_features();bounded_inference();std::cout<<"GPU action contracts passed\n";return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

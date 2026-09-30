@@ -9,7 +9,8 @@ class GpuActionState {
 public:
     // Episode seeds retain the source normalization and progress denominator.
     // The optional origin is borrowed only during construction.
-    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false,const VertexBounds* quantization=nullptr,MeshView origin={});
+    // inference_batch bounds feature scratch, never the number of ranked actions.
+    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false,const VertexBounds* quantization=nullptr,MeshView origin={},uint32_t inference_batch=16384);
     ~GpuActionState();
     GpuActionState(const GpuActionState&)=delete;
     GpuActionState& operator=(const GpuActionState&)=delete;

@@ -1,0 +1,272 @@
+{
+  "complete": false,
+  "score": null,
+  "revision": "b96d040b179eb9a13d7cbe8ef2e01e4658234fe2",
+  "ready_for_next_training": false,
+  "phases": [
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "--diagnose-checkpoint",
+        "tests/fixtures/neural-cancellation",
+        "/workspace/results/pipeline-validation/cancellation.json"
+      ],
+      "log": "cancellation.log",
+      "code": 0,
+      "seconds": 1.19
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "--replay-checkpoint",
+        "/workspace/forensic",
+        "/workspace/results/pipeline-validation/replay",
+        "16384"
+      ],
+      "log": "replay.log",
+      "code": 0,
+      "seconds": 10.49
+    },
+    {
+      "name": "build/neural/blitz-neural-vulkan-tests",
+      "args": [],
+      "log": "vulkan-validation.log",
+      "code": 0,
+      "seconds": 44.868
+    },
+    {
+      "name": "/usr/local/cuda/bin/compute-sanitizer",
+      "args": [
+        "--tool",
+        "memcheck",
+        "--error-exitcode",
+        "1",
+        "build/neural/blitz-neural-cycle",
+        "--check-width",
+        "64"
+      ],
+      "log": "resident-memcheck.log",
+      "code": 0,
+      "seconds": 3.183
+    },
+    {
+      "name": "node",
+      "args": [
+        "research/neural/recovery-proof.mjs",
+        "/workspace/results/pipeline-validation/recovery"
+      ],
+      "log": "recovery.log",
+      "code": 0,
+      "seconds": 22.877
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "/workspace/results/pipeline-validation/sustained",
+        "--curriculum",
+        "/workspace/results/pipeline-validation/recovery/curriculum.json",
+        "--duration-minutes",
+        "1",
+        "--finalize-minutes",
+        "1",
+        "--states",
+        "16",
+        "--updates",
+        "128",
+        "--workers",
+        "2",
+        "--candidate-batch",
+        "4",
+        "--episode-seeds",
+        "on",
+        "--checkpoint-seconds",
+        "10",
+        "--training-profile",
+        "coverage",
+        "--quality",
+        "on",
+        "--update-backend",
+        "fused",
+        "--gpu-memory-mib",
+        "16384"
+      ],
+      "log": "sustained.log",
+      "code": 0,
+      "seconds": 67.677
+    },
+    {
+      "name": "node",
+      "args": [
+        "research/neural/throughput.mjs",
+        "matrix",
+        "/workspace/results/pipeline-validation/matrix"
+      ],
+      "log": "matrix.log",
+      "code": 0,
+      "seconds": 47.143
+    },
+    {
+      "name": "nsys",
+      "args": [
+        "profile",
+        "--trace=cuda,nvtx,vulkan",
+        "--cuda-graph-trace=node",
+        "--sample=none",
+        "--cpuctxsw=none",
+        "--duration=15",
+        "--kill=sigterm",
+        "--output=/workspace/results/pipeline-validation/timeline",
+        "build/neural/blitz-neural-cycle",
+        "/workspace/results/pipeline-validation/profile",
+        "--curriculum",
+        "/workspace/results/pipeline-validation/matrix/curriculum.json",
+        "--states",
+        "16",
+        "--passes",
+        "8",
+        "--updates",
+        "2048",
+        "--workers",
+        "3",
+        "--candidate-batch",
+        "4",
+        "--frozen-teacher",
+        "on",
+        "--training-profile",
+        "coverage",
+        "--quality",
+        "off",
+        "--update-backend",
+        "fused",
+        "--gpu-memory-mib",
+        "16384",
+        "--minutes",
+        "2"
+      ],
+      "log": "timeline.log",
+      "code": 0,
+      "seconds": 28.499
+    },
+    {
+      "name": "nsys",
+      "args": [
+        "stats",
+        "--report",
+        "cuda_gpu_kern_sum,cuda_api_sum,nvtx_sum",
+        "--format",
+        "csv",
+        "--output",
+        "/workspace/results/pipeline-validation/timeline-stats",
+        "/workspace/results/pipeline-validation/timeline.nsys-rep"
+      ],
+      "log": "timeline-stats.log",
+      "code": 0,
+      "seconds": 9.206
+    },
+    {
+      "name": "node",
+      "args": [
+        "research/neural/throughput.mjs",
+        "pilot",
+        "/workspace/results/pipeline-validation/pilot"
+      ],
+      "log": "pilot.log",
+      "code": 0,
+      "seconds": 10.817
+    },
+    {
+      "name": "node",
+      "args": [
+        "research/neural/throughput.mjs",
+        "seeds",
+        "/workspace/results/pipeline-validation/seeds"
+      ],
+      "log": "seeds.log",
+      "code": 0,
+      "seconds": 8.156
+    },
+    {
+      "name": "node",
+      "args": [
+        "research/neural/throughput.mjs",
+        "expanded",
+        "/workspace/results/pipeline-validation/expanded"
+      ],
+      "log": "expanded.log",
+      "code": 0,
+      "seconds": 17.55
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "--audit-model",
+        "research/neural/corpus-v2/validation.json",
+        "/workspace/forensic/checkpoints/step-3404800/model.blzn",
+        "/workspace/results/pipeline-validation/coverage-audit-settings.json",
+        "/workspace/results/pipeline-validation/previous-model-audit.json"
+      ],
+      "log": "previous-model-audit.log",
+      "code": 0,
+      "seconds": 31.056
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "--audit-model",
+        "research/neural/corpus-v2/validation.json",
+        "/workspace/initial-model.blzn",
+        "/workspace/results/pipeline-validation/coverage-audit-settings.json",
+        "/workspace/results/pipeline-validation/initial-model-audit.json"
+      ],
+      "log": "initial-model-audit.log",
+      "code": 0,
+      "seconds": 30.752
+    }
+  ],
+  "recovery": {
+    "complete": true,
+    "score": null,
+    "rows": [
+      {
+        "name": "resumed",
+        "interrupt": true,
+        "code": 2,
+        "signalled": true,
+        "seconds": 2.884
+      },
+      {
+        "name": "resumed",
+        "interrupt": false,
+        "code": 0,
+        "signalled": false,
+        "seconds": 9.367
+      },
+      {
+        "name": "continuous",
+        "interrupt": false,
+        "code": 0,
+        "signalled": false,
+        "seconds": 10.356
+      }
+    ],
+    "interruption": {
+      "condition": 1,
+      "step": "checkpoints/step-4992"
+    },
+    "step": 98304,
+    "fresh_states": 48,
+    "policy_identical": true,
+    "labels_identical": true
+  },
+  "matrix": {
+    "complete": true,
+    "identical_labels": true
+  },
+  "pilot_complete": true,
+  "seeds_complete": true,
+  "expanded_complete": true,
+  "previous_model_complete": false,
+  "initial_model_complete": false,
+  "compute_terminated": true,
+  "volume_deleted": true
+}

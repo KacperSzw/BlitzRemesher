@@ -1,0 +1,58 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+[0/1] Re-running CMake...
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/kacper/Projects/BlitzRemesher-neural/build/cpu
+[1/23] Building CXX object CMakeFiles/blitzremesher.dir/src/neural.cpp.o
+[2/23] Linking CXX static library libblitzremesher.a
+[3/23] Linking CXX executable blitz
+[4/23] Linking CXX executable blitz-corpus
+[5/23] Linking CXX executable blitz-microbench
+[6/23] Linking CXX executable blitz-precision-bench
+[7/23] Linking CXX executable blitz-probe
+[8/23] Linking CXX executable blitz-lod-report
+[9/23] Linking CXX executable blitz-tail-audit
+[10/23] Linking CXX executable blitz-neural-vertex-storage-tests
+[11/23] Linking CXX executable blitz-neural-compact-tests
+[12/23] Linking CXX executable blitz-neural-tests
+[13/23] Linking CXX executable blitz-coverage-cache-tests
+[14/23] Linking CXX executable blitz-neural-action-tests
+[15/23] Linking CXX executable blitz-hybrid-tests
+[16/23] Linking CXX executable blitz-vegetation-tests
+[17/23] Linking CXX executable blitz-tests
+[18/23] Linking CXX executable blitz-precision-tests
+[19/23] Linking CXX executable blitz-render-cost-tests
+[20/23] Linking CXX executable blitz-c-smoke
+[21/23] Linking CXX executable blitz-io-tests
+[22/23] Linking CXX executable blitz-foliage-tests
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/cpu
+      Start  5: coverage-cache-contracts
+      Start  8: contracts
+ 1/13 Test  #8: contracts ..........................   Passed    0.19 sec
+      Start  6: hybrid-contracts
+ 2/13 Test  #6: hybrid-contracts ...................   Passed    0.15 sec
+      Start  4: neural-action-contracts
+ 3/13 Test  #4: neural-action-contracts ............   Passed    0.01 sec
+      Start  7: vegetation-contracts
+ 4/13 Test  #7: vegetation-contracts ...............   Passed    0.07 sec
+      Start  9: precision-contracts
+ 5/13 Test  #9: precision-contracts ................   Passed    0.04 sec
+      Start  2: neural-compact-storage-contracts
+ 6/13 Test  #2: neural-compact-storage-contracts ...   Passed    0.00 sec
+      Start  1: neural-vertex-storage-contracts
+ 7/13 Test  #5: coverage-cache-contracts ...........   Passed    0.47 sec
+      Start 12: foliage-contracts
+ 8/13 Test  #1: neural-vertex-storage-contracts ....   Passed    0.00 sec
+      Start 13: io-contracts
+ 9/13 Test #13: io-contracts .......................   Passed    0.01 sec
+      Start  3: neural-contracts
+10/13 Test #12: foliage-contracts ..................   Passed    0.01 sec
+      Start 10: render-cost-contracts
+11/13 Test #10: render-cost-contracts ..............   Passed    0.00 sec
+      Start 11: c-abi
+12/13 Test #11: c-abi ..............................   Passed    0.00 sec
+13/13 Test  #3: neural-contracts ...................   Passed    0.01 sec
+
+100% tests passed, 0 tests failed out of 13
+
+Total Test time (real) =   0.49 sec

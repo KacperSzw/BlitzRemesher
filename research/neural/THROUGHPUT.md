@@ -171,3 +171,40 @@ work matrix, seeded episodes, and all 100 training meshes. The prior checkpoint
 and initializer are also audited on all 20 validation groups. Optional wider
 network experiments require an explicit validation configuration flag and do
 not delay these gates. Width 64 remains the proposed training configuration.
+
+The second L40S validation at `b96d040` passed all 32 tests, exact interrupted
+recovery (98,304 updates and 48 fresh states, byte-identical policy and labels),
+the GPU memory check, and Vulkan validation. Its one-minute learning window
+produced 3,987 fresh states and 32,000 updates; full startup/finalization took
+66.63 seconds. All six checkpoints and both diagnostic quality profiles passed.
+The learned shelves coverage chain was 524 → 428 → 302 triangles; the fixed
+ranking was 524 → 460 → 460. This is a two-mesh diagnostic, not a generalization
+score or a causal comparison with the same run's starting policy.
+
+All 100 training conditions qualified in 16.22 seconds: 95 produced a fresh
+state and five had no legal training action. None had a representation failure.
+The frozen pilot also passed (eight predecessor/empty outcomes remain recorded).
+All 12 fixed-work configurations produced identical labels. For 96 fresh states
+and 768 updates, one worker with eight candidates took 2.445 seconds, compared
+with 3.301 seconds for one candidate (1.35×). More workers did not improve this
+small-mesh test; this does not establish the best schedule for larger meshes.
+
+The final 20-group model comparison hit its 4 GiB cap on three large meshes
+(0.74–1.54 million triangles), so this run is not marked ready. Production action
+ranking allocated a full `6 × triangles × 128` FP32 feature matrix, even for
+unused action slots. Inference now generates bounded tiles (8 MiB at the default
+16,384-row tile), preserving global action IDs and FP32 predictions. Geometric
+rankings compute their score directly without an unused feature matrix. GPU
+fixtures compare multiple tile sizes, rankings, and placement/reuse behavior;
+large-mesh validation remains pending. Audit reports now record each row's
+workspace peak and allocation refusal, and resource-interrupted audits cannot
+be marked complete. Both models use the same cap on each comparison attempt.
+
+The 15-second timeline recorded 44,122 CUDA copies and 11,653 CUDA/Vulkan
+handoffs. Their host API durations summed to 9.08 seconds for copies and 10.09
+seconds for semaphore calls across concurrent threads; these are overlapping
+host times, not additive GPU execution. Candidate-audit ranges totaled 13.11
+seconds across workers. The next large throughput opportunity is batching
+candidate/camera work to reduce host readbacks and interop handoffs. Increasing
+network width does not address those waits. Full raw evidence is retained in
+the checksum-verified archive referenced by `validation-02/collection.json`.

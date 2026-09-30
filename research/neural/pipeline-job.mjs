@@ -26,9 +26,12 @@ try{
     await execute('build/neural/blitz-neural-vulkan-tests',[],'vulkan-validation.log',{environment:{VK_INSTANCE_LAYERS:'VK_LAYER_KHRONOS_validation'}});
     if(/Validation Error|VUID-|SYNC-HAZARD|was not found/.test(fs.readFileSync(root+'/vulkan-validation.log','utf8')))throw new Error('Vulkan validation layer failure');
     await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1',cycle,'--check-width','64'],'resident-memcheck.log');
+    await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-action-gpu-tests'],'action-memcheck.log');
     const environment={BLITZ_VALIDATION_DEADLINE:String(deadline-120000),BLITZ_VALIDATION_MEMORY_MIB:'16384',BLITZ_COMPARISON_STATES:'16'};
     await execute('node',['research/neural/recovery-proof.mjs',root+'/recovery'],'recovery.log',{environment});report.recovery=read(root+'/recovery/report.json');
     await execute(cycle,[root+'/sustained','--curriculum',root+'/recovery/curriculum.json','--duration-minutes','1','--finalize-minutes','1','--states','16','--updates','128','--workers','2','--candidate-batch','4','--episode-seeds','on','--checkpoint-seconds','10','--training-profile','coverage','--quality','on','--update-backend','fused','--gpu-memory-mib','16384'],'sustained.log',{maximum:150000});report.sustained=read(root+'/sustained/report.json');
+    write(root+'/diagnostic-settings.json',{...read('research/neural/refactor-smoke.json'),profile:'coverage'});
+    await execute(cycle,['--audit-model','research/neural/action-diagnostic.json',root+'/sustained/initial-model.blzn',root+'/diagnostic-settings.json',root+'/sustained-initial-audit.json'],'sustained-initial-audit.log');report.sustained_initial=read(root+'/sustained-initial-audit.json');
     await execute('node',['research/neural/throughput.mjs','matrix',root+'/matrix'],'matrix.log',{environment});report.matrix=read(root+'/matrix/report.json');
     await execute('nsys',['profile','--trace=cuda,nvtx,vulkan','--cuda-graph-trace=node','--sample=none','--cpuctxsw=none','--duration=15','--kill=sigterm','--output='+root+'/timeline',cycle,root+'/profile','--curriculum',root+'/matrix/curriculum.json','--states','16','--passes','8','--updates','2048','--workers','3','--candidate-batch','4','--frozen-teacher','on','--training-profile','coverage','--quality','off','--update-backend','fused','--gpu-memory-mib','16384','--minutes','2'],'timeline.log',{maximum:90000,allowFailure:true});
     await execute('nsys',['stats','--report','cuda_gpu_kern_sum,cuda_api_sum,nvtx_sum','--format','csv','--output',root+'/timeline-stats',root+'/timeline.nsys-rep'],'timeline-stats.log',{maximum:60000,allowFailure:true});
@@ -38,16 +41,23 @@ try{
     const journal=read('/workspace/forensic/latest.json'),previous='/workspace/forensic/'+journal.checkpoint+'/model.blzn';
     // All validation groups, original gates; the failed training run itself is
     // never assigned an aggregate quality score.
-    const coverage={...read('research/neural/refactor-smoke.json'),profile:'coverage'};write(root+'/coverage-audit-settings.json',coverage);
-    for(const [name,model] of [['previous',previous],['initial','/workspace/initial-model.blzn']]){
-      const output=root+'/'+name+'-model-audit.json';await execute(cycle,['--audit-model','research/neural/corpus-v2/validation.json',model,root+'/coverage-audit-settings.json',output],name+'-model-audit.log',{maximum:400000,allowFailure:true});
-      if(fs.existsSync(output))report[name+'_model']=read(output);
+    report.model_audit_attempts=[];
+    for(const memory of [4096,16384]){
+      report.previous_model=null;report.initial_model=null;
+      const settings=root+'/coverage-audit-settings-'+memory+'.json';write(settings,{...read('research/neural/refactor-smoke.json'),profile:'coverage',gpu_memory_mib:memory});
+      const attempt={gpu_memory_mib:memory,audits:[]};
+      for(const [name,model] of [['previous',previous],['initial','/workspace/initial-model.blzn']]){
+        const output=root+'/'+name+'-model-audit-'+memory+'.json';await execute(cycle,['--audit-model','research/neural/corpus-v2/validation.json',model,settings,output],name+'-model-audit-'+memory+'.log',{maximum:400000,allowFailure:true});
+        if(fs.existsSync(output)){report[name+'_model']=read(output);attempt.audits.push(report[name+'_model']);}
+      }
+      report.model_audit_attempts.push(attempt);
+      if(attempt.audits.length!==2||attempt.audits.every(a=>a.complete)||!attempt.audits.every(a=>a.rows.every(r=>r.status==='complete'||r.workspace_limited===true)))break;
     }
     if(config.optional_ablations===true&&Date.now()+180000<deadline){await execute('node',['research/neural/throughput.mjs','ablation',root+'/ablation'],'ablation.log',{environment,maximum:600000,allowFailure:true});if(fs.existsSync(root+'/ablation/report.json'))report.ablation=read(root+'/ablation/report.json');}
     if(report.ablation?.complete&&Date.now()+180000<deadline){await execute('node',['research/neural/width-quality.mjs',root+'/ablation',root+'/width-quality','128'],'width-quality.log',{environment,maximum:600000,allowFailure:true});if(fs.existsSync(root+'/width-quality/report.json'))report.width_quality=read(root+'/width-quality/report.json');}
     report.selected_width=64;report.width_quality_gate_passed=false;report.width_selection_reason='Larger widths require the three-seed validation quality gate; throughput alone cannot select them.';
     if(report.width_quality?.complete&&report.width_quality.gate.passed){report.selected_width=report.width_quality.gate.selected_width;report.width_quality_gate_passed=true;report.width_selection_reason='All three validation seeds passed unchanged audits, triangle reduction and generation time gates.';}
-    report.complete=report.matrix.complete===true&&report.recovery.complete===true&&report.sustained.complete===true&&report.pilot.complete===true&&report.seeds.complete===true&&report.expanded.complete===true&&report.previous_model?.complete===true&&report.initial_model?.complete===true;
+    report.complete=report.matrix.complete===true&&report.recovery.complete===true&&report.sustained.complete===true&&report.sustained_initial.complete===true&&report.pilot.complete===true&&report.seeds.complete===true&&report.expanded.complete===true&&report.previous_model?.complete===true&&report.initial_model?.complete===true;
   }else report.complete=true;
 }catch(error){report.error=String(error);process.exitCode=1;}
 finally{report.finished=Date.now();report.ready_for_next_training=report.complete&&report.cancellation?.compensated_cuda_pass===true&&report.replay?.complete===true;write(root+'/report.json',report);write('/workspace/results/job.json',{code:process.exitCode??0,experiment:'pipeline-validation',result:root+'/report.json'});}

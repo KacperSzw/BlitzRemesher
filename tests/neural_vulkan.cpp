@@ -10,7 +10,7 @@
 using namespace blitz;using namespace blitz::neural;
 static void require(bool value,const char* message){if(!value)throw std::runtime_error(message);}
 static Mesh fixture(){Mesh m;m.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0}};m.normals.assign(4,{0,0,1});m.uv={{-8,-8},{8,-8},{8,8},{-8,8}};m.tangents.assign(4,{1,0,0,-1});m.colors.assign(4,{31,127,255,47});m.indices={0,1,2,0,2,3};m.materials={65535,65535};return m;}
-static void candidate_contracts(){
+static void candidate_contracts(bool memory_boundaries=false){
     Mesh mesh;for(unsigned y=0;y<4;++y)for(unsigned x=0;x<4;++x){mesh.positions.push_back({float(x),float(y),0});mesh.normals.push_back({0,0,1});}
     for(uint32_t y=0;y<3;++y)for(uint32_t x=0;x<3;++x){auto i=y*4+x;mesh.indices.insert(mesh.indices.end(),{i,i+1,i+4,i+1,i+5,i+4});}mesh.double_sided={1};
     NeuralOptions options;options.memory_mib=256;options.raster_backend=NeuralRasterBackend::Vulkan;options.view_batch=1;AuditSession session(options);GpuActionState state(mesh.view(),options,true);AuditCuda audit(options,mesh.view());
@@ -18,6 +18,9 @@ static void candidate_contracts(){
     std::array<GpuActionState::Proposal,8> proposals{alternatives[0],alternatives[2],alternatives[4],alternatives[4],alternatives[0],alternatives[2],alternatives[4],alternatives[4]};proposals[3].placement.position.x=INFINITY;proposals[7].placement.position.y=INFINITY;
     EvalSettings e;e.screen_size=24;e.limit=3;e.views={3,1,817};e.supersample=2;e.max_supersample=4;e.max_changed_area=.4;auto box=bounds(mesh.view());
     for(auto profile:{Profile::Coverage,Profile::Attributes})for(auto count:{1u,2u,4u,8u})for(double cutoff:{std::numeric_limits<double>::infinity(),0.,.02}){
+        // Instrument the maximum lane count with valid/invalid candidates and
+        // pruning in both attachment layouts. CTest retains the full matrix.
+        if(memory_boundaries&&(count!=8||cutoff!=.02))continue;
         e.profile=profile;std::array<CandidateAudit,8> expected;
         for(unsigned i=0;i<count;++i){DeviceMeshView candidate;auto& q=expected[i];q.valid=state.trial(rows[0].action,proposals[i].placement,candidate);if(q.valid){q.faces=candidate.faces;q.value=audit.certify(mesh.view(),candidate,box,e,nullptr,cutoff,std::isfinite(cutoff)?&q.pruned:nullptr);}}
         auto views=state.trial_batch(rows[0].action,std::span(proposals).first(count));auto actual=audit.certify_candidates(mesh.view(),views,box,e,nullptr,cutoff);
@@ -39,13 +42,23 @@ void packed_seed_domain(){auto source=fixture(),seed=source,original=source;auto
     seed.uv[0].x=8.01f;bool rejected=false;try{GpuActionState invalid(seed.view(),options,true,&q,source.view());}catch(const std::invalid_argument&){rejected=true;}
     require(rejected,"packed seed silently clamped an unsupported UV");
 }
-int main(){try{if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
-    packed_seed_domain();candidate_contracts();
+static void mask_memory_contracts(){
+    auto mesh=fixture();auto box=bounds(mesh.view());NeuralOptions options;options.memory_mib=128;options.raster_backend=NeuralRasterBackend::Vulkan;
+    MemoryScope memory(options);gpu::Device device(options);GpuActionState state(mesh.view(),options,true);VulkanRaster raster(options);gpu::Buffer<AuditPixel> pixels(device,64*64);gpu::Buffer<uint32_t> words(device,64*64/32);
+    Camera camera{{1,0,0},{0,1,0},{0,0,1},box.radius*4,1,24/box.diameter(),false};
+    raster.render(state.view(),box,camera,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);auto full=pixels.download();
+    raster.render(state.view(),box,camera,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr,nullptr,true,words.p);auto mask=pixels.download();auto bits=words.download();
+    require(raster.surfaces().mask&&!raster.surfaces().attributes,"mask memory fixture retained attribute surfaces");
+    for(size_t i=0;i<mask.size();++i)require(mask[i].covered==full[i].covered&&mask[i].covered==((bits[i/32]>>(i%32))&1)&&!mask[i].visible,"instrumented mask/full coverage differs");
+}
+int main(int argc,char** argv){try{bool memory_boundaries=argc==2&&std::string_view(argv[1])=="--memcheck";if(argc!=1&&!memory_boundaries)throw std::invalid_argument("expected optional --memcheck");if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
+    packed_seed_domain();candidate_contracts(memory_boundaries);
     // Each worker must retain the serial verdicts on an independent stream.
     MemoryBudget shared{size_t(384)<<20,0,0,0};std::barrier ready(2);
-    auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts();};
+    auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts(memory_boundaries);};
     auto first=std::async(std::launch::async,worker),second=std::async(std::launch::async,worker);first.get();second.get();
     require(shared.live==0&&shared.peak>0&&shared.peak<=shared.limit,"worker shared budget/lifetime contract");
+    if(memory_boundaries){mask_memory_contracts();std::cout<<"Vulkan mask, candidate boundaries and concurrent ownership memory contracts passed\n";return 0;}
     auto mesh=fixture();auto original=mesh;auto b=bounds(mesh.view());Camera c{{1,0,0},{0,1,0},{0,0,1},b.radius*4,1,24/b.diameter(),false};
     for(auto storage:{NeuralVertexStorage::Float32,NeuralVertexStorage::Position16,NeuralVertexStorage::Packed}){
         options.vertex_storage=storage;auto image=raster_gpu(mesh.view(),b,c,24,2,false,options);unsigned visible=0,covered=0;

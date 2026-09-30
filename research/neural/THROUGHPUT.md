@@ -275,3 +275,15 @@ CPU readbacks and CUDA/Vulkan handoffs. Optimizer-only work is roughly 6.7% of
 this measured wall time, so increasing network width or tuning the optimizer
 cannot remove the dominant wait for examples. Further optimization does not
 need to delay the authorized training once its remaining preflight passes.
+
+The first authorized expanded-run rental passed all 32 CTests but stopped before
+training: running the entire Vulkan Cartesian test matrix under Compute Sanitizer
+exceeded its three-minute deadline without a diagnostic or completion. This is
+retained as an incomplete check, not a pass. The full matrix remains in CTest and
+Vulkan validation-layer runs. A dedicated `--memcheck` invocation now instruments
+the maximum candidate lane count, valid/invalid candidates, both attachment
+layouts, pruning, fixed-domain seed conversion, concurrent shared ownership,
+and mask/full/bitset readback equality. This keeps memory-boundary coverage within
+the bounded setup window. Compute/storage were released after verified collection;
+the retry spends the same $10 grant. Local compilation and runner contracts passed;
+the shared local GPU had only 74 MiB free, so the GPU proof remains remote.

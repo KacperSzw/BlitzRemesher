@@ -180,7 +180,7 @@ template<class R> R rasterize_impl(MeshView m,const Bounds& b,const Camera& c,do
             pixel.normal=normalized(a.n*u+d.n*v+e.n*w);
             if(length(pixel.normal)<.5)pixel.normal=geometric;
             else if(back)pixel.normal=pixel.normal*-1;
-            pixel.color={float(u*a.col.x+v*d.col.x+w*e.col.x),float(u*a.col.y+v*d.col.y+w*e.col.y),float(u*a.col.z+v*d.col.z+w*e.col.z),1};
+            pixel.color=m.colors?Vec4{float(u*a.col.x+v*d.col.x+w*e.col.x),float(u*a.col.y+v*d.col.y+w*e.col.y),float(u*a.col.z+v*d.col.z+w*e.col.z),1}:Vec4{1,1,1,1};
             }
         }
     }

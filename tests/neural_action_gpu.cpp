@@ -44,6 +44,33 @@ void coupled_placement(const Mesh& mesh){NeuralOptions options;options.memory_mi
     for(size_t i=0;i<result.data.positions.size();++i)if(result.data.positions[i].z!=0){require(length(result.data.positions[i]-p.position)<1e-6,"seam cracked");if(result.data.uv[i].x<0){++right;require(length(result.data.normals[i]-p.normals[1])<1e-6,"second normal crossed seam");}else{++left;require(length(result.data.normals[i]-p.normals[0])<1e-6,"first normal crossed seam");}}
     require(left&&right&&validate(result.data.view()).empty(),"seam lost a wedge");
 }
+void incremental_audits(){auto m=plane(9);NeuralOptions options;options.memory_mib=256;GpuActionState state(m.view(),options,true);
+    AuditCuda incremental(options,m.view());auto uncached=options;uncached.cache_rasters=false;AuditCuda full(uncached,m.view());
+    EvalSettings e;e.profile=Profile::Attributes;e.screen_size=37;e.limit=4;e.views={3,2,719};e.supersample=e.max_supersample=3;
+    for(unsigned step=0;step<3;++step){auto rows=state.teacher_actions({},2,137+step);require(!rows.empty(),"incremental raster fixture exhausted");
+        for(auto& row:rows){auto proposals=state.teacher_proposals(row.action);unsigned valid=0;
+            for(auto& proposal:proposals){DeviceMeshView candidate;if(!state.trial(row.action,proposal.placement,candidate))continue;++valid;
+                auto a=incremental.evaluate(m.view(),candidate,bounds(m.view()),e),b=full.evaluate(m.view(),candidate,bounds(m.view()),e);
+                require(a.complete==b.complete&&a.passed==b.passed&&a.error==b.error&&a.coverage==b.coverage&&a.changed_area==b.changed_area&&a.normal_degrees==b.normal_degrees&&a.views_evaluated==b.views_evaluated,"incremental raster changed exact audit");
+                if(valid==1&&a.complete&&a.passed){double margin=std::max(a.error/e.limit,a.changed_area/e.max_changed_area);bool pruned=false;
+                    auto tied=incremental.evaluate(m.view(),candidate,bounds(m.view()),e,nullptr,margin,&pruned);
+                    require(pruned&&!tied.complete&&!tied.passed&&tied.views_evaluated<=a.views_evaluated,"incumbent tie was not pruned as an unknown bound");
+                    auto better=incremental.evaluate(m.view(),candidate,bounds(m.view()),e,nullptr,std::nextafter(margin,INFINITY),&pruned);
+                    require(!pruned&&better.complete&&better.error==a.error&&better.changed_area==a.changed_area,"incumbent pruning discarded an improving candidate");}
+            }require(valid>1,"incremental raster needs distinct valid placements");
+        }
+        auto row=rows.front();bool committed=false;for(auto& p:state.teacher_proposals(row.action)){DeviceMeshView v;if(state.trial(row.action,p.placement,v)){state.commit(row.action,p.placement);committed=true;break;}}
+        require(committed,"incremental raster commit fixture");
+    }
+}
+void sparse_teacher(){auto m=plane(7);NeuralOptions options;options.memory_mib=256;GpuActionState state(m.view(),options,true);
+    std::array<float,conditions> c{.1f,.2f,.3f,.4f,.5f,.6f,.7f,.8f};
+    for(unsigned count:{1u,4u,16u}){auto sparse=state.teacher_actions(c,count,918),full=state.placements(c);
+        for(auto& row:sparse){auto found=std::find_if(full.begin(),full.end(),[&](auto& x){return x.action==row.action;});require(found!=full.end()&&found->x==row.x,"sparse teacher changed selected features");state.teacher_proposals(row.action);}
+        auto again=state.teacher_actions(c,count,918);require(again.size()==sparse.size(),"teacher selection count changed");
+        for(size_t i=0;i<sparse.size();++i){require(again[i].action==sparse[i].action&&again[i].x==sparse[i].x,"teacher selection reused stale indices");auto proposals=state.teacher_proposals(again[i].action);require(proposals[0].placement.position.x==m.positions[again[i].action.from].x&&proposals[0].placement.position.y==m.positions[again[i].action.from].y,"teacher cached a different selected action");}
+    }
+}
 void workspace_budget(){NeuralOptions options;options.memory_mib=128;MemoryScope memory(options);memory.budget.limit=1024;
     {gpu::Device first(options,true),second(options);{gpu::Buffer<std::byte> a(first,640);bool rejected=false;try{gpu::Buffer<std::byte> b(second,512);}catch(const gpu::ResourceError& e){rejected=e.kind==NeuralResourceLimit::WorkspaceMemory&&e.limit==1024;}require(rejected,"separate workspaces exceeded shared cap");}
         require(memory.budget.live==640,"idle pool capacity disappeared from budget");{gpu::Buffer<std::byte> reuse(first,512);require(memory.budget.live==640,"pool reuse double counted budget");}}
@@ -60,5 +87,5 @@ int main(){try{if(!neural_available())return 77;
     Mesh tetra;tetra.positions={{0,0,0},{1,0,0},{0,1,0},{0,0,1}};tetra.indices={0,2,1,0,1,3,0,3,2,1,2,3};parity(tetra,1);
     auto unsafe=plane(5);unsafe.indices.insert(unsafe.indices.end(),{6,7,12,6,7,17,1,1,2});parity(unsafe,3);
     Mesh bow;bow.positions={{0,0,0},{1,0,0},{0,1,0},{-1,0,0},{0,-1,0}};bow.indices={0,1,2,0,3,4};parity(bow,1);
-    executor();placement_contracts();coupled_placement(seam);workspace_budget();strided_upload();std::cout<<"GPU action contracts passed\n";return 0;
+    executor();placement_contracts();coupled_placement(seam);incremental_audits();sparse_teacher();workspace_budget();strided_upload();std::cout<<"GPU action contracts passed\n";return 0;
 }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

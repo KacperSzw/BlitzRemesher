@@ -13,5 +13,10 @@ struct DeviceMeshView {
     const uint8_t* double_sided{};
     uint32_t vertices{},faces{},sided_count{};
     uint64_t identity{},revision{};
+    // Optional exact raster reuse for a trial. Parent is a borrowed HOST view;
+    // the two arrays are device storage mapping its faces into this trial.
+    // All three remain valid until the owner builds another trial or commits.
+    const DeviceMeshView* raster_parent{};
+    const uint32_t *parent_keep{},*parent_offsets{};
 };
 }

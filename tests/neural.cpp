@@ -81,6 +81,19 @@ void cuda_contracts() {
         for(size_t i=0;i<cpu.pixels.size();++i)if(cpu.pixels[i].visible){require(cpu.pixels[i].material==gpu.pixels[i].material,"coplanar material ownership differs");require(length(cpu.pixels[i].normal-gpu.pixels[i].normal)<1e-5,"coplanar normal ownership differs");}
     }
     auto altered=m;altered.positions[12].z=.03f;altered.normals[12]=normalized({.1f,0,1});
+    // Quantized formats are explicit research probes, isolated from hard gates.
+    // Attribute packing alone must retain coverage, visibility and material IDs.
+    auto precision_camera=cameras(b,21,{1,0,137})[0];auto reference_pixels=neural::raster_cuda(m.view(),b,precision_camera,21,3,false,options);
+    for(uint8_t bits:{uint8_t(8),uint8_t(16)}){auto probe=neural::raster_precision_cuda(m.view(),b,precision_camera,21,3,false,bits,32,32,options);
+        require(probe.bytes_per_pixel==(bits==8?10:16)&&probe.raster.pixels.size()==reference_pixels.pixels.size(),"packed target layout or extent");
+        double color_bound=.5/(bits==8?255:65535)+2*std::numeric_limits<float>::epsilon();
+        for(size_t i=0;i<probe.raster.pixels.size();++i){auto a=reference_pixels.pixels[i],q=probe.raster.pixels[i];require(a.covered==q.covered&&a.visible==q.visible&&a.material==q.material,"attribute compression changed visibility");
+            if(a.visible)require(std::abs(a.color.x-q.color.x)<=color_bound&&std::abs(a.color.y-q.color.y)<=color_bound&&std::abs(a.color.z-q.color.z)<=color_bound,"UNORM target exceeded its quantization bound");}}
+    auto rectangle=m;rectangle.positions={{0,0,42},{65535,0,42},{65535,65535,42},{0,65535,42}};rectangle.indices={0,1,2,0,2,3};rectangle.normals.assign(4,{0,0,1});rectangle.uv.clear();rectangle.colors.clear();
+    auto rb=bounds(rectangle.view());auto rc=cameras(rb,23,{1,1,814});for(auto camera:rc){auto full=neural::raster_precision_cuda(rectangle.view(),rb,camera,23,2,false,32,32,32,options),packed=neural::raster_precision_cuda(rectangle.view(),rb,camera,23,2,false,32,32,16,options);
+        auto cpu=rasterize(rectangle.view(),rb,camera,23,2,false),gpu=neural::raster_cuda(rectangle.view(),rb,camera,23,2,false,options);
+        for(size_t i=0;i<full.raster.pixels.size();++i){require(full.raster.pixels[i].covered==packed.raster.pixels[i].covered&&full.raster.pixels[i].visible==packed.raster.pixels[i].visible,"UNORM16 position endpoint/zero-extent contract");
+            for(auto p:{cpu.pixels[i],gpu.pixels[i],full.raster.pixels[i]})if(p.visible)require(p.color.x==1&&p.color.y==1&&p.color.z==1&&p.color.w==1,"absent colors must be constant white");}}
     // Empty renders are valid even though mesh streams themselves are nonempty.
     // Exercise culling, forced two-sided rendering and out-of-frame clipping.
     Camera front{{1,0,0},{0,1,0},{0,0,1},4*b.radius,1,20/b.diameter(),false};

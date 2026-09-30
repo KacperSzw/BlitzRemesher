@@ -1,0 +1,43 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/neural
+    Start 13: neural-device-update-contracts
+1/1 Test #13: neural-device-update-contracts ...***Failed    1.38 sec
+action training: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 7.60 GiB of which 49.94 MiB is free. Process 1311251 has 179.32 MiB memory in use. Process 1711792 has 3.52 GiB memory in use. Process 2074838 has 350.18 MiB memory in use. Process 2075246 has 205.73 MiB memory in use. Including non-PyTorch memory, this process has 196.00 MiB memory in use. Of the allocated memory 19.59 MiB is allocated by PyTorch, with 2.00 MiB allocated in private pools (e.g., CUDA Graphs), and 8.41 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+Exception raised from malloc at /pytorch/c10/cuda/CUDACachingAllocator.cpp:1574 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0xb0 (0x7fffe0f89270 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libc10.so)
+frame #1: <unknown function> + 0x4a536 (0x7fff67107536 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libc10_cuda.so)
+frame #2: <unknown function> + 0x4a8c9 (0x7fff671078c9 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libc10_cuda.so)
+frame #3: <unknown function> + 0x4aebf (0x7fff67107ebf in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libc10_cuda.so)
+frame #4: <unknown function> + 0x43ba302 (0x7fff6b5ba302 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #5: at::cuda::getCurrentCUDABlasHandle() + 0x19e (0x7fff6b5ba71e in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #6: <unknown function> + 0x4354b83 (0x7fff6b554b83 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #7: <unknown function> + 0x435a211 (0x7fff6b55a211 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #8: <unknown function> + 0x43e82d6 (0x7fff6b5e82d6 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #9: at::native::structured_mm_out_cuda::impl(at::Tensor const&, at::Tensor const&, at::Tensor const&) + 0x57 (0x7fff6b5e9b47 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #10: <unknown function> + 0x41c4ef9 (0x7fff6b3c4ef9 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cuda.so)
+frame #11: at::_ops::mm::redispatch(c10::DispatchKeySet, at::Tensor const&, at::Tensor const&) + 0x8a (0x7fffe400ba9a in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #12: <unknown function> + 0x5b321de (0x7fffe6b321de in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #13: <unknown function> + 0x5b32dbb (0x7fffe6b32dbb in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #14: at::_ops::mm::call(at::Tensor const&, at::Tensor const&) + 0x1b2 (0x7fffe409fe62 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #15: <unknown function> + 0x21f9625 (0x7fffe31f9625 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #16: at::native::matmul(at::Tensor const&, at::Tensor const&) + 0x54 (0x7fffe31f9f54 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #17: <unknown function> + 0x37677d8 (0x7fffe47677d8 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #18: at::_ops::matmul::call(at::Tensor const&, at::Tensor const&) + 0x1b2 (0x7fffe420bc42 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #19: torch::nn::LinearImpl::forward(at::Tensor const&) + 0x130 (0x7fffe83f7dd0 in /home/kacper/Projects/BlitzRemesher-neural/.cache/libtorch/lib/libtorch_cpu.so)
+frame #20: <unknown function> + 0x5d3ae (0x5555555b13ae in /home/kacper/Projects/BlitzRemesher-neural/build/neural/blitz-neural-action-train)
+frame #21: <unknown function> + 0x5dea4 (0x5555555b1ea4 in /home/kacper/Projects/BlitzRemesher-neural/build/neural/blitz-neural-action-train)
+frame #22: <unknown function> + 0x6aef8 (0x5555555beef8 in /home/kacper/Projects/BlitzRemesher-neural/build/neural/blitz-neural-action-train)
+frame #23: <unknown function> + 0x20010 (0x555555574010 in /home/kacper/Projects/BlitzRemesher-neural/build/neural/blitz-neural-action-train)
+frame #24: <unknown function> + 0x2b285 (0x7fff2d62b285 in /nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6)
+frame #25: __libc_start_main + 0x88 (0x7fff2d62b338 in /nix/store/rkiwrqh8g6gs5rws4bf1s3mrdcs15gm9-glibc-2.42-84/lib/libc.so.6)
+frame #26: <unknown function> + 0x21395 (0x555555575395 in /home/kacper/Projects/BlitzRemesher-neural/build/neural/blitz-neural-action-train)
+
+
+
+0% tests passed, 1 tests failed out of 1
+
+Total Test time (real) =   1.38 sec
+
+The following tests FAILED:
+	 13 - neural-device-update-contracts (Failed)
+Errors while running CTest

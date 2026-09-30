@@ -15,7 +15,7 @@ int main(int argc,char** argv){try{
     std::signal(SIGINT,stop);std::signal(SIGTERM,stop);fs::path output=argv[2];if(fs::exists(output/"contract.json"))throw std::invalid_argument("choose a fresh placement dataset directory");fs::create_directories(output);
     MemoryScope memory(options);auto [mesh,metadata]=training_mesh(argv[1]);auto source=mesh.view();auto bounds=blitz::bounds(source);GpuActionState state(source,options,true);AuditCuda audit(options,source);NeuralStats stats;ActionData data;data.architecture=placement_schema;std::unique_ptr<ActionCuda> policy;if(!model.empty()){auto w=load_weights(model);if(w.architecture!=placement_schema)throw std::invalid_argument("placement teacher requires a v3 policy");policy=std::make_unique<ActionCuda>(w,options);}
     auto start=std::chrono::steady_clock::now();auto seconds=[&]{return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};auto cancel=[&]{return bool(stopped)||seconds()>minutes*60;};
-    auto e=action_eval(previous_steps?std::min(512.,pixels*2):pixels,source_limit);e.cancelled=cancel;auto adjacent=e;adjacent.limit=adjacent_limit;Lod previous;MeshView previous_view=source;bool emitted=false,exhausted=false,unknown=false;uint64_t queries=0;uint32_t accepted=0;
+    auto e=action_eval(previous_steps?std::min(512.,pixels*2):pixels,source_limit);e.cancelled=cancel;auto adjacent=e;adjacent.limit=adjacent_limit;Lod previous;MeshView previous_view=source;bool emitted=false,exhausted=false,unknown=false;uint64_t queries=0,reused_queries=0,reused_adjacent=0,pruned_queries=0;uint32_t accepted=0;
     json contract={{"schema",placement_schema},{"teacher_version",1},{"seed",seed},{"asset",metadata},{"source_manifest_sha256",file_sha256("research/corpus.json")},{"training_selection_sha256",file_sha256("research/neural/training-manifest.json")},{"protocol_sha256",file_sha256("research/PROTOCOL.md")},{"binary_sha256",file_sha256("/proc/self/exe")},{"states_requested",states},{"pool",pool},{"pixels",pixels},{"previous_steps",previous_steps},{"source_limit",source_limit},{"adjacent_limit",adjacent_limit},{"area_limit",e.max_changed_area},{"views",{6,2}},{"view_seed",e.views.rotation_seed},{"supersample",4},{"max_supersample",8},{"gpu_memory_mib",options.memory_mib},{"teacher_candidates",policy?21:20},{"policy_sha256",model.empty()?"":file_sha256(model)},{"target","one audited joint XYZ/normal candidate per edge; no averaging"},{"preference","minimum triangles, then minimum worst normalized source/adjacent error"}};
     write_json(output/"contract.json",contract);json trace=json::array();
     for(uint32_t step=0;step<states+previous_steps&&!cancel();++step){
@@ -25,12 +25,21 @@ int main(int argc,char** argv){try{
         json state_trace={{"revision",step},{"triangles",state.view().faces},{"previous_triangles",previous_view.triangles()},{"pixels",e.screen_size},{"queries",json::array()}};
         for(auto& row:rows){bool found=false;uint8_t best_label=0;double best=INFINITY;uint32_t faces=UINT32_MAX;GpuActionState::Proposal winner{};
             auto alternatives=state.teacher_proposals(row.action);
-            for(size_t index=0;index<alternatives.size()&&!cancel();++index){DeviceMeshView candidate;auto& proposal=alternatives[index];if(!state.trial(row.action,proposal.placement,candidate))continue;
-                auto a=audit.evaluate(source,candidate,bounds,e,&stats),b=audit.evaluate(previous_view,candidate,bounds,adjacent,&stats);++queries;
+            struct Query {Measurement source,adjacent;uint32_t faces{};bool valid{},pruned{};};std::array<Query,21> evaluated{};
+            static_assert(sizeof(Placement)==9*sizeof(float));
+            for(size_t index=0;index<alternatives.size()&&!cancel();++index){auto& proposal=alternatives[index];auto& q=evaluated[index];size_t prior=0;
+                while(prior<index&&std::memcmp(&proposal.placement,&alternatives[prior].placement,sizeof(Placement)))++prior;
+                if(prior<index){q=evaluated[prior];++reused_queries;}
+                else {DeviceMeshView candidate;q.valid=state.trial(row.action,proposal.placement,candidate);if(q.valid){q.faces=candidate.faces;
+                    double cutoff=found&&(best_label&27)==27?best:INFINITY;
+                    q.source=audit.evaluate(source,candidate,bounds,e,&stats,cutoff,std::isfinite(cutoff)?&q.pruned:nullptr);
+                    if(!q.pruned){if(!emitted&&e.limit==adjacent.limit){q.adjacent=q.source;++reused_adjacent;}else q.adjacent=audit.evaluate(previous_view,candidate,bounds,adjacent,&stats,cutoff,std::isfinite(cutoff)?&q.pruned:nullptr);}}}
+                if(!q.valid)continue;auto& a=q.source;auto& b=q.adjacent;++queries;
+                if(q.pruned){++pruned_queries;state_trace["queries"].push_back({{"from",row.action.from},{"to",row.action.to},{"candidate",index},{"known_mask",0},{"pruned_by_incumbent",true},{"faces",q.faces}});continue;}
                 bool ka=action_audit_known(a,e),kb=action_audit_known(b,adjacent);uint8_t label=uint8_t((ka?SourceKnown:0)|(kb?AdjacentKnown:0)|(ka&&a.passed?PlacementSourcePass:0)|(kb&&b.passed?PlacementAdjacentPass:0));bool safe=(label&27)==27;
                 double margin=std::max({a.error/e.limit,b.error/adjacent.limit,a.changed_area/e.max_changed_area,b.changed_area/adjacent.max_changed_area});if(!std::isfinite(margin))margin=INFINITY;
-                state_trace["queries"].push_back({{"from",row.action.from},{"to",row.action.to},{"candidate",index},{"known_mask",label},{"source_error",a.error},{"adjacent_error",b.error},{"faces",candidate.faces}});
-                if(!found||(safe&&((best_label&3)!=3))||(safe==((best_label&3)==3)&&margin<best)){found=true;winner=proposal;best_label=label;best=margin;faces=candidate.faces;}
+                state_trace["queries"].push_back({{"from",row.action.from},{"to",row.action.to},{"candidate",index},{"known_mask",label},{"source_error",a.error},{"adjacent_error",b.error},{"faces",q.faces}});
+                if(!found||(safe&&((best_label&3)!=3))||(safe==((best_label&3)==3)&&margin<best)){found=true;winner=proposal;best_label=label;best=margin;faces=q.faces;}
                 if(!ka||!kb){unknown=true;break;}
             }
             if(found){bool safe=(best_label&27)==27;if(safe)best_label|=uint8_t(PositionKnown|(winner.normal_mask&1?Normal0Known:0)|(winner.normal_mask&2?Normal1Known:0));
@@ -45,9 +54,9 @@ int main(int argc,char** argv){try{
         data.labels[first+chosen]|=PlacementPreferred;state.commit(actions[chosen],winners[chosen].placement);++accepted;state_trace["selected"]={{"from",actions[chosen].from},{"to",actions[chosen].to},{"triangles",state.view().faces}};trace.push_back(state_trace);
         std::cout<<json({{"state",step},{"queries",queries},{"triangles",state.view().faces},{"seconds",seconds()}}).dump()<<std::endl;
     }
-    auto final=state.snapshot();auto a=audit.evaluate(source,final.data.view(),bounds,e,&stats),b=audit.evaluate(previous_view,final.data.view(),bounds,adjacent,&stats);
+    auto final=state.snapshot();auto a=audit.evaluate(source,final.data.view(),bounds,e,&stats),b=!emitted&&e.limit==adjacent.limit?a:audit.evaluate(previous_view,final.data.view(),bounds,adjacent,&stats);
     bool complete=!cancel()&&!unknown&&(data.states()==states+previous_steps||exhausted)&&(!previous_steps||emitted)&&a.complete&&a.passed&&b.complete&&b.passed;
-    save_actions(output/"actions.bin",data);write_json(output/"trajectory.json",trace);
+    save_actions(output/"actions.bin",data);write_json(output/"trajectory.json",trace);write_json(output/"reuse.json",{{"duplicate_proposals",reused_queries},{"identical_adjacent_audits",reused_adjacent},{"pruned_candidates",pruned_queries}});
     write_json(output/"index.json",{{"schema",placement_schema},{"complete",complete},{"asset",argv[1]},{"category",metadata.at("category")},{"contract_sha256",file_sha256(output/"contract.json")},{"path","actions.bin"},{"sha256",file_sha256(output/"actions.bin")},{"states",data.states()},{"queries",queries},{"accepted",accepted},{"source_triangles",source.triangles()},{"teacher_triangles",final.data.view().triangles()},{"reference_confirmed",a.complete&&a.passed&&b.complete&&b.passed},{"preceding_lod_emitted",emitted},{"previous_triangles",previous_view.triangles()},{"seconds",seconds()},{"training_started",false},{"audit",neural_json(stats)}});
     return complete?0:2;
 }catch(const std::exception& e){std::cerr<<"placement preparation: "<<e.what()<<'\n';return 1;}}

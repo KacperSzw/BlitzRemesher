@@ -1,0 +1,44 @@
+{
+  "score": null,
+  "ctest_cuda": {
+    "passed": 21,
+    "total": 22,
+    "failure": "neural-device-update-contracts: CUDA allocation exhaustion",
+    "retry": "same allocation failure",
+    "log": "ctest-final.log",
+    "retry_log": "ctest-update-retry.log"
+  },
+  "ctest_asan_ubsan": {
+    "passed": 9,
+    "total": 9,
+    "log": "ctest-sanitize.log"
+  },
+  "cuda_memcheck_actions": {
+    "passed": true,
+    "errors": 0,
+    "log": "cuda-memcheck-actions.log"
+  },
+  "cuda_memcheck_audits": {
+    "passed": false,
+    "assertions_passed": true,
+    "errors": 7,
+    "error_kind": "cudaErrorMemoryAllocation on cudaMalloc/cudaGetLastError",
+    "invalid_access_reports": 0,
+    "log": "cuda-memcheck-audits.log"
+  },
+  "precision": {
+    "completed": [
+      "precision-potato128-final.json",
+      "precision-bench128-final.json",
+      "precision-overlaps128-final.json"
+    ],
+    "initial_failure": "An earlier potato128 attempt failed allocation before partial-result reporting was added; it has no retained timing and is not used for performance comparisons."
+  },
+  "teacher": {
+    "matched_payload_cases": 5,
+    "final_build_payload_replays": 5,
+    "excluded_memory_limited_case": "policy-adjacent64 (preceding states at 128px)"
+  },
+  "remote_validation_this_revision": false,
+  "cloud_spend": 0
+}

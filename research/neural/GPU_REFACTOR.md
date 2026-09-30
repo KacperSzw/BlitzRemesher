@@ -8,15 +8,175 @@ vertex optimizer. Quality remains unproven until matched development comparisons
 ```mermaid
 flowchart LR
     IO["CPU: checked mesh/data I/O"] --> M["GPU: resident streams + CSR topology"]
-    M --> P["GPU policy: 128 → 64 → 64 → 12"]
+    M --> Q["Teacher: select ≤16 queried actions"]
+    Q --> P["GPU policy: 128 → 64 → 64 → 12"]
     P --> G["GPU: legal contractions, free XYZ, wedge normals"]
-    G --> A["GPU: raster + distance + appearance audits"]
+    G --> A["GPU: dirty-tile raster + bounded FP32 filter + exact audit"]
+    A --> C["Stop candidates that cannot beat the audited incumbent"]
     S["Source + previous emitted LOD"] --> A
-    A --> D["Packed queried examples + known masks"]
+    C --> D["Packed queried examples + known masks"]
     D --> U["CUDA graph: sampler → MLP → loss → AdamW"]
     U --> P
     A --> E["CPU: schedule, checkpoint, export"]
 ```
+
+## Local teacher acceleration and precision experiments (2026-09-30)
+
+The completed remote cycle spent 96% of its time generating teacher examples.
+This change attacks that work. Matched A/B/B/A runs against `3b1b95d` on the
+local RTX 2080 produced **6.3–13.0× faster teacher generation**, with
+**4.8–10.4× faster whole processes** across five completed settings. Every
+completed comparison has byte-identical `actions.bin` payloads, including
+features, labels and placement targets. These are bounded throughput diagnostics,
+not a quality score or a promise of the same speedup on a remote GPU.
+
+| Fixed teacher workload | Baseline median | Optimized median | Teacher speedup |
+| --- | ---: | ---: | ---: |
+| Bench, 32px, 8 states | 5.289 s | 0.836 s | 6.33× |
+| Sweet potato, 64px, 8 states | 15.146 s | 1.265 s | 11.98× |
+| Bench, 64px, 2 preceding + 6 target states | 23.489 s | 3.358 s | 6.99× |
+| Sweet potato, 64px, 2 preceding + 6 target states | 31.547 s | 2.909 s | 10.84× |
+| Sweet potato with trained policy, 32px, 2 + 6 states | 11.242 s | 0.866 s | 12.98× |
+
+Each workload keeps seed 101, pool 4, the same cameras, refinement, proposals,
+visual limits and 256 MiB native workspace cap. Preceding states use twice the
+listed pixel size. The GPU is shared with desktop/Unity work; wall times include
+startup and contention. Both versions failed the trained-policy case whose
+preceding states were 128px because device memory was unavailable. Its partial
+payloads differ and are explicitly excluded. Raw rows and hashes are in
+[`matched.json`](evidence/teacher-acceleration/matched.json) and
+[`policy32.json`](evidence/teacher-acceleration/policy32.json).
+
+The largest improvement is exact incumbent pruning. Once a safe placement has
+been audited, a later placement can stop after a fully refined view proves its
+normalized error/changed-area margin cannot improve the current winner. The
+original visual limit still controls refinement. Ties keep the earlier candidate;
+pruned candidates remain unknown bounds, never negative training labels.
+Identical placements reuse their measured outcome, and identical source/previous
+checks share a result. Winning examples and final acceptance still use full
+source and previous-LOD gates.
+
+Trial rasters reuse 16×16 tiles only if no changed/removed face touched the tile
+in either mesh. Position/normal bits, RGB, material, indices, bounds, primitive
+order and stream presence participate in reuse. A directed-rounding FP32 upper
+bound skips angular work only when its center-match cost cannot exceed the
+coverage error floor. All uncertain pixels use the original FP64 metric.
+Maximum normal diagnostics reduce a monotone dot-product encoding before one
+shared `acos`, instead of evaluating `acos` at every pixel.
+
+Teacher features and policy outputs now exist only for selected queries. At
+59,066 faces, the former dense capacity for those two tensors was 198,461,760
+bytes; 16 queried rows need 8,960 bytes. This is a capacity calculation for these
+two tensors, not total mesh memory. Full policy ranking still computes all
+required rows during LOD generation. The serial action lookup is also parallel.
+
+| Audit target | Bytes/sample | Contract |
+| --- | ---: | --- |
+| Previous full `Pixel` | 36 | FP32 depth, normal, RGBA, material, flags |
+| Production, no vertex colors | **16** | FP32 normal, exact material and flags; white is implicit |
+| Production, vertex colors | **28** | Same 16-byte target plus separate FP32 RGB |
+| Experimental SNORM16 normal + UNORM16 RGB | 16 | Quantized; research only |
+| Experimental SNORM8 normal + UNORM8 RGB | 10 | Quantized; research only |
+
+Depth is needed only while choosing the visible face. It now stays in the
+raster thread's FP32 register and is never written to the audit target. Alpha
+is implicit for opaque input. Missing colors are explicitly constant white on
+both CPU and GPU. Thus the production target drops by **55.6%** without vertex
+colors, or **22.2%** with colors, without quantizing the audited normal/RGB data.
+Public reference raster readback retains the full `Pixel` representation.
+
+The research probe also implements actual GPU UNORM16 XYZ storage inside each
+mesh AABB: 6 bytes/vertex plus 24 bytes for bounds/scale, decoded directly by
+projection and face setup. No FP32 position upload is retained in that path.
+Mapped UNORM16 depth comparison is independently selectable. Neither option
+silently changes the production gate or source/Reuse streams.
+
+The overlapping-surface probe at 128px gives a concrete counterexample to making
+either quantization unconditional: mapped depth16 changes 89,255 visible material
+owners over five views, and position16 changes 62,398. They change 3 and 7
+decisions respectively on the fixed 0.25/0.5/1/2/3/4px thresholds. Attribute16/8
+preserve visibility and ownership in this probe, but each changes a decision at
+an exact error boundary. Sweet-potato normal quantization at 64px changes the
+source normals by at most 0.00149° (16-bit) or 0.3791° (8-bit); both change
+boundary decisions. Quantization needs a bounded screening/refinement design
+before it can replace hard audit data. Removing unused fields already saves
+more bytes than depth16 alone, with no depth tie changes.
+
+The final warmed 128px probes also cover both training assets. Depth16 fails a
+3px comparison of the original source raster against its quantized raster in
+one view on each asset, even when quantizing both sides of a candidate comparison
+hides that change. Normal/RGB16 and normal/RGB8 pass that 3px drift check on these
+assets but change exact-boundary decisions. Raw per-view drift, masks, ownership,
+threshold decisions and isolated render timings are retained in the three
+`precision-*-final.json` reports under
+[`evidence/teacher-acceleration`](evidence/teacher-acceleration).
+
+### Remaining measured bottlenecks
+
+An Nsight comparison uses identical 32px sweet-potato work: two states, pool 2,
+76 logical valid candidates, identical saved payload. GPU kernel totals are:
+
+| Kernel group | Before | After |
+| --- | ---: | ---: |
+| Rasterization | 272.79 ms / 624 calls | 25.03 ms / 136 calls |
+| Appearance | 105.28 ms / 2,464 calls | 8.04 ms / 224 calls |
+| Radix-sort onesweep | 23.46 ms | 5.30 ms |
+| Triangle setup | 13.02 ms | 2.95 ms |
+| Action lookup | 33.37 ms / 86 calls | 0.049 ms / 6 calls |
+| All GPU kernels | 509.20 ms | 53.73 ms |
+
+Rasterization remains 46.6% of measured GPU kernel time; appearance is 15.0%,
+radix-sort onesweep 9.9%, triangle setup 5.5%, and the general EDT pass 4.3%.
+Native peak workspace falls from 25,591,556 to 13,815,636 bytes in this trace.
+The optimized trace still makes 460 synchronous `cudaMemcpy` calls, accounting
+for 89.63 ms of CUDA API wall time, and 4,714 kernel launches. API wall time
+includes waiting for GPU work and must not be added to kernel time. Batching
+view/candidate orchestration and keeping status on-device are the next large
+opportunities. Full FP64 raster arithmetic and variable tile sorting remain.
+
+The numerical filter uses CUDA's directed-rounding operations, with the
+original double path for uncertain results; it does not enable fast math.
+The relevant numerical references are the
+[CUDA floating-point guide](https://docs.nvidia.com/cuda/archive/12.2.0/floating-point/index.html)
+and [single-precision intrinsic reference](https://docs.nvidia.com/cuda/cuda-math-api/cuda_math_api/group__CUDA__MATH__SINGLE.html).
+
+Reproduce teacher comparisons with `teacher-profile.mjs BASELINE OPTIMIZED
+FRESH_OUTPUT [MODEL] [CASE]` inside `nix develop .#neural`. Reproduce precision
+checks with `blitz-neural-precision-profile ASSET|overlaps FRESH_JSON [PIXELS]`.
+Precision timing includes a warmup and excludes packing, upload and readback;
+it is not an end-to-end speed claim. These experiments use development/training
+identities and a deterministic fixture; no held-out data or new rental is used.
+
+### Validation and limits of this evidence
+
+The final binaries reproduce all five completed reference payloads again after
+the buffer changes; see [`final-parity.json`](evidence/teacher-acceleration/final-parity.json).
+The CUDA-enabled build passes 21/22 CTest cases. The remaining, unchanged
+optimizer-update test fails with CUDA allocation exhaustion, including a
+standalone retry. The CPU ASan/UBSan build passes all 9 tests. Compute Sanitizer
+reports zero errors for GPU action contracts, including tile reuse and pruning.
+The broader CUDA audit test finishes its assertions but memcheck reports seven
+allocation/API errors under contention and no invalid-access reports; this is
+not recorded as a clean sanitizer pass. All logs are retained in the evidence
+directory.
+
+Both development smoke assets finish with passing source/previous gates and zero
+CPU/GPU confirmation disagreements at 64→32px on the optimized build. The rock
+requires an isolated retry after an allocation failure in the combined run.
+Shelves match the baseline output hash. Baseline rock runs suffer resource
+failures and produce different outputs, so they do not establish a quality
+comparison. The frozen 256→128px smoke was attempted on both binaries and also
+failed; raw rows retain device-ordinal/allocation failures rather than treating
+fallbacks as successful reductions. A sanitizer diagnostic confirms device
+allocation exhaustion in that workload. These runs are in
+[`smoke-small.json`](evidence/teacher-acceleration/smoke-small.json) and
+[`smoke-attempts.json`](evidence/teacher-acceleration/smoke-attempts.json).
+
+The shared 8 GiB display GPU was typically already using 7.3–7.7 GiB. No other
+application was interrupted. The measured teacher speedups and completed
+precision probes stand independently of the incomplete larger smoke. This
+revision has not been validated on a remote GPU or used for another long
+training run; the remote results below describe the preceding implementation.
 
 ## Data contract
 

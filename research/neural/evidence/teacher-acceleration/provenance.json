@@ -1,0 +1,28 @@
+{
+  "created_utc": "2026-09-30T06:27:01.170Z",
+  "baseline_revision": "3b1b95d",
+  "source_hashes": {
+    "CMakeLists.txt": "b036fa324d09a36d9561f0bcc47d243187f2141da5eb1106b7f5ace344b24391",
+    "src/evaluate.cpp": "e9e06b23781f4bf8556d2a4ef986994b82bb720a1f88e1233a2f4c4eca4e57c7",
+    "src/neural_action_gpu.cu": "141aa108105224fd9b45ba31f8e607fdc3a4c04b7b4ad2d49b5482d9db858fc7",
+    "src/neural_cuda.cuh": "adabe7b0f6ba5deb5999d7f9b212f0962fd96c155eacb004106be50dcd48b4b9",
+    "src/neural_device_view.hpp": "1126338249df24a32689fb14785501d637559358cb77a15c7e3db3fe7b97f7cf",
+    "src/neural_evaluate.cu": "20c0bec7b6a18ecf5cdb3c1b5b035d643feec38450ef9b0aad356c57b28091fb",
+    "src/neural_internal.hpp": "6e74f261295c6cd72dc2e1198b064c15f802f54bbe735e1c10b4b2e7cda0e51b",
+    "src/neural_raster_pixel.cuh": "f88a4affb24cdd8d34163c2991c6a5d6cd70c203c52cb03255f9658d3f28724e",
+    "tests/neural.cpp": "cf2abdfe47dc59388bb6453c38aa9ec57c8dba5b3c2a80976e483cc64ae30e7e",
+    "tests/neural_action_gpu.cpp": "dee3534d836ebc4a57fa632b6bcf5b814f05020a383336f24a0cb680975f17a5",
+    "tools/neural_placement_prepare.cpp": "e50a7409fecaabdab81e331d5ca7c07915ae14128256f4f86ff15d82c84f3e6b",
+    "tools/neural_precision_profile.cpp": "52a87083fcaa1955f544562e849e8a3e8ed8b50b31883c3f8c0aa80dc315fc49",
+    "research/neural/teacher-profile.mjs": "4fd635f546cbe9df018da763ef57cf16ec5fee4d12e390d8a17e5b1afeb82053"
+  },
+  "binaries": {
+    "blitz": "07b3a83d32c77c2ae7d7a5ea0a55f8b3bef9237fe53c8faf47e5e3e2d0fd7493",
+    "blitz-neural-placement-prepare": "2b3a7b77dccd6a4211cda48346f7bf126067b2a5999e78b00d8cff59f989dd11",
+    "blitz-neural-precision-profile": "436f931da4fd99af264177fdeb5144748a8e435f2154912d5948cda2c8e57635"
+  },
+  "gpu": "NVIDIA GeForce RTX 2080, 595.71.05, 7539 MiB, 8192 MiB",
+  "score": null,
+  "remote_validation_this_revision": false,
+  "new_cloud_spend": 0
+}

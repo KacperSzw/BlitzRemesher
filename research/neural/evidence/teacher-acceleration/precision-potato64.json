@@ -1,0 +1,1593 @@
+{
+  "asset": "ph_sweet_potato",
+  "complete": true,
+  "pixels": 64.0,
+  "position_storage": {
+    "fp32_bytes": 14172,
+    "range": "mesh AABB; three UNORM16 coordinates; FP32 low and scale per axis",
+    "unorm16_bytes": 7110
+  },
+  "research_only": true,
+  "rows": [
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "exact",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.001746765,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "attributes16",
+      "max_source_normal_delta_degrees": 0.0014645587935959612,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.00235599,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 10,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "attributes8",
+      "max_source_normal_delta_degrees": 0.3753101929282278,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.0017608609999999998,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "depth16",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.004795069,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "positions16",
+      "max_source_normal_delta_degrees": 0.03443475953900868,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.001982081,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "all16",
+      "max_source_normal_delta_degrees": 0.03449509308622925,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.0020146929999999997,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 0
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "exact",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.9437106740806659,
+      "raster_seconds": 0.00189782,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "attributes16",
+      "max_source_normal_delta_degrees": 0.0014135774299961958,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.9436669172137433,
+      "raster_seconds": 0.001891823,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 10,
+      "decision_changes": 2,
+      "decision_checks": 9,
+      "format": "attributes8",
+      "max_source_normal_delta_degrees": 0.3685458661237068,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.9541646863309536,
+      "raster_seconds": 0.004850557,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": false,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": false,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "depth16",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.9437106740806659,
+      "raster_seconds": 0.0018628350000000002,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "positions16",
+      "max_source_normal_delta_degrees": 0.0730047753625634,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.9436528903619208,
+      "raster_seconds": 0.004595609,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "all16",
+      "max_source_normal_delta_degrees": 0.07392852730350168,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.943531794575414,
+      "raster_seconds": 0.001604554,
+      "reference_area": 0.0,
+      "reference_error": 0.9437106740806659,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.9437106740806658,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.9437106740806659,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.943710674080666,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 1
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "exact",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0647664575830154,
+      "raster_seconds": 0.001725734,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "attributes16",
+      "max_source_normal_delta_degrees": 0.0014845925726128435,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0647619681117908,
+      "raster_seconds": 0.002214161,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 10,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "attributes8",
+      "max_source_normal_delta_degrees": 0.3790710031220481,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0521621435204687,
+      "raster_seconds": 0.001727116,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "depth16",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0647664575830154,
+      "raster_seconds": 0.002449362,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "positions16",
+      "max_source_normal_delta_degrees": 0.026031485795421153,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0647021693344436,
+      "raster_seconds": 0.00176794,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 1,
+      "decision_checks": 9,
+      "format": "all16",
+      "max_source_normal_delta_degrees": 0.02658608765364645,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 1.0647648370118075,
+      "raster_seconds": 0.0018183090000000002,
+      "reference_area": 0.0,
+      "reference_error": 1.0647664575830154,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830151,
+          "quantized_passed": true,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0647664575830154,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 1.0647664575830156,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 2
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "exact",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.0073884910000000005,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "attributes16",
+      "max_source_normal_delta_degrees": 0.0014674029483010837,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.002491424,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    },
+    {
+      "bytes_per_pixel": 10,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "attributes8",
+      "max_source_normal_delta_degrees": 0.37792998889606394,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.003135922,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "depth16",
+      "max_source_normal_delta_degrees": 1.2074182697257333e-06,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.002654926,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 0,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "positions16",
+      "max_source_normal_delta_degrees": 0.031029877212578136,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.002524002,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 1,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    },
+    {
+      "bytes_per_pixel": 16,
+      "decision_changes": 0,
+      "decision_checks": 9,
+      "format": "all16",
+      "max_source_normal_delta_degrees": 0.031135004298382642,
+      "max_source_rgb_delta": 0.0,
+      "quantized_area": 0.0,
+      "quantized_error": 0.7071077811865476,
+      "raster_seconds": 0.0033000679999999998,
+      "reference_area": 0.0,
+      "reference_error": 0.7071077811865476,
+      "source_coverage_changes": 1,
+      "source_material_changes": 0,
+      "source_visibility_changes": 0,
+      "thresholds": [
+        {
+          "limit": 0.25,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.5,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 1.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 2.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 3.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 4.0,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865475,
+          "quantized_passed": false,
+          "reference_passed": false
+        },
+        {
+          "limit": 0.7071077811865476,
+          "quantized_passed": true,
+          "reference_passed": true
+        },
+        {
+          "limit": 0.7071077811865477,
+          "quantized_passed": true,
+          "reference_passed": true
+        }
+      ],
+      "view": 3
+    }
+  ],
+  "score": null,
+  "source": {
+    "bytes": 52822,
+    "category": "organic",
+    "colors": false,
+    "diameter": 0.10123330071716698,
+    "files": [
+      {
+        "bytes": 50044,
+        "path": "data/polyhaven/sweet_potato/sweet_potato.bin",
+        "sha256": "37608ecca6f9a9c2d25bc166819fb56f2a61076247e732852239662d75295f82",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/sweet_potato/sweet_potato.bin"
+      },
+      {
+        "bytes": 2778,
+        "path": "data/polyhaven/sweet_potato/source.gltf",
+        "sha256": "36a226b95a63b2e22711d75e17818f33f99a17e54737e5469a8c7d2a41896097",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sweet_potato/sweet_potato_1k.gltf"
+      }
+    ],
+    "geometry_sha256": "170d2befdfae18d5cd475b18838405e23f3aec1ddd80795f22fa47e8b653824c",
+    "id": "ph_sweet_potato",
+    "import_status": "ok",
+    "license": "CC0-1.0",
+    "license_url": "https://polyhaven.com/license",
+    "normals": true,
+    "opaque": true,
+    "path": "data/polyhaven/sweet_potato/source.gltf",
+    "provider": "polyhaven",
+    "source_group": "polyhaven:sweet_potato",
+    "source_identity": "sweet_potato",
+    "source_url": "https://polyhaven.com/a/sweet_potato",
+    "split": "development",
+    "triangles": 2042,
+    "uv": true,
+    "vertices": 1181,
+    "woody": false
+  },
+  "supersample": 4,
+  "timing_scope": "render and synchronize; excludes CPU packing, upload and readback; shared GPU",
+  "triangles": 2042,
+  "vertices": 1181,
+  "view_seed": 719,
+  "warmup_rasters_per_measurement": 1
+}

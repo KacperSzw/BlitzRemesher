@@ -63,6 +63,7 @@ template<class T> struct Buffer {
     ~Buffer(){if(p)device->release(p,n*sizeof(T));}
     Buffer(const Buffer&)=delete;Buffer& operator=(const Buffer&)=delete;
     Buffer(Buffer&& b) noexcept:device(b.device),p(std::exchange(b.p,nullptr)),n(b.n){}
+    Buffer& operator=(Buffer&& b) noexcept{if(this!=&b){if(p)device->release(p,n*sizeof(T));device=b.device;p=std::exchange(b.p,nullptr);n=b.n;}return *this;}
     void zero(){if(n)check(cudaMemset(p,0,n*sizeof(T)));}
     void upload(std::span<const T> a){if(a.size()!=n)throw std::invalid_argument("CUDA upload size");if(n){check(cudaMemcpy(p,a.data(),n*sizeof(T),cudaMemcpyHostToDevice));device->upload_bytes+=n*sizeof(T);}}
     std::vector<T> download()const{std::vector<T> a(n);if(n){check(cudaMemcpy(a.data(),p,n*sizeof(T),cudaMemcpyDeviceToHost));device->download_bytes+=n*sizeof(T);}return a;}

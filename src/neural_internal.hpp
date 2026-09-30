@@ -46,6 +46,9 @@ std::vector<float> encode_cuda(const Graph&,const WeightsData&,const NeuralOptio
 std::vector<float> encode_mesh_cuda(const Graph&,const WeightsData&,const NeuralOptions&,const std::function<bool()>& = {});
 Prediction predict_cuda(std::span<const float>,const std::array<float,conditions>&,const WeightsData&,const NeuralOptions&,NumericTrace* = nullptr);
 Raster raster_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions& = {});
+// Research-only quantization probe. Never participates in hard acceptance.
+struct RasterPrecisionResult {Raster raster;double seconds{};uint8_t bytes_per_pixel{};};
+RasterPrecisionResult raster_precision_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,uint8_t attribute_bits,uint8_t depth_bits,uint8_t position_bits,const NeuralOptions& = {});
 // Per-generation CUDA storage; fixed source streams are borrowed and immutable.
 class AuditCuda {
     struct Impl;std::unique_ptr<Impl> impl_;
@@ -53,7 +56,10 @@ public:
     explicit AuditCuda(const NeuralOptions&,MeshView fixed_source={});
     ~AuditCuda();
     Measurement evaluate(MeshView,MeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr);
-    Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr);
+    // An optional teacher incumbent permits stopping once a completed view
+    // proves this candidate cannot improve its normalized error/area margin.
+    // A pruned result is a bound, never a pass/fail training label.
+    Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_margin=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
 };
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);

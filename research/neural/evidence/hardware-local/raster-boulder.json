@@ -1,0 +1,566 @@
+{
+  "asset": {
+    "bytes": 1322494,
+    "category": "rocks",
+    "colors": false,
+    "diameter": 3.4459839022125327,
+    "files": [
+      {
+        "bytes": 1319676,
+        "path": "data/polyhaven/namaqualand_boulder_04/namaqualand_boulder_04.bin",
+        "sha256": "99ba28ddc8da9ba24e1a419e69ed05f14c4b483bf06268a8a77495545985318a",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_boulder_04/namaqualand_boulder_04.bin"
+      },
+      {
+        "bytes": 2818,
+        "path": "data/polyhaven/namaqualand_boulder_04/source.gltf",
+        "sha256": "04c858a3bdb22873efa988633e0c0d9d1468055f34c94d47742f75165a192078",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_boulder_04/namaqualand_boulder_04_1k.gltf"
+      }
+    ],
+    "geometry_sha256": "2edda029b2ad360e6ec54000c50c447e247004940b307ea0f2d0f3c2330e6934",
+    "id": "ph_namaqualand_boulder_04",
+    "import_status": "ok",
+    "license": "CC0-1.0",
+    "license_url": "https://polyhaven.com/license",
+    "normals": true,
+    "opaque": true,
+    "path": "data/polyhaven/namaqualand_boulder_04/source.gltf",
+    "provider": "polyhaven",
+    "source_group": "polyhaven:namaqualand_boulder",
+    "source_identity": "namaqualand_boulder_04",
+    "source_url": "https://polyhaven.com/a/namaqualand_boulder_04",
+    "split": "development",
+    "triangles": 59066,
+    "uv": true,
+    "vertices": 30165,
+    "woody": false
+  },
+  "binary_sha256": "e982a2eda4031cef3ecffd43dc97a3fd170e3aa19fdbc6b492a2ebace9dd3f2f",
+  "complete": true,
+  "gpu": {
+    "compute_capability": "7.5",
+    "cuda_driver": 13020,
+    "name": "NVIDIA GeForce RTX 2080"
+  },
+  "pixels": 128.0,
+  "protocol_sha256": "71e7a71e508f400140f99fff10ba248c0d89cabe95e32329cf8a968f204dd42b",
+  "repetitions": 12,
+  "rows": [
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 24710596,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 1.2074182697257333e-06,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0,
+      "raster": "cuda-v1",
+      "raster_gpu_seconds": 0.0,
+      "seconds": 0.0067634185,
+      "setup_seconds": 0.146908353,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 0.0,
+      "view": 0,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          0.8438078165054321,
+          -0.5336329936981201,
+          -0.056782376021146774
+        ],
+        "pixel": 27963,
+        "reference": [
+          0.8438078165054321,
+          -0.5336329936981201,
+          -0.056782376021146774
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 3,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 21501326,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 24.52717579091475,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 5.8970667111376915e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.0354666666666674e-05,
+      "seconds": 0.00041554733333333337,
+      "setup_seconds": 0.184321394,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 1.88560001552105e-05,
+      "view": 0,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.24471963942050934,
+          -0.013518965803086758,
+          -0.9694997072219849
+        ],
+        "pixel": 184824,
+        "reference": [
+          -0.2879321575164795,
+          0.39751702547073364,
+          -0.871249258518219
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 4,
+      "draw_vertex_bytes": 784290,
+      "gpu_bytes": 20777358,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 24.513599035550012,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 7.36960005015135e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.722133333333334e-05,
+      "seconds": 0.00043913341666666664,
+      "setup_seconds": 0.120584325,
+      "storage": "position16",
+      "unpack_gpu_seconds": 1.8669333619376022e-05,
+      "view": 0,
+      "visibility_changes": 1,
+      "worst_normal": {
+        "actual": [
+          -0.2879650294780731,
+          0.3972958028316498,
+          -0.8713393807411194
+        ],
+        "pixel": 184824,
+        "reference": [
+          -0.24471963942050934,
+          -0.013518965803086758,
+          -0.9694997072219849
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 4,
+      "draw_vertex_bytes": 422310,
+      "gpu_bytes": 19329422,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 24.494588530472754,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 8.540533296763897e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.6263999999999996e-05,
+      "seconds": 0.0004268859166666667,
+      "setup_seconds": 0.164374128,
+      "storage": "packed",
+      "unpack_gpu_seconds": 1.900266654168566e-05,
+      "view": 0,
+      "visibility_changes": 1,
+      "worst_normal": {
+        "actual": [
+          -0.2877942621707916,
+          0.39702191948890686,
+          -0.8715205788612366
+        ],
+        "pixel": 184824,
+        "reference": [
+          -0.24471963942050934,
+          -0.013518965803086758,
+          -0.9694997072219849
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 24721060,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 1.2074182697257333e-06,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0,
+      "raster": "cuda-v1",
+      "raster_gpu_seconds": 0.0,
+      "seconds": 0.0057742595,
+      "setup_seconds": 0.007067446,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 0.0,
+      "view": 1,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          0.09582057595252991,
+          -0.8063313364982605,
+          -0.5836507678031921
+        ],
+        "pixel": 37744,
+        "reference": [
+          0.09582057595252991,
+          -0.8063313364982605,
+          -0.5836507678031921
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 2,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 21501326,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 13.26940750391433,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 5.7677333243191244e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.0016e-05,
+      "seconds": 0.00043245016666666666,
+      "setup_seconds": 0.126309531,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 1.890666674201687e-05,
+      "view": 1,
+      "visibility_changes": 1,
+      "worst_normal": {
+        "actual": [
+          0.23441432416439056,
+          -0.7046875357627869,
+          -0.6696756482124329
+        ],
+        "pixel": 80380,
+        "reference": [
+          0.12637540698051453,
+          -0.8443731069564819,
+          -0.5206373929977417
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 784290,
+      "gpu_bytes": 20777358,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 11.075188724526354,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 7.244266693790752e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.0546666666666675e-05,
+      "seconds": 0.000459458,
+      "setup_seconds": 0.108556285,
+      "storage": "position16",
+      "unpack_gpu_seconds": 1.9250666877875723e-05,
+      "view": 1,
+      "visibility_changes": 2,
+      "worst_normal": {
+        "actual": [
+          -0.5284462571144104,
+          0.6635554432868958,
+          0.5295645594596863
+        ],
+        "pixel": 200414,
+        "reference": [
+          -0.5099608302116394,
+          0.5357456803321838,
+          0.6729907393455505
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 422310,
+      "gpu_bytes": 19329422,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 11.100170898382006,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0001408426687121391,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.073333333333334e-05,
+      "seconds": 0.0005077155,
+      "setup_seconds": 0.112560854,
+      "storage": "packed",
+      "unpack_gpu_seconds": 1.9040000159293413e-05,
+      "view": 1,
+      "visibility_changes": 2,
+      "worst_normal": {
+        "actual": [
+          -0.5283626317977905,
+          0.6638716459274292,
+          0.5292516350746155
+        ],
+        "pixel": 200414,
+        "reference": [
+          -0.5099608302116394,
+          0.5357456803321838,
+          0.6729907393455505
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 24688100,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 1.2074182697257333e-06,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0,
+      "raster": "cuda-v1",
+      "raster_gpu_seconds": 0.0,
+      "seconds": 0.007508024833333334,
+      "setup_seconds": 0.007775642,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 0.0,
+      "view": 2,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          0.141791433095932,
+          -0.6429013013839722,
+          0.7527105212211609
+        ],
+        "pixel": 44383,
+        "reference": [
+          0.141791433095932,
+          -0.6429013013839722,
+          0.7527105212211609
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 3,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 21501326,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 8.317332143130312,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 5.7216000122328596e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.136e-05,
+      "seconds": 0.00041365924999999995,
+      "setup_seconds": 0.11027931,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 1.845866705601414e-05,
+      "view": 2,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.8971298336982727,
+          -0.2197987586259842,
+          0.38320568203926086
+        ],
+        "pixel": 81435,
+        "reference": [
+          -0.9168825149536133,
+          -0.07636897265911102,
+          0.39178338646888733
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 784290,
+      "gpu_bytes": 20777358,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 19.97601645347538,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 7.160266675055028e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 5.152800000000001e-05,
+      "seconds": 0.00043044858333333335,
+      "setup_seconds": 0.108962651,
+      "storage": "position16",
+      "unpack_gpu_seconds": 1.857866657276949e-05,
+      "view": 2,
+      "visibility_changes": 2,
+      "worst_normal": {
+        "actual": [
+          0.7079054117202759,
+          0.15396659076213837,
+          -0.6893215775489807
+        ],
+        "pixel": 112200,
+        "reference": [
+          0.8561895489692688,
+          -0.10096471011638641,
+          -0.5067005753517151
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 422310,
+      "gpu_bytes": 19329422,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 19.918450745391752,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 8.547200138370196e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.9525333333333345e-05,
+      "seconds": 0.0004398899166666666,
+      "setup_seconds": 0.11085078,
+      "storage": "packed",
+      "unpack_gpu_seconds": 1.8957333484043682e-05,
+      "view": 2,
+      "visibility_changes": 2,
+      "worst_normal": {
+        "actual": [
+          0.7087363004684448,
+          0.1536666452884674,
+          -0.6885342001914978
+        ],
+        "pixel": 112200,
+        "reference": [
+          0.8561895489692688,
+          -0.10096471011638641,
+          -0.5067005753517151
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 24682772,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 1.2074182697257333e-06,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0,
+      "raster": "cuda-v1",
+      "raster_gpu_seconds": 0.0,
+      "seconds": 0.006156140833333334,
+      "setup_seconds": 0.006888222,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 0.0,
+      "view": 3,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.25261327624320984,
+          -0.6581948399543762,
+          0.7092010378837585
+        ],
+        "pixel": 39964,
+        "reference": [
+          -0.25261327624320984,
+          -0.6581948399543762,
+          0.7092010378837585
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "cuda FP32",
+      "coverage_changes": 1,
+      "draw_vertex_bytes": 965280,
+      "gpu_bytes": 21501326,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 16.459817887455987,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 5.718666625519595e-05,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.7408000000000004e-05,
+      "seconds": 0.00044748975,
+      "setup_seconds": 0.107793827,
+      "storage": "fp32",
+      "unpack_gpu_seconds": 1.9007999915629628e-05,
+      "view": 3,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.7568534016609192,
+          0.6535822749137878,
+          0.0017755177104845643
+        ],
+        "pixel": 149710,
+        "reference": [
+          -0.9003953337669373,
+          0.4249156415462494,
+          -0.09346060454845428
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 784290,
+      "gpu_bytes": 20777358,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 53.800074634564766,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.0001089173350483179,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.503199999999999e-05,
+      "seconds": 0.000477223,
+      "setup_seconds": 0.109052188,
+      "storage": "position16",
+      "unpack_gpu_seconds": 1.8536000202099483e-05,
+      "view": 3,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.981576144695282,
+          -0.12475582212209702,
+          -0.1447218805551529
+        ],
+        "pixel": 122005,
+        "reference": [
+          -0.6966978311538696,
+          -0.07952450960874557,
+          0.7129431366920471
+        ]
+      }
+    },
+    {
+      "clipped": false,
+      "comparison": "Vulkan FP32",
+      "coverage_changes": 0,
+      "draw_vertex_bytes": 422310,
+      "gpu_bytes": 19329422,
+      "material_changes": 0,
+      "maximum_normal_delta_degrees": 53.81653042018769,
+      "maximum_rgb_delta": 0.0,
+      "packing_gpu_seconds": 0.00012047733118136722,
+      "raster": "vulkan-v1",
+      "raster_gpu_seconds": 4.5056000000000004e-05,
+      "seconds": 0.00046996075,
+      "setup_seconds": 0.108690023,
+      "storage": "packed",
+      "unpack_gpu_seconds": 1.9277333437154686e-05,
+      "view": 3,
+      "visibility_changes": 0,
+      "worst_normal": {
+        "actual": [
+          -0.98151034116745,
+          -0.12494612485170364,
+          -0.14500389993190765
+        ],
+        "pixel": 122005,
+        "reference": [
+          -0.6966978311538696,
+          -0.07952450960874557,
+          0.7129431366920471
+        ]
+      }
+    }
+  ],
+  "sampling": 4,
+  "score": null,
+  "timing_scope": "reused workspace, changed revision each draw; packing + two passes + interop + CUDA target conversion; host readback excluded"
+}

@@ -1,0 +1,1766 @@
+{
+  "revision": "1a7840ad7f6d6b2784cde99a8422999696e8efbb",
+  "binary_sha256": "c4bdbae3cbc771f50320ae91da867304dfdc7245985b99399cdea8498ba58fc4",
+  "contract": {
+    "batch": 512,
+    "binary_sha256": "c4bdbae3cbc771f50320ae91da867304dfdc7245985b99399cdea8498ba58fc4",
+    "diagnostic_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+    "gpu_memory_mib": 1024,
+    "initialize": "9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185",
+    "quality": true,
+    "quality_settings_sha256": "b295d58ea372279b26c81d0a19f9da8785c5d0647f0b6b32c4de6a75d8d5ae6a",
+    "raster": "vulkan-v1",
+    "seed": 101,
+    "sparse": true,
+    "states": 8,
+    "storage": "fp32",
+    "training_selection_sha256": "c4365db7abe9fd0ba99dd48f865a75306360bc02395d25cbb400e5747e20c281",
+    "updates": 2048,
+    "version": 2,
+    "warmstart": "d44d2f8591ae2abb75f4af790577e57cb0bbd45fd2212ee8e6301c85ebf421ed"
+  },
+  "comparison": {
+    "reference": "comparison.json/native-1",
+    "identical_datasets": true,
+    "identical_parameters": true
+  },
+  "timings": {
+    "scope": "single final-build validation, internal cycle time excludes process setup/teardown; not substituted for matched repeat benchmark",
+    "seconds": 11.19327139,
+    "phases": {
+      "teacher": 6.323162002,
+      "training": 2.4537828839999998,
+      "quality_audit": 2.221701466
+    },
+    "updates_seconds": 2.317667401
+  },
+  "result": {
+    "active_training": null,
+    "checkpoint": "checkpoints/step-237056",
+    "checkpoint_sha256": "88700da852bd8c5eed93ec3d5de377f307bbdb91b977bb89b6155ca9cfa758f0",
+    "complete": true,
+    "datasets": [
+      "shard-0",
+      "shard-1",
+      "shard-2",
+      "shard-3",
+      "shard-4",
+      "shard-5"
+    ],
+    "last_audit_iteration": 6,
+    "next_condition": 6,
+    "phases": [
+      {
+        "index": {
+          "accepted": 8,
+          "asset": "ph_painted_wooden_bench",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 32,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 4276,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 43520,
+            "gpu_evaluations": 644,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 26232322,
+            "gpu_rasters": 1116,
+            "gpu_reference_render_hits": 1100,
+            "gpu_sparse_failures": 65,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 971,
+            "gpu_sparse_queries": 5330,
+            "gpu_upload_bytes": 60268,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "manufactured",
+          "complete": true,
+          "contract_sha256": "8c6057206f283fb60d5fea1f25a8a918466126ccee462296248420afc95d6326",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 630,
+          "queries": 652,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.478207792,
+          "sha256": "6bf41e37d86d7e9a42aa519bb92eb92182e840fc2468cfb0002629b5e1bfbbf6",
+          "source_triangles": 630,
+          "states": 8,
+          "teacher_triangles": 614,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.652233416
+      },
+      {
+        "append_seconds": 0.028486648,
+        "capture_seconds": 0.046665508,
+        "captures": 1,
+        "checkpoint_seconds": 0.005482992,
+        "gradient": 0.2334609031677246,
+        "loss": 0.00638158805668354,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 13064,
+        "seconds": 0.46756110199999995,
+        "step": 226816,
+        "target_step": 226816,
+        "update_seconds": 0.383010915
+      },
+      {
+        "index": {
+          "accepted": 8,
+          "asset": "ph_sweet_potato",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 32,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 4564,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 45824,
+            "gpu_evaluations": 665,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 44807648,
+            "gpu_rasters": 1188,
+            "gpu_reference_render_hits": 1172,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 1108,
+            "gpu_sparse_queries": 12391,
+            "gpu_upload_bytes": 132252,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "organic",
+          "complete": true,
+          "contract_sha256": "b0d82af5663d37d99707ad0c89a0fe69d8321d7da7249f9312cfe2556d56f9ab",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 2042,
+          "queries": 656,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.494223662,
+          "sha256": "e9f711120df54058ab879b63b2a19b7145829937fad365ee0c9f7935b1b1d1d8",
+          "source_triangles": 2042,
+          "states": 8,
+          "teacher_triangles": 2026,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.653453919
+      },
+      {
+        "append_seconds": 0.000413719,
+        "capture_seconds": 4.5e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.005179746000000001,
+        "gradient": 0.008987548761069775,
+        "loss": 0.0041326186619699,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 26080,
+        "seconds": 0.392907493,
+        "step": 228864,
+        "target_step": 228864,
+        "update_seconds": 0.38305471300000005
+      },
+      {
+        "index": {
+          "accepted": 8,
+          "asset": "ph_namaqualand_boulder_04",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 31,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 3673,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 38688,
+            "gpu_evaluations": 662,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 184859680,
+            "gpu_rasters": 965,
+            "gpu_reference_render_hits": 949,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 885,
+            "gpu_sparse_queries": 19365,
+            "gpu_upload_bytes": 3583932,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "rocks",
+          "complete": true,
+          "contract_sha256": "fe2b2c24a1cbb8851f2779d5e853b948eb0e4277a0e61dc8f07e2872039534a6",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 59066,
+          "queries": 653,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 1.067258218,
+          "sha256": "ae23a59773af7affa2b48fe436d3448e11071afc6cb1912560545125c9a170e6",
+          "source_triangles": 59066,
+          "states": 8,
+          "teacher_triangles": 59050,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 1.229146105
+      },
+      {
+        "append_seconds": 0.000392309,
+        "capture_seconds": 4.59e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.005303555,
+        "gradient": 0.015339978970587254,
+        "loss": 0.005615974776446819,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 39096,
+        "seconds": 0.39578997799999993,
+        "step": 230912,
+        "target_step": 230912,
+        "update_seconds": 0.385461038
+      },
+      {
+        "index": {
+          "accepted": 10,
+          "asset": "ph_painted_wooden_bench",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 70,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 8286,
+            "gpu_candidate_render_hits": 468,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 92032,
+            "gpu_evaluations": 897,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 653593840,
+            "gpu_rasters": 1877,
+            "gpu_reference_render_hits": 2141,
+            "gpu_sparse_failures": 210,
+            "gpu_sparse_fallbacks": 10,
+            "gpu_sparse_passes": 1855,
+            "gpu_sparse_queries": 135840,
+            "gpu_upload_bytes": 120784,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "manufactured",
+          "complete": true,
+          "contract_sha256": "e06604cdeeaa269f046e624b73d9d3177cf16a35d65b0987a135016487f67be5",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 626,
+          "queries": 796,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 1.089668745,
+          "sha256": "4bd1c5d19e51422c393a58897306c796cec8ffddca0d635bac2e4d1088548d5d",
+          "source_triangles": 630,
+          "states": 10,
+          "teacher_triangles": 610,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 1.253426806
+      },
+      {
+        "append_seconds": 0.000408906,
+        "capture_seconds": 4.77e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.006133249,
+        "gradient": 0.042244311422109604,
+        "loss": 0.008567183278501034,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 54951,
+        "seconds": 0.397970454,
+        "step": 232960,
+        "target_step": 232960,
+        "update_seconds": 0.38727586599999997
+      },
+      {
+        "index": {
+          "accepted": 10,
+          "asset": "ph_sweet_potato",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 63,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 6702,
+            "gpu_candidate_render_hits": 384,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 77936,
+            "gpu_evaluations": 877,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 653593840,
+            "gpu_rasters": 1539,
+            "gpu_reference_render_hits": 1763,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 1,
+            "gpu_sparse_passes": 1674,
+            "gpu_sparse_queries": 94391,
+            "gpu_upload_bytes": 264656,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "organic",
+          "complete": true,
+          "contract_sha256": "6cb1d9e071508aa4ded1b3df94dd47575bef50777aa9763d9c5e35aac3577b73",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 2038,
+          "queries": 817,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.892866466,
+          "sha256": "ba8963ffd3ae7f0ca98dc99ffef0503670d62f0820e167b7770e2c1d64d46030",
+          "source_triangles": 2042,
+          "states": 10,
+          "teacher_triangles": 2022,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 1.059111419
+      },
+      {
+        "append_seconds": 0.000392551,
+        "capture_seconds": 4.8e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.00532405,
+        "gradient": 0.037602268159389496,
+        "loss": 0.007318342104554176,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 71191,
+        "seconds": 0.399317988,
+        "step": 235008,
+        "target_step": 235008,
+        "update_seconds": 0.389630652
+      },
+      {
+        "index": {
+          "accepted": 10,
+          "asset": "ph_namaqualand_boulder_04",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 62,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 5358,
+            "gpu_candidate_render_hits": 328,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 67104,
+            "gpu_evaluations": 850,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 653593840,
+            "gpu_rasters": 1205,
+            "gpu_reference_render_hits": 1485,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 1341,
+            "gpu_sparse_queries": 12658,
+            "gpu_upload_bytes": 7167984,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "rocks",
+          "complete": true,
+          "contract_sha256": "28d50dbe217601746f02796ac4d7bf4e9ef9ee9b030cde49291f044cf55aa540",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 59062,
+          "queries": 797,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 1.308541903,
+          "sha256": "26d1920d2c80fcf1d48e2e2a61cc06afa0215a6ffa463fc3d2b53c5194c6abd8",
+          "source_triangles": 59066,
+          "states": 10,
+          "teacher_triangles": 59046,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 1.475790337
+      },
+      {
+        "append_seconds": 0.000746941,
+        "capture_seconds": 4.53e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.006161186000000001,
+        "gradient": 0.023766258731484413,
+        "loss": 0.00864016730338335,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 87431,
+        "seconds": 0.400235869,
+        "step": 237056,
+        "target_step": 237056,
+        "update_seconds": 0.38923421699999994
+      },
+      {
+        "phase": "quality_audit",
+        "ranking": "constant",
+        "rows": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                },
+                "triangles": [
+                  524,
+                  522,
+                  522
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0002658311971897845,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 0.9571077811865476,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.47179897896305,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 5
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 3108,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.015710531,
+              "decoded": 4,
+              "encode_seconds": 0.00034221400000000003,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 87,
+              "gpu_audit_seconds": 0.338494736,
+              "gpu_buffer_reuses": 857,
+              "gpu_candidate_render_hits": 37,
+              "gpu_confirmation_seconds": 0.000056435000000000004,
+              "gpu_download_bytes": 36432,
+              "gpu_evaluations": 28,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 343,
+              "gpu_reference_render_hits": 126,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 64364,
+              "inference_seconds": 0.004144502,
+              "legal_collapses": 2,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 234,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 1,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 12552,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 30088
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                },
+                "triangles": [
+                  3304,
+                  3296,
+                  3296
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000010328657894193228,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.6824067238033955,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.937341481976134,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 14
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 66103,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.021475798,
+              "decoded": 4,
+              "encode_seconds": 0.00030214600000000004,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 110,
+              "gpu_audit_seconds": 0.621467639,
+              "gpu_buffer_reuses": 1381,
+              "gpu_candidate_render_hits": 89,
+              "gpu_confirmation_seconds": 0.000204097,
+              "gpu_download_bytes": 57168,
+              "gpu_evaluations": 33,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 476,
+              "gpu_reference_render_hits": 229,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 348764,
+              "inference_seconds": 0.008638277,
+              "legal_collapses": 23,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 233,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0.00031121139033688633,
+                  "changed_area_worst_view": 3,
+                  "complete": false,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.914214562373095,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 48.00528709831069,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 2,
+                  "views_evaluated": 4,
+                  "worst_view": 3
+                }
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 79200,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 138304
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          }
+        ],
+        "seconds": 1.330318445
+      },
+      {
+        "phase": "quality_audit",
+        "ranking": "learned",
+        "rows": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 2598,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.010229443000000001,
+              "decoded": 4,
+              "encode_seconds": 0.00030737,
+              "fallback_levels": 2,
+              "first_resource_failure": null,
+              "gpu_allocations": 68,
+              "gpu_audit_seconds": 0.227482447,
+              "gpu_buffer_reuses": 736,
+              "gpu_candidate_render_hits": 32,
+              "gpu_confirmation_seconds": 0.000054254000000000006,
+              "gpu_download_bytes": 29376,
+              "gpu_evaluations": 27,
+              "gpu_measurement_cache_hits": 2,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 292,
+              "gpu_reference_render_hits": 84,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 64252,
+              "inference_seconds": 0.002490988,
+              "legal_collapses": 3,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 221,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 1
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0.000020597746606521245,
+                  "changed_area_worst_view": 0,
+                  "complete": false,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 45.82816894814966,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 3,
+                  "worst_view": 2
+                }
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0
+            ],
+            "runtime_lod_count": 1,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 6288,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 23824
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3296
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 59104,
+                  "index_bytes": 79296,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 197504
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.0008085637447047863,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.75,
+                  "coverage_upper_px": 1.4571077811865474,
+                  "error_px": 2.2876623409370263,
+                  "nonfinite_error": false,
+                  "normal_degrees": 26.754093435651626,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 13
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0008085637447047863,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.75,
+                  "coverage_upper_px": 1.4571077811865474,
+                  "error_px": 2.2876623409370263,
+                  "nonfinite_error": false,
+                  "normal_degrees": 26.754093435651626,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 13
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9085477490978922,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 41611,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.007975349,
+              "decoded": 4,
+              "encode_seconds": 0.00028534400000000004,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 72,
+              "gpu_audit_seconds": 0.3418813,
+              "gpu_buffer_reuses": 887,
+              "gpu_candidate_render_hits": 68,
+              "gpu_confirmation_seconds": 0.000184284,
+              "gpu_download_bytes": 39888,
+              "gpu_evaluations": 31,
+              "gpu_measurement_cache_hits": 4,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 314,
+              "gpu_reference_render_hits": 172,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 362230,
+              "inference_seconds": 0.003357544,
+              "legal_collapses": 4,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 233,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 1,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              2
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 79200,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 138304
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          }
+        ],
+        "seconds": 0.891383021
+      }
+    ],
+    "release_quality_proven": false,
+    "score": null,
+    "seconds": 11.19327139,
+    "states": 54,
+    "step": 237056,
+    "updates_this_invocation": 12288
+  }
+}

@@ -28,7 +28,7 @@ produce better meshes. Unreduced levels remain visible in the quality rows.
 ```mermaid
 flowchart TD
     A[Immutable FP32 master mesh] --> B[CUDA topology and placement proposals]
-    B --> C[GPU draw streams: FP32 or explicit packed experiment]
+    B --> C[GPU draw streams: packed default, FP32 control]
     C --> D[Vulkan conservative coverage + center visibility]
     D --> E[CUDA exact XOR area and sparse witness queues]
     E --> F{Threshold certified?}
@@ -116,6 +116,26 @@ Packed Vulkan took 0.313–0.432 ms: **no consistent additional speedup** over
 FP32 Vulkan on this mesh. Packing adds work and the shader does not currently
 consume UV/tangent data.
 
+The larger boulder (59,066 triangles) shows where hardware rasterization helps
+most. Four 128 px cameras, 4× sampling, 12 draws each with a changed geometry
+revision, include packing, both raster passes, interop and target conversion:
+
+| Boulder component | CUDA FP32 | Vulkan FP32 | Vulkan packed |
+|---|---:|---:|---:|
+| Complete render per view | 5.774–7.508 ms | 0.414–0.447 ms | 0.427–0.508 ms |
+| Hardware passes | — | 47–51 µs | 45–51 µs |
+| Draw preparation on GPU | — | 57–59 µs | 85–141 µs |
+| Target conversion on GPU | — | 18–19 µs | 19 µs |
+| Draw vertex bytes | 965,280 | 965,280 | 422,310 |
+
+These are per-camera ranges, not confidence intervals. First-use setup and
+diagnostic readback are excluded. Packed Vulkan is 11.4–17.1× faster than CUDA
+for the corresponding cameras, but again does not beat FP32 Vulkan consistently.
+Position-only packing already produces 11–54° maximum pixel-normal changes;
+full packing produces almost the same changes. This isolates face-ownership
+changes caused by position quantization rather than normal encoding as the main
+source of those large local deltas. Raw results: [raster-boulder.json](evidence/hardware-local/raster-boulder.json).
+
 **Packed draw data is the Vulkan and resident-cycle default**, as requested.
 `--vertex-storage fp32` explicitly selects the diagnostic control used for the
 complete timing comparison above. Automatic storage resolves to FP32 for the
@@ -133,10 +153,20 @@ textures/normal maps, so UV/tangent tests establish storage/frame contracts only
 ## Remaining costs
 
 The separate bench replay has 355.47 ms of CUDA kernel time (Vulkan draw time
-is additional): predicate scan 88.89 ms, exact appearance 86.45 ms, target
-conversion 52.98 ms, sparse appearance 50.80 ms, sparse coverage 4.79 ms.
-The remainder includes geometry, draw preparation and distance fields. The
-replay produced exactly the native run's teacher dataset.
+is additional). It produced exactly the native run's teacher dataset:
+
+| CUDA work in the expensive bench teacher replay | Time | Kernel-time share |
+|---|---:|---:|
+| Threshold scan and witness-queue construction | 88.89 ms | 25.0% |
+| Exact appearance checks | 86.45 ms | 24.3% |
+| Vulkan target conversion | 52.98 ms | 14.9% |
+| Sparse appearance witness search | 50.80 ms | 14.3% |
+| Sparse coverage witness search | 4.79 ms | 1.3% |
+| Geometry, draw preparation, distance fields and other kernels | 71.56 ms | 20.1% |
+
+Teacher work remains 54.6% of the representative complete pass; quality audits
+take 21.4%, training 17.0%, and process/setup/remainder 7.1%. Kernel shares above
+belong to a separate profiled teacher replay, not to the entire learning pass.
 
 The main remaining opportunities are view batching and reducing host waits,
 fusing target conversion with predicate scanning, and reusing Vulkan device/
@@ -151,6 +181,42 @@ not implemented. Full redraw preserves hidden-surface correctness after removing
 an occluder. The measured hardware draw is small; unmeasured complexity was not
 used to claim a speedup. CPU code still schedules phases and transfers small
 status summaries; geometry, rasterization, comparisons and updates run on GPU.
+
+## Recommended next steps
+
+1. **Make the packed curriculum feasible before long training.** Capture exact
+   failures for the unchanged boulder, then for the rejected placements. Separate
+   the initial packing error from collapse error with FP32, position-only and
+   fully packed controls. Test stable quantization bounds and placements chosen
+   on the UNORM grid, retaining the FP32 source and existing visual limits.
+   Acceptance requires complete packed development passes and the final quality
+   audits; more optimizer updates cannot fix a teacher that emits no feasible
+   examples. If UNORM16 cannot meet the contract, document the affected cases
+   before proposing a storage or quality-policy change.
+2. **Batch views and keep the Vulkan device/pipelines alive across phases.**
+   Submit several camera layers together, share geometry preparation, and return
+   one compact result per candidate. Target the 1.47 s of teacher setup/remainder
+   and repeated host synchronization. Keep explicit layer ownership and a bounded
+   memory budget; measure complete teacher time as well as GPU kernel time.
+3. **Read raster targets directly in the threshold scan.** Fuse CUDA surface
+   decoding with queue construction to remove the temporary linear pixel write
+   and reread on sparse queries. Materialize linear images lazily for exact
+   fallback. Conversion plus scanning currently account for 39.9% of profiled
+   CUDA time, but scanning remains necessary, so that share is not a promised
+   speedup. Compare sparse results and exact fallback against the current oracle.
+4. **Optimize appearance searches after those changes.** Exact and sparse
+   appearance together use 38.6% of the profiled CUDA time. Test compact tile
+   summaries and cooperative searches against the complete opposing image.
+   Preserve witnesses outside changed pixels and exact audits before commit.
+5. **Then run the two-hour learning comparison.** Reuse frozen inputs, cameras,
+   seeds and work accounting; report useful teacher states, updates, accepted
+   reductions, visual errors, fallbacks and wall time. Require successful packed
+   pilots, checkpoint recovery and remote replay before the long run.
+
+Packing more buffers or reducing arithmetic precision is a lower priority:
+hardware drawing already takes tens of microseconds and the current packing
+experiment saves memory without consistently reducing draw latency. Each step
+above needs a matched local pilot; no additional speedup is assumed in advance.
 
 ## Validation and use
 
@@ -187,8 +253,23 @@ is retained; subsequent edits only strengthen recovery configuration validation,
 release an old autograd graph before capacity recapture, and reject an invalid
 CUDA/packed option combination. The hot algorithm is unchanged.
 
+A final-build FP32 control repeated all 54 states and 12,288 updates with
+**identical teacher bytes and trained parameters** to the matched native run.
+Its internal cycle time was 11.19 s: teacher 6.32 s, training 2.45 s, and quality
+2.22 s. This excludes process setup/teardown and is a single validation run;
+the matched three-repeat comparison remains the speedup evidence. See
+[final-control-cycle.json](evidence/hardware-local/final-control-cycle.json).
+
 Remote validation is a separate bounded job using the existing spending grant.
 It runs graphics/interop tests, memory checks, a packed default cycle with
 explicit visual-gate failure reporting, a complete FP32 control cycle, remote
 replay and replay of the local checkpoint on the remote GPU. It never starts a new
 two-hour training session. Remote results will be recorded after collection.
+
+The first RTX PRO 6000 rental never exposed a runtime/SSH endpoint. It was
+stopped after 12.14 minutes, before inputs or an application job were uploaded;
+compute and the empty volume were both confirmed deleted. The conservative
+rental charge is at most $0.51. A bounded $0.60/hour-cap RTX PRO 4000 Blackwell
+profile provides a cheaper validation retry within the same grant. Both devices
+support compute capability 12.0 ([NVIDIA device table](https://developer.nvidia.com/cuda/gpus)).
+The 21 cloud/budget contract checks pass with the additional profile.

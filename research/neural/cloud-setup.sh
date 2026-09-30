@@ -8,11 +8,18 @@ export CUDAToolkit_ROOT=/usr/local/cuda
 "$CUDACXX" --version > /workspace/results/cuda-toolkit.txt
 apt-get update -qq
 apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
+blitz_vulkan=OFF
+if [[ "${BLITZ_HARDWARE_VALIDATION:-0}" == 1 ]]; then
+  blitz_vulkan=ON
+  apt-get install -y --no-install-recommends libvulkan-dev vulkan-tools vulkan-validationlayers glslang-tools
+  vulkaninfo --summary > /workspace/results/vulkan.txt
+fi
 nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv,noheader,nounits | tee /workspace/results/gpu.csv
 node --input-type=module <<'JS'
 import fs from 'node:fs';
 import {deployment,verifyDevice} from './research/neural/runpod-profile.mjs';
 const device=verifyDevice(fs.readFileSync('/workspace/results/gpu.csv','utf8'));
+if(deployment.graphics&&!fs.readFileSync('/workspace/results/vulkan.txt','utf8').includes(device.name))throw new Error('The allocated NVIDIA GPU is missing from Vulkan; graphics driver exposure is required');
 fs.writeFileSync('/workspace/results/deployment.json',JSON.stringify({deployment,device},null,2)+'\n');
 JS
 blitz_training=OFF
@@ -25,7 +32,7 @@ unzip -q /opt/blitz/libtorch.zip -d /opt/blitz
 rm /opt/blitz/libtorch.zip
 fi
 blitz_cuda_arch=$(node --input-type=module -e "import {deployment} from './research/neural/runpod-profile.mjs'; console.log(deployment.cuda_architecture)")
-cmake -S . -B build/neural -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_NEURAL_TRAIN="$blitz_training" -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch" -DBLITZ_LIBTORCH_ROOT=/opt/blitz/libtorch
+cmake -S . -B build/neural -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_VULKAN="$blitz_vulkan" -DBLITZ_NEURAL_TRAIN="$blitz_training" -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch" -DBLITZ_LIBTORCH_ROOT=/opt/blitz/libtorch
 cmake --build build/neural -j2
 if [[ "$blitz_training" == ON ]]; then ldd build/neural/blitz-neural-train > /workspace/results/trainer-dependencies.txt; fi
 ctest --test-dir build/neural --output-on-failure | tee /workspace/results/ctest.log

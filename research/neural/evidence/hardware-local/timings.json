@@ -1,0 +1,1160 @@
+{
+  "complete": true,
+  "score": null,
+  "limitations": "Shared RTX 2080. Three sequential repeats; changed versioned raster semantics and teacher order. Same meshes, initial optimizer, work budgets and quality limits. This measures throughput, not learning quality or all-view error.",
+  "medians": {
+    "legacy_seconds": 39.754488524,
+    "native_seconds": 13.731037369000004,
+    "speedup": 2.8952283396848126
+  },
+  "phase_medians": {
+    "teacher": {
+      "legacy_seconds": 20.534108979,
+      "native_seconds": 7.607951723999999
+    },
+    "training": {
+      "legacy_seconds": 11.535321049999999,
+      "native_seconds": 2.330229477
+    },
+    "quality_audit": {
+      "legacy_seconds": 6.422545677999995,
+      "native_seconds": 2.8182994949999998
+    }
+  },
+  "expensive_teacher": {
+    "legacy_seconds": 6.586027641,
+    "native_seconds": 1.161093079,
+    "speedup": 5.672265006240727
+  },
+  "representative": {
+    "index": 1,
+    "whole_seconds": 13.731037369000004,
+    "teacher_seconds": 7.492934473,
+    "teacher_core_seconds": 6.023198561999999,
+    "training": {
+      "wall": 2.330229477,
+      "updates": 2.1507549399999997,
+      "capture": 0.054728292,
+      "append": 0.042352220999999995,
+      "checkpoint_foreground": 0.042334652,
+      "remaining": 0.040059372000000384
+    },
+    "quality_seconds": 2.932418707,
+    "startup_and_other_seconds": 0.9754547120000043,
+    "teacher": [
+      {
+        "asset": "ph_painted_wooden_bench",
+        "seconds": 0.720471141,
+        "core_seconds": 0.483340335,
+        "states": 8,
+        "rasters": 1116,
+        "queries": 652,
+        "sparse_passes": 971,
+        "sparse_failures": 65,
+        "sparse_fallbacks": 0,
+        "peak_bytes": 26232322
+      },
+      {
+        "asset": "ph_sweet_potato",
+        "seconds": 0.743671786,
+        "core_seconds": 0.536668244,
+        "states": 8,
+        "rasters": 1188,
+        "queries": 656,
+        "sparse_passes": 1108,
+        "sparse_failures": 0,
+        "sparse_fallbacks": 0,
+        "peak_bytes": 44807648
+      },
+      {
+        "asset": "ph_namaqualand_boulder_04",
+        "seconds": 1.549544893,
+        "core_seconds": 1.305393903,
+        "states": 8,
+        "rasters": 965,
+        "queries": 653,
+        "sparse_passes": 885,
+        "sparse_failures": 0,
+        "sparse_fallbacks": 0,
+        "peak_bytes": 184859680
+      },
+      {
+        "asset": "ph_painted_wooden_bench",
+        "seconds": 1.473625312,
+        "core_seconds": 1.210913896,
+        "states": 10,
+        "rasters": 1877,
+        "queries": 796,
+        "sparse_passes": 1855,
+        "sparse_failures": 210,
+        "sparse_fallbacks": 10,
+        "peak_bytes": 653593840
+      },
+      {
+        "asset": "ph_sweet_potato",
+        "seconds": 1.261894424,
+        "core_seconds": 0.979783084,
+        "states": 10,
+        "rasters": 1539,
+        "queries": 817,
+        "sparse_passes": 1674,
+        "sparse_failures": 0,
+        "sparse_fallbacks": 1,
+        "peak_bytes": 653593840
+      },
+      {
+        "asset": "ph_namaqualand_boulder_04",
+        "seconds": 1.743726917,
+        "core_seconds": 1.5070991,
+        "states": 10,
+        "rasters": 1205,
+        "queries": 797,
+        "sparse_passes": 1341,
+        "sparse_failures": 0,
+        "sparse_fallbacks": 0,
+        "peak_bytes": 653593840
+      }
+    ],
+    "resident_data_bytes": 87431,
+    "graph_captures": 1,
+    "quality": [
+      {
+        "ranking": "constant",
+        "seconds": 1.591142037,
+        "assets": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0002658311971897845,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 0.9571077811865476,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.47179897896305,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 5
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              }
+            ],
+            "stats": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 3108,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.015900011000000002,
+              "decoded": 4,
+              "encode_seconds": 0.000522973,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 87,
+              "gpu_audit_seconds": 0.37497540500000004,
+              "gpu_buffer_reuses": 857,
+              "gpu_candidate_render_hits": 37,
+              "gpu_confirmation_seconds": 0.000065751,
+              "gpu_download_bytes": 36432,
+              "gpu_evaluations": 28,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 343,
+              "gpu_reference_render_hits": 126,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 64364,
+              "inference_seconds": 0.004204017,
+              "legal_collapses": 2,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 234,
+              "resource_failures": 0
+            }
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000010328657894193228,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.6824067238033955,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.937341481976134,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 14
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "stats": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 66103,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.027488903000000002,
+              "decoded": 4,
+              "encode_seconds": 0.00038028700000000004,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 110,
+              "gpu_audit_seconds": 0.6445400090000001,
+              "gpu_buffer_reuses": 1381,
+              "gpu_candidate_render_hits": 89,
+              "gpu_confirmation_seconds": 0.00021057400000000002,
+              "gpu_download_bytes": 57168,
+              "gpu_evaluations": 33,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 476,
+              "gpu_reference_render_hits": 229,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 348764,
+              "inference_seconds": 0.007394845000000001,
+              "legal_collapses": 23,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 233,
+              "resource_failures": 0
+            }
+          }
+        ]
+      },
+      {
+        "ranking": "learned",
+        "seconds": 1.34127667,
+        "assets": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              }
+            ],
+            "stats": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 2598,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.014553905,
+              "decoded": 4,
+              "encode_seconds": 0.00041148400000000005,
+              "fallback_levels": 2,
+              "first_resource_failure": null,
+              "gpu_allocations": 68,
+              "gpu_audit_seconds": 0.28267833800000003,
+              "gpu_buffer_reuses": 736,
+              "gpu_candidate_render_hits": 32,
+              "gpu_confirmation_seconds": 0.000055526,
+              "gpu_download_bytes": 29376,
+              "gpu_evaluations": 27,
+              "gpu_measurement_cache_hits": 2,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 292,
+              "gpu_reference_render_hits": 84,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 64252,
+              "inference_seconds": 0.002794293,
+              "legal_collapses": 3,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 221,
+              "resource_failures": 0
+            }
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.0008085637447047863,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.75,
+                  "coverage_upper_px": 1.4571077811865474,
+                  "error_px": 2.2876623409370263,
+                  "nonfinite_error": false,
+                  "normal_degrees": 26.754093435651626,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 13
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0008085637447047863,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.75,
+                  "coverage_upper_px": 1.4571077811865474,
+                  "error_px": 2.2876623409370263,
+                  "nonfinite_error": false,
+                  "normal_degrees": 26.754093435651626,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 13
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9085477490978922,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "stats": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 41611,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.017785635,
+              "decoded": 4,
+              "encode_seconds": 0.000397704,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 72,
+              "gpu_audit_seconds": 0.513786869,
+              "gpu_buffer_reuses": 887,
+              "gpu_candidate_render_hits": 68,
+              "gpu_confirmation_seconds": 0.00020207000000000002,
+              "gpu_download_bytes": 39888,
+              "gpu_evaluations": 31,
+              "gpu_measurement_cache_hits": 4,
+              "gpu_peak_bytes": 653593840,
+              "gpu_rasters": 314,
+              "gpu_reference_render_hits": 172,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 362230,
+              "inference_seconds": 0.003828002,
+              "legal_collapses": 4,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 233,
+              "resource_failures": 0
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "teacher_profile": {
+    "dataset_identical": true,
+    "cuda_kernel_seconds": 0.355472082,
+    "kernels": [
+      {
+        "name": "blitz::neural::<unnamed>::predicate_initialize(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, const blitz::Vec3 *, const blitz::Vec3 *, unsigned int, unsigned int *, unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, blitz::Weights, float)",
+        "seconds": 0.08888985,
+        "calls": 2075
+      },
+      {
+        "name": "blitz::neural::<unnamed>::appearance(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, const blitz::Vec3 *, const blitz::Vec3 *, blitz::neural::<unnamed>::Summary *, int, int, double, int, blitz::Weights, bool, float)",
+        "seconds": 0.086452709,
+        "calls": 356
+      },
+      {
+        "name": "blitz::neural::unpack_targets(unsigned long long, unsigned long long, unsigned long long, blitz::neural::AuditPixel *, blitz::Vec3 *, unsigned int)",
+        "seconds": 0.052978555000000004,
+        "calls": 1877
+      },
+      {
+        "name": "void blitz::neural::<unnamed>::predicate_search<(bool)1>(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, const blitz::Vec3 *, const blitz::Vec3 *, const unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, int, double, int, blitz::Weights)",
+        "seconds": 0.050800243,
+        "calls": 2075
+      },
+      {
+        "name": "blitz::neural::<unnamed>::place_vertices(blitz::neural::DeviceMeshView, blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const blitz::neural::Placement *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Vec3 *, blitz::Vec3 *, blitz::Vec2 *, blitz::ColorRGBA8 *, blitz::Vec4 *)",
+        "seconds": 0.014346188000000001,
+        "calls": 838
+      },
+      {
+        "name": "blitz::neural::clip_draw(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *, blitz::Bounds, blitz::Camera, unsigned int, unsigned char)",
+        "seconds": 0.011251545,
+        "calls": 1877
+      },
+      {
+        "name": "blitz::neural::<unnamed>::initialize(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, float *, float *, blitz::neural::<unnamed>::Summary *, unsigned long)",
+        "seconds": 0.008683476,
+        "calls": 178
+      },
+      {
+        "name": "blitz::neural::<unnamed>::validate_placement(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const blitz::Vec3 *, const blitz::Vec3 *, const blitz::Vec2 *, unsigned int *)",
+        "seconds": 0.007322014000000001,
+        "calls": 838
+      },
+      {
+        "name": "blitz::neural::draw_streams(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *)",
+        "seconds": 0.006521611,
+        "calls": 807
+      },
+      {
+        "name": "void blitz::neural::<unnamed>::predicate_search<(bool)0>(const blitz::neural::AuditPixel *, const blitz::neural::AuditPixel *, const blitz::Vec3 *, const blitz::Vec3 *, const unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, int, double, int, blitz::Weights)",
+        "seconds": 0.0047856420000000005,
+        "calls": 2075
+      },
+      {
+        "name": "blitz::neural::<unnamed>::copy_trial(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const unsigned int *, unsigned int *, unsigned short *, unsigned int)",
+        "seconds": 0.002009603,
+        "calls": 838
+      },
+      {
+        "name": "blitz::neural::<unnamed>::enumerate(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const unsigned int *, blitz::neural::<unnamed>::Edit *, unsigned char *, unsigned int, bool)",
+        "seconds": 0.001927815,
+        "calls": 11
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::detail::InputValue<unsigned int, unsigned int *>, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)",
+        "seconds": 0.0016811590000000002,
+        "calls": 838
+      },
+      {
+        "name": "blitz::neural::draw_bounds(blitz::neural::DeviceMeshView, blitz::neural::DrawMetadata *, bool)",
+        "seconds": 0.001630659,
+        "calls": 807
+      },
+      {
+        "name": "blitz::neural::<unnamed>::keep_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.001622982,
+        "calls": 838
+      },
+      {
+        "name": "kernelColor(short2 *, short2 *, int)",
+        "seconds": 0.0015445480000000002,
+        "calls": 13
+      },
+      {
+        "name": "blitz::neural::<unnamed>::vertex_features(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Bounds, float *)",
+        "seconds": 0.0014671060000000001,
+        "calls": 11
+      },
+      {
+        "name": "blitz::neural::<unnamed>::apply_map(const blitz::neural::<unnamed>::Edit *, const unsigned int *, const blitz::neural::<unnamed>::State *, unsigned int *)",
+        "seconds": 0.001354916,
+        "calls": 838
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::GpuActionState::Proposal *, const blitz::neural::Placement *)",
+        "seconds": 0.001056867,
+        "calls": 40
+      },
+      {
+        "name": "blitz::neural::<unnamed>::directed_coverage(const blitz::neural::AuditPixel *, const float *, blitz::neural::<unnamed>::Summary *, unsigned long)",
+        "seconds": 0.0010028160000000001,
+        "calls": 20
+      },
+      {
+        "name": "blitz::neural::<unnamed>::assign_placement(const unsigned int *, blitz::neural::Placement *, blitz::neural::Placement)",
+        "seconds": 0.0010013440000000001,
+        "calls": 838
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanInitKernel<cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>>(T1, int)",
+        "seconds": 0.0007995220000000001,
+        "calls": 882
+      },
+      {
+        "name": "blitz::neural::<unnamed>::connected_fans(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, unsigned int *, unsigned char *)",
+        "seconds": 0.000614752,
+        "calls": 11
+      },
+      {
+        "name": "blitz::neural::<unnamed>::rank_actions(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, float *, unsigned int *, blitz::NeuralRanking, double, unsigned int, unsigned int, unsigned int)",
+        "seconds": 0.000537313,
+        "calls": 10
+      },
+      {
+        "name": "blitz::neural::<unnamed>::npp_mask(const blitz::neural::AuditPixel *, unsigned char *, unsigned long)",
+        "seconds": 0.00046630500000000003,
+        "calls": 13
+      },
+      {
+        "name": "kernelUpdateVertical(short2 *, short2 *, short2 *, int, int)",
+        "seconds": 0.00045440000000000004,
+        "calls": 13
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)",
+        "seconds": 0.00044157,
+        "calls": 22
+      },
+      {
+        "name": "blitz::neural::<unnamed>::fill_action_features(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, blitz::Bounds, unsigned int, float *, unsigned int, unsigned int, const unsigned int *)",
+        "seconds": 0.000430146,
+        "calls": 10
+      },
+      {
+        "name": "void initInputVoronoi<unsigned char>(T1 *, unsigned long, T1, T1, short2 *, double *, double *, int, NppiSize, NppiSize)",
+        "seconds": 0.000381728,
+        "calls": 13
+      },
+      {
+        "name": "kernelMergeBands(short2 *, short2 *, short2 *, int, int)",
+        "seconds": 0.000379744,
+        "calls": 65
+      },
+      {
+        "name": "kernelFloodDown(short2 *, short2 *, int, int)",
+        "seconds": 0.000339203,
+        "calls": 13
+      },
+      {
+        "name": "kernelDoubleToSingleList(short2 *, short2 *, short2 *, int)",
+        "seconds": 0.000294818,
+        "calls": 13
+      },
+      {
+        "name": "blitz::neural::<unnamed>::sort_lists(const unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.00028944100000000004,
+        "calls": 44
+      },
+      {
+        "name": "kernelProximatePoints(short2 *, short2 *, int, int)",
+        "seconds": 0.000249122,
+        "calls": 13
+      },
+      {
+        "name": "blitz::neural::<unnamed>::npp_squared(const short2 *, float *, unsigned int)",
+        "seconds": 0.000219809,
+        "calls": 13
+      },
+      {
+        "name": "kernelFloodUp(short2 *, short2 *, int, int)",
+        "seconds": 0.00019296000000000002,
+        "calls": 13
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)",
+        "seconds": 0.00018457600000000002,
+        "calls": 10
+      },
+      {
+        "name": "blitz::neural::<unnamed>::single_edit(blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, unsigned int, unsigned int, unsigned int, unsigned int *)",
+        "seconds": 0.000115456,
+        "calls": 50
+      },
+      {
+        "name": "kernelCreateForwardPointers(short2 *, short2 *, int, int)",
+        "seconds": 0.00009644800000000001,
+        "calls": 13
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::NullType, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)",
+        "seconds": 0.00008108900000000001,
+        "calls": 44
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceReduceByKeyKernel<cub::CUB_200802_SM_750::detail::rle::encode::policy_hub<unsigned int, unsigned long>::Policy1000, unsigned long *, unsigned long *, thrust::THRUST_200802_SM_750_NS::constant_iterator<unsigned int, int, thrust::THRUST_200802_SM_750_NS::use_default>, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, cuda::std::__4::equal_to<void>, cuda::std::__4::plus<void>, int, unsigned int>(T2, T3, T4, T5, T6, T7, int, T8, T9, T10)",
+        "seconds": 0.000065472,
+        "calls": 22
+      },
+      {
+        "name": "void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)4, (int)4, (bool)1, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<const float>, cublasGemvTensorStridedBatched<float>>(cublasGemmSmallNParams<T9, T10, T11, T1>)",
+        "seconds": 0.00006124800000000001,
+        "calls": 30
+      },
+      {
+        "name": "blitz::neural::<unnamed>::decode_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const float *, blitz::neural::Placement *, const unsigned int *, unsigned int)",
+        "seconds": 0.000058976000000000006,
+        "calls": 10
+      },
+      {
+        "name": "kernelPropagateInterband(short2 *, short2 *, int, int)",
+        "seconds": 0.000052352,
+        "calls": 13
+      },
+      {
+        "name": "blitz::neural::<unnamed>::scatter_edges(blitz::neural::<unnamed>::TopologyView, unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.000041024000000000006,
+        "calls": 22
+      },
+      {
+        "name": "blitz::neural::<unnamed>::scatter_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.00003872,
+        "calls": 22
+      },
+      {
+        "name": "blitz::neural::<unnamed>::edge_keys(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned long *, unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.000038656000000000004,
+        "calls": 22
+      },
+      {
+        "name": "blitz::neural::<unnamed>::activate(float *, const float *, unsigned int, unsigned int, bool)",
+        "seconds": 0.00003744,
+        "calls": 30
+      },
+      {
+        "name": "blitz::neural::<unnamed>::edge_degrees(const unsigned long *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)",
+        "seconds": 0.000036768000000000004,
+        "calls": 22
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceSelectSweepKernel<cub::CUB_200802_SM_750::detail::select::policy_hub<blitz::neural::<unnamed>::Edit, unsigned char, int, (bool)0, (bool)0, (bool)0>::Policy1000, blitz::neural::<unnamed>::Edit *, unsigned char *, blitz::neural::<unnamed>::Edit *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, cub::CUB_200802_SM_750::NullType, cub::CUB_200802_SM_750::NullType, int, cub::CUB_200802_SM_750::detail::select::streaming_context_t<long, (bool)1>, (bool)0, (bool)0>(T2, T3, T4, T5, T6, T7, T8, T9, int, T10, cub::CUB_200802_SM_750::detail::vsmem_t)",
+        "seconds": 0.000026048000000000002,
+        "calls": 11
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, unsigned int *>(T1, int, T2)",
+        "seconds": 0.000021280000000000003,
+        "calls": 22
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_selection(const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int, unsigned int)",
+        "seconds": 0.000016576000000000002,
+        "calls": 10
+      },
+      {
+        "name": "blitz::neural::<unnamed>::copy_commit(unsigned int *, unsigned short *, const unsigned int *, const unsigned short *, const unsigned int *, unsigned int)",
+        "seconds": 0.000015616,
+        "calls": 10
+      },
+      {
+        "name": "blitz::neural::<unnamed>::lookup_vertices(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int, unsigned int *, bool)",
+        "seconds": 0.000015168000000000001,
+        "calls": 2
+      },
+      {
+        "name": "blitz::neural::<unnamed>::teacher_records(const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::Action *, unsigned int)",
+        "seconds": 0.000012256000000000001,
+        "calls": 10
+      },
+      {
+        "name": "blitz::neural::<unnamed>::insert_vertices(blitz::neural::DeviceMeshView, unsigned int *, unsigned int, bool)",
+        "seconds": 0.000011488,
+        "calls": 2
+      },
+      {
+        "name": "blitz::neural::<unnamed>::commit_faces(blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int)",
+        "seconds": 0.000010368000000000001,
+        "calls": 10
+      },
+      {
+        "name": "void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, unsigned int *>(T1, int, T2)",
+        "seconds": 0.000010048000000000001,
+        "calls": 11
+      },
+      {
+        "name": "blitz::neural::<unnamed>::mark_seams(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int *)",
+        "seconds": 0.000002528,
+        "calls": 1
+      }
+    ]
+  }
+}

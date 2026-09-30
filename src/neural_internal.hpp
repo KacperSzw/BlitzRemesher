@@ -46,12 +46,29 @@ std::vector<float> encode_cuda(const Graph&,const WeightsData&,const NeuralOptio
 std::vector<float> encode_mesh_cuda(const Graph&,const WeightsData&,const NeuralOptions&,const std::function<bool()>& = {});
 Prediction predict_cuda(std::span<const float>,const std::array<float,conditions>&,const WeightsData&,const NeuralOptions&,NumericTrace* = nullptr);
 Raster raster_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions& = {});
+Raster raster_gpu(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&);
 // Research-only quantization probe. Never participates in hard acceptance.
 struct RasterPrecisionResult {Raster raster;double seconds{};uint8_t bytes_per_pixel{};};
+struct RasterBenchmarkResult {Raster raster;double seconds{},setup_seconds{},packing_seconds{},render_seconds{},unpack_seconds{};uint64_t draw_bytes{},gpu_bytes{};};
+RasterBenchmarkResult raster_benchmark(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,uint32_t repeats=8);
+struct DistanceFieldBenchmark {std::vector<float> squared;double seconds{};uint64_t bytes{};};
+DistanceFieldBenchmark benchmark_distance_field(std::span<const uint8_t> sites,uint32_t size,const NeuralOptions&,uint32_t repeats=8);
 RasterPrecisionResult raster_precision_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,uint8_t attribute_bits,uint8_t depth_bits,uint8_t position_bits,const NeuralOptions& = {});
 // Per-generation CUDA storage; fixed source streams are borrowed and immutable.
+enum class AuditVerdict:uint8_t { Unknown,Pass,Fail };
+// Bounds for teacher ordering, deliberately distinct from exact Measurement.
+struct AuditPredicate {
+    AuditVerdict verdict{AuditVerdict::Unknown};
+    double error_upper{},changed_area{};
+    uint32_t views{};uint8_t supersample{};
+    bool resource_limited{};
+};
+// Test/research boundary: compare supplied images without invoking a rasterizer.
+Measurement measure_rasters_cuda(const Raster&,const Raster&,const EvalSettings&,const NeuralOptions&);
+AuditPredicate certify_rasters_cuda(const Raster&,const Raster&,const EvalSettings&,const NeuralOptions&,uint32_t queue_capacity=262144);
 class AuditCuda {
     struct Impl;std::unique_ptr<Impl> impl_;
+    Measurement evaluate_device(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats*,double,bool*,bool);
 public:
     explicit AuditCuda(const NeuralOptions&,MeshView fixed_source={});
     ~AuditCuda();
@@ -60,6 +77,7 @@ public:
     // proves this candidate cannot improve its normalized error/area margin.
     // A pruned result is a bound, never a pass/fail training label.
     Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_margin=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
+    AuditPredicate certify(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_area=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
 };
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);

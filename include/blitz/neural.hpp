@@ -6,6 +6,8 @@ namespace blitz {
 class NeuralUnavailable : public std::runtime_error { using std::runtime_error::runtime_error; };
 enum class NeuralRanking:uint8_t { Learned,Constant,Shuffled,ShortestEdge,CurrentPlane };
 enum class NeuralConfirmation:uint8_t { Cpu,Gpu,Compare };
+enum class NeuralRasterBackend:uint8_t { Cuda,Vulkan };
+enum class NeuralVertexStorage:uint8_t { Float32,Position16,Packed };
 enum class NeuralConfirmationReason:uint8_t { Visual,Cancelled,Resource,Nonfinite,Disagreement };
 struct NeuralConfirmationFailure {
     Mesh reference,candidate; // Optional owned replay snapshots; never borrowed past generation.
@@ -16,7 +18,7 @@ struct NeuralConfirmationFailure {
 };
 struct NeuralOptions {
     int32_t device{};
-    uint32_t memory_mib{6144}; // Includes library-owned CUDA scratch; minimum 128.
+    uint32_t memory_mib{6144}; // Combined library-owned CUDA/Vulkan storage; minimum 128.
     bool overdraw_tiebreak{true};
     uint32_t action_trials{64}; // Per v2 proposal; additional measured visual trials.
     NeuralRanking ranking{NeuralRanking::Learned}; // Explicit experimental controls only.
@@ -25,6 +27,8 @@ struct NeuralOptions {
     NeuralConfirmation confirmation{NeuralConfirmation::Gpu};
     bool capture_confirmation_failure{};
     bool cache_rasters{true}; // Optional bounded cache; false supports matched profiling.
+    NeuralRasterBackend raster_backend{NeuralRasterBackend::Cuda};
+    NeuralVertexStorage vertex_storage{NeuralVertexStorage::Float32};
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {
@@ -46,6 +50,7 @@ struct NeuralStats {
     uint64_t gpu_allocations{},gpu_buffer_reuses{},gpu_upload_bytes{},gpu_download_bytes{};
     uint64_t gpu_evaluations{},gpu_measurement_cache_hits{},gpu_confirmation_ns{};
     uint64_t gpu_rasters{},gpu_reference_render_hits{},gpu_candidate_render_hits{};
+    uint64_t gpu_sparse_passes{},gpu_sparse_failures{},gpu_sparse_fallbacks{},gpu_sparse_queries{};
     uint32_t confirmation_cancelled{},confirmation_resources{},confirmation_nonfinite{},confirmation_disagreements{};
     std::optional<NeuralConfirmationFailure> confirmation_failure;
 };
@@ -69,6 +74,9 @@ bool neural_available(int32_t device=0) noexcept;
 Result generate_neural(MeshView,const Settings&,const NeuralModel&,NeuralStats* = nullptr);
 // Same sampled metric/refinement as evaluate(); generation selects its confirmation backend.
 Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions& = {},NeuralStats* = nullptr);
+// Uses the explicitly selected raster semantics. Packed candidates are compared
+// against the original, unpacked source; quantization consumes the visual budget.
+Measurement evaluate_gpu(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats* = nullptr);
 // Pre-depth geometric overlap using fixed centers and top-left fill, averaged over views.
 double overlap_cuda(MeshView,const Bounds&,double,ViewSet,const NeuralOptions& = {});
 }

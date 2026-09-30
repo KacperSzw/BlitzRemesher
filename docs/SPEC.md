@@ -53,6 +53,16 @@ One empty render versus nonempty fails; two empty renders agree.
 Normals are sampled visible interpolated normals, or face normals when absent.
 These are audited-camera/sample guarantees, never universal appearance bounds.
 
+The optional neural Vulkan backend defines separate `vulkan-v1` raster semantics:
+hardware conservative coverage, center-sampled D32 visibility with first-face
+depth ties, and FP32 interpolated attributes. It uses the same metric, limits,
+camera schedule and refinement allowance, including final GPU confirmation.
+Hardware edges/interpolation can differ from the CPU/CUDA reference; record the
+backend when comparing results. Packed draw storage is an explicit experiment:
+the original source remains FP32 and candidate quantization consumes the existing
+budget. It does not alter master/source streams. See
+research/neural/GPU-REFACTOR.md for formats, measured limits and evidence.
+
 Quality preset allows 64 candidate evaluations/level, fast eight. Automatic search
 reserves half the bounded beam for triangles and fills the rest by resident bytes,
 with an exact source fallback. Counts

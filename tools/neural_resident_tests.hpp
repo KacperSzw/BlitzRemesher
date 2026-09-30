@@ -1,0 +1,29 @@
+#pragma once
+#include "neural_resident.hpp"
+#include "neural_checkpoint.hpp"
+namespace blitz::neural::training {
+inline void resident_contracts(){
+    auto check=[](bool x,const char* why){if(!x)throw std::runtime_error(why);};torch::manual_seed(519);torch::Device device(torch::kCUDA);
+    auto page=[](unsigned states,unsigned rows){ActionData d;d.architecture=placement_schema;d.offsets={0};for(unsigned s=0;s<states;++s){for(unsigned r=0;r<rows;++r){
+            auto start=d.x.size();d.x.resize(start+placement_features);for(unsigned c=0;c<placement_features;++c){auto slot=feature_slot(c);d.x[start+c]=slot>=0?float((c+r*3+s)%17)/32:slot>=-32?float((c+r)%2):float(c+s)/100;}
+            d.x[start+78]=d.x[start+23];d.x[start+79]=d.x[start+47];d.labels.push_back(r==0?255:r==1?8:r==2?16:0);d.targets.resize(d.labels.size()*9,.125f);d.from.push_back(r);d.to.push_back(r+1);}
+        d.offsets.push_back(uint32_t(d.labels.size()));d.progress.push_back(float(s%4)/4);}return d;};
+    ResidentDataset data(device,281);auto a=page(3,2);data.append(a,"a","first");ActionNetwork model(placement_schema);model->to(device);ResidentUpdate update(model,data,31);update.capture();check(update.pool()==2&&update.captures==1,"resident pool includes padding");
+    auto initial=update.optimizer.snapshot();update.run(3);check(update.optimizer.state().step==3,"resident graph did not update");auto checkpoint=update.optimizer.snapshot();update.run(4);auto whole=update.optimizer.snapshot();update.optimizer.restore(checkpoint);update.run(4);auto resumed=update.optimizer.snapshot();for(size_t i=0;i<whole.size();++i)check(torch::equal(whole[i],resumed[i]),"resident resume differs");
+    auto before=data.root.data_ptr();auto b=page(2,2);data.append(b,"b","second");update.run(1);check(data.root.data_ptr()==before&&update.captures==1,"page append recaptured stable graph");check(update.ids.max().item<int>()>=3,"graph did not observe appended states");
+    auto c=page(2,4);data.append(c,"a","first");update.run(1);check(update.pool()==3&&update.captures==2,"capacity growth or unlabeled row compaction");
+    // Dense independent oracle: same sampler IDs, expanded bits, partial labels
+    // and masks. Removing zero-gradient rows must preserve supervised gradients.
+    auto ids=update.ids.cpu();auto input=update.input.cpu();auto labels=update.target.cpu();std::vector<const ActionData*> pages{&a,&b,&c};
+    for(unsigned row=0;row<31;++row){unsigned id=unsigned(ids[row].item<int>());const ActionData* selected=nullptr;for(auto* p:pages){if(id<p->states()){selected=p;break;}id-=p->states();}check(selected,"sampler ID outside pages");unsigned out=0;
+        for(uint32_t r=selected->offsets[id];r<selected->offsets[id+1];++r){if(!(selected->labels[r]&248))continue;check(labels[row][out].item<int>()==selected->labels[r],"partial label discarded");auto expected=torch::from_blob(const_cast<float*>(selected->x.data())+size_t(r)*placement_features,{placement_features},torch::kFloat32);check(torch::equal(input[row][out],expected),"resident feature bits differ");++out;}
+        for(;out<update.pool();++out)check(labels[row][out].item<int>()==0&&input[row][out].abs().sum().item<float>()==0,"padding acquired supervision");}
+    auto saved=update.optimizer.snapshot();auto path=fs::temp_directory_path()/("blitz-resident-checkpoint-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+    CheckpointWriter writer;auto journal=path/"latest.json";writer.submit(path/"snapshot",model,update.optimizer,{{"test",true}},update.input.flatten(0,1),model->forward(update.input).flatten(0,1),journal,{{"active_training",{{"target_step",update.optimizer.state().step+17}}},{"datasets",{"a","b","c"}}});update.run(2);writer.join();
+    auto published=read_json(journal);check(published.at("checkpoint")=="snapshot"&&published.at("checkpoint_sha256")==file_sha256(path/"snapshot/checkpoint.pt"),"recovery journal does not identify verified snapshot");check(published.at("active_training").at("target_step")==update.optimizer.state().step+15,"partial training target lost in journal");
+    ActionNetwork restored(placement_schema);restored->to(device);load_checkpoint_model(path/"snapshot/checkpoint.pt",restored,device);auto parameters=restored->parameters();for(size_t i=0;i<parameters.size();++i)check(torch::equal(parameters[i],saved[i]),"warmstart policy differs before first teacher");ResidentUpdate continuation(restored,data,31);load_state(path/"snapshot/checkpoint.pt",restored,continuation.optimizer,device);auto frozen=continuation.optimizer.snapshot();for(size_t i=0;i<saved.size();++i)check(torch::equal(saved[i],frozen[i]),"checkpoint writer read mutable GPU state");continuation.run(2);auto x=update.optimizer.snapshot(),y=continuation.optimizer.snapshot();for(size_t i=0;i<x.size();++i)check(torch::equal(x[i],y[i]),"fresh resident checkpoint continuation differs");
+    writer.submit(path/"invalid",model,update.optimizer,{{"test",true}},update.input.flatten(0,1),torch::full_like(model->forward(update.input).flatten(0,1),1e6),journal,{{"invalid",true}});bool rejected=false;try{writer.join();}catch(const std::runtime_error&){rejected=true;}check(rejected&&read_json(journal)==published,"failed checkpoint replaced valid recovery pointer");
+    ResidentDataset empty_page(device,41);auto empty=page(2,1);std::fill(empty.labels.begin(),empty.labels.end(),0);empty_page.append(empty,"empty","none");ResidentUpdate empty_update(restored,empty_page,7);empty_update.gather();check(empty_update.input.abs().sum().item<float>()==0&&empty_update.target.sum().item<int>()==0,"unlabeled state produced training rows");fs::remove_all(path);
+    std::cout<<json({{"resident_contracts",true},{"stable_root",true},{"append_without_capture",true},{"partial_labels",true},{"checkpoint_resume_exact",true},{"pool",update.pool()},{"data_bytes",data.bytes()}}).dump()<<'\n';
+}
+}

@@ -70,7 +70,7 @@ export function podRequest(state,publicKey){
   return {name:state.name,cloud:'SECURE',image:IMAGE,disk:profile.container_disk_gb,
     gpu:{id:profile.gpu,count:1,minRamPerGpu:profile.host_ram_gb,minVcpuCountPerGpu:profile.vcpus,minCudaVersion:profile.minimum_cuda},
     dataCenterIds:[state.quote.data_center],mounts:{network:[{volumeId:state.volume_id,path:'/workspace'}]},
-    ports:['22/tcp'],startSsh:true,startJupyter:false,env:{PUBLIC_KEY:publicKey.trim()}};
+    ports:['22/tcp'],startSsh:true,startJupyter:false,env:{PUBLIC_KEY:publicKey.trim(),...(profile.graphics?{NVIDIA_DRIVER_CAPABILITIES:'compute,utility,graphics'}:{})}};
 }
 export function verifyPod(pod,profile=deployment){
   // Pod gpu.memory is allocated HOST RAM; catalog memory and nvidia-smi verify VRAM.

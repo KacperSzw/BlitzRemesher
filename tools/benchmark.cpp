@@ -135,6 +135,8 @@ int benchmark_main(int argc,char** argv) {
         else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
         else if(k=="--action-batch")neural_options.action_batch=neural_batch(argv[i+1]);
         else if(k=="--neural-confirmation")neural_options.confirmation=confirmation_option(argv[i+1]);
+        else if(k=="--raster-backend")neural_options.raster_backend=raster_option(argv[i+1]);
+        else if(k=="--vertex-storage")neural_options.vertex_storage=storage_option(argv[i+1]);
         else if(k=="--gpu-memory-mib")neural_options.memory_mib=neural_unsigned(argv[i+1]);
         else if(k=="--baseline")method=argv[i+1];else if(k=="--baseline-dir")baseline_dir=argv[i+1];else if(k=="--build-stamp")build_stamp=argv[i+1];else throw std::invalid_argument("unknown benchmark option");}
     if(!(minutes>0&&minutes<=50))throw std::invalid_argument("batch time must be <=50 minutes");

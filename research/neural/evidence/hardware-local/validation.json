@@ -1,0 +1,53 @@
+{
+  "complete": true,
+  "binaries": {
+    "blitz-neural-cycle": "d48155a548c2783d68030ee06239c049119a7d554ed4e889d448ed2ac0a27a1e",
+    "blitz-neural-placement-prepare": "9c8b484d29955ad8ed5b5766e3d7d898333357f6afe21d4c250b6ffd04886525",
+    "blitz-neural-vulkan-tests": "610c7d8a635f945bc5083a5311422e6cfd7be22e2e61db90213be75724228912",
+    "blitz-neural-predicate-tests": "1a459bc3872a8d99b47d72aa0b376f5220feb8d8809637d345cc66f4f1638ed8",
+    "blitz-neural-hardware-profile": "ef982f39be91412a52cd6cf912f1f508f68d06f4b391975e7df6ff89d191764d"
+  },
+  "ctest": {
+    "passed": 26,
+    "failed": 0
+  },
+  "asan_ubsan": {
+    "passed": 10,
+    "failed": 0
+  },
+  "cuda_memcheck": {
+    "predicate_errors": 0,
+    "resident_errors": 0,
+    "vulkan_interop_errors": 0
+  },
+  "vulkan_validation": {
+    "layer_confirmed_active": true,
+    "synchronization_validation": true,
+    "errors": 0,
+    "unused_color_target_warning": true
+  },
+  "distance_oracle": {
+    "cases": 21,
+    "sizes": [
+      64,
+      65,
+      127,
+      160,
+      544,
+      1056,
+      2897
+    ],
+    "squared_distance_mismatches": 0
+  },
+  "recovery": {
+    "complete": true,
+    "binary_sha256": "d48155a548c2783d68030ee06239c049119a7d554ed4e889d448ed2ac0a27a1e",
+    "score": null,
+    "interrupted_step": 512,
+    "interrupted_target": 2048,
+    "identical_parameters": true,
+    "identical_datasets": true,
+    "same_completed_work": true
+  },
+  "timing_build_note": "Throughput and raster traces precede final configuration-check and old autograd-graph lifetime fixes; hot algorithm unchanged. Final binaries pass CTest, resident memcheck and forced process-death recovery again."
+}

@@ -10,11 +10,12 @@
         buildInputs = with pkgs; [ curl openssl nlohmann_json libarchive cgal boost eigen gmp mpfr ];
       };
       neural = (pkgs.mkShell.override { stdenv = pkgs.gcc14Stdenv; }) {
-        packages = with pkgs; [ cmake ninja pkg-config git jq nodejs unzip patchelf ];
-        buildInputs = with pkgs; [ curl openssl nlohmann_json libarchive cudaPackages.cudatoolkit ];
+        packages = with pkgs; [ cmake ninja pkg-config git jq nodejs unzip patchelf glslang vulkan-tools ];
+        buildInputs = with pkgs; [ curl openssl nlohmann_json libarchive cudaPackages.cudatoolkit vulkan-headers vulkan-loader vulkan-validation-layers ];
         CUDACXX = "${pkgs.cudaPackages.cudatoolkit}/bin/nvcc";
         CUDAHOSTCXX = "${pkgs.gcc14}/bin/g++";
         CUDA_PATH = "${pkgs.cudaPackages.cudatoolkit}";
+        VK_ADD_LAYER_PATH = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
         shellHook = ''
           export BLITZ_LIBTORCH_ROOT="$PWD/.cache/libtorch"
           export LD_LIBRARY_PATH="$BLITZ_LIBTORCH_ROOT/lib:/run/opengl-driver/lib:${pkgs.stdenv.cc.cc.lib}/lib:${pkgs.cudaPackages.cudatoolkit}/lib:$LD_LIBRARY_PATH"

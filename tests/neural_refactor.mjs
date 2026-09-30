@@ -4,8 +4,13 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {write,read} from '../research/neural/runpod-api.mjs';
-import {refactorBudget,refactorAuthorization,actionAccrued} from '../research/neural/action-budget.mjs';
+import {refactorBudget,refactorAuthorization,actionAccrued,hardwareValidationBudget} from '../research/neural/action-budget.mjs';
 import {cycleWindow,cycleConditions,modelPayload,hash,learningCycle} from '../research/neural/refactor-cycle.mjs';
+test('hardware validation consumes the existing grant and includes previous validation rentals',()=>{
+  const prior=refactorAuthorization.baseline_usd+5.3;const b=hardwareValidationBudget({billed:prior,additionalAccrued:prior-2.75,rate:2.5});assert.ok(b.maximum_total_usd<=b.cap_usd);assert.equal(b.minutes,35);
+  for(const extra of [{billed:prior+1},{minutes:120},{rate:3},{additionalAccrued:prior}])assert.throws(()=>hardwareValidationBudget({billed:prior,additionalAccrued:prior-2.75,rate:2.5,...extra}));
+  assert.equal(actionAccrued([{name:'hardware-test',experiment:'hardware-validation',started_at:0,terminated_at:3600000,compute_terminated:true,deployment:{gpu_hourly_usd_cap:2.5}}]),2.51);
+});
 test('new authorization includes historical ledger, future rentals, rate, storage and reserve',()=>{
   const base=refactorAuthorization.baseline_usd;
   for(const rate of [1.9,2.09,2.5]){const b=refactorBudget({billed:9.49,rate,additionalAccrued:base-2.75});assert.ok(b.maximum_additional_usd<=8);assert.equal(b.maximum_rental_usd,160/60*(rate+.01));assert.equal(b.cap_usd,base+8);}

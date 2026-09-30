@@ -11,6 +11,12 @@ struct SamplingView {
     const uint32_t* states;
     uint32_t category_count,seed;
 };
+struct ResidentState {
+    const float *values,*conditions,*placements;
+    const uint32_t* flags;const uint8_t* labels;
+    uint32_t rows;
+};
+struct ResidentRoot {SamplingView sampling;const ResidentState* states;};
 struct UpdateState {
     uint32_t step{},failure{},pairs{},valid{},segment_start{};
     uint32_t known[5]{};
@@ -23,6 +29,7 @@ struct UpdateSettings {float margin{1},auxiliary{.25f},penalty{1e-4f},lr{.001f},
 inline constexpr uint32_t sampler_version=1,update_checkpoint_version=2;
 void sample_update(SamplingView,const float*,const uint8_t*,float*,uint8_t*,uint32_t*,UpdateState*,uint32_t,uint32_t,uint32_t,cudaStream_t);
 void sample_packed_update(SamplingView,const float*,const uint32_t*,const float*,const uint8_t*,float*,uint8_t*,uint32_t*,UpdateState*,uint32_t,uint32_t,uint32_t,cudaStream_t);
+void sample_resident_update(const ResidentRoot*,float*,uint8_t*,float*,uint32_t*,UpdateState*,uint32_t,uint32_t,uint32_t,cudaStream_t);
 void expand_actions(const float*,const uint32_t*,const float*,const uint8_t*,float*,const int64_t*,uint32_t,uint32_t,uint32_t,uint32_t,cudaStream_t);
 void loss_update(const float*,const uint8_t*,float*,float*,UpdateState*,uint32_t,uint32_t,UpdateSettings,cudaStream_t);
 void placement_loss_update(const float*,const uint8_t*,const float*,const uint32_t*,float*,float*,UpdateState*,uint32_t,uint32_t,UpdateSettings,cudaStream_t);

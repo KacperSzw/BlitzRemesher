@@ -1,4 +1,4 @@
-#include "neural_update.hpp"
+#include "neural_checkpoint.hpp"
 #include <c10/cuda/CUDACachingAllocator.h>
 #include <random>
 #include <iostream>
@@ -26,17 +26,6 @@ Dataset dataset(const fs::path& directory) {
     }
     if(!out.states)throw std::invalid_argument("action dataset collection is empty");
     if(out.x.size()*sizeof(float)>8ull*1024*1024*1024)throw std::length_error("resident action dataset exceeds 8 GiB");return out;
-}
-void save_state(const fs::path& path,ActionNetwork& model,DeviceAdam& optimizer,uint64_t step) {
-    torch::serialize::OutputArchive all,m,o;model->save(m);optimizer.save(o);all.write("model",m);all.write("optimizer",o);all.write("step",torch::tensor(int64_t(step)));auto temp=path;temp+=".part";all.save_to(temp.string());fs::rename(temp,path);
-}
-uint64_t load_state(const fs::path& path,ActionNetwork& model,DeviceAdam& optimizer,torch::Device device) {
-    torch::serialize::InputArchive all,m,o;all.load_from(path.string(),device);all.read("model",m);all.read("optimizer",o);
-    // Module::load may replace storage. Never replace addresses borrowed by a graph.
-    ActionNetwork restored(model->architecture);restored->to(device);restored->load(m);torch::NoGradGuard guard;
-    auto current=model->parameters(),loaded=restored->parameters();
-    for(size_t i=0;i<current.size();++i){if(current[i].sizes()!=loaded[i].sizes())throw std::invalid_argument("checkpoint model dimensions");current[i].copy_(loaded[i]);}
-    optimizer.load(o);torch::Tensor step;all.read("step",step);auto n=step.item<int64_t>();if(n<0||uint64_t(n)!=optimizer.state().step)throw std::invalid_argument("checkpoint counter mismatch");return uint64_t(n);
 }
 void check_contracts(const fs::path& output={}) {
     torch::manual_seed(771);torch::Device device(torch::kCUDA);ActionNetwork model;model->to(device);auto input=torch::randn({35,action_features},torch::TensorOptions().device(device));auto expected=model->forward(input);

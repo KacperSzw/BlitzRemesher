@@ -12,6 +12,9 @@ NeuralModel::NeuralModel(const char* file,const NeuralOptions& options) {
     if(!file||!file[0]||options.device<0||options.memory_mib<128||options.memory_mib>65536||!options.action_trials||options.action_trials>65536||options.ranking>NeuralRanking::CurrentPlane)throw std::invalid_argument("invalid neural model options");
     if(!options.action_batch||options.action_batch>64)throw std::invalid_argument("action batch outside 1..64");
     if(options.confirmation>NeuralConfirmation::Compare)throw std::invalid_argument("invalid neural confirmation backend");
+    if(options.raster_backend>NeuralRasterBackend::Vulkan||options.vertex_storage>NeuralVertexStorage::Packed)throw std::invalid_argument("invalid neural raster or storage selection");
+    if(options.raster_backend==NeuralRasterBackend::Cuda&&options.vertex_storage!=NeuralVertexStorage::Float32)throw std::invalid_argument("packed draw storage requires Vulkan");
+    if(options.raster_backend==NeuralRasterBackend::Vulkan&&options.confirmation!=NeuralConfirmation::Gpu)throw std::invalid_argument("Vulkan raster semantics require GPU confirmation; use the CUDA backend for CPU comparison");
     if(!neural_available(options.device))throw NeuralUnavailable("neural mode requires an available CUDA device and a BLITZ_CUDA build");
 #ifdef BLITZ_CUDA
     auto value=std::make_unique<Impl>();value->options=options;value->weights=neural::load_weights(file,&value->hash);impl_=std::move(value);
@@ -25,6 +28,7 @@ const std::string& NeuralModel::sha256() const {if(!impl_)throw std::invalid_arg
 #ifndef BLITZ_CUDA
 bool neural_available(int32_t) noexcept {return false;}
 Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*) {throw NeuralUnavailable("CUDA evaluator was not built");}
+Measurement evaluate_gpu(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*) {throw NeuralUnavailable("GPU evaluator was not built");}
 double overlap_cuda(MeshView,const Bounds&,double,ViewSet,const NeuralOptions&) {throw NeuralUnavailable("CUDA evaluator was not built");}
 #endif
 #ifdef BLITZ_CUDA

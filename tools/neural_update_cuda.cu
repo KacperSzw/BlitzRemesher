@@ -22,6 +22,11 @@ __global__ void select_states(SamplingView s,uint32_t* ids,const UpdateState* st
     auto c=s.categories[choose(counter,s.category_count)];auto a=s.assets[c.first+choose(counter,c.count)];
     auto b=s.bins[a.first+choose(counter,a.count)];ids[i]=s.states[b.first+choose(counter,b.count)];
 }
+__global__ void select_resident_states(const ResidentRoot* root,uint32_t* ids,const UpdateState* state,uint32_t batch){
+    uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=batch||state->failure)return;auto s=root->sampling;
+    uint64_t counter=(uint64_t(s.seed)<<32)^uint64_t(state->step)*0xd1342543de82ef95ull^uint64_t(i)*0xa24baed4963ee407ull;
+    auto c=s.categories[choose(counter,s.category_count)];auto a=s.assets[c.first+choose(counter,c.count)];auto b=s.bins[a.first+choose(counter,a.count)];ids[i]=s.states[b.first+choose(counter,b.count)];
+}
 __global__ void gather(const float* x,const uint8_t* labels,float* input,uint8_t* target,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width) {
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x,n=size_t(batch)*pool;
     if(state->failure)return;
@@ -29,6 +34,13 @@ __global__ void gather(const float* x,const uint8_t* labels,float* input,uint8_t
     if(i<n*width){size_t row=i/(pool*width);input[i]=x[size_t(ids[row])*pool*width+i%(pool*width)];}
 }
 __device__ float unpack(const float* values,const uint32_t* flags,const float* conditions,size_t row,uint32_t state,uint32_t channel,uint32_t width){auto slot=feature_slot(channel);return slot>=0?values[row*packed_width(width)+unsigned(slot)]:slot>=-32?float((flags[row]>>unsigned(-slot-1))&1):conditions[size_t(state)*8+unsigned(-slot-33)];}
+__global__ void gather_resident(const ResidentRoot* root,float* input,uint8_t* labels,float* placements,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width){
+    if(state->failure)return;size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=size_t(batch)*pool*width)return;
+    auto selected=root->states[ids[i/(pool*width)]];uint32_t row=uint32_t(i/width)%pool,channel=uint32_t(i%width);bool live=row<selected.rows;
+    input[i]=live?unpack(selected.values,selected.flags,selected.conditions,row,0,channel,width):0;
+    if(channel==0)labels[i/width]=live?selected.labels[row]:0;
+    if(placements&&channel<9)placements[(i/width)*9+channel]=live?selected.placements[row*9+channel]:0;
+}
 __global__ void gather_packed(const float* values,const uint32_t* flags,const float* conditions,const uint8_t* labels,float* input,uint8_t* target,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width){
     if(state->failure)return;size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=size_t(batch)*pool*width)return;auto selected=ids[i/(pool*width)];size_t row=size_t(selected)*pool+(i/width)%pool;auto label=labels[row];input[i]=label?unpack(values,flags,conditions,row,selected,uint32_t(i%width),width):0;if(i%width==0)target[i/width]=label;
 }
@@ -83,7 +95,7 @@ __global__ void placement_gradient(const float* y,const uint8_t* labels,const fl
             for(uint32_t k=0;k<pool;++k)if((mask[k]&24)==24&&bool(mask[k]&4)!=preferred){float v=settings.margin+(preferred?prediction[k*12]-score:score-prediction[k*12]);if(v>0){gradients[0]+=(preferred?-1.f:1.f)*inverse;if(preferred)loss+=v*inverse;}}}
         for(unsigned h=0;h<3;++h)if(h?bool(label&(h==1?8:16)):joint){float z=prediction[j*12+h],inverse=1.f/max(1u,h?state->known[h-1]:state->valid),weight=settings.penalty*inverse/3;
             loss+=weight*z*z;gradients[h]+=2*weight*z;if(h){float t=bool(label&(h==1?1:2));loss+=settings.auxiliary*(fmaxf(z,0)-z*t+log1pf(expf(-fabsf(z))))*inverse;gradients[h]+=settings.auxiliary*((z>=0?1.f/(1.f+expf(-z)):expf(z)/(1.f+expf(z)))-t)*inverse;}}
-        for(unsigned group=0;group<3;++group)if(label&(32u<<group)){float inverse=1.f/(max(1u,state->known[group+2])*3.f);for(unsigned k=0;k<3;++k){unsigned channel=group*3+k;float delta=prediction[j*12+3+channel]-targets[(size_t(ids[row])*pool+j)*9+channel];float absolute=fabsf(delta);
+        for(unsigned group=0;group<3;++group)if(label&(32u<<group)){float inverse=1.f/(max(1u,state->known[group+2])*3.f);for(unsigned k=0;k<3;++k){unsigned channel=group*3+k;float delta=prediction[j*12+3+channel]-targets[(size_t(ids?ids[row]:row)*pool+j)*9+channel];float absolute=fabsf(delta);
             loss+=(absolute<1?.5f*delta*delta:absolute-.5f)*inverse;gradients[3+channel]=fminf(1,fmaxf(-1,delta))*inverse;}}
         for(unsigned h=0;h<12;++h)dy[(size_t(row)*pool+j)*12+h]=gradients[h];}
     __shared__ cub::BlockReduce<float,32>::TempStorage temp;auto total=cub::BlockReduce<float,32>(temp).Sum(loss);if(threadIdx.x==0)losses[row]=total;
@@ -120,6 +132,9 @@ void sample_update(SamplingView s,const float* x,const uint8_t* labels,float* in
 }
 void sample_packed_update(SamplingView s,const float* x,const uint32_t* flags,const float* conditions,const uint8_t* labels,float* input,uint8_t* target,uint32_t* ids,UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width,cudaStream_t stream){
     select_states<<<(batch+255)/256,256,0,stream>>>(s,ids,state,batch);gather_packed<<<(size_t(batch)*pool*width+255)/256,256,0,stream>>>(x,flags,conditions,labels,input,target,ids,state,batch,pool,width);
+}
+void sample_resident_update(const ResidentRoot* root,float* input,uint8_t* labels,float* placements,uint32_t* ids,UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width,cudaStream_t stream){
+    select_resident_states<<<(batch+255)/256,256,0,stream>>>(root,ids,state,batch);gather_resident<<<(size_t(batch)*pool*width+255)/256,256,0,stream>>>(root,input,labels,placements,ids,state,batch,pool,width);
 }
 void expand_actions(const float* x,const uint32_t* flags,const float* conditions,const uint8_t* labels,float* input,const int64_t* ids,uint32_t first,uint32_t count,uint32_t pool,uint32_t width,cudaStream_t stream){
     expand_packed<<<(size_t(count)*pool*width+255)/256,256,0,stream>>>(x,flags,conditions,labels,input,ids,first,count,pool,width);

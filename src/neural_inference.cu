@@ -75,6 +75,7 @@ ActionCuda::ActionCuda(const WeightsData& w,const NeuralOptions& options,uint32_
 }
 ActionCuda::~ActionCuda(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
 uint32_t ActionCuda::architecture()const{return impl_->architecture;}
+void ActionCuda::refresh_device(const float* weights,size_t count){auto& p=*impl_;if(!weights||count!=p.weights.n)throw std::invalid_argument("resident inference weight layout");NeuralOptions options;options.device=p.id;Device guard(options);check(cudaMemcpyAsync(p.weights.p,weights,count*sizeof(float),cudaMemcpyDeviceToDevice));}
 void ActionCuda::predict_device(const float* input,float* output,uint32_t rows) {
     auto& p=*impl_;NeuralOptions options;options.device=p.id;Device guard(options);
     auto width=policy_inputs(p.architecture),outputs=policy_outputs(p.architecture);

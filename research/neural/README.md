@@ -1,5 +1,11 @@
 # Neural LOD path
 
+The current GPU implementation adds authoritative Vulkan audits, sparse threshold
+queries and a persistent placement-policy learning process. The frozen local
+pass is 2.90× faster; packed draw storage is available as an explicit experiment.
+See [the implementation and timing graph](GPU-REFACTOR.md) for measured evidence,
+remaining costs, build/run commands and the bounded remote validation.
+
 **Current implementation:** architecture 2 learns directed, current-state endpoint
 actions. Three cloud seeds passed the one-mesh proof at two checkpoints. A
 two-mesh smoke shows 6.94% mean triangle reduction versus 1.43% for constant

@@ -33,6 +33,8 @@ int main(int argc,char** argv) {
             else if(k=="--action-trials")neural_options.action_trials=neural_unsigned(argv[i+1]);else if(k=="--neural-control")neural_options.ranking=ranking_option(argv[i+1]);else if(k=="--ranking-seed")neural_options.ranking_seed=neural_unsigned(argv[i+1]);
             else if(k=="--action-batch")neural_options.action_batch=neural_batch(argv[i+1]);
             else if(k=="--neural-confirmation")neural_options.confirmation=confirmation_option(argv[i+1]);
+            else if(k=="--raster-backend")neural_options.raster_backend=raster_option(argv[i+1]);
+            else if(k=="--vertex-storage")neural_options.vertex_storage=storage_option(argv[i+1]);
             else if(k=="--out")out=argv[i+1];else if(k=="--pixels")pixels=std::stod(argv[i+1]);else if(k=="--limit")limit=std::stod(argv[i+1]);else throw std::invalid_argument("unknown option "+k);}
         if(!neural_file.empty())s.research.chain=ChainMode::Direct;
         s.cancelled=[]{return stopped!=0;};auto m=load_mesh(argv[2]);

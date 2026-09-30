@@ -53,6 +53,9 @@ public:
     ~ActionCuda();
     std::vector<float> predict(std::span<const float>);
     void predict_device(const float* input,float* output,uint32_t rows);
+    // Borrowed contiguous CUDA weights, same layout as WeightsData. The copy is
+    // queued on the default stream; callers join their training stream first.
+    void refresh_device(const float* weights,size_t count);
     uint32_t architecture()const;
     ActionCuda(const ActionCuda&)=delete;
     ActionCuda& operator=(const ActionCuda&)=delete;

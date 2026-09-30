@@ -37,9 +37,10 @@ __device__ float unpack(const float* values,const uint32_t* flags,const float* c
 __global__ void gather_resident(const ResidentRoot* root,float* input,uint8_t* labels,float* placements,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width){
     if(state->failure)return;size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=size_t(batch)*pool*width)return;
     auto selected=root->states[ids[i/(pool*width)]];uint32_t row=uint32_t(i/width)%pool,channel=uint32_t(i%width);bool live=row<selected.rows;
-    input[i]=live?unpack(selected.values,selected.flags,selected.conditions,row,0,channel,width):0;
-    if(channel==0)labels[i/width]=live?selected.labels[row]:0;
-    if(placements&&channel<9)placements[(i/width)*9+channel]=live?selected.placements[row*9+channel]:0;
+    auto page=root->pages[selected.page];auto view=page.compact;view.first=selected.first;view.conditions=page.conditions+size_t(selected.condition)*8;auto label=live?page.labels[selected.first+row]:0;
+    input[i]=live?(page.encoded?compact_feature(view,row,channel,width):unpack(page.values,page.flags,page.conditions,selected.first+row,selected.condition,channel,width)):0;
+    if(channel==0)labels[i/width]=label;
+    if(placements&&channel<9)placements[(i/width)*9+channel]=live?(page.encoded?compact_target(view,row,label,channel):page.placements[size_t(selected.first+row)*9+channel]):0;
 }
 __global__ void gather_packed(const float* values,const uint32_t* flags,const float* conditions,const uint8_t* labels,float* input,uint8_t* target,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width){
     if(state->failure)return;size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;if(i>=size_t(batch)*pool*width)return;auto selected=ids[i/(pool*width)];size_t row=size_t(selected)*pool+(i/width)%pool;auto label=labels[row];input[i]=label?unpack(values,flags,conditions,row,selected,uint32_t(i%width),width):0;if(i%width==0)target[i/width]=label;

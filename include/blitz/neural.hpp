@@ -27,6 +27,8 @@ struct NeuralOptions {
     NeuralConfirmation confirmation{NeuralConfirmation::Gpu};
     bool capture_confirmation_failure{};
     bool cache_rasters{true}; // Optional bounded cache; false supports matched profiling.
+    bool direct_targets{true}; // Sparse queries read shared Vulkan targets directly.
+    uint8_t view_batch{4}; // Bounded simultaneous camera targets; 1 is the control.
     NeuralRasterBackend raster_backend{NeuralRasterBackend::Cuda};
     NeuralVertexStorage vertex_storage{NeuralVertexStorage::Automatic};
     // Hardware draws pack by default. The diagnostic CUDA rasterizer consumes
@@ -54,6 +56,7 @@ struct NeuralStats {
     uint64_t gpu_evaluations{},gpu_measurement_cache_hits{},gpu_confirmation_ns{};
     uint64_t gpu_rasters{},gpu_reference_render_hits{},gpu_candidate_render_hits{};
     uint64_t gpu_sparse_passes{},gpu_sparse_failures{},gpu_sparse_fallbacks{},gpu_sparse_queries{};
+    uint32_t packing_trials{},packing_changed_vertices{},packing_failures{};
     uint32_t confirmation_cancelled{},confirmation_resources{},confirmation_nonfinite{},confirmation_disagreements{};
     std::optional<NeuralConfirmationFailure> confirmation_failure;
 };

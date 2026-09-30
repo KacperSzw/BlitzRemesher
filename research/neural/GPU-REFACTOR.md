@@ -1,5 +1,11 @@
 # Hardware rasterization and resident learning
 
+Current follow-up: [compact GPU pipeline](COMPACT-PIPELINE.md) documents the
+packed cache/shards, persistent renderer, direct targets, bounded packing repair
+and staged checkpoints. Its local teacher curriculum passes the boulder;
+shelves/moon-rock final packed diagnostics still fail. The measurements and
+remote validation below are historical and do not validate the new binary.
+
 Local RTX 2080, driver 595.71.05, CUDA 12.9, LibTorch 2.10/cu128.
 The complete FP32 draw-control pipeline is **2.90× faster end to end** on the frozen local
 learning pass. Three sequential repeats: legacy 38.61–40.55 s; new

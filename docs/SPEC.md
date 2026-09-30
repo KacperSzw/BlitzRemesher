@@ -61,7 +61,12 @@ Hardware edges/interpolation can differ from the CPU/CUDA reference; record the
 backend when comparing results. Packed draw storage is the Vulkan default:
 the original source remains FP32 and candidate quantization consumes the existing
 budget. It does not alter master/source streams. See
-research/neural/GPU-REFACTOR.md for formats, measured limits and evidence.
+research/neural/GPU-REFACTOR.md for historical measurements and
+research/neural/COMPACT-PIPELINE.md for the current storage contracts and local
+evidence. The research learning cycle uses compact feature shards decoded to
+FP32 on GPU, fixed source quantization bounds and bounded packing repair.
+Representation failures yield no training labels; an unconfirmed final chain
+remains an explicit failed diagnostic. Packing does not relax visual limits.
 
 Quality preset allows 64 candidate evaluations/level, fast eight. Automatic search
 reserves half the bounded beam for triangles and fills the rest by resident bytes,
@@ -129,7 +134,8 @@ The cache preserves view order, refinement, float distances and acceptance.
 Public standalone evaluation is uncached. Production has one
 precision path: float32 geometry, double quadric storage/arithmetic/solving,
 and double candidate costs. Float quadric/cost variants are archived research.
-UNORM16 positions are excluded following the feasibility probe; supplied
+UNORM16 positions are excluded from the production CPU reducer following the
+feasibility probe (the optional neural Vulkan draw path is described above); supplied
 float positions and all reuse-mode streams retain their existing contracts.
 
 Acquire 120 distinct CC0 assets: 30 rocks, 30 opaque organics (>=10 woody),

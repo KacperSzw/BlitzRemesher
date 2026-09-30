@@ -17,9 +17,17 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
         for(unsigned trial=0;trial<4;++trial){a.pixels.assign(4096,{});b.pixels.assign(4096,{});
             for(unsigned i=0;i<23;++i){auto at=(i*173+trial*91)%4096;a.pixels[at]=pixel(i%5?Vec3{0,0,1}:Vec3{});auto next=(at+trial)%4096;b.pixels[next]=pixel(i%7?normalized({.07f*trial,0,1}):Vec3{});b.pixels[next].material=uint16_t(i%2);b.pixels[next].color={1,.9f,1,1};}compare(a,b);}
     }
-    e.profile=Profile::Normals;e.supersample=8;e.limit=.8;a.pixels.assign(4096,pixel());b.pixels.assign(4096,pixel(normalized({.1f,0,1})));
+    e.profile=Profile::Normals;e.supersample=8;e.limit=.8;
+    // Every center is a true mismatch, and its adjacent pixel is an exact
+    // normal match. Queue overflow must not depend on how tight the bound is.
+    for(size_t i=0;i<4096;++i){a.pixels[i]=pixel({0,0,i%2?1.f:-1.f});b.pixels[i]=pixel({0,0,i%2?-1.f:1.f});}
     auto exact=measure_rasters_cuda(a,b,e,options);check(exact.passed,"controlled normal fixture should pass");check(certify_rasters_cuda(a,b,e,options,1).verdict==AuditVerdict::Unknown,"queue overflow produced a certificate");
     for(double limit:{std::nextafter(exact.error,0.),exact.error,std::nextafter(exact.error,INFINITY)}){e.limit=limit;compare(a,b);}
+    // Independently evaluated angles cover the length guard, near-parallel
+    // cancellation, non-unit normals, the far hemisphere and overflow fallback.
+    for(float scale:{.4999f,.5f,.9949f,.995f,1.f,2.f,1e20f})for(float angle:{0.f,.001f,.025f,.2f,.5f,.51f,1.2f,3.1415f}){
+        a.pixels.assign(4096,pixel({0,0,scale}));b.pixels.assign(4096,pixel({float(std::sin(angle))*scale,0,float(std::cos(angle))*scale}));e.limit=.8;compare(a,b);
+    }
     a.pixels.assign(4096,{});b.pixels.assign(4096,{});e.limit=2;compare(a,b);a.pixels[7]=pixel();compare(a,b);a.clipped=true;check(certify_rasters_cuda(a,b,e,options).verdict==AuditVerdict::Unknown,"clipping bypassed fallback");
     e.cancelled=[] {return true;};check(certify_rasters_cuda(a,b,e,options).verdict==AuditVerdict::Unknown,"cancelled predicate escaped unknown");
     std::cout<<"sparse/dense raster metric contracts passed\n";return 0;

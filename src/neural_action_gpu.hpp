@@ -1,12 +1,13 @@
 #pragma once
 #include "neural_placement.hpp"
+#include "neural_vertex_storage.hpp"
 namespace blitz::neural {
 // CPU readback methods are reference-test/export boundaries. Mesh topology,
 // features, legality and all intermediate action records live on the device.
 class GpuActionState {
     struct Impl;std::unique_ptr<Impl> impl_;
 public:
-    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false);
+    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false,const VertexBounds* quantization=nullptr);
     ~GpuActionState();
     GpuActionState(const GpuActionState&)=delete;
     GpuActionState& operator=(const GpuActionState&)=delete;

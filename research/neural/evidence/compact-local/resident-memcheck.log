@@ -1,0 +1,7 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+error (ignored): SQLite database '/home/kacper/.cache/nix/eval-cache-v6/340290b5e8d1f7365061f2b560b12cfbc19e3fa12782aa9f5708cb4fb72235e5.sqlite' is busy
+========= COMPUTE-SANITIZER
+[W930 14:36:27.777444393 input_buffer.cpp:240] Warning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (function operator())
+{"append_without_capture":true,"checkpoint_resume_exact":true,"compact":false,"data_bytes":7012,"partial_labels":true,"pool":3,"resident_contracts":true,"stable_root":true}
+{"append_without_capture":true,"checkpoint_resume_exact":true,"compact":true,"data_bytes":5166,"partial_labels":true,"pool":3,"resident_contracts":true,"stable_root":true}
+========= ERROR SUMMARY: 0 errors

@@ -1,6 +1,7 @@
 #pragma once
 #include "blitz/neural.hpp"
 #include "neural_device_view.hpp"
+#include "neural_vertex_storage.hpp"
 #include <array>
 #include <filesystem>
 namespace blitz::neural {
@@ -51,6 +52,8 @@ Raster raster_gpu(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const
 struct RasterPrecisionResult {Raster raster;double seconds{};uint8_t bytes_per_pixel{};};
 struct RasterBenchmarkResult {Raster raster;double seconds{},setup_seconds{},packing_seconds{},render_seconds{},unpack_seconds{};uint64_t draw_bytes{},gpu_bytes{};};
 RasterBenchmarkResult raster_benchmark(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,uint32_t repeats=8);
+struct DiagnosticRaster {Raster raster;std::vector<uint32_t> faces;std::vector<float> depth;};
+DiagnosticRaster diagnostic_raster(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,const VertexBounds* quantization=nullptr);
 struct DistanceFieldBenchmark {std::vector<float> squared;double seconds{};uint64_t bytes{};};
 DistanceFieldBenchmark benchmark_distance_field(std::span<const uint8_t> sites,uint32_t size,const NeuralOptions&,uint32_t repeats=8);
 RasterPrecisionResult raster_precision_cuda(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,uint8_t attribute_bits,uint8_t depth_bits,uint8_t position_bits,const NeuralOptions& = {});
@@ -78,6 +81,14 @@ public:
     // A pruned result is a bound, never a pass/fail training label.
     Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_margin=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
     AuditPredicate certify(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_area=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
+};
+// Explicit per-thread session: device/pipelines survive asset-local evaluators.
+// The session must outlive every evaluator created in its scope.
+class AuditSession {
+    struct Impl;std::unique_ptr<Impl> impl_;
+public:
+    explicit AuditSession(const NeuralOptions&);~AuditSession();
+    AuditSession(const AuditSession&)=delete;
 };
 // Research-only endpoint labels; source representatives remain in source ID space.
 Lod teacher(MeshView,const ReduceSettings&,std::vector<uint32_t>& representatives);

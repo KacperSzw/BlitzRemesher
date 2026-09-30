@@ -37,7 +37,8 @@ inline VertexBounds vertex_bounds(MeshView mesh) {
     if(!mesh.positions.count)return {};
     Vec3 low=mesh.positions[0],high=low;
     for(size_t i=1;i<mesh.positions.count;++i){auto p=mesh.positions[i];low={std::min(low.x,p.x),std::min(low.y,p.y),std::min(low.z,p.z)};high={std::max(high.x,p.x),std::max(high.y,p.y),std::max(high.z,p.z)};}
-    return {low,{high.x-low.x,high.y-low.y,high.z-low.z}};
+    auto extent=[](float lo,float hi){double d=double(hi)-lo;float f=float(d);return double(f)<d?std::nextafter(f,INFINITY):f;};
+    return {low,{extent(low.x,high.x),extent(low.y,high.y),extent(low.z,high.z)}};
 }
 }
 #undef BLITZ_VERTEX_HD

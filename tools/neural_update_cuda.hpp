@@ -1,6 +1,7 @@
 #pragma once
 #include <cuda_runtime_api.h>
 #include <cstdint>
+#include "neural_compact.hpp"
 
 namespace blitz::neural::training {
 // Ranges address category -> asset -> nonempty progress bin -> state arrays.
@@ -11,12 +12,13 @@ struct SamplingView {
     const uint32_t* states;
     uint32_t category_count,seed;
 };
-struct ResidentState {
+struct ResidentPage {
     const float *values,*conditions,*placements;
     const uint32_t* flags;const uint8_t* labels;
-    uint32_t rows;
+    CompactView compact{};bool encoded{};
 };
-struct ResidentRoot {SamplingView sampling;const ResidentState* states;};
+struct ResidentState {uint32_t page,first,condition,rows;};
+struct ResidentRoot {SamplingView sampling;const ResidentState* states;const ResidentPage* pages;};
 struct UpdateState {
     uint32_t step{},failure{},pairs{},valid{},segment_start{};
     uint32_t known[5]{};

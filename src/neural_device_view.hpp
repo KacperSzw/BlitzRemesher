@@ -13,6 +13,9 @@ struct DeviceMeshView {
     const uint8_t* double_sided{};
     uint32_t vertices{},faces{},sided_count{};
     uint64_t identity{},revision{};
+    // Optional trajectory-wide quantization domain, borrowed by every trial.
+    // The master streams remain FP32. Positions outside this box are invalid.
+    Vec3 quant_low{},quant_extent{};bool fixed_quantization{};
     // Optional exact raster reuse for a trial. Parent is a borrowed HOST view;
     // the two arrays are device storage mapping its faces into this trial.
     // All three remain valid until the owner builds another trial or commits.

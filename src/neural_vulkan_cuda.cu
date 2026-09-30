@@ -1,4 +1,5 @@
 #include "neural_vulkan_cuda.hpp"
+#include "neural_vulkan.hpp"
 #include "neural_raster_pixel.cuh"
 #include "neural_cuda.cuh"
 #include <cub/cub.cuh>
@@ -18,9 +19,10 @@ struct CombineBounds {__device__ MinMax operator()(MinMax a,MinMax b){return {{f
 __global__ void draw_bounds(DeviceMeshView m,DrawMetadata* out,bool packed){
     MinMax v{{INFINITY,INFINITY,INFINITY},{-INFINITY,-INFINITY,-INFINITY},0};
     for(uint32_t i=threadIdx.x;i<m.vertices;i+=blockDim.x){auto p=m.positions[i];v=CombineBounds{}(v,{p,p,0});
+        if(m.fixed_quantization&&(p.x<m.quant_low.x||p.y<m.quant_low.y||p.z<m.quant_low.z||p.x>m.quant_low.x+m.quant_extent.x||p.y>m.quant_low.y+m.quant_extent.y||p.z>m.quant_low.z+m.quant_extent.z))v.invalid=1;
         if(packed&&m.uv){auto t=m.uv[i];if(!(t.x>=-8&&t.x<=8&&t.y>=-8&&t.y<=8))v.invalid=1;}}
     __shared__ cub::BlockReduce<MinMax,256>::TempStorage temp;auto b=cub::BlockReduce<MinMax,256>(temp).Reduce(v,CombineBounds{});
-    if(threadIdx.x==0){*out={};out->low[0]=b.lo.x;out->low[1]=b.lo.y;out->low[2]=b.lo.z;out->extent[0]=b.hi.x-b.lo.x;out->extent[1]=b.hi.y-b.lo.y;out->extent[2]=b.hi.z-b.lo.z;out->invalid=b.invalid;
+    if(threadIdx.x==0){if(m.fixed_quantization){b.lo=m.quant_low;b.hi={m.quant_low.x+m.quant_extent.x,m.quant_low.y+m.quant_extent.y,m.quant_low.z+m.quant_extent.z};}*out={};out->low[0]=b.lo.x;out->low[1]=b.lo.y;out->low[2]=b.lo.z;out->extent[0]=m.fixed_quantization?m.quant_extent.x:b.hi.x-b.lo.x;out->extent[1]=m.fixed_quantization?m.quant_extent.y:b.hi.y-b.lo.y;out->extent[2]=m.fixed_quantization?m.quant_extent.z:b.hi.z-b.lo.z;out->invalid=b.invalid;
         for(unsigned j=0;j<3;++j)if(!isfinite(out->extent[j]))out->invalid=1;}
 }
 __global__ void draw_streams(DeviceMeshView m,NeuralVertexStorage storage,DrawLayout l,char* buffer){
@@ -39,22 +41,23 @@ void pack_draw(DeviceMeshView m,NeuralVertexStorage storage,const DrawLayout& l,
     draw_bounds<<<1,256>>>(m,reinterpret_cast<DrawMetadata*>(static_cast<char*>(out)+l.metadata),storage==NeuralVertexStorage::Packed);
     draw_streams<<<gpu::blocks(std::max(m.vertices,m.faces)),256>>>(m,storage,l,static_cast<char*>(out));gpu::check(cudaGetLastError());
 }
-__global__ void clip_draw(DeviceMeshView m,NeuralVertexStorage storage,DrawLayout l,char* buffer,Bounds bounds,Camera c,uint32_t size,uint8_t ss){
+__global__ void clip_draw(DeviceMeshView m,NeuralVertexStorage storage,DrawLayout l,char* buffer,Bounds bounds,Camera c,uint32_t size,uint8_t ss,uint32_t layer){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=m.faces*3)return;auto& b=*reinterpret_cast<DrawMetadata*>(buffer+l.metadata);uint32_t vertex=m.indices[i];Vec3 p;
     if(storage==NeuralVertexStorage::Float32)p=m.positions[vertex];else{auto* q=reinterpret_cast<uint16_t*>(buffer+l.position)+3*vertex;p={unpack_unorm16(q[0],b.low[0],b.extent[0]),unpack_unorm16(q[1],b.low[1],b.extent[1]),unpack_unorm16(q[2],b.low[2],b.extent[2])};}
     double x=double(p.x)-bounds.center.x,y=double(p.y)-bounds.center.y,z=double(p.z)-bounds.center.z;
     double d=c.distance-(x*c.forward.x+y*c.forward.y+z*c.forward.z),scale=(c.perspective?c.focal/d:c.scale)*ss;
     double px=(x*c.right.x+y*c.right.y+z*c.right.z)*scale+size*.5,py=(x*c.up.x+y*c.up.y+z*c.up.z)*scale+size*.5;
-    if(!isfinite(px)||!isfinite(py)||px<0||py<0||px>size||py>size||d<=fmax(bounds.radius*.01,c.distance-bounds.radius*2)||d>=c.distance+bounds.radius*2)atomicExch(&b.unused[0],1u);
+    if(!isfinite(px)||!isfinite(py)||px<0||py<0||px>size||py>size||d<=fmax(bounds.radius*.01,c.distance-bounds.radius*2)||d>=c.distance+bounds.radius*2)atomicExch(&b.unused[layer],1u);
 }
-void check_draw_clip(DeviceMeshView m,NeuralVertexStorage storage,const DrawLayout& l,void* out,const Bounds& b,const Camera& c,uint32_t size,uint8_t ss){
-    gpu::check(cudaMemset(static_cast<char*>(out)+l.metadata+offsetof(DrawMetadata,unused),0,sizeof(uint32_t)));
-    clip_draw<<<gpu::blocks(size_t(m.faces)*3),256>>>(m,storage,l,static_cast<char*>(out),b,c,size,ss);gpu::check(cudaGetLastError());
+void check_draw_clip(DeviceMeshView m,NeuralVertexStorage storage,const DrawLayout& l,void* out,const Bounds& b,const Camera& c,uint32_t size,uint8_t ss,uint32_t layer){
+    gpu::check(cudaMemsetAsync(static_cast<char*>(out)+l.metadata+offsetof(DrawMetadata,unused)+layer*sizeof(uint32_t),0,sizeof(uint32_t)));
+    clip_draw<<<gpu::blocks(size_t(m.faces)*3),256>>>(m,storage,l,static_cast<char*>(out),b,c,size,ss,layer);gpu::check(cudaGetLastError());
 }
-__global__ void unpack_targets(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t rgb,AuditPixel* out,Vec3* color,uint32_t size){
+__global__ void unpack_targets(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t rgb,AuditPixel* out,Vec3* color,uint32_t size,cudaSurfaceObject_t debug,RasterDebugPixel* witnesses){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=size*size)return;auto x=i%size,y=i/size;
     auto a=surf2Dread<float4>(attributes,x*sizeof(float4),y);AuditPixel p{};p.normal={a.x,a.y,a.z};p.covered=surf2Dread<unsigned char>(mask,x,y)!=0;p.visible=a.w>0;p.material=p.visible?uint16_t(uint32_t(a.w)-1):0;out[i]=p;
     if(color){auto c=surf2Dread<float4>(rgb,x*sizeof(float4),y);color[i]={c.x,c.y,c.z};}
+    if(witnesses){auto q=surf2Dread<uint2>(debug,x*sizeof(uint2),y);witnesses[i]={q.x?q.x-1:UINT32_MAX,q.x?__uint_as_float(q.y):INFINITY};}
 }
-void unpack_hardware(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t colors,AuditPixel* out,Vec3* rgb,uint32_t size){unpack_targets<<<gpu::blocks(size_t(size)*size),256>>>(mask,attributes,colors,out,rgb,size);gpu::check(cudaGetLastError());}
+void unpack_hardware(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t colors,AuditPixel* out,Vec3* rgb,uint32_t size,cudaSurfaceObject_t debug,RasterDebugPixel* witnesses){unpack_targets<<<gpu::blocks(size_t(size)*size),256>>>(mask,attributes,colors,out,rgb,size,debug,witnesses);gpu::check(cudaGetLastError());}
 }

@@ -28,11 +28,23 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
     // metric, including limits immediately around the measured boundary.
     NeuralStats stats;AuditCuda audit(options,mesh.view());
     for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes})for(float displacement:{0.f,.03f,.4f}){
-        auto changed=mesh;changed.positions[0].z+=displacement;changed.normals[0]=normalized({displacement,0,1});GpuActionState state(changed.view(),options,true);e.profile=profile;
+        auto changed=mesh;changed.positions[0].x+=displacement;changed.normals[0]=normalized({displacement,0,1});GpuActionState state(changed.view(),options,true);e.profile=profile;
         for(double limit:{.8,1.5,3.}){e.limit=limit;auto exact=audit.evaluate(mesh.view(),state.view(),b,e);auto predicate=audit.certify(mesh.view(),state.view(),b,e,&stats);
             require(predicate.verdict!=(exact.passed?AuditVerdict::Fail:AuditVerdict::Pass),"sparse certificate contradicts exact hardware metric");require(predicate.verdict!=AuditVerdict::Unknown,"bounded fixture returned unknown");}
     }
     require(stats.gpu_sparse_passes>0&&stats.gpu_sparse_queries>0,"sparse tests did not exercise witnesses");
+    // Match exact metrics and certificate verdicts across independent switches.
+    // Limits below the sparse certificate floor exercise exact fallback/refinement.
+    for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes})for(float shift:{0.f,.13f,.6f})for(double limit:{.4,1.5,3.}){
+        auto changed=mesh;changed.positions[0].x+=shift;changed.normals[0]=normalized({shift,0,1});e.profile=profile;e.limit=limit;
+        auto serial=options;serial.view_batch=1;serial.direct_targets=false;AuditCuda control(serial,mesh.view());GpuActionState state(changed.view(),serial,true);
+        auto expected=control.evaluate(mesh.view(),state.view(),b,e);auto certificate=control.certify(mesh.view(),state.view(),b,e);
+        for(uint8_t batch:{2,4})for(bool direct:{false,true}){auto settings=options;settings.view_batch=batch;settings.direct_targets=direct;AuditCuda tested(settings,mesh.view());
+            auto actual=tested.evaluate(mesh.view(),state.view(),b,e);auto predicate=tested.certify(mesh.view(),state.view(),b,e);
+            require(actual.passed==expected.passed&&actual.complete==expected.complete&&actual.error==expected.error&&actual.coverage==expected.coverage&&actual.changed_area==expected.changed_area&&actual.normal_degrees==expected.normal_degrees&&actual.views_evaluated==expected.views_evaluated&&actual.supersample==expected.supersample,"batched exact audit differs from serial");
+            require(predicate.verdict==certificate.verdict&&predicate.changed_area==certificate.changed_area&&predicate.views==certificate.views&&predicate.supersample==certificate.supersample,"direct/batched certificate differs from serial");}
+        bool pruned=false;auto expected_pruning=control.certify(mesh.view(),state.view(),b,e,nullptr,.01,&pruned);AuditCuda batched(options,mesh.view());bool batch_pruned=false;auto actual_pruning=batched.certify(mesh.view(),state.view(),b,e,nullptr,.01,&batch_pruned);require(pruned==batch_pruned&&expected_pruning.verdict==actual_pruning.verdict&&expected_pruning.views==actual_pruning.views,"batched incumbent pruning differs from serial");
+    }
     e.cancelled=[] {return true;};GpuActionState state(mesh.view(),options,true);require(audit.certify(mesh.view(),state.view(),b,e).verdict==AuditVerdict::Unknown,"cancelled query produced label");
     require(same_mesh_data(mesh.view(),original.view()),"packing mutated source");
     {
@@ -48,6 +60,16 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
         VulkanRaster raster(options);gpu::Buffer<AuditPixel> pixels(device,64*64);
         auto center=[&]{raster.render(dm,b,c,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);return pixels.download()[32*64+32];};
         require(center().material==7,"hardware depth tie does not keep first face");
+        auto views=cameras(b,24,{2,2,171});std::array<gpu::Buffer<AuditPixel>,4> batched;std::array<gpu::Buffer<RasterDebugPixel>,4> debug;std::array<RasterOutput,4> outputs;
+        for(size_t i=0;i<4;++i){batched[i]=gpu::Buffer<AuditPixel>(device,64*64);debug[i]=gpu::Buffer<RasterDebugPixel>(device,64*64);outputs[i]={batched[i].p,nullptr,debug[i].p};}
+        raster.render_batch(dm,b,views,24,2,true,NeuralVertexStorage::Packed,outputs);
+        std::array<std::vector<AuditPixel>,4> expected;std::array<std::vector<RasterDebugPixel>,4> witnesses;
+        for(size_t i=0;i<4;++i){expected[i]=batched[i].download();witnesses[i]=debug[i].download();}
+        for(size_t i=0;i<4;++i){bool clipped=raster.render(dm,b,views[i],24,2,true,NeuralVertexStorage::Packed,pixels.p,nullptr,debug[0].p);auto actual=pixels.download();auto actual_debug=debug[0].download();require(clipped==outputs[i].clipped,"batch clip flag differs");
+            for(size_t j=0;j<actual.size();++j){auto x=actual[j],y=expected[i][j];require(x.covered==y.covered&&x.visible==y.visible&&x.material==y.material&&x.normal.x==y.normal.x&&x.normal.y==y.normal.y&&x.normal.z==y.normal.z,"batched draw changes pixels");require(actual_debug[j].face==witnesses[i][j].face&&actual_debug[j].depth==witnesses[i][j].depth,"debug attachment changes depth/ownership");if(x.visible)require(actual_debug[j].face<2&&actual_debug[j].depth>=0&&actual_debug[j].depth<=1,"debug face/depth range");}}
+        raster.trim_targets(1);require(center().material==7,"target reclamation invalidated surviving slot");
+        // Domain changes are part of the geometry cache key even without a revision.
+        dm.fixed_quantization=true;dm.quant_low={-2,-2,0};dm.quant_extent={4,4,0};require(center().material==7,"explicit quantization domain failed");dm.quant_extent.z=-1;bool invalid_domain=false;try{center();}catch(const std::invalid_argument&){invalid_domain=true;}require(invalid_domain,"invalid quantization domain reused cached geometry");dm.fixed_quantization=false;
         std::vector<uint32_t> removed={3,4,5,0,1,2};indices.upload(removed);std::vector<uint16_t> new_materials={13,7};materials.upload(new_materials);dm.faces=1;++dm.revision;require(center().material==13,"removed foreground left stale depth or material");
         for(unsigned i=3;i<6;++i)layers.positions[i].x+=10;positions.upload(layers.positions);++dm.revision;require(!center().visible,"changed bounds reused stale packed geometry");
     }

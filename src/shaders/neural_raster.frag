@@ -9,6 +9,7 @@ layout(location=0) out uint coverage;
 #else
 layout(location=0) out vec4 attributes;
 layout(location=1) out vec4 colors;
+layout(location=2) out uvec2 witness;
 #endif
 void main(){
     uint face=faces.values[gl_PrimitiveID];
@@ -22,5 +23,6 @@ void main(){
     if(l>0)n=normalize(n);else n=dot(geometric,geometric)>0?normalize(geometric):vec3(0);
     if(l>0&&!gl_FrontFacing)n=-n;
     attributes=vec4(n,float((face&65535)+1));colors=vec4(rgb,1);
+    witness=uvec2(gl_PrimitiveID+1,floatBitsToUint(gl_FragCoord.z));
 #endif
 }

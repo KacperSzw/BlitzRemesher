@@ -3,6 +3,7 @@
 #include "neural_action_cache.hpp"
 #include "neural_action_gpu.hpp"
 #include "neural_memory.hpp"
+#include "neural_quantization.hpp"
 #include "chain_hooks.hpp"
 #include <chrono>
 #include <random>
@@ -55,7 +56,7 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     if(settings.research.component_candidates||settings.research.independent_seams||settings.research.topology_fallback)
         throw std::invalid_argument("CPU research proposal options are unsupported in neural mode");
     NeuralStats local;auto& counters=stats?*stats:local;auto& options=model.impl_->options;auto& weights=model.impl_->weights;
-    neural::MemoryScope memory(options);
+    neural::MemoryScope memory(options);neural::AuditSession session(options);
     using Clock=std::chrono::steady_clock;auto nanos=[](auto start){return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now()-start).count());};
     auto start=Clock::now();neural::Graph g;std::vector<float> embedding;
     std::unique_ptr<neural::ActionCuda> action_network;
@@ -77,12 +78,14 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
         bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
         auto m=audit.evaluate(a,b,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
-    std::unique_ptr<neural::GpuActionState> action_state,placement_state;
+    std::unique_ptr<neural::GpuActionState> action_state,placement_state;double placement_pixels=-1;auto quantization=neural::vertex_bounds(source);
     if(action_network)action_state=std::make_unique<neural::GpuActionState>(source,options);
     if(action_network)hooks.propose_guarded=[&](MeshView input,MeshView fixed_source,MeshView previous,const Bounds& bounds,const ReduceSettings& rs,const EvalSettings& source_eval,const EvalSettings& adjacent_eval){
         auto begin=Clock::now();auto nested_before=counters.inference_ns+counters.gpu_audit_ns;neural::ActionStats stats;
         auto* state=action_state.get();if(weights.architecture==neural::placement_schema&&rs.output==OutputMode::Rebuild){
-            if(!placement_state)placement_state=std::make_unique<neural::GpuActionState>(source,options,true);state=placement_state.get();}state->reset();
+            if(!placement_state||(options.draw_storage()!=NeuralVertexStorage::Float32&&placement_pixels!=source_eval.screen_size)){placement_state.reset();
+                if(options.draw_storage()==NeuralVertexStorage::Float32)placement_state=std::make_unique<neural::GpuActionState>(source,options,true);
+                else {auto search=source_eval;search.views=s.search_views;search.supersample=s.search_supersample;auto baseline=neural::repair_packing_gpu(source,options,source_eval,64,{},&search);counters.packing_trials+=baseline.trials;counters.packing_changed_vertices+=baseline.changed_vertices;counters.packing_failures+=!baseline.final.passed;placement_state=std::make_unique<neural::GpuActionState>(baseline.mesh.view(),options,true,&quantization);}placement_pixels=source_eval.screen_size;}state=placement_state.get();}state->reset();
         auto evaluate_device=[&](MeshView reference,neural::DeviceMeshView candidate,const EvalSettings& config){auto t=Clock::now();auto bounded=config;
             bounded.max_supersample=neural::bounded_refinement(config);if(bounded.max_supersample<config.max_supersample)++counters.bounded_audits;
             auto result=audit.evaluate(reference,candidate,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(t);return result;};

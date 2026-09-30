@@ -1,0 +1,69 @@
+{
+  "at": "2026-09-30T16:57:18.376Z",
+  "source_revision": "f336a53",
+  "learning_elapsed_seconds": 670.044,
+  "optimizer_updates": 1054208,
+  "updates_per_second": 1573.341452203139,
+  "projected_updates_two_hours": 11328058.4558626,
+  "model_parameters": 13196,
+  "batch_states": 512,
+  "maximum_action_rows_per_state": 4,
+  "training_assets": 12,
+  "teacher_states": 4376,
+  "teacher_queries": 161890,
+  "failed_conditions": 0,
+  "empty_conditions": 104,
+  "completed_phase_seconds": 667.4607329630002,
+  "teacher_seconds": 395.0370627679996,
+  "optimizer_seconds": 119.94754422800014,
+  "checkpoint_handling_seconds": 150.00093669699996,
+  "teacher_percent": 59.185064118206036,
+  "optimizer_percent": 17.970726711596573,
+  "checkpoint_percent": 22.47337248306936,
+  "teacher_stages_seconds": {
+    "candidate_audit_seconds": 207.9344660030001,
+    "candidate_build_seconds": 5.861616694999991,
+    "commit_seconds": 1.9479596400000014,
+    "features_and_proposals_seconds": 4.987172072999999,
+    "load_and_session_seconds": 26.232554238000013,
+    "other_preparation_seconds": 82.52471215400001,
+    "packing_and_baseline_seconds": 34.05460145299998,
+    "state_setup_seconds": 9.902297093999994
+  },
+  "gpu_learning": {
+    "samples": 673,
+    "average_gpu_percent": 40.858841010401186,
+    "minimum_gpu_percent": 0,
+    "maximum_gpu_percent": 95,
+    "average_power_w": 119.02471025260017,
+    "peak_memory_mib": 1026
+  },
+  "gpu_last_minute": {
+    "samples": 60,
+    "average_gpu_percent": 39.28333333333333,
+    "minimum_gpu_percent": 0,
+    "maximum_gpu_percent": 93,
+    "average_power_w": 118.13333333333334,
+    "peak_memory_mib": 1024
+  },
+  "gpu_last_five_minutes": {
+    "samples": 300,
+    "average_gpu_percent": 37.96666666666667,
+    "minimum_gpu_percent": 0,
+    "maximum_gpu_percent": 95,
+    "average_power_w": 118.50693333333346,
+    "peak_memory_mib": 1026
+  },
+  "training_complete": false,
+  "quality_proven": false,
+  "notes": [
+    "Independent file snapshots can differ by one phase; summary uses journal step and elapsed learning time, completed history phases, and telemetry sample time.",
+    "Teacher and checkpoint wall times contain CPU, I/O, synchronization and GPU work; they are not measurements of GPU idle time.",
+    "State sample draws are replayed local training states, not unique meshes or an exact epoch count."
+  ],
+  "raw_sha256": {
+    "journal": "fe23c24c7a1de7d70a49c5e6474dd352c7423ac3a45da554e778b4125b633e77",
+    "history": "791d6cb321546325123c42f0759faef9eba768c530b6bab9d2ec074e4d254145",
+    "telemetry": "a44003072fb41d365d30adb5abe3dd60c38d6658cf19b0b5bb3ffa0606c555b8"
+  }
+}

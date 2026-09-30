@@ -90,7 +90,8 @@ before starting the 120-minute full learning cycle. A failed gate stops the job.
 
 Original warm-start SHA256:
 `9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185`.
-Remote results are pending; no remote success or training result is claimed here.
+Remote preflight has passed on L40S; the two-hour training run is active.
+Completion and resulting model quality are not yet established. See the record below.
 
 ## Next bottlenecks
 
@@ -115,3 +116,120 @@ No training started. Failure evidence was checksum-collected, and both compute a
 volume deletion were verified. Conservative billed-time upper estimate: $0.4311,
 charged to the same $8 grant. [Failure evidence](evidence/coverage-remote/setup-02/).
 A retry remains subject to the original pinned cumulative cap.
+
+
+## Validated remote launch (L40S, retry-04)
+
+[Remote architecture and timing hierarchy](evidence/coverage-remote/validated-04/ARCHITECTURE.md)
+and [raw validation](evidence/coverage-remote/validated-04/validation.json).
+Source revision: f336a53. NVIDIA L40S, 46,068 MiB reported VRAM, driver 580.159.04.
+All 28 CTest cases pass, CUDA memory checks have zero errors, Vulkan validation
+has no errors, both backends pass exact restart, and cross-GPU export replay passes.
+The original strict moon failure still reproduces and the sparse repair passes.
+The packed coverage pilot passes all 48 conditions in 19.565 s.
+
+Five-repeat medians, identical coverage data and 1024-update work budgets:
+
+| L40S cold cycle | Seconds |
+|---|---:|
+| Full attachments + reference optimizer | 1.479830 |
+| Mask-only + reference optimizer | 1.406557 |
+| Mask-only + fused optimizer | 1.285885 |
+
+Mask-only saves 4.95%; fused updates save another 8.58% against mask/reference.
+The combined whole-cycle reduction is 13.11%, so fused is selected. GPU raster
+median is 35.6 → 20.2 µs/view, with identical mask pixels. These cold cycle times
+include startup, filesystem and final publication; do not compare GPUs solely
+from those totals. Persistent operation amortizes setup and capture.
+
+The full learning cycle launched at 2026-09-30 16:46:05 UTC (18:46:05 Warsaw),
+with 120 learning minutes and ten additional finalization minutes. Expected end
+of learning is approximately 18:46 UTC / 20:46 Warsaw. Fresh Adam, original weights,
+compact data and packed geometry, shape-only teaching, scheduled nonblocking
+shading diagnostics. The controller verifies collection and then deletes compute
+and storage. Budget is cumulative with the failed setup, below the $8 grant.
+
+[First 112 seconds](evidence/coverage-remote/validated-04/early-training.json):
+196,608 updates, about 1754 updates/s, 824 generated teacher states, 30,247 teacher
+queries, zero failed conditions and 16 audited empty conditions. About 43% GPU
+utilization and 1022 MiB peak GPU allocation reported by telemetry. At that early
+pace, 120 minutes projects to 12.6 million updates; this is not a promise of model
+quality or sustained throughput. Detailed history and telemetry snapshots are
+preserved alongside the summary. Independent file reads can differ by one phase.
+
+Initial persistent time split is approximately 62% teacher generation, 20%
+optimizer computation and 18% checkpoint handling. The most useful next work is
+reducing teacher host waits and checkpoint stalls, then testing overlap of teaching
+and optimizer work with explicit weight snapshots and stream ownership. Memory
+capacity is not the current bottleneck. Preserve quality gates and measure the
+full cycle when testing those changes.
+
+## Interpreting update counts and GPU activity
+
+The [11-minute snapshot](evidence/coverage-remote/validated-04/eleven-minute-training.json)
+records 1,054,208 updates in 670.044 learning seconds: 1573 updates/s, projecting
+11.33 million updates in two hours if that pace persists. This supersedes the
+first 112-second throughput estimate for this observation window; neither is a
+completed run. There are 4376 generated teacher states and zero failed conditions.
+The scheduled 30-minute quality audit has not yet occurred.
+
+| Completed phase wall time | Seconds | Share |
+|---|---:|---:|
+| Teacher generation, including candidate audits | 395.037 | 59.19% |
+| Optimizer updates | 119.948 | 17.97% |
+| Checkpoint handling | 150.001 | 22.47% |
+
+Other training work accounts for the remainder. Teacher candidate audits alone
+take 207.934 s, 31.15% of completed phase time. These are wall-time categories,
+not an attribution of GPU idle time. The teacher also contains GPU work.
+GPU activity averages 40.86% during learning and 37.97% over the last five minutes,
+with individual samples spanning 0–95%. NVIDIA defines this counter as the fraction
+of a sampling interval with GPU kernel execution; it is not a percentage of peak
+arithmetic throughput. See [NVIDIA's utilization documentation](https://docs.nvidia.com/deploy/nvidia-smi/index.html#utilization).
+
+The loop generates one shard, updates the policy, and then generates the next.
+It publishes a verified checkpoint every 512 updates, roughly three publications
+per second at this measured pace. CheckpointWriter has one snapshot in flight;
+the next submission joins the previous publication, and snapshot/parity checks
+also cause host/device transfers. Candidate audits batch only two alternatives.
+The 13,196-parameter 128→64→64→12 network has little arithmetic per update.
+Together, this code structure and these timings point to insufficient overlapping
+work and excessive checkpoint cadence. A GPU timeline is still needed to attribute
+each idle gap precisely. The active experiment remains unchanged.
+
+Next controlled experiments should prioritize time-based checkpoint publication,
+independent mesh/candidate batching, and overlapping teacher generation with
+updates against immutable policy snapshots. Preserve recovery and visual gates.
+Even halving optimizer time alone would save only about 9% of the measured full
+cycle; teacher scheduling offers a larger opportunity.
+
+The current curriculum contains 12 training assets, with 48 conditions. An update
+samples 512 local states, each containing up to four action rows; it does not see
+512 independent meshes. The loop currently performs 2048 updates per new shard,
+which produced 8 or 10 states in this snapshot (104 conditions were audited empty).
+Thus millions of updates imply heavy replay. They do not establish generalization
+to unseen assets, and greater optimizer throughput alone may not improve quality.
+Compare smaller update budgets per fresh shard at equal total GPU time on the
+development protocol before changing the next training schedule. Keep release
+held-out assets reserved for release audits.
+
+Related primary sources checked on 2026-09-30:
+
+- [Neural Mesh Simplification, CVPR 2022](https://openaccess.thecvf.com/content/CVPR2022/papers/Potamias_Neural_Mesh_Simplification_CVPR_2022_paper.pdf):
+  150 epochs on a train/test split of the 80-mesh TOSCA dataset; learned sampling
+  and triangulation. No directly comparable updates/s training measurement found.
+- [SFSP-QEM, 2025](https://www.techscience.com/cmc/v83n2/60527/html):
+  150-epoch schedule, TOSCA split 80%/20% (64 training and 16 test meshes), learned
+  feature-preserving sampling guiding QEM. Their geometry metrics differ from our
+  audited screen-space limits.
+- [GNN-guided QEM, 2026 author preprint](https://www.preprints.org/manuscript/202604.1809):
+  50 epochs, batch one mesh, 64 training/16 test meshes per cross-validation fold,
+  RTX 2060 SUPER. The [official training loop](https://github.com/Geo3D-AI-CSU/GNN-QEM/blob/main/train_edge_importance.py)
+  takes one optimizer step per mesh batch, implying about 3200 whole-mesh updates
+  per fold under the reported settings. This is a calculation, not a published
+  measured step count. Each graph update sees mesh-wide data, unlike our local
+  action minibatches; comparing their step count directly to ours is invalid.
+
+Prophet research was attempted at high effort but failed with a browser automation
+error; the sources above were checked directly. No cross-paper speedup or quality
+ranking is claimed.

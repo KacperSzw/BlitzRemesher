@@ -189,7 +189,7 @@ async function control(){
       if(phase==='finished'){rental.commit({phase:'collecting'});await collect(endpoint,s.deadline_ms-15000);break;}
       if(phase==='training'&&(s.experiment?.startsWith('action-v2')||s.experiment==='gpu-refactor')){
         const live=await retrySsh(()=>remote(endpoint,'if [ -f /workspace/results/phase.json ]; then cat /workspace/results/phase.json; else echo null; fi'));
-        const p=JSON.parse(live);if(p&&['validation','preparation','training','audit','finished'].includes(p.phase)&&p.phase!==s.phase)rental.commit({phase:p.phase});
+        const p=JSON.parse(live);if(p&&['validation','preparation','training','audit','finished','coverage-contracts','matched-coverage-benchmark','coverage-curriculum-validation','resident-learning-cycle'].includes(p.phase)&&p.phase!==s.phase)rental.commit({phase:p.phase});
       }
       if(!s.setup_complete&&Date.now()>=s.setup_deadline_ms)throw new Error('Setup exceeded its bounded deadline');
       await sleep(10000);

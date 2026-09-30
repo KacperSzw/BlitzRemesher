@@ -16,6 +16,16 @@ export function actionAccrued(states,now=Date.now(),hourlyCap=2.51){
 export const continuationAuthorization=Object.freeze({baseline_usd:5.513044952777777,additional_usd:8});
 // A separate, explicit $8 grant after all previous rentals were reconciled.
 export const refactorAuthorization=Object.freeze({baseline_usd:11.25963675,additional_usd:8});
+// Latest user grant replaces the previous remaining allowance. This reconciled
+// baseline is pinned once; every validation attempt and retry spends this grant.
+export const pretrainingAuthorization=Object.freeze({baseline_usd:17.292720997222222,additional_usd:8});
+export function pretrainingBudget({billed,rate,additionalAccrued,minutes=180}){
+  for(const v of [billed,rate,additionalAccrued,minutes])if(!Number.isFinite(v)||v<0)throw new Error('Invalid pretraining budget');
+  if(!rate||rate>2.10||minutes!==180)throw new Error('Pretraining requires the bounded 180-minute profile');
+  const prior=Math.max(billed,2.75+additionalAccrued),rental=minutes/60*(rate+.01),reserve=1,cap=pretrainingAuthorization.baseline_usd+pretrainingAuthorization.additional_usd;
+  if(prior<pretrainingAuthorization.baseline_usd-1e-9||prior+rental+reserve>cap)throw new Error('Pretraining additional $8 cap would be exceeded');
+  return {authorization:pretrainingAuthorization,cap_usd:cap,provider_billed_usd:billed,additional_accrued_upper_usd:additionalAccrued,prior_assumed_usd:prior,reserve_usd:reserve,maximum_rental_usd:rental,maximum_total_usd:prior+rental+reserve,minutes};
+}
 export function hardwareValidationBudget({billed,rate,additionalAccrued,minutes=35}){
   for(const v of [billed,rate,additionalAccrued,minutes])if(!Number.isFinite(v)||v<0)throw new Error('Invalid hardware validation budget');
   if(!rate||rate>2.5||minutes!==35)throw new Error('Hardware validation requires the bounded 35-minute profile');

@@ -25,5 +25,6 @@ struct DeviceMeshView {
     // Trial batches use faces as capacity; this device record supplies the live
     // draw count and placement validity without a host round trip.
     const DeviceTrialStatus* trial_status{};
+    const uint32_t* exact_position_bits{};uint16_t exact_position_bps{500};
 };
 }

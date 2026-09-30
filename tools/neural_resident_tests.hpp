@@ -2,6 +2,7 @@
 #include "neural_resident.hpp"
 #include "neural_checkpoint.hpp"
 #include "neural_cycle_time.hpp"
+#include "neural_cycle_history.hpp"
 namespace blitz::neural::training {
 inline void resident_contracts(bool compact,UpdateBackend backend=UpdateBackend::Reference){
     auto check=[](bool x,const char* why){if(!x)throw std::runtime_error(why);};torch::manual_seed(519);torch::Device device(torch::kCUDA);
@@ -62,7 +63,11 @@ inline void resident_contracts(bool compact,UpdateBackend backend=UpdateBackend:
     std::cout<<json({{"backend",backend==UpdateBackend::Fused?"fused":"reference"},{"epilogues",update.fused_epilogues()},{"compact",compact},{"resident_contracts",true},{"stable_root",true},{"append_without_capture",true},{"partial_labels",true},{"checkpoint_resume_exact",true},{"pool",update.pool()},{"data_bytes",data.bytes()}}).dump()<<'\n';
 }
 inline void resident_contracts(){
-    auto time=CycleTime::duration(2000,120,10);if(time.finishing(111999)||!time.finishing(112000)||time.expired(121999)||!time.expired(122000))throw std::runtime_error("duration boundary changed");
+    auto time=CycleTime::duration(2000,120,10);if(time.finishing(121999)||!time.finishing(122000)||time.expired(131999)||!time.expired(132000))throw std::runtime_error("duration boundary changed");
+    auto resumed=CycleTime::resume(999000,120,10,75000);if(resumed.finishing(1043999)||!resumed.finishing(1044000)||resumed.expired(1053999)||!resumed.expired(1054000)||resumed.completed(1009000,75000,120)!=85000)throw std::runtime_error("downtime counted as learning");
+    auto root=fs::temp_directory_path()/("blitz-history-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));fs::create_directories(root);uint64_t bytes;
+    {CycleHistory h(root/"history.jsonl",0);for(unsigned i=0;i<1000;++i)h.append("phases",{{"iteration",i}});bytes=h.sync();h.append("phases",{{"uncommitted",true}});}
+    {CycleHistory h(root/"history.jsonl",bytes);h.append("all_datasets","new");json report;h.assemble(report);if(report.at("phases").size()!=1000||report.at("phases").back().at("iteration")!=999||report.at("all_datasets")!=json::array({"new"}))throw std::runtime_error("history recovery boundary lost or duplicated work");}fs::remove_all(root);
     if(update_target(999999,17)!=1000016||update_target(UINT32_MAX-4,4)!=UINT32_MAX)throw std::runtime_error("long-run counter domain");bool rejected=false;try{update_target(UINT32_MAX-4,5);}catch(const std::overflow_error&){rejected=true;}if(!rejected)throw std::runtime_error("counter overflow wrapped");
     resident_contracts(false);resident_contracts(true);resident_contracts(false,UpdateBackend::Fused);resident_contracts(true,UpdateBackend::Fused);
 }

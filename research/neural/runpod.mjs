@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 import {spawn,execFileSync} from 'node:child_process';
 import {Api,Rental,apiKey,read,write,verifyPod,terminationDue,rentalDeadlines,retrySsh} from './runpod-api.mjs';
 import {deployment} from './runpod-profile.mjs';
-import {actionBudget,actionAccrued,continuationBudget,refactorBudget,hardwareValidationBudget} from './action-budget.mjs';
+import {actionBudget,actionAccrued,continuationBudget,refactorBudget,pretrainingBudget,hardwareValidationBudget} from './action-budget.mjs';
 import {freshConditions} from './action-curriculum.mjs';
 
 const [command,directory]=process.argv.slice(2);
@@ -28,7 +28,7 @@ async function prepare(){
   // The new deployment ships the complete immutable local commit in a bundle.
   if(!refactor&&!hardware){const remote=sync('git',['ls-remote','origin','refs/heads/'+branch]).split(/\s/)[0];
     if(remote!==revision)throw new Error('Current branch is not fully pushed');}
-  if(refactor&&deployment.id!=='gpu-refactor')throw new Error('Select BLITZ_RUNPOD_PROFILE=gpu-refactor');
+  if(refactor&&deployment.id!=='gpu-refactor'&&!deployment.id.startsWith('coverage-pretrain-'))throw new Error('Select BLITZ_RUNPOD_PROFILE=gpu-refactor');
   if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada','hardware-validation-ada16','hardware-validation-l40s'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
   fs.mkdirSync(dir,{recursive:true,mode:0o700});
   const stage=dir+'/input';fs.mkdirSync(stage,{recursive:true});
@@ -60,6 +60,7 @@ async function prepare(){
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');
   }
+  if(refactor)await copy(root+'/runs/neural/runpod-gpu-refactor-01/final-model.blzn','initial-model.blzn','9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185');
   for(const [file,checksum] of auditFiles)await copy(root+'/'+relative(file),'assets/'+file,checksum);
   files.push({path:'source.bundle',sha256:await sha(stage+'/source.bundle'),bytes:fs.statSync(stage+'/source.bundle').size});
   write(stage+'/inputs.json',{revision,files});
@@ -88,14 +89,14 @@ async function launch(){
     if(pods.length||volumes.networkVolumes.length)throw new Error('Reconcile existing cloud resources before the bounded action experiment');
     const ledger=fs.readdirSync(root+'/runs/neural',{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>root+'/runs/neural/'+e.name+'/rental.json').filter(f=>fs.existsSync(f)).map(read);
     const continuation=prepared.experiment==='action-v2-staged';
-    budget=(prepared.experiment==='hardware-validation'?hardwareValidationBudget:prepared.experiment==='gpu-refactor'?refactorBudget:continuation?continuationBudget:actionBudget)({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:prepared.experiment==='hardware-validation'?35:prepared.experiment==='gpu-refactor'?160:continuation?deployment.staged_rental_minutes:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
+    budget=(prepared.experiment==='hardware-validation'?hardwareValidationBudget:prepared.experiment==='gpu-refactor'?pretrainingBudget:continuation?continuationBudget:actionBudget)({billed:bill.metadata.totals.totalAmount,additionalAccrued:actionAccrued(ledger),rate:deployment.gpu_hourly_usd_cap,minutes:prepared.experiment==='hardware-validation'?35:prepared.experiment==='gpu-refactor'?180:continuation?deployment.staged_rental_minutes:prepared.experiment==='action-v2'?60:90});write(dir+'/billing-before.json',bill);
   }
   sync('systemctl',['--user','show-environment']);
   sync('ssh-keygen',['-q','-t','ed25519','-N','','-f',dir+'/identity']);
   const name='blitz-'+crypto.randomUUID(),started=Date.now();
   const requested=process.argv[4]===undefined?undefined:Number(process.argv[4]);
   const deadlines=rentalDeadlines(started,budget?Math.min(requested??Infinity,started+budget.minutes*60000):requested);
-  if(budget)deadlines.training_minutes=prepared.experiment==='hardware-validation'?10:prepared.experiment==='gpu-refactor'?130:prepared.experiment==='action-v2-staged'?deployment.staged_experiment_minutes:prepared.experiment==='action-v2'?20:50;
+  if(budget)deadlines.training_minutes=prepared.experiment==='hardware-validation'?10:prepared.experiment==='gpu-refactor'?150:prepared.experiment==='action-v2-staged'?deployment.staged_experiment_minutes:prepared.experiment==='action-v2'?20:50;
   write(statePath,{name,quote,deployment,experiment:prepared.experiment,budget,revision:prepared.revision,...deadlines});
   installService(name+'-watchdog','watchdog');installService(name+'-control','control');
   sync('systemctl',['--user','daemon-reload']);

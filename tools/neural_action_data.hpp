@@ -14,8 +14,8 @@ inline ActionData load_actions(const fs::path& path) {
 inline CompactActions load_compact_actions(const fs::path& path){
     std::ifstream f(path,std::ios::binary);char magic[8];f.read(magic,8);if(f&&!std::memcmp(magic,"BLZACT04",8))return read_compact(f);return compact_actions(load_actions(path));
 }
-inline EvalSettings action_eval(double pixels=32,double limit=3) {
-    EvalSettings e;e.profile=Profile::Attributes;e.screen_size=pixels;e.limit=limit;e.max_changed_area=.5;
+inline EvalSettings action_eval(double pixels=32,double limit=3,Profile profile=Profile::Attributes) {
+    EvalSettings e;e.profile=profile;e.screen_size=pixels;e.limit=limit;e.max_changed_area=.5;
     e.views={6,2,0xB1172026};e.supersample=4;e.max_supersample=8;return e;
 }
 inline json training_metadata(const std::string& id,const fs::path& source="research/corpus.json",const fs::path& selection="research/neural/training-manifest.json") {

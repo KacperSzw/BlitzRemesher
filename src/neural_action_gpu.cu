@@ -1,6 +1,7 @@
 #include "neural_action_gpu.hpp"
 #include "neural_cuda.cuh"
 #include "neural_vertex_storage.hpp"
+#include "neural_upload.cuh"
 #include <cub/cub.cuh>
 #include <math_constants.h>
 #include <atomic>
@@ -29,11 +30,16 @@ __device__ bool same_attributes(DeviceMeshView m,uint32_t a,uint32_t b){return s
 __device__ uint32_t hash_position(Vec3 p){uint32_t h=bits(p.x)*0x9e3779b9u;h=(h^bits(p.y))*0x85ebca6bu;return (h^bits(p.z))*0xc2b2ae35u;}
 struct DeviceMesh {
     Buffer<Vec3> positions,normals;Buffer<Vec2> uv;Buffer<ColorRGBA8> colors;Buffer<Vec4> tangents;
-    Buffer<uint32_t> indices;Buffer<uint16_t> materials;Buffer<uint8_t> sided;DeviceMeshView view;
-    DeviceMesh(Device& d,MeshView m):positions(upload_stream(d,m.positions)),normals(upload_stream(d,m.normals)),uv(upload_stream(d,m.uv)),colors(upload_stream(d,m.colors)),tangents(upload_stream(d,m.tangents)),
-        indices(d,m.indices.size()),materials(d,m.materials.size()),sided(d,m.double_sided.size()){
-        indices.upload(m.indices);materials.upload(m.materials);sided.upload(m.double_sided);
-        static std::atomic<uint64_t> serial{1};view={positions.p,normals.p,uv.p,colors.p,tangents.p,indices.p,materials.p,sided.p,uint32_t(m.positions.count),uint32_t(m.triangles()),uint32_t(m.double_sided.size()),serial++,0};}
+    Buffer<uint32_t> indices,precision;Buffer<uint16_t> materials;Buffer<uint8_t> sided;DeviceMeshView view;
+    static uint64_t identity(){static std::atomic<uint64_t> serial{1};return serial++;}
+    template<class T> static Buffer<T> clone(Device& d,const Buffer<T>& source){Buffer<T> out(d,source.n);if(source.n)check(cudaMemcpyAsync(out.p,source.p,source.n*sizeof(T),cudaMemcpyDeviceToDevice));return out;}
+    void bind(){view.positions=positions.p;view.normals=normals.p;view.uv=uv.p;view.colors=colors.p;view.tangents=tangents.p;view.indices=indices.p;view.materials=materials.p;view.double_sided=sided.p;view.exact_position_bits=precision.p;view.identity=identity();}
+    DeviceMesh(Device& d,const DeviceMesh& m):positions(clone(d,m.positions)),normals(clone(d,m.normals)),uv(clone(d,m.uv)),colors(clone(d,m.colors)),tangents(clone(d,m.tangents)),indices(clone(d,m.indices)),precision(clone(d,m.precision)),materials(clone(d,m.materials)),sided(clone(d,m.sided)),view(m.view){bind();}
+    DeviceMesh(Device& d,MeshView m,bool packed=false,const VertexBounds* domain=nullptr):positions(packed?Buffer<Vec3>(d,m.positions.count):upload_stream(d,m.positions)),normals(packed?Buffer<Vec3>(d,m.normals.count):upload_stream(d,m.normals)),uv(packed?Buffer<Vec2>(d,m.uv.count):upload_stream(d,m.uv)),colors(upload_stream(d,m.colors)),tangents(packed?Buffer<Vec4>(d,m.tangents.count):upload_stream(d,m.tangents)),
+        indices(d,m.indices.size()),precision(d,m.exact_position_bits.size()),materials(d,m.materials.size()),sided(d,m.double_sided.size()){
+        if(packed)upload_working_mesh(d,m,domain?*domain:vertex_bounds(m),positions.p,normals.p,uv.p,tangents.p);
+        indices.upload(m.indices);precision.upload(m.exact_position_bits);materials.upload(m.materials);sided.upload(m.double_sided);
+        view={positions.p,normals.p,uv.p,colors.p,tangents.p,indices.p,materials.p,sided.p,uint32_t(m.positions.count),uint32_t(m.triangles()),uint32_t(m.double_sided.size()),identity(),0};view.exact_position_bits=precision.p;}
 };
 struct State {uint64_t ranked;uint32_t faces,revision,actions,trials,accepted,rejected,error,position,first,invalid_placement;uint8_t selected,accepted_trial,exhausted,padding;};
 struct Edit {uint32_t from,to,source[2],target[2];uint8_t wedges,removed,valid,padding;};
@@ -84,6 +90,8 @@ __device__ uint16_t material(DeviceMeshView m,uint32_t f){return m.materials?m.m
 __device__ bool boundary(TopologyView t,uint32_t u){for(uint32_t k=t.offsets[u];k<t.offsets[u+1];++k){uint32_t v=t.neighbors[k];uint64_t key=(uint64_t(min(u,v))<<32)|max(u,v);uint32_t lo=0,hi=*t.length;
     while(lo<hi){uint32_t mid=lo+(hi-lo)/2;if(t.edges[mid]<key)lo=mid+1;else hi=mid;}if(lo<*t.length&&t.counts[lo]==1)return true;}return false;}
 __device__ Vec3 scaled(DeviceMeshView m,uint32_t i,Bounds b){auto p=m.positions[i];double scale=b.radius*2;return {float((double(p.x)-b.center.x)/scale),float((double(p.y)-b.center.y)/scale),float((double(p.z)-b.center.z)/scale)};}
+__device__ bool exact_position(DeviceMeshView m,uint32_t i){return m.exact_position_bits&&((m.exact_position_bits[i/32]>>(i%32))&1);}
+__device__ bool exact_edit(DeviceMeshView m,Edit e){for(unsigned j=0;j<e.wedges;++j)if(exact_position(m,e.source[j])||exact_position(m,e.target[j]))return true;return false;}
 __device__ Vec3 grid_position(DeviceMeshView m,Vec3 p){
     if(!m.fixed_quantization)return p;auto lo=m.quant_low,e=m.quant_extent;
     if(p.x<lo.x||p.y<lo.y||p.z<lo.z||p.x>lo.x+e.x||p.y>lo.y+e.y||p.z>lo.z+e.z)return p;
@@ -215,6 +223,17 @@ __global__ void place_vertices(DeviceMeshView current,DeviceMeshView original,co
         if(tangents){auto a=original.tangents[ids[0]],b=original.tangents[ids[1]],c=original.tangents[ids[2]];auto t=blend3({a.x,a.y,a.z},{b.x,b.y,b.z},{c.x,c.y,c.z},weights);if(normals){t=sub3(t,mul3(normals[v],dot3(t,normals[v])));if(len3(t)<1e-15)t=cross3(normals[v],fabsf(normals[v].x)<.8f?Vec3{1,0,0}:Vec3{0,1,0});}t=norm3(t);
             tangents[v]={t.x,t.y,t.z,original.tangents[v].w};}break;}
 }
+__global__ void trial_precision(DeviceMeshView m,const State* state,const Edit* edits,const uint32_t* selected,const uint32_t* geometry,uint32_t* out,bool transfer){
+    uint32_t v=blockIdx.x*blockDim.x+threadIdx.x;bool exact=v<m.vertices&&exact_position(m,v);
+    if(transfer&&v<m.vertices)for(unsigned k=0;k<state->selected;++k){auto e=edits[selected[k]];if(geometry[v]==e.to)exact|=exact_edit(m,e);}
+    uint32_t word=__ballot_sync(0xffffffffu,exact);if((threadIdx.x&31)==0&&v<m.vertices)out[v/32]=word;
+}
+__global__ void precision_references(const uint32_t* indices,const uint32_t* count,uint32_t capacity,uint32_t* used){uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=capacity*3||i>=*count*3)return;auto v=indices[i];atomicOr(used+v/32,1u<<(v%32));}
+__global__ void precision_cap(uint32_t* bits,const uint32_t* used,uint32_t words,uint16_t bps,uint32_t* invalid){
+    uint64_t counts=0;for(uint32_t i=threadIdx.x;i<words;i+=blockDim.x){bits[i]&=used[i];counts+=(uint64_t(__popc(bits[i]))<<32)|uint32_t(__popc(used[i]));}
+    __shared__ cub::BlockReduce<uint64_t,256>::TempStorage temp;auto sum=cub::BlockReduce<uint64_t,256>(temp).Sum(counts);
+    if(threadIdx.x==0&&(sum>>32)*10000>uint64_t(uint32_t(sum))*bps)atomicExch(invalid,1u);
+}
 __global__ void validate_placement(DeviceMeshView current,const State* state,const uint32_t* remap,const uint32_t* keep,const Vec3* positions,const Vec3* normals,const Vec2* uv,uint32_t* invalid){
     uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=state->faces||!keep[f])return;uint32_t old[3],next[3];for(unsigned j=0;j<3;++j){old[j]=current.indices[f*3+j];next[j]=remap[old[j]]==none?old[j]:remap[old[j]];
         auto p=positions[next[j]];auto lo=current.quant_low,e=current.quant_extent;
@@ -223,12 +242,12 @@ __global__ void validate_placement(DeviceMeshView current,const State* state,con
     if(len3(after)<=1e-15||dot3(before,after)<=.05*len3(before)*len3(after)){atomicExch(invalid,1u);return;}
     if(uv){double x=area2(current.uv[old[0]],current.uv[old[1]],current.uv[old[2]]),y=area2(uv[next[0]],uv[next[1]],uv[next[2]]);if(!isfinite(y)||(fabs(x)>1e-20&&x*y<=0))atomicExch(invalid,1u);}
 }
-__global__ void decode_placements(DeviceMeshView m,State* state,const Edit* edits,const float* prediction,Placement* proposals,const uint32_t* selection=nullptr,uint32_t count=UINT32_MAX){
+__global__ void decode_placements(DeviceMeshView m,State* state,const Edit* edits,const float* prediction,Placement* proposals,const uint32_t* selection=nullptr,uint32_t count=UINT32_MAX,bool supervise_normals=true){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=state->actions||i>=count)return;auto id=selection?selection[i]:i;auto e=edits[id];auto* y=prediction+size_t(i)*placement_outputs;
     for(unsigned j=0;j<placement_outputs;++j)if(!isfinite(y[j])){atomicExch(&state->error,2u);return;}
     auto middle=mul3(add3(m.positions[e.from],m.positions[e.to]),.5);double length=len3(sub3(m.positions[e.from],m.positions[e.to]));
-    Placement p{};p.position=grid_position(m,add3(middle,mul3({fminf(1,fmaxf(-1,y[3])),fminf(1,fmaxf(-1,y[4])),fminf(1,fmaxf(-1,y[5]))},length)));
-    if(m.normals)for(unsigned j=0;j<e.wedges;++j)p.normals[j]=norm3(add3(norm3(m.normals[e.target[j]]),{y[6+j*3],y[7+j*3],y[8+j*3]}));proposals[id]=p;
+    Placement p{};p.position=add3(middle,mul3({fminf(1,fmaxf(-1,y[3])),fminf(1,fmaxf(-1,y[4])),fminf(1,fmaxf(-1,y[5]))},length));if(!exact_edit(m,e))p.position=grid_position(m,p.position);
+    if(m.normals)for(unsigned j=0;j<e.wedges;++j)p.normals[j]=supervise_normals?norm3(add3(norm3(m.normals[e.target[j]]),{y[6+j*3],y[7+j*3],y[8+j*3]})):norm3(m.normals[e.target[j]]);proposals[id]=p;
 }
 __global__ void default_placements(DeviceMeshView m,const State* state,const Edit* edits,Placement* proposals){uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=state->actions)return;auto e=edits[i];Placement p{};p.position=m.positions[e.to];if(m.normals)for(unsigned j=0;j<e.wedges;++j)p.normals[j]=norm3(m.normals[e.target[j]]);proposals[i]=p;}
 __global__ void assign_placement(const uint32_t* selected,Placement* proposals,Placement p){proposals[selected[0]]=p;}
@@ -237,8 +256,8 @@ __global__ void teacher_selection(const State* state,const uint32_t* order,uint3
     count=min(count,state->actions);uint64_t random=(uint64_t(seed)<<32)|state->revision;for(uint32_t i=0;i<count;++i){uint32_t pick;if(i<(count+1)/2)pick=order[i];else {bool duplicate;do {pick=uint32_t((uint64_t(random32(random))*state->actions)>>32);duplicate=false;for(uint32_t j=0;j<i;++j)duplicate|=selected[j]==pick;}while(duplicate);}selected[i]=pick;}}
 __global__ void teacher_records(const State* state,const Edit* edits,const uint32_t* selected,Action* actions,uint32_t count){
     uint32_t i=threadIdx.x;if(i>=count)return;auto id=selected[i];actions[i]={edits[id].from,edits[id].to,state->revision};}
-__global__ void teacher_placements(DeviceMeshView m,TopologyView topology,const Edit* edits,const uint32_t* selected,GpuActionState::Proposal* proposals,const Placement* learned){
-    uint32_t index=threadIdx.x;if(index>20||(index==20&&!learned))return;auto e=edits[selected[0]];unsigned position=index/2,normal=index%2;auto middle=mul3(add3(m.positions[e.from],m.positions[e.to]),.5);double scale=len3(sub3(m.positions[e.from],m.positions[e.to]));Placement p{};p.position=middle;
+__global__ void teacher_placements(DeviceMeshView m,TopologyView topology,const Edit* edits,const uint32_t* selected,GpuActionState::Proposal* proposals,const Placement* learned,bool supervise_normals){
+    uint32_t output=threadIdx.x,index=supervise_normals?output:output*2;if(index>20||(index==20&&!learned))return;auto e=edits[selected[0]];unsigned position=index/2,normal=index%2;auto middle=mul3(add3(m.positions[e.from],m.positions[e.to]),.5);double scale=len3(sub3(m.positions[e.from],m.positions[e.to]));Placement p{};p.position=middle;
     if(position<2)p.position=m.positions[position?e.to:e.from];
     if(position==3){double matrix[3][4]{};for(unsigned side=0;side<2;++side){auto vertex=side?e.to:e.from;for(uint32_t k=topology.face_offsets[vertex];k<topology.face_offsets[vertex+1];++k){auto f=topology.faces[k];auto a=m.positions[m.indices[f*3]],b=m.positions[m.indices[f*3+1]],c=m.positions[m.indices[f*3+2]];auto cross=cross3(sub3(b,a),sub3(c,a));auto n=norm3(cross);double length=len3(cross),v[3]={n.x,n.y,n.z},d=dot3(n,sub3(a,middle));for(unsigned i=0;i<3;++i){for(unsigned j=0;j<3;++j)matrix[i][j]+=v[i]*v[j]*length;matrix[i][3]+=v[i]*d*length;}}}
         bool solved=true;for(unsigned column=0;column<3;++column){unsigned pivot=column;for(unsigned row=column+1;row<3;++row)if(fabs(matrix[row][column])>fabs(matrix[pivot][column]))pivot=row;
@@ -247,8 +266,8 @@ __global__ void teacher_placements(DeviceMeshView m,TopologyView topology,const 
         if(solved)p.position=add3(middle,{float(fmin(scale,fmax(-scale,matrix[0][3]))),float(fmin(scale,fmax(-scale,matrix[1][3]))),float(fmin(scale,fmax(-scale,matrix[2][3])))});}
     if(position>=4&&index<20){float delta[3]{};delta[(position-4)/2]=float(((position-4)%2?-.25:.25)*scale);p.position=add3(middle,{delta[0],delta[1],delta[2]});}
     if(index==20)p=learned[selected[0]];
-    p.position=grid_position(m,p.position);GpuActionState::Proposal out{};out.placement=p;auto offset=mul3(sub3(p.position,middle),1/scale);out.target[0]=fminf(1,fmaxf(-1,offset.x));out.target[1]=fminf(1,fmaxf(-1,offset.y));out.target[2]=fminf(1,fmaxf(-1,offset.z));
-    if(m.normals)for(unsigned j=0;j<e.wedges;++j){auto baseline=norm3(m.normals[e.target[j]]);auto n=index==20?p.normals[j]:normal?norm3(add3(baseline,norm3(m.normals[e.source[j]]))):baseline;if(len3(n)<.5)n=baseline;out.placement.normals[j]=n;auto d=sub3(n,baseline);out.target[3+j*3]=d.x;out.target[4+j*3]=d.y;out.target[5+j*3]=d.z;out.normal_mask|=uint8_t(1u<<j);}proposals[index]=out;
+    if(!exact_edit(m,e))p.position=grid_position(m,p.position);GpuActionState::Proposal out{};out.placement=p;auto offset=mul3(sub3(p.position,middle),1/scale);out.target[0]=fminf(1,fmaxf(-1,offset.x));out.target[1]=fminf(1,fmaxf(-1,offset.y));out.target[2]=fminf(1,fmaxf(-1,offset.z));
+    if(m.normals)for(unsigned j=0;j<e.wedges;++j){auto baseline=norm3(m.normals[e.target[j]]);auto n=!supervise_normals?baseline:index==20?p.normals[j]:normal?norm3(add3(baseline,norm3(m.normals[e.source[j]]))):baseline;if(len3(n)<.5)n=baseline;out.placement.normals[j]=n;auto d=sub3(n,baseline);out.target[3+j*3]=d.x;out.target[4+j*3]=d.y;out.target[5+j*3]=d.z;if(supervise_normals)out.normal_mask|=uint8_t(1u<<j);}proposals[output]=out;
 }
 struct DeviceScope {int previous;explicit DeviceScope(int id){check(cudaGetDevice(&previous));check(cudaSetDevice(id));}~DeviceScope(){cudaSetDevice(previous);}};
 }
@@ -260,23 +279,26 @@ struct GpuActionState::Impl {
     Buffer<uint32_t> selected,remap,keep,offsets,trial_indices,original_indices,order,sorted_order;Buffer<uint16_t> trial_materials,original_materials;
     Buffer<float> prediction,scores,sorted_scores;Buffer<uint8_t> used;
     Buffer<Placement> proposals;Buffer<GpuActionState::Proposal> teacher;
+    Buffer<uint32_t> trial_bits,precision_used,original_bits;
     Buffer<Vec3> trial_positions,trial_normals;Buffer<Vec2> trial_uv;Buffer<ColorRGBA8> trial_colors;Buffer<Vec4> trial_tangents;
-    struct TrialBuffers {Buffer<Vec3> positions,normals;Buffer<Vec2> uv;Buffer<ColorRGBA8> colors;Buffer<Vec4> tangents;Buffer<DeviceTrialStatus> status;
-        TrialBuffers(Device& d,DeviceMeshView m):positions(d,m.vertices),normals(d,m.normals?m.vertices:0),uv(d,m.uv?m.vertices:0),colors(d,m.colors?m.vertices:0),tangents(d,m.tangents?m.vertices:0),status(d,1){}
+    struct TrialBuffers {Buffer<uint32_t> bits;Buffer<Vec3> positions,normals;Buffer<Vec2> uv;Buffer<ColorRGBA8> colors;Buffer<Vec4> tangents;Buffer<DeviceTrialStatus> status;
+        TrialBuffers(Device& d,DeviceMeshView m):bits(d,m.exact_position_bits?(m.vertices+31)/32:0),positions(d,m.vertices),normals(d,m.normals?m.vertices:0),uv(d,m.uv?m.vertices:0),colors(d,m.colors?m.vertices:0),tangents(d,m.tangents?m.vertices:0),status(d,1){}
     };
     std::array<std::unique_ptr<TrialBuffers>,4> trial_slots;
     Buffer<uint32_t> original_offsets,original_faces;
     std::unique_ptr<Buffer<std::byte>> select_temp,scan_temp,sort_temp;size_t select_bytes{},scan_bytes{},sort_bytes{};State host{};
     uint64_t trial_revision{};bool teacher_policy{},selected_is_action{};Action selected_action{};
     static uint32_t hash_size(size_t vertices){if(vertices>uint32_t(INT_MAX)/2)throw std::length_error("GPU vertex hash exceeds u32");uint32_t n=2;while(n<vertices*2)n*=2;return n;}
-    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization):device(options,true),id(options.device),mesh(device,m),bounds(blitz::bounds(m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),placement(free),
+    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization):device(options,true),id(options.device),mesh(device,m,free&&options.draw_storage()==NeuralVertexStorage::Packed,quantization),bounds(blitz::bounds(m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),placement(free),
         state(device,1),geometry(device,m.positions.count),canonical(device,m.positions.count),slots(device,hash_capacity),seams(device,m.positions.count),geometric(device,uint32_t(m.positions.count),face_capacity),attribute(device,uint32_t(m.positions.count),face_capacity),
         vertex_x(device,m.positions.count*24),conditions_buffer(device,conditions),possible(device,action_capacity),edits(device,action_capacity),valid(device,action_capacity),
         selected(device,64),remap(device,m.positions.count),keep(device,size_t(face_capacity)+1),offsets(device,size_t(face_capacity)+1),trial_indices(device,m.indices.size()),original_indices(device,m.indices.size()),order(device,action_capacity),sorted_order(device,action_capacity),trial_materials(device,m.materials.size()),original_materials(device,m.materials.size()),
         scores(device,action_capacity),sorted_scores(device,action_capacity),used(device,m.positions.count),proposals(device,free?action_capacity:0),teacher(device,free?21:0),
+        trial_bits(device,m.exact_position_bits.size()),precision_used(device,m.exact_position_bits.size()),original_bits(device,m.exact_position_bits.size()),
         trial_positions(device,free?m.positions.count:0),trial_normals(device,free?m.normals.count:0),trial_uv(device,free?m.uv.count:0),trial_colors(device,free?m.colors.count:0),trial_tangents(device,free?m.tangents.count:0),
         original_offsets(device,free?m.positions.count+1:0),original_faces(device,free?m.indices.size():0){
         if(options.draw_storage()!=NeuralVertexStorage::Float32){auto q=quantization?*quantization:vertex_bounds(m);mesh.view.quant_low=q.low;mesh.view.quant_extent=q.extent;mesh.view.fixed_quantization=true;}
+        if(options.exact_position_bps>10000)throw std::invalid_argument("exact position cap exceeds 100%");mesh.view.exact_position_bps=options.exact_position_bps;original_bits.upload(m.exact_position_bits);
         host.faces=face_capacity;state.upload({&host,1});
         check(cudaMemcpyAsync(original_indices.p,mesh.indices.p,original_indices.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));if(original_materials.n)check(cudaMemcpyAsync(original_materials.p,mesh.materials.p,original_materials.n*sizeof(uint16_t),cudaMemcpyDeviceToDevice));
         for(bool attrs:{false,true}){check(cudaMemset(slots.p,255,slots.n*sizeof(uint32_t)));insert_vertices<<<blocks(mesh.view.vertices),256>>>(mesh.view,slots.p,hash_capacity,attrs);
@@ -287,7 +309,7 @@ struct GpuActionState::Impl {
         check(cub::DeviceRadixSort::SortPairsDescending(nullptr,sort_bytes,scores.p,sorted_scores.p,order.p,sorted_order.p,int(action_capacity)));
         select_temp=std::make_unique<Buffer<std::byte>>(device,select_bytes);scan_temp=std::make_unique<Buffer<std::byte>>(device,scan_bytes);
         sort_temp=std::make_unique<Buffer<std::byte>>(device,sort_bytes);
-        rebuild();if(placement){original=std::make_unique<DeviceMesh>(device,m);check(cudaMemcpyAsync(original_offsets.p,attribute.face_offsets.p,original_offsets.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));check(cudaMemcpyAsync(original_faces.p,attribute.faces.p,original_faces.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));}
+        rebuild();if(placement){original=std::make_unique<DeviceMesh>(device,mesh);check(cudaMemcpyAsync(original_offsets.p,attribute.face_offsets.p,original_offsets.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));check(cudaMemcpyAsync(original_faces.p,attribute.faces.p,original_faces.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));}
         check(cudaGetLastError());check(cudaSetDevice(device.previous));
     }
     ~Impl(){cudaSetDevice(id);}
@@ -322,29 +344,30 @@ struct GpuActionState::Impl {
         check(cub::DeviceScan::ExclusiveSum(scan_temp->p,scan_bytes,keep.p,offsets.p,int(face_capacity+1)));
         copy_trial<<<blocks(face_capacity),256>>>(mesh.view,state.p,remap.p,keep.p,offsets.p,trial_indices.p,trial_materials.p,face_capacity);
     }
-    void build_trial(){build_trial_topology();
-        if(placement){check(cudaMemsetAsync(&state.p->invalid_placement,0,sizeof(uint32_t)));
+    void build_precision(Buffer<uint32_t>& bits,uint32_t* invalid){if(!bits.n)return;precision_used.zero();trial_precision<<<blocks(mesh.view.vertices),256>>>(mesh.view,state.p,edits.p,selected.p,geometry.p,bits.p,placement);precision_references<<<blocks(size_t(face_capacity)*3),256>>>(trial_indices.p,offsets.p+face_capacity,face_capacity,precision_used.p);precision_cap<<<1,256>>>(bits.p,precision_used.p,uint32_t(bits.n),mesh.view.exact_position_bps,invalid);}
+    void build_trial(){build_trial_topology();check(cudaMemsetAsync(&state.p->invalid_placement,0,sizeof(uint32_t)));
+        if(placement){
             place_vertices<<<blocks(mesh.view.vertices),256>>>(mesh.view,original->view,state.p,edits.p,proposals.p,selected.p,geometry.p,canonical.p,original_offsets.p,original_faces.p,trial_positions.p,trial_normals.p,trial_uv.p,trial_colors.p,trial_tangents.p);
             validate_placement<<<blocks(face_capacity),256>>>(mesh.view,state.p,remap.p,keep.p,trial_positions.p,trial_normals.p,trial_uv.p,&state.p->invalid_placement);}
-        check(cudaGetLastError());}
+        build_precision(trial_bits,&state.p->invalid_placement);check(cudaGetLastError());}
     Lod download_trial(){uint32_t n=0;check(cudaMemcpy(&n,offsets.p+face_capacity,sizeof(n),cudaMemcpyDeviceToHost));if(!n)throw std::invalid_argument("GPU action removed the entire mesh");Lod lod;
         lod.data.indices.resize(size_t(n)*3);check(cudaMemcpy(lod.data.indices.data(),trial_indices.p,lod.data.indices.size()*sizeof(uint32_t),cudaMemcpyDeviceToHost));
         if(trial_materials.n){lod.data.materials.resize(n);check(cudaMemcpy(lod.data.materials.data(),trial_materials.p,n*sizeof(uint16_t),cudaMemcpyDeviceToHost));}return lod;}
     template<class T> void copy(Buffer<T>& to,const Buffer<T>& from){if(to.n)check(cudaMemcpyAsync(to.p,from.p,to.n*sizeof(T),cudaMemcpyDeviceToDevice));}
-    void commit(){if(placement){read();if(host.invalid_placement)throw std::invalid_argument("invalid free placement");copy(mesh.positions,trial_positions);copy(mesh.normals,trial_normals);copy(mesh.uv,trial_uv);copy(mesh.colors,trial_colors);copy(mesh.tangents,trial_tangents);}
-        copy_commit<<<blocks(face_capacity),256>>>(mesh.indices.p,mesh.materials.p,trial_indices.p,trial_materials.p,offsets.p,face_capacity);
+    void commit(){if(placement||mesh.precision.n){read();if(host.invalid_placement)throw std::invalid_argument("invalid placement or exact position cap");}if(placement){copy(mesh.positions,trial_positions);copy(mesh.normals,trial_normals);copy(mesh.uv,trial_uv);copy(mesh.colors,trial_colors);copy(mesh.tangents,trial_tangents);}
+        copy(mesh.precision,trial_bits);copy_commit<<<blocks(face_capacity),256>>>(mesh.indices.p,mesh.materials.p,trial_indices.p,trial_materials.p,offsets.p,face_capacity);
         commit_faces<<<1,1>>>(state.p,offsets.p,face_capacity);read();mesh.view.revision=++trial_revision;rebuild();}
     void rank(const std::array<float,conditions>& c,ActionCuda* network,NeuralRanking ranking,uint32_t seed){selected_is_action=false;auto architecture=network?network->architecture():action_schema;auto width=policy_inputs(architecture),outputs=policy_outputs(architecture);features(c,width);read();
         if(ranking==NeuralRanking::Learned||ranking==NeuralRanking::Shuffled||(placement&&architecture==placement_schema)){if(!network)throw std::invalid_argument("missing GPU action network");ensure(prediction,size_t(host.actions)*outputs);network->predict_device(features_buffer.p,prediction.p,host.actions);}
-        if(placement){if(architecture==placement_schema)decode_placements<<<blocks(action_capacity),256>>>(mesh.view,state.p,edits.p,prediction.p,proposals.p);else default_placements<<<blocks(action_capacity),256>>>(mesh.view,state.p,edits.p,proposals.p);}
+        if(placement){if(architecture==placement_schema)decode_placements<<<blocks(action_capacity),256>>>(mesh.view,state.p,edits.p,prediction.p,proposals.p,nullptr,UINT32_MAX,c[3]!=0||c[4]!=0||c[5]!=0);else default_placements<<<blocks(action_capacity),256>>>(mesh.view,state.p,edits.p,proposals.p);}
         rank_actions<<<blocks(action_capacity),256>>>(mesh.view,state.p,geometric.view(),edits.p,features_buffer.p,prediction.p,scores.p,order.p,ranking,std::max(1e-20,bounds.diameter()),action_capacity,width,outputs);
         if(ranking==NeuralRanking::Shuffled)shuffle_scores<<<1,1>>>(state.p,scores.p,seed);
         check(cub::DeviceRadixSort::SortPairsDescending(sort_temp->p,sort_bytes,scores.p,sorted_scores.p,order.p,sorted_order.p,int(action_capacity)));record_rank<<<1,1>>>(state.p);read();}
     DeviceMeshView trial_view(){uint32_t count;check(cudaMemcpy(&count,offsets.p+face_capacity,sizeof(count),cudaMemcpyDeviceToHost));auto v=mesh.view;v.indices=trial_indices.p;v.materials=trial_materials.p;v.faces=count;v.revision=++trial_revision;
         if(placement){v.positions=trial_positions.p;v.normals=trial_normals.p;v.uv=trial_uv.p;v.colors=trial_colors.p;v.tangents=trial_tangents.p;}
-        v.raster_parent=&mesh.view;v.parent_keep=keep.p;v.parent_offsets=offsets.p;return v;}
+        v.exact_position_bits=trial_bits.p;v.raster_parent=&mesh.view;v.parent_keep=keep.p;v.parent_offsets=offsets.p;return v;}
     Lod download(){read();Lod lod;lod.data.indices.resize(size_t(host.faces)*3);check(cudaMemcpy(lod.data.indices.data(),mesh.indices.p,lod.data.indices.size()*sizeof(uint32_t),cudaMemcpyDeviceToHost));if(mesh.materials.n){lod.data.materials.resize(host.faces);check(cudaMemcpy(lod.data.materials.data(),mesh.materials.p,host.faces*sizeof(uint16_t),cudaMemcpyDeviceToHost));}
-        if(placement){lod.shared_vertices=false;lod.data.positions=mesh.positions.download();lod.data.normals=mesh.normals.download();lod.data.uv=mesh.uv.download();lod.data.colors=mesh.colors.download();lod.data.tangents=mesh.tangents.download();lod.data.double_sided=mesh.sided.download();compact(lod.data);}return lod;}
+        if(placement){lod.shared_vertices=false;lod.data.positions=mesh.positions.download();lod.data.normals=mesh.normals.download();lod.data.uv=mesh.uv.download();lod.data.colors=mesh.colors.download();lod.data.tangents=mesh.tangents.download();lod.data.double_sided=mesh.sided.download();lod.data.exact_position_bits=mesh.precision.download();compact(lod.data);}return lod;}
 };
 GpuActionState::GpuActionState(MeshView m,const NeuralOptions& options,bool placement,const VertexBounds* quantization){if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);if(m.triangles()>uint32_t(INT_MAX)/6)throw std::length_error("GPU action capacity exceeds signed sort range");impl_=std::make_unique<Impl>(m,options,placement,quantization);}
 GpuActionState::~GpuActionState(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
@@ -355,7 +378,7 @@ Lod GpuActionState::trial(Action a){auto& p=*impl_;DeviceScope scope(p.id);if(p.
 void GpuActionState::commit(Action a){auto& p=*impl_;DeviceScope scope(p.id);if(p.placement)throw std::logic_error("explicit placement required");p.trial(a);p.commit();}
 DeviceMeshView GpuActionState::view()const{return impl_->mesh.view;}
 void GpuActionState::reset(){auto& p=*impl_;DeviceScope scope(p.id);p.host={};p.host.faces=p.face_capacity;p.state.upload({&p.host,1});p.mesh.view.faces=p.host.faces;p.mesh.view.revision=++p.trial_revision;
-    if(p.placement){p.copy(p.mesh.positions,p.original->positions);p.copy(p.mesh.normals,p.original->normals);p.copy(p.mesh.uv,p.original->uv);p.copy(p.mesh.colors,p.original->colors);p.copy(p.mesh.tangents,p.original->tangents);}
+    p.copy(p.mesh.precision,p.original_bits);if(p.placement){p.copy(p.mesh.positions,p.original->positions);p.copy(p.mesh.normals,p.original->normals);p.copy(p.mesh.uv,p.original->uv);p.copy(p.mesh.colors,p.original->colors);p.copy(p.mesh.tangents,p.original->tangents);}
     check(cudaMemcpyAsync(p.mesh.indices.p,p.original_indices.p,p.original_indices.n*sizeof(uint32_t),cudaMemcpyDeviceToDevice));if(p.original_materials.n)check(cudaMemcpyAsync(p.mesh.materials.p,p.original_materials.p,p.original_materials.n*sizeof(uint16_t),cudaMemcpyDeviceToDevice));p.rebuild();}
 Lod GpuActionState::execute(const std::array<float,conditions>& c,size_t target,uint32_t budget,ActionCuda* network,NeuralRanking ranking,uint32_t seed,uint8_t batch,const std::function<bool(DeviceMeshView)>& gate,ActionStats* statistics,const std::function<bool()>& cancelled){
     if(!batch||batch>64||!gate||ranking>NeuralRanking::CurrentPlane)throw std::invalid_argument("invalid GPU action executor configuration");auto& p=*impl_;DeviceScope scope(p.id);target=std::max<size_t>(1,target);p.read();
@@ -364,19 +387,19 @@ Lod GpuActionState::execute(const std::array<float,conditions>& c,size_t target,
     while(p.host.faces>target&&p.host.trials<budget&&!stop()){auto start=std::chrono::steady_clock::now();p.rank(c,network,ranking,seed);inference_ns+=uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now()-start).count());if(!p.host.actions)break;bool accepted=false;
         while(p.host.position<p.host.actions&&p.host.trials<budget&&!accepted&&!stop()){
             select_batch<<<1,1>>>(p.state.p,p.geometric.view(),p.edits.p,p.sorted_order.p,p.selected.p,p.used.p,p.mesh.view.vertices,uint32_t(target),batch);p.read();if(p.host.exhausted)break;
-            while(p.host.selected&&p.host.trials<budget&&!stop()){p.build_trial();if(p.placement)p.read();accepted=!p.host.invalid_placement&&gate(p.trial_view());verdict<<<1,1>>>(p.state.p,accepted);if(accepted){p.commit();break;}p.read();}}
+            while(p.host.selected&&p.host.trials<budget&&!stop()){p.build_trial();if(p.placement||p.mesh.precision.n)p.read();accepted=!p.host.invalid_placement&&gate(p.trial_view());verdict<<<1,1>>>(p.state.p,accepted);if(accepted){p.commit();break;}p.read();}}
         if(!accepted)break;}
     p.read();if(statistics)*statistics={p.host.ranked,p.host.trials,p.host.accepted,p.host.rejected,inference_ns};return p.download();}
 std::vector<PlacementRecord> GpuActionState::placements(const std::array<float,conditions>& c){auto& p=*impl_;DeviceScope scope(p.id);if(!p.placement)throw std::logic_error("free placement state required");p.features(c,placement_features);p.read();std::vector<Edit> edits(p.host.actions);std::vector<float> x(size_t(p.host.actions)*placement_features);std::vector<PlacementRecord> out(p.host.actions);
     if(!out.empty()){check(cudaMemcpy(edits.data(),p.edits.p,edits.size()*sizeof(Edit),cudaMemcpyDeviceToHost));check(cudaMemcpy(x.data(),p.features_buffer.p,x.size()*sizeof(float),cudaMemcpyDeviceToHost));}for(size_t i=0;i<out.size();++i){out[i].action={edits[i].from,edits[i].to,p.host.revision};std::copy_n(x.data()+i*placement_features,placement_features,out[i].x.data());}return out;}
-std::vector<GpuActionState::Proposal> GpuActionState::teacher_proposals(Action a){auto& p=*impl_;DeviceScope scope(p.id);if(!p.placement)throw std::logic_error("free placement state required");p.select(a);teacher_placements<<<1,32>>>(p.mesh.view,p.geometric.view(),p.edits.p,p.selected.p,p.teacher.p,p.teacher_policy?p.proposals.p:nullptr);std::vector<Proposal> out(p.teacher_policy?21:20);check(cudaMemcpy(out.data(),p.teacher.p,out.size()*sizeof(Proposal),cudaMemcpyDeviceToHost));return out;}
+std::vector<GpuActionState::Proposal> GpuActionState::teacher_proposals(Action a,bool supervise_normals){auto& p=*impl_;DeviceScope scope(p.id);if(!p.placement)throw std::logic_error("free placement state required");p.select(a);teacher_placements<<<1,32>>>(p.mesh.view,p.geometric.view(),p.edits.p,p.selected.p,p.teacher.p,p.teacher_policy?p.proposals.p:nullptr,supervise_normals);std::vector<Proposal> out((supervise_normals?20:10)+(p.teacher_policy?1:0));check(cudaMemcpy(out.data(),p.teacher.p,out.size()*sizeof(Proposal),cudaMemcpyDeviceToHost));return out;}
 std::vector<PlacementRecord> GpuActionState::teacher_actions(const std::array<float,conditions>& c,uint32_t count,uint32_t seed,ActionCuda* policy){auto& p=*impl_;DeviceScope scope(p.id);if(!p.placement||!count||count>16||(policy&&policy->architecture()!=placement_schema))throw std::invalid_argument("invalid teacher pool/policy");p.selected_is_action=false;p.read();count=std::min(count,p.host.actions);if(!count)return {};p.teacher_policy=policy;
     // Selection needs geometry, not a dense feature/prediction tensor for every
     // legal action. Build and infer only the at-most-16 queried rows.
     rank_actions<<<blocks(p.action_capacity),256>>>(p.mesh.view,p.state.p,p.geometric.view(),p.edits.p,nullptr,nullptr,p.scores.p,p.order.p,NeuralRanking::CurrentPlane,std::max(1e-20,p.bounds.diameter()),p.action_capacity,placement_features,placement_outputs);
     check(cub::DeviceRadixSort::SortPairsDescending(p.sort_temp->p,p.sort_bytes,p.scores.p,p.sorted_scores.p,p.order.p,p.sorted_order.p,int(p.action_capacity)));
     teacher_selection<<<1,1>>>(p.state.p,p.sorted_order.p,p.selected.p,count,seed);p.features(c,placement_features,p.selected.p,count);
-    if(policy){p.ensure(p.prediction,size_t(count)*placement_outputs);policy->predict_device(p.features_buffer.p,p.prediction.p,count);decode_placements<<<1,32>>>(p.mesh.view,p.state.p,p.edits.p,p.prediction.p,p.proposals.p,p.selected.p,count);p.read();}
+    if(policy){p.ensure(p.prediction,size_t(count)*placement_outputs);policy->predict_device(p.features_buffer.p,p.prediction.p,count);decode_placements<<<1,32>>>(p.mesh.view,p.state.p,p.edits.p,p.prediction.p,p.proposals.p,p.selected.p,count,c[3]!=0||c[4]!=0||c[5]!=0);p.read();}
     Buffer<Action> actions(p.device,count);teacher_records<<<1,32>>>(p.state.p,p.edits.p,p.selected.p,actions.p,count);auto ids=actions.download();std::vector<float> x(size_t(count)*placement_features);check(cudaMemcpy(x.data(),p.features_buffer.p,x.size()*sizeof(float),cudaMemcpyDeviceToHost));
     std::vector<PlacementRecord> out(count);for(uint32_t i=0;i<count;++i){out[i].action=ids[i];std::copy_n(x.data()+size_t(i)*placement_features,placement_features,out[i].x.data());}return out;}
 
@@ -391,7 +414,7 @@ std::vector<DeviceMeshView> GpuActionState::trial_batch(Action action,std::span<
     for(size_t i=0;i<proposals.size();++i){auto& slot=*p.trial_slots[i];assign_trial<<<1,1>>>(p.selected.p,p.proposals.p,proposals[i].placement,slot.status.p,p.offsets.p+p.face_capacity);
         place_vertices<<<blocks(p.mesh.view.vertices),256>>>(p.mesh.view,p.original->view,p.state.p,p.edits.p,p.proposals.p,p.selected.p,p.geometry.p,p.canonical.p,p.original_offsets.p,p.original_faces.p,slot.positions.p,slot.normals.p,slot.uv.p,slot.colors.p,slot.tangents.p);
         validate_placement<<<blocks(p.face_capacity),256>>>(p.mesh.view,p.state.p,p.remap.p,p.keep.p,slot.positions.p,slot.normals.p,slot.uv.p,&slot.status.p->invalid);
-        auto view=p.mesh.view;view.positions=slot.positions.p;view.normals=slot.normals.p;view.uv=slot.uv.p;view.colors=slot.colors.p;view.tangents=slot.tangents.p;view.indices=p.trial_indices.p;view.materials=p.trial_materials.p;view.faces=p.face_capacity;view.trial_status=slot.status.p;view.revision=++p.trial_revision;views.push_back(view);
+        p.build_precision(slot.bits,&slot.status.p->invalid);auto view=p.mesh.view;view.exact_position_bits=slot.bits.p;view.positions=slot.positions.p;view.normals=slot.normals.p;view.uv=slot.uv.p;view.colors=slot.colors.p;view.tangents=slot.tangents.p;view.indices=p.trial_indices.p;view.materials=p.trial_materials.p;view.faces=p.face_capacity;view.trial_status=slot.status.p;view.revision=++p.trial_revision;views.push_back(view);
     }check(cudaGetLastError());return views;
 }
 void GpuActionState::commit(Action a,const Placement& placement){DeviceMeshView view;if(!trial(a,placement,view))throw std::invalid_argument("invalid free placement");auto& p=*impl_;DeviceScope scope(p.id);p.commit();}

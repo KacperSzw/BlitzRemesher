@@ -29,6 +29,7 @@ std::string validate(MeshView m) {
     if(!n||n>=UINT32_MAX||m.indices.empty()||m.indices.size()%3||m.indices.size()>=UINT32_MAX) return "mesh requires nonempty triangle indices and 32-bit representable counts";
     if(!valid_stream(m.positions,n,true)||!valid_stream(m.normals,n)||!valid_stream(m.uv,n)||!valid_stream(m.colors,n)||!valid_stream(m.tangents,n)) return "invalid stream count, pointer or stride";
     if(!m.materials.empty()&&m.materials.size()!=m.triangles()) return "material count differs from triangle count";
+    if(!m.exact_position_bits.empty()&&(m.exact_position_bits.size()!=(n+31)/32||(n%32&&(m.exact_position_bits.back()>>(n%32)))))return "invalid exact position bitmap";
     for(auto i:m.indices) if(i>=n)return "index outside vertex stream";
     for(size_t i=0;i<n;++i) {
         if(!finite(m.positions[i])||(m.normals&&!finite(m.normals[i]))) return "nonfinite position or normal";
@@ -41,7 +42,7 @@ std::string validate(MeshView m) {
 template<class T> static std::vector<T> copy(Stream<T> s) {std::vector<T> v(s.count);for(size_t i=0;i<s.count;++i)v[i]=s[i];return v;}
 Mesh copy_mesh(MeshView v) {
     return {copy(v.positions),copy(v.normals),copy(v.uv),copy(v.colors),copy(v.tangents),
-      {v.indices.begin(),v.indices.end()},{v.materials.begin(),v.materials.end()},{v.double_sided.begin(),v.double_sided.end()}};
+      {v.indices.begin(),v.indices.end()},{v.materials.begin(),v.materials.end()},{v.double_sided.begin(),v.double_sided.end()},{v.exact_position_bits.begin(),v.exact_position_bits.end()}};
 }
 template<class T> static bool same_stream(Stream<T> a,Stream<T> b) {
     if(a.count!=b.count)return false;
@@ -54,7 +55,7 @@ template<class T> static bool same_span(std::span<const T> a,std::span<const T> 
     return a.size()==b.size()&&(a.empty()||a.data()==b.data()||std::memcmp(a.data(),b.data(),a.size_bytes())==0);
 }
 bool same_mesh_data(MeshView a,MeshView b) {
-    return same_span(a.indices,b.indices)&&same_span(a.materials,b.materials)&&same_span(a.double_sided,b.double_sided)
+    return same_span(a.exact_position_bits,b.exact_position_bits)&&same_span(a.indices,b.indices)&&same_span(a.materials,b.materials)&&same_span(a.double_sided,b.double_sided)
       &&same_stream(a.positions,b.positions)&&same_stream(a.normals,b.normals)&&same_stream(a.uv,b.uv)
       &&same_stream(a.colors,b.colors)&&same_stream(a.tangents,b.tangents);
 }
@@ -65,6 +66,7 @@ void compact(Mesh& m) {
     for(auto i:m.indices) {
         if(map[i]==UINT32_MAX) {
             map[i]=uint32_t(out.positions.size());out.positions.push_back(m.positions[i]);
+            if(!m.exact_position_bits.empty()){out.exact_position_bits.resize((out.positions.size()+31)/32);if(m.view().exact_position(i))out.exact_position_bits[map[i]/32]|=1u<<(map[i]%32);}
             if(!m.normals.empty())out.normals.push_back(m.normals[i]);
             if(!m.uv.empty())out.uv.push_back(m.uv[i]);
             if(!m.colors.empty())out.colors.push_back(m.colors[i]);
@@ -72,6 +74,7 @@ void compact(Mesh& m) {
         }
         out.indices.push_back(map[i]);
     }
+    if(std::all_of(out.exact_position_bits.begin(),out.exact_position_bits.end(),[](auto v){return v==0;}))out.exact_position_bits.clear();
     m=std::move(out);
 }
 Distortion uv_distortion(MeshView m) {

@@ -18,7 +18,7 @@ struct NeuralConfirmationFailure {
     NeuralRasterBackend raster{NeuralRasterBackend::Cuda};
     NeuralVertexStorage storage{NeuralVertexStorage::Float32};
     NeuralAuditStage stage{NeuralAuditStage::ChainConfirmation};
-    uint64_t nanoseconds{};
+    uint64_t nanoseconds{};uint16_t exact_position_bps{500};
 };
 struct NeuralOptions {
     int32_t device{};
@@ -31,6 +31,8 @@ struct NeuralOptions {
     NeuralConfirmation confirmation{NeuralConfirmation::Gpu};
     bool capture_confirmation_failure{};
     bool cache_rasters{true}; // Optional bounded cache; false supports matched profiling.
+    uint16_t exact_position_bps{500}; // At most 5% of referenced surviving vertex IDs; zero is strict packing.
+    bool mask_only_coverage{true}; // Single R8 pass; false is the matched renderer control.
     bool direct_targets{true}; // Sparse queries read shared Vulkan targets directly.
     uint8_t view_batch{4}; // Bounded simultaneous camera targets; 1 is the control.
     uint8_t candidate_batch{1}; // Independent teacher placements; 1, 2 or 4.

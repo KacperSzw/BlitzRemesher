@@ -1,0 +1,31 @@
+✔ repeatable SSH calls recover transport failures, preserve command failures and stop retrying (1.625498ms)
+✔ recovery can shorten a rental to its original cutoff without extending the budget (0.359021ms)
+✔ status succeeds with optional state files absent and reports every available record (86.364466ms)
+✔ reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage (0.779822ms)
+✔ Pod request is pinned and forwards only the public key (1.620598ms)
+✔ actual allocation must satisfy hardware and rate caps (0.287807ms)
+✔ remote hardware validation requires a full device and a valid compatible driver (0.455405ms)
+✔ each selected profile binds quote, Pod allocation, native architecture and rate cap (0.81041ms)
+✔ lost create response is reconciled after restart without a second rental or deadline reset (0.975402ms)
+✔ ambiguous provisioning must not be reported as terminated when no response is visible yet (0.279222ms)
+✔ deadlines prevent creation; API errors retain storage and retryable termination (0.472985ms)
+✔ independent watchdog enforces setup and hard deadlines regardless of controller progress (0.151694ms)
+✔ a definitive provisioning rejection cleans up the new empty volume (0.270115ms)
+✔ lost volume response is reconciled and cleaned without another volume create (0.248112ms)
+✔ REST handles empty deletions, missing resources, errors and cursor pagination (21.117337ms)
+Frozen pilot selection contracts passed
+✔ tests/neural_pilot.mjs (57.013861ms)
+✔ hardware validation consumes the existing grant and includes previous validation rentals (2.036353ms)
+✔ new authorization includes historical ledger, future rentals, rate, storage and reserve (0.326694ms)
+✔ a complete learning window cannot be silently shortened after validation (0.20414ms)
+✔ refresh identities remain training-only and include preceding LOD and 128px conditions (0.387846ms)
+✔ model comparison includes all weights but excludes metadata and its checksum (1.222584ms)
+✔ learning cycle excludes incomplete labels, carries optimizer state and audits the final model (2147.032242ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2227.384773

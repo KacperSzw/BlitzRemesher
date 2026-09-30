@@ -42,6 +42,9 @@ struct MeshView {
     std::span<const uint32_t> indices;
     std::span<const uint16_t> materials;
     std::span<const uint8_t> double_sided;
+    // Optional bitmap: flagged positions retain exact FP32 values in packed draws.
+    std::span<const uint32_t> exact_position_bits;
+    bool exact_position(size_t i)const{return !exact_position_bits.empty()&&((exact_position_bits[i/32]>>(i%32))&1);}
     size_t triangles() const { return indices.size()/3; }
     uint16_t material(size_t face) const { return materials.empty()?0:materials[face]; }
     bool two_sided(size_t face) const { auto m=material(face); return m<double_sided.size() && double_sided[m]; }
@@ -54,7 +57,8 @@ struct Mesh {
     std::vector<uint32_t> indices;
     std::vector<uint16_t> materials;
     std::vector<uint8_t> double_sided;
-    MeshView view() const { return {positions,normals,uv,colors,tangents,indices,materials,double_sided}; }
+    std::vector<uint32_t> exact_position_bits;
+    MeshView view() const { return {positions,normals,uv,colors,tangents,indices,materials,double_sided,exact_position_bits}; }
 };
 struct Bounds { Vec3 center{}; double radius{}; double diameter() const {return radius*2;} };
 Bounds bounds(MeshView);

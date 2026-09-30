@@ -1,7 +1,9 @@
 #version 450
+#ifndef COVERAGE
 layout(location=0) in vec3 world;
 layout(location=1) in vec3 shadingNormal;
 layout(location=2) in vec3 rgb;
+#endif
 layout(set=0,binding=1,std430) readonly buffer Faces {uint values[];} faces;
 layout(push_constant) uniform Camera {vec4 right;vec4 up;vec4 forward;vec4 center;vec4 depth;uvec4 options;} camera;
 #ifdef COVERAGE

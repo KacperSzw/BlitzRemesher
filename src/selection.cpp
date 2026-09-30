@@ -4,7 +4,7 @@
 namespace blitz {
 uint64_t vertex_bytes(MeshView v) {
     return uint64_t(v.positions.count)*12+uint64_t(v.normals.count)*12+
-        uint64_t(v.uv.count)*8+uint64_t(v.colors.count)*4+uint64_t(v.tangents.count)*16;
+        uint64_t(v.uv.count)*8+uint64_t(v.colors.count)*4+uint64_t(v.tangents.count)*16+v.exact_position_bits.size_bytes();
 }
 StorageStats storage_stats(const Result& r) {
     StorageStats s;s.source_vertex_bytes=vertex_bytes(r.source);

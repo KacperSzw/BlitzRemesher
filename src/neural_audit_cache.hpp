@@ -6,7 +6,7 @@ template<class T> bool same_storage(Stream<T> a,Stream<T> b) {
     return a.count==b.count&&(!a.count||(a.data==b.data&&a.stride==b.stride));
 }
 inline bool source_attributes(MeshView a,MeshView source) {
-    return same_storage(a.positions,source.positions)&&same_storage(a.normals,source.normals)&&same_storage(a.colors,source.colors)
+    return std::equal(a.exact_position_bits.begin(),a.exact_position_bits.end(),source.exact_position_bits.begin(),source.exact_position_bits.end())&&same_storage(a.positions,source.positions)&&same_storage(a.normals,source.normals)&&same_storage(a.colors,source.colors)
         &&same_storage(a.uv,source.uv)&&same_storage(a.tangents,source.tangents)
         &&std::equal(a.double_sided.begin(),a.double_sided.end(),source.double_sided.begin(),source.double_sided.end());
 }

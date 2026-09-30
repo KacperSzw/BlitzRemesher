@@ -15,7 +15,7 @@ public:
     std::vector<PlacementRecord> placements(const std::array<float,conditions>&);
     std::vector<PlacementRecord> teacher_actions(const std::array<float,conditions>&,uint32_t count,uint32_t seed,ActionCuda* policy=nullptr);
     struct Proposal {Placement placement;float target[9];uint8_t normal_mask;};
-    std::vector<Proposal> teacher_proposals(Action);
+    std::vector<Proposal> teacher_proposals(Action,bool supervise_normals=true);
     // Independent placements share one compacted topology. Views expire at the
     // next trial_batch or state mutation; counts/validity remain on the device.
     std::vector<DeviceMeshView> trial_batch(Action,std::span<const Proposal>);

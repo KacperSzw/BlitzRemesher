@@ -51,7 +51,7 @@ Raster raster_gpu(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const
 // Research-only quantization probe. Never participates in hard acceptance.
 struct RasterPrecisionResult {Raster raster;double seconds{};uint8_t bytes_per_pixel{};};
 struct RasterBenchmarkResult {Raster raster;double seconds{},setup_seconds{},packing_seconds{},render_seconds{},unpack_seconds{};uint64_t draw_bytes{},gpu_bytes{};};
-RasterBenchmarkResult raster_benchmark(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,uint32_t repeats=8);
+RasterBenchmarkResult raster_benchmark(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,uint32_t repeats=8,bool coverage_only=false);
 struct DiagnosticRaster {Raster raster;std::vector<uint32_t> faces;std::vector<float> depth;};
 DiagnosticRaster diagnostic_raster(MeshView,const Bounds&,const Camera&,double,uint8_t,bool,const NeuralOptions&,const VertexBounds* quantization=nullptr);
 struct DistanceFieldBenchmark {std::vector<float> squared;double seconds{};uint64_t bytes{};};

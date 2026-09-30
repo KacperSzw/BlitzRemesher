@@ -5,7 +5,7 @@
 #include <openssl/sha.h>
 inline nlohmann::json audit_measurement(const blitz::Measurement& m){return {{"passed",m.passed},{"complete",m.complete},{"resource_limited",m.resource_limited},{"error",m.error},{"coverage",m.coverage},{"coverage_upper",m.coverage_upper},{"changed_area",m.changed_area},{"normal_degrees",m.normal_degrees},{"views",m.views_evaluated},{"worst_view",m.worst_view},{"area_worst_view",m.changed_area_worst_view},{"supersample",m.supersample}};}
 inline nlohmann::json audit_mesh(const blitz::Mesh& m){
-    nlohmann::json j={{"indices",m.indices},{"materials",m.materials},{"double_sided",m.double_sided}};
+    nlohmann::json j={{"exact_position_bits",m.exact_position_bits},{"indices",m.indices},{"materials",m.materials},{"double_sided",m.double_sided}};
     auto fill=[&](const char* key,const auto& values,auto pack){j[key]=nlohmann::json::array();for(const auto& v:values)j[key].push_back(pack(v));};
     auto xyz=[](auto v){return nlohmann::json::array({v.x,v.y,v.z});};
     fill("positions",m.positions,xyz);fill("normals",m.normals,xyz);
@@ -19,7 +19,7 @@ inline blitz::Mesh audit_mesh(const nlohmann::json& j){
     for(auto& v:j.at("uv"))m.uv.push_back({v.at(0),v.at(1)});
     for(auto& v:j.at("tangents"))m.tangents.push_back({v.at(0),v.at(1),v.at(2),v.at(3)});
     for(auto& v:j.at("colors"))m.colors.push_back({v.at(0),v.at(1),v.at(2),v.at(3)});
-    m.indices=j.at("indices").get<std::vector<uint32_t>>();m.materials=j.at("materials").get<std::vector<uint16_t>>();m.double_sided=j.at("double_sided").get<std::vector<uint8_t>>();
+    m.exact_position_bits=j.value("exact_position_bits",std::vector<uint32_t>{});m.indices=j.at("indices").get<std::vector<uint32_t>>();m.materials=j.at("materials").get<std::vector<uint16_t>>();m.double_sided=j.at("double_sided").get<std::vector<uint8_t>>();
     if(auto e=blitz::validate(m.view());!e.empty())throw std::invalid_argument(e);return m;
 }
 inline std::string audit_hash(const nlohmann::json& j){
@@ -30,7 +30,7 @@ inline void save_audit_failure(const blitz::NeuralStats& stats,const std::filesy
     if(!stats.confirmation_failure||stats.confirmation_failure->reference.positions.empty())return;
     const auto& f=*stats.confirmation_failure;const auto& e=f.settings;auto a=audit_mesh(f.reference),b=audit_mesh(f.candidate);
     auto source=audit_mesh(f.source.positions.empty()?f.reference:f.source);
-    nlohmann::json j={{"schema",2},{"stage",f.stage==blitz::NeuralAuditStage::PackingBaseline?"packing_baseline":"chain_confirmation"},{"raster",raster_name(f.raster)},{"storage",storage_name(f.storage)},
+    nlohmann::json j={{"schema",3},{"exact_position_bps",f.exact_position_bps},{"stage",f.stage==blitz::NeuralAuditStage::PackingBaseline?"packing_baseline":"chain_confirmation"},{"raster",raster_name(f.raster)},{"storage",storage_name(f.storage)},
         {"source_sha256",audit_hash(source)},{"source",std::move(source)},
         {"backend",confirmation_name(f.backend)},{"reason",confirmation_reason(f.reason)},{"level",f.level},{"adjacent",f.adjacent},{"seconds",f.nanoseconds*1e-9},
         {"reference_sha256",audit_hash(a)},{"candidate_sha256",audit_hash(b)},{"reference",std::move(a)},{"candidate",std::move(b)},
@@ -43,14 +43,14 @@ inline void save_audit_failure(const blitz::NeuralStats& stats,const std::filesy
     std::filesystem::create_directories(file.parent_path());std::ofstream out(file);out<<j.dump(2)<<'\n';if(!out)throw std::runtime_error("failed to save audit replay");
 }
 inline nlohmann::json replay_audit(const std::filesystem::path& file,const blitz::NeuralOptions& options){
-    nlohmann::json j;std::ifstream input(file);input>>j;auto version=j.at("schema").get<unsigned>();if(version!=1&&version!=2)throw std::invalid_argument("unsupported audit replay schema");
+    nlohmann::json j;std::ifstream input(file);input>>j;auto version=j.at("schema").get<unsigned>();if(version!=1&&version!=2&&version!=3)throw std::invalid_argument("unsupported audit replay schema");
     if(audit_hash(j.at("reference"))!=j.at("reference_sha256").get<std::string>()||audit_hash(j.at("candidate"))!=j.at("candidate_sha256").get<std::string>())throw std::invalid_argument("audit replay mesh checksum mismatch");
     auto a=audit_mesh(j.at("reference")),b=audit_mesh(j.at("candidate"));const auto& s=j.at("settings");const auto& v=s.at("views"),w=s.at("weights"),box=j.at("bounds");
     blitz::Bounds bounds{{box.at(0),box.at(1),box.at(2)},box.at(3)};blitz::EvalSettings e;
     e.screen_size=s.at("screen_size");e.limit=s.at("limit");e.max_changed_area=s.at("max_changed_area");e.profile=blitz::Profile(s.at("profile").get<unsigned>());
     e.weights={w.at(0),w.at(1),w.at(2)};e.views={v.at(0),v.at(1),v.at(2)};e.supersample=s.at("supersample");e.max_supersample=s.at("max_supersample");e.force_scalar=s.at("force_scalar");e.force_two_sided=s.at("force_two_sided");
-    auto controls=options;blitz::Mesh source;
-    if(version==2){if(audit_hash(j.at("source"))!=j.at("source_sha256").get<std::string>())throw std::invalid_argument("audit replay source checksum mismatch");
+    auto controls=options;controls.exact_position_bps=version>=3?j.at("exact_position_bps").get<uint16_t>():0;blitz::Mesh source;
+    if(version>=2){if(audit_hash(j.at("source"))!=j.at("source_sha256").get<std::string>())throw std::invalid_argument("audit replay source checksum mismatch");
         source=audit_mesh(j.at("source"));auto raster=j.at("raster").get<std::string>();
         if(raster=="vulkan-v1")controls.raster_backend=blitz::NeuralRasterBackend::Vulkan;else if(raster=="cuda-v1")controls.raster_backend=blitz::NeuralRasterBackend::Cuda;else throw std::invalid_argument("unsupported replay raster semantics");
         controls.vertex_storage=storage_option(j.at("storage").get<std::string>());}

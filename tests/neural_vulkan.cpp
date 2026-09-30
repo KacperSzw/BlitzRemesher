@@ -15,8 +15,8 @@ static void candidate_contracts(){
     auto rows=state.teacher_actions({},1,917);require(!rows.empty(),"candidate fixture has no legal edits");auto alternatives=state.teacher_proposals(rows[0].action);
     std::array<GpuActionState::Proposal,4> proposals{alternatives[0],alternatives[2],alternatives[4],alternatives[4]};proposals[3].placement.position.x=INFINITY;
     EvalSettings e;e.screen_size=24;e.limit=3;e.views={3,1,817};e.supersample=2;e.max_supersample=4;e.max_changed_area=.4;auto box=bounds(mesh.view());
-    for(auto count:{1u,2u,4u})for(double cutoff:{std::numeric_limits<double>::infinity(),0.,.02}){
-        std::array<CandidateAudit,4> expected;
+    for(auto profile:{Profile::Coverage,Profile::Attributes})for(auto count:{1u,2u,4u})for(double cutoff:{std::numeric_limits<double>::infinity(),0.,.02}){
+        e.profile=profile;std::array<CandidateAudit,4> expected;
         for(unsigned i=0;i<count;++i){DeviceMeshView candidate;auto& q=expected[i];q.valid=state.trial(rows[0].action,proposals[i].placement,candidate);if(q.valid){q.faces=candidate.faces;q.value=audit.certify(mesh.view(),candidate,box,e,nullptr,cutoff,std::isfinite(cutoff)?&q.pruned:nullptr);}}
         auto views=state.trial_batch(rows[0].action,std::span(proposals).first(count));auto actual=audit.certify_candidates(mesh.view(),views,box,e,nullptr,cutoff);
         for(unsigned i=0;i<count;++i){auto& a=actual[i];auto& b=expected[i];require(a.valid==b.valid,"GPU indirect validity differs");if(!a.valid)continue;
@@ -54,13 +54,21 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
     // Limits below the sparse certificate floor exercise exact fallback/refinement.
     for(auto profile:{Profile::Coverage,Profile::Normals,Profile::Attributes})for(float shift:{0.f,.13f,.6f})for(double limit:{.4,1.5,3.}){
         auto changed=mesh;changed.positions[0].x+=shift;changed.normals[0]=normalized({shift,0,1});e.profile=profile;e.limit=limit;
-        auto serial=options;serial.view_batch=1;serial.direct_targets=false;AuditCuda control(serial,mesh.view());GpuActionState state(changed.view(),serial,true);
+        auto serial=options;serial.view_batch=1;serial.direct_targets=false;serial.mask_only_coverage=false;AuditCuda control(serial,mesh.view());GpuActionState state(changed.view(),serial,true);
         auto expected=control.evaluate(mesh.view(),state.view(),b,e);auto certificate=control.certify(mesh.view(),state.view(),b,e);
         for(uint8_t batch:{2,4})for(bool direct:{false,true}){auto settings=options;settings.view_batch=batch;settings.direct_targets=direct;AuditCuda tested(settings,mesh.view());
             auto actual=tested.evaluate(mesh.view(),state.view(),b,e);auto predicate=tested.certify(mesh.view(),state.view(),b,e);
             require(actual.passed==expected.passed&&actual.complete==expected.complete&&actual.error==expected.error&&actual.coverage==expected.coverage&&actual.changed_area==expected.changed_area&&actual.normal_degrees==expected.normal_degrees&&actual.views_evaluated==expected.views_evaluated&&actual.supersample==expected.supersample,"batched exact audit differs from serial");
             require(predicate.verdict==certificate.verdict&&predicate.changed_area==certificate.changed_area&&predicate.views==certificate.views&&predicate.supersample==certificate.supersample,"direct/batched certificate differs from serial");}
         bool pruned=false;auto expected_pruning=control.certify(mesh.view(),state.view(),b,e,nullptr,.01,&pruned);AuditCuda batched(options,mesh.view());bool batch_pruned=false;auto actual_pruning=batched.certify(mesh.view(),state.view(),b,e,nullptr,.01,&batch_pruned);require(pruned==batch_pruned&&expected_pruning.verdict==actual_pruning.verdict&&expected_pruning.views==actual_pruning.views,"batched incumbent pruning differs from serial");
+    }
+    {
+        auto precise=mesh;precise.positions[0].x=-.81234567f;precise.positions[2].y=.91234567f;precise.exact_position_bits={15};
+        auto controls=options;controls.exact_position_bps=10000;GpuActionState exact_state(precise.view(),controls,true);gpu::Device device(controls);VulkanRaster renderer(controls);gpu::Buffer<AuditPixel> pixels(device,64*64);
+        auto view=exact_state.view();renderer.render(view,b,c,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);auto packed=pixels.download();renderer.render(view,b,c,24,2,false,NeuralVertexStorage::Float32,pixels.p,nullptr);auto full=pixels.download();
+        for(size_t i=0;i<full.size();++i)require(packed[i].covered==full[i].covered&&packed[i].visible==full[i].visible&&packed[i].normal.x==full[i].normal.x&&packed[i].normal.y==full[i].normal.y&&packed[i].normal.z==full[i].normal.z,"indexed sparse precision lookup changed exact positions");
+        auto layout=draw_layout(view,NeuralVertexStorage::Packed);gpu::Buffer<char> draw(device,layout.bytes);pack_draw(view,NeuralVertexStorage::Packed,layout,draw.p);auto bytes=draw.download();for(size_t i=0;i<precise.positions.size();++i)require(std::memcmp(bytes.data()+layout.exact_positions+i*sizeof(Vec3),&precise.positions[i],sizeof(Vec3))==0,"sparse exact positions were rounded or reordered");
+        view.exact_position_bps=500;bool rejected=false;try{renderer.render(view,b,c,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"renderer did not enforce precision cap");
     }
     e.cancelled=[] {return true;};GpuActionState state(mesh.view(),options,true);require(audit.certify(mesh.view(),state.view(),b,e).verdict==AuditVerdict::Unknown,"cancelled query produced label");
     require(same_mesh_data(mesh.view(),original.view()),"packing mutated source");
@@ -84,6 +92,13 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
         for(size_t i=0;i<4;++i){expected[i]=batched[i].download();witnesses[i]=debug[i].download();}
         for(size_t i=0;i<4;++i){bool clipped=raster.render(dm,b,views[i],24,2,true,NeuralVertexStorage::Packed,pixels.p,nullptr,debug[0].p);auto actual=pixels.download();auto actual_debug=debug[0].download();require(clipped==outputs[i].clipped,"batch clip flag differs");
             for(size_t j=0;j<actual.size();++j){auto x=actual[j],y=expected[i][j];require(x.covered==y.covered&&x.visible==y.visible&&x.material==y.material&&x.normal.x==y.normal.x&&x.normal.y==y.normal.y&&x.normal.z==y.normal.z,"batched draw changes pixels");require(actual_debug[j].face==witnesses[i][j].face&&actual_debug[j].depth==witnesses[i][j].depth,"debug attachment changes depth/ownership");if(x.visible)require(actual_debug[j].face<2&&actual_debug[j].depth>=0&&actual_debug[j].depth<=1,"debug face/depth range");}}
+        gpu::Buffer<uint32_t> mask_bits(device,64*64/32);raster.trim_targets(1);
+        auto full_bytes=raster.bytes();raster.render(dm,b,c,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr,nullptr,true,mask_bits.p);
+        auto mask_image=pixels.download();auto words=mask_bits.download();
+        auto mask_bytes=raster.bytes();require(mask_bytes<full_bytes,"mask-only retained shading/depth targets");
+        for(size_t i=0;i<mask_image.size();++i)require(mask_image[i].covered==((words[i/32]>>(i%32))&1)&&!mask_image[i].visible,"bit mask or absent visibility contract");
+        auto mask_surface=raster.surfaces();require(mask_surface.mask&&!mask_surface.attributes&&!mask_surface.colors,"mask-only exported shading surfaces");
+        center();auto full_image=pixels.download();for(size_t i=0;i<mask_image.size();++i)require(mask_image[i].covered==full_image[i].covered,"mask-only changed coverage");
         raster.trim_targets(1);require(center().material==7,"target reclamation invalidated surviving slot");
         // Domain changes are part of the geometry cache key even without a revision.
         dm.fixed_quantization=true;dm.quant_low={-2,-2,0};dm.quant_extent={4,4,0};require(center().material==7,"explicit quantization domain failed");dm.quant_extent.z=-1;bool invalid_domain=false;try{center();}catch(const std::invalid_argument&){invalid_domain=true;}require(invalid_domain,"invalid quantization domain reused cached geometry");dm.fixed_quantization=false;

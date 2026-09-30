@@ -28,6 +28,14 @@ PackingRepairResult repair_packing_gpu(MeshView source,const NeuralOptions& opti
     auto evaluate=[&]{Measurement first;for(unsigned i=0;i<checks.size();++i){auto measured=audit.evaluate(checks[i].reference,out.mesh.view(),b,checks[i].settings);if(!i)first=measured;if(!measured.complete||!measured.passed){failed_check=i;return measured;}}failed_check=0;return first;};out.initial=out.final=evaluate();
     out.failed_check=failed_check;if(out.final.passed||options.draw_storage()==NeuralVertexStorage::Float32||out.final.resource_limited)return out;
     auto domain=vertex_bounds(source);auto control=options;control.vertex_storage=NeuralVertexStorage::Float32;auto initial_positions=out.mesh.positions;
+    // Diagnose with exact positions but the same packed attributes. This
+    // temporary control is never returned or used to relax the configured cap.
+    bool position_induced=false;
+    if(options.exact_position_bps&&budget){auto probe=copy_mesh(out.mesh.view());probe.positions=copy_mesh(source).positions;probe.exact_position_bits.assign((source.positions.count+31)/32,UINT32_MAX);if(source.positions.count%32)probe.exact_position_bits.back()=(1u<<(source.positions.count%32))-1;
+        auto full_precision=options;full_precision.exact_position_bps=10000;AuditCuda diagnostic(full_precision,source);position_induced=true;
+        for(auto& check:checks){auto m=diagnostic.evaluate(check.reference,probe.view(),b,check.settings);position_induced&=m.complete&&m.passed;if(!position_induced)break;}
+    }
+    std::vector<uint8_t> referenced(source.positions.count);for(auto id:source.indices)referenced[id]=1;size_t live=std::count(referenced.begin(),referenced.end(),uint8_t(1));
     while(!out.final.passed&&out.trials<budget&&!(primary.cancelled&&primary.cancelled())){auto e=checks[failed_check].settings;e.supersample=std::max(e.supersample,out.final.supersample);unsigned check_before=failed_check;auto views=cameras(b,e.screen_size,e.views);
         auto reference=checks[failed_check].reference;bool original_reference=same_mesh_data(reference,source);
         uint32_t v=out.final.worst_view;auto a=diagnostic_raster(reference,b,views[v],e.screen_size,e.supersample,e.force_two_sided,original_reference?control:options,&domain);auto before=diagnostic_raster(out.mesh.view(),b,views[v],e.screen_size,e.supersample,e.force_two_sided,options,&domain);
@@ -47,7 +55,19 @@ PackingRepairResult repair_packing_gpu(MeshView source,const NeuralOptions& opti
                 }if(!improved)for(auto id:coupled)out.mesh.positions[id]=old;
             }
         }};
-        auto original=out.mesh.positions;explore(out.trials+(budget-out.trials+1)/2,true);
+        auto original=out.mesh.positions;
+        if(position_induced){for(auto face:witnesses.faces){if(improved||out.trials>=budget||(e.cancelled&&e.cancelled()))break;auto saved_bits=out.mesh.exact_position_bits;out.mesh.exact_position_bits.resize((source.positions.count+31)/32);
+                std::vector<uint32_t> promoted;for(unsigned corner=0;corner<3;++corner){auto p=source.positions[source.indices[size_t(face)*3+corner]];for(uint32_t id=0;id<source.positions.count;++id){auto q=source.positions[id];if(referenced[id]&&p.x==q.x&&p.y==q.y&&p.z==q.z&&!out.mesh.view().exact_position(id)){out.mesh.exact_position_bits[id/32]|=1u<<(id%32);promoted.push_back(id);out.mesh.positions[id]=q;}}}
+                size_t precise=0;for(size_t id=0;id<referenced.size();++id)precise+=referenced[id]&&out.mesh.view().exact_position(id);
+                if(precise*10000>live*options.exact_position_bps){out.exact_cap_exhausted=true;out.mesh.exact_position_bits=std::move(saved_bits);out.mesh.positions=original;continue;}
+                if(!promoted.empty()){++out.trials;auto raster=diagnostic_raster(out.mesh.view(),b,views[v],e.screen_size,e.supersample,e.force_two_sided,options,&domain);auto after=failures(a,raster,e);auto measured=evaluate();
+                    if(measured.complete&&(measured.passed||failed_check>check_before||(failed_check==check_before&&(measured.worst_view>v||after.count<witnesses.count)))){out.final=measured;improved=true;}
+                    else failed_check=check_before;
+                    out.attempts.push_back({out.trials,v,source.indices[size_t(face)*3],3,0,witnesses.count,after.count,improved,face});}
+                if(!improved){out.mesh.exact_position_bits=std::move(saved_bits);out.mesh.positions=original;}
+            }}
+        if(improved)continue;
+        explore(out.trials+(budget-out.trials+1)/2,true);
         // Grazing faces can lose their entire visible sliver after rounding.
         // Moving a shared triangle coherently can restore it when isolated
         // vertex moves all leave the same unmatched pixels. Full gates decide.
@@ -66,6 +86,6 @@ PackingRepairResult repair_packing_gpu(MeshView source,const NeuralOptions& opti
         for(size_t i=0;!improved&&i<beam.size()&&out.trials<budget;++i){out.mesh.positions=beam[i].positions;explore(out.trials+(budget-out.trials)/uint32_t(beam.size()-i),false);}
         if(!improved){out.mesh.positions=std::move(original);break;}
     }
-    out.failed_check=failed_check;for(size_t i=0;i<initial_positions.size();++i)out.changed_vertices+=std::memcmp(&initial_positions[i],&out.mesh.positions[i],sizeof(Vec3))!=0;return out;
+    out.failed_check=failed_check;for(size_t i=0;i<initial_positions.size();++i)out.changed_vertices+=std::memcmp(&initial_positions[i],&out.mesh.positions[i],sizeof(Vec3))!=0;for(size_t i=0;i<referenced.size();++i)out.exact_vertices+=referenced[i]&&out.mesh.view().exact_position(i);return out;
 }
 }

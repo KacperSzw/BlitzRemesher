@@ -3,23 +3,23 @@
 import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
-import {validateRefactor,architectureReport,cycleWindow} from './refactor-cycle.mjs';
+import {validateCoverage,coverageArchitecture} from './coverage-validation.mjs';
 import {persistentLearningCycle} from './resident-cycle.mjs';
 const [setup,latest,minutes]=process.argv.slice(2).map(Number),started=Date.now(),results='/workspace/results',root=results+'/gpu-refactor';
-if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||minutes!==130)throw new Error('Invalid refactor rental deadline');
-const deadline=Math.min(latest,started+minutes*60000);cycleWindow(started,deadline);
+if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||minutes!==150)throw new Error('Invalid refactor rental deadline');
+const deadline=Math.min(latest,started+minutes*60000);if(deadline-started<130*60000+15000)throw new Error('Full learning plus finalization no longer fit');
 fs.mkdirSync(root,{recursive:true});write(results+'/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
-let phase='validation',active,cancelled=false,activeDeadline=Math.min(started+9*60000,deadline-120*60000-15000);
+let phase='validation',active,cancelled=false,activeDeadline=Math.min(started+20*60000,deadline-130*60000-15000);
 const setPhase=value=>{phase=value;write(results+'/phase.json',{phase,at:Date.now()});};setPhase(phase);
 const terminate=child=>{if(child&&!child.exitCode)try{process.kill(-child.pid,'SIGTERM');}catch(e){if(e.code!=='ESRCH')throw e;}};
 for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{cancelled=true;terminate(active);});
 const monitor=spawn('nvidia-smi',['--query-gpu=utilization.gpu,power.draw,memory.used','--format=csv,noheader,nounits','-l','1']);
 const telemetry=fs.createWriteStream(root+'/gpu.jsonl');let pending='',monitorError;
 monitor.on('error',e=>{monitorError=String(e);});monitor.stdout.on('data',chunk=>{pending+=chunk;let at;while((at=pending.indexOf('\n'))>=0){const v=pending.slice(0,at).split(',').map(Number);pending=pending.slice(at+1);if(v.length===3&&v.every(Number.isFinite))telemetry.write(JSON.stringify({at:Date.now(),phase,gpu:v[0],power_w:v[1],memory_mib:v[2]})+'\n');}});
-async function execute(name,args,log,maximumMinutes){
+async function execute(name,args,log,maximumMinutes,environment={}){
   if(cancelled||Date.now()+5000>=activeDeadline)throw new Error('Refactor deadline/cancellation');
   const executable=name==='compute-sanitizer'?'/usr/local/cuda/bin/compute-sanitizer':'build/neural/'+name;
-  const fd=fs.openSync(log,'a'),end=Math.min(activeDeadline-5000,Date.now()+maximumMinutes*60000),child=spawn(executable,args,{stdio:['ignore',fd,fd],detached:true});active=child;
+  const fd=fs.openSync(log,'a'),end=Math.min(activeDeadline-5000,Date.now()+maximumMinutes*60000),child=spawn(executable,args,{stdio:['ignore',fd,fd],detached:true,env:{...process.env,...environment}});active=child;
   let hard,timedOut=false,memoryExceeded=false;
   const stop=()=>{terminate(child);hard??=setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL');}catch(e){if(e.code!=='ESRCH')throw e;}},5000);};
   const timer=setTimeout(()=>{timedOut=true;stop();},Math.max(1,end-Date.now()));
@@ -30,13 +30,11 @@ async function execute(name,args,log,maximumMinutes){
 const result={started,deadline,complete:false,validation_passed:false,quality_proven:false};
 try{
   await execute('compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-action-gpu-tests'],root+'/memcheck.log',2);
-  const ctx={root,execute,phase:setPhase,latest:deadline},validation=await validateRefactor(ctx);
+  const ctx={root,execute,phase:setPhase,latest:deadline},validation=await validateCoverage(ctx);
   result.validation_passed=true;result.architecture_written_at=Date.now();
-  fs.writeFileSync(root+'/ARCHITECTURE.md',architectureReport(validation));
+  fs.writeFileSync(root+'/ARCHITECTURE.md',coverageArchitecture(validation));
 
-  await execute('blitz-neural-pilot-prepare',[root+'/packed-pilot','16384'],root+'/packed-pilot.log',3);
-  if(!read(root+'/packed-pilot/report.json').complete)throw new Error('Packed development preparation failed; long training blocked');
-  const window=cycleWindow(Date.now(),deadline);activeDeadline=window.deadline;
+  activeDeadline=deadline;
   result.cycle=await persistentLearningCycle(ctx,validation);result.complete=result.cycle.complete;
   if(!result.complete)throw new Error('Learning cycle did not meet completion contracts');
   if(monitorError)throw new Error(monitorError);

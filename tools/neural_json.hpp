@@ -1,6 +1,8 @@
 #pragma once
 #include "blitz/neural.hpp"
 #include <nlohmann/json.hpp>
+inline const char* training_profile_name(blitz::Profile p){return p==blitz::Profile::Coverage?"coverage":"attributes";}
+inline blitz::Profile training_profile_option(std::string_view s){if(s=="coverage")return blitz::Profile::Coverage;if(s=="attributes")return blitz::Profile::Attributes;throw std::invalid_argument("training profile must be coverage or attributes");}
 inline const char* raster_name(blitz::NeuralRasterBackend b){return b==blitz::NeuralRasterBackend::Vulkan?"vulkan-v1":"cuda-v1";}
 inline blitz::NeuralRasterBackend raster_option(std::string_view s){if(s=="cuda")return blitz::NeuralRasterBackend::Cuda;if(s=="vulkan")return blitz::NeuralRasterBackend::Vulkan;throw std::invalid_argument("raster backend must be cuda or vulkan");}
 inline const char* storage_name(blitz::NeuralVertexStorage s){switch(s){case blitz::NeuralVertexStorage::Float32:return "fp32";case blitz::NeuralVertexStorage::Position16:return "position16";case blitz::NeuralVertexStorage::Packed:return "packed";case blitz::NeuralVertexStorage::Automatic:return "auto";}throw std::invalid_argument("invalid vertex storage");}
@@ -12,7 +14,7 @@ inline const char* ranking_name(blitz::NeuralRanking r){switch(r){case blitz::Ne
 inline blitz::NeuralRanking ranking_option(std::string_view value){for(auto r:{blitz::NeuralRanking::Learned,blitz::NeuralRanking::Constant,blitz::NeuralRanking::Shuffled,blitz::NeuralRanking::ShortestEdge,blitz::NeuralRanking::CurrentPlane})if(value==ranking_name(r))return r;throw std::invalid_argument("unknown neural ranking control");}
 inline uint32_t neural_unsigned(const char* value){std::string text=value;if(text.empty()||text.find_first_not_of("0123456789")!=std::string::npos)throw std::invalid_argument("invalid neural unsigned option");auto n=std::stoull(text);if(n>UINT32_MAX)throw std::invalid_argument("neural option overflow");return uint32_t(n);}
 inline uint8_t neural_batch(const char* value){auto n=neural_unsigned(value);if(n<1||n>64)throw std::invalid_argument("action batch outside 1..64");return uint8_t(n);}
-inline nlohmann::json neural_json(const blitz::NeuralOptions& o){return {{"device",o.device},{"memory_mib",o.memory_mib},{"raster",raster_name(o.raster_backend)},{"vertex_storage",storage_name(o.draw_storage())},{"overdraw_tiebreak",o.overdraw_tiebreak},{"action_trial_budget",o.action_trials},{"action_batch",o.action_batch},{"ranking",ranking_name(o.ranking)},{"ranking_seed",o.ranking_seed},{"confirmation",confirmation_name(o.confirmation)},{"cache_rasters",o.cache_rasters},{"candidate_batch",o.candidate_batch}};}
+inline nlohmann::json neural_json(const blitz::NeuralOptions& o){return {{"device",o.device},{"memory_mib",o.memory_mib},{"raster",raster_name(o.raster_backend)},{"vertex_storage",storage_name(o.draw_storage())},{"overdraw_tiebreak",o.overdraw_tiebreak},{"action_trial_budget",o.action_trials},{"action_batch",o.action_batch},{"ranking",ranking_name(o.ranking)},{"ranking_seed",o.ranking_seed},{"confirmation",confirmation_name(o.confirmation)},{"mask_only_coverage",o.mask_only_coverage},{"cache_rasters",o.cache_rasters},{"candidate_batch",o.candidate_batch}};}
 inline nlohmann::json neural_json(const blitz::NeuralStats& s) {
     auto& f=s.first_resource_failure;const char* kinds[]={"none","sample_count","workspace_memory","device_memory","tile_entries"};
     return {{"encode_seconds",s.encode_ns*1e-9},{"inference_seconds",s.inference_ns*1e-9},{"decode_seconds",s.decode_ns*1e-9},

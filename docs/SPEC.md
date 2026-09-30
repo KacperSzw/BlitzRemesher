@@ -60,11 +60,24 @@ camera schedule and refinement allowance, including final GPU confirmation.
 Hardware edges/interpolation can differ from the CPU/CUDA reference; record the
 backend when comparing results. Packed draw storage is the Vulkan default:
 the original source remains FP32 and candidate quantization consumes the existing
-budget. It does not alter master/source streams. See
+budget. Supplied streams and the immutable source are never mutated. Packed
+working geometry is decoded once into FP32 GPU master streams. An optional
+bitmap keeps exact FP32 positions for at most 5% of referenced surviving vertex
+IDs, counting separate wedges. Promotions are bounded, witness-directed and
+fully re-audited; exceeding the cap rejects the trial. Old replay files retain
+strict packing semantics. See
 research/neural/GPU-REFACTOR.md for historical measurements and
 research/neural/COMPACT-PIPELINE.md for the current storage contracts and local
 evidence. The research learning cycle uses compact feature shards decoded to
 FP32 on GPU, fixed source quantization bounds and bounded packing repair.
+The coverage pretraining profile uses a single conservative R8 Vulkan pass,
+owned one-bit reference masks and direct candidate surfaces. It retains source,
+predecessor, pixel-distance and area gates, with no appearance supervision.
+Normal edits are suppressed for this profile. Full-shading diagnostics remain
+nonblocking for pretraining and do not establish release quality. The unchanged
+attributes profile still supervises appearance. Predecessors must pass at both
+preparation and destination sizes; audited exhausted/no-reduction outcomes are
+recorded explicitly without inventing a predecessor.
 Representation failures yield no training labels; an unconfirmed final chain
 remains an explicit failed diagnostic. Packing does not relax visual limits.
 

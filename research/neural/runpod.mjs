@@ -29,7 +29,7 @@ async function prepare(){
   if(!refactor&&!hardware){const remote=sync('git',['ls-remote','origin','refs/heads/'+branch]).split(/\s/)[0];
     if(remote!==revision)throw new Error('Current branch is not fully pushed');}
   if(refactor&&deployment.id!=='gpu-refactor')throw new Error('Select BLITZ_RUNPOD_PROFILE=gpu-refactor');
-  if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
+  if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada','hardware-validation-l40s'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
   fs.mkdirSync(dir,{recursive:true,mode:0o700});
   const stage=dir+'/input';fs.mkdirSync(stage,{recursive:true});
   sync('git',['bundle','create',stage+'/source.bundle','HEAD']);

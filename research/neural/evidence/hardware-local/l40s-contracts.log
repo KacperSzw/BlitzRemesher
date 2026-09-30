@@ -1,0 +1,29 @@
+✔ repeatable SSH calls recover transport failures, preserve command failures and stop retrying (1.503751ms)
+✔ recovery can shorten a rental to its original cutoff without extending the budget (0.317021ms)
+✔ status succeeds with optional state files absent and reports every available record (76.481963ms)
+✔ reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage (1.276678ms)
+✔ Pod request is pinned and forwards only the public key (0.861461ms)
+✔ actual allocation must satisfy hardware and rate caps (0.265898ms)
+✔ remote hardware validation requires a full device and a valid compatible driver (0.449012ms)
+✔ each selected profile binds quote, Pod allocation, native architecture and rate cap (0.569777ms)
+✔ lost create response is reconciled after restart without a second rental or deadline reset (0.963565ms)
+✔ ambiguous provisioning must not be reported as terminated when no response is visible yet (0.276893ms)
+✔ deadlines prevent creation; API errors retain storage and retryable termination (0.476302ms)
+✔ independent watchdog enforces setup and hard deadlines regardless of controller progress (0.157998ms)
+✔ a definitive provisioning rejection cleans up the new empty volume (0.267551ms)
+✔ lost volume response is reconciled and cleaned without another volume create (0.251478ms)
+✔ REST handles empty deletions, missing resources, errors and cursor pagination (24.739595ms)
+✔ hardware validation consumes the existing grant and includes previous validation rentals (2.755461ms)
+✔ new authorization includes historical ledger, future rentals, rate, storage and reserve (0.348177ms)
+✔ a complete learning window cannot be silently shortened after validation (0.20243ms)
+✔ refresh identities remain training-only and include preceding LOD and 128px conditions (0.359079ms)
+✔ model comparison includes all weights but excludes metadata and its checksum (1.14044ms)
+✔ learning cycle excludes incomplete labels, carries optimizer state and audits the final model (2192.534582ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2265.960331

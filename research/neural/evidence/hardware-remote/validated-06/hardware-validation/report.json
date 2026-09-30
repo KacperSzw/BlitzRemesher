@@ -1,0 +1,2835 @@
+{
+  "complete": true,
+  "score": null,
+  "started": 1790765948642,
+  "deadline": 1790766548642,
+  "phases": [
+    {
+      "name": "build/neural/blitz-neural-vulkan-tests",
+      "args": [],
+      "log": "vulkan-validation.log",
+      "code": 0,
+      "seconds": 4.671
+    },
+    {
+      "name": "/usr/local/cuda/bin/compute-sanitizer",
+      "args": [
+        "--tool",
+        "memcheck",
+        "--error-exitcode",
+        "1",
+        "build/neural/blitz-neural-predicate-tests"
+      ],
+      "log": "predicate-memcheck.log",
+      "code": 0,
+      "seconds": 0.969
+    },
+    {
+      "name": "/usr/local/cuda/bin/compute-sanitizer",
+      "args": [
+        "--tool",
+        "memcheck",
+        "--error-exitcode",
+        "1",
+        "build/neural/blitz-neural-vulkan-tests"
+      ],
+      "log": "vulkan-memcheck.log",
+      "code": 0,
+      "seconds": 3.847
+    },
+    {
+      "name": "/usr/local/cuda/bin/compute-sanitizer",
+      "args": [
+        "--tool",
+        "memcheck",
+        "--error-exitcode",
+        "1",
+        "build/neural/blitz-neural-cycle",
+        "--check"
+      ],
+      "log": "resident-memcheck.log",
+      "code": 0,
+      "seconds": 1.089
+    },
+    {
+      "name": "build/neural/blitz-neural-hardware-profile",
+      "args": [
+        "ph_painted_wooden_bench",
+        "/workspace/results/hardware-validation/raster.json",
+        "128"
+      ],
+      "log": "raster.log",
+      "code": 0,
+      "seconds": 3.096
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "/workspace/results/hardware-validation/packed-cycle",
+        "--states",
+        "2",
+        "--updates",
+        "512",
+        "--minutes",
+        "2"
+      ],
+      "log": "packed-cycle.log",
+      "code": 1,
+      "seconds": 3.009
+    },
+    {
+      "name": "build/neural/blitz-neural-placement-prepare",
+      "args": [
+        "ph_sweet_potato",
+        "/workspace/results/hardware-validation/packed-potato",
+        "--raster-backend",
+        "vulkan",
+        "--audit-mode",
+        "sparse",
+        "--states",
+        "2",
+        "--pool",
+        "4",
+        "--pixels",
+        "64",
+        "--minutes",
+        "1"
+      ],
+      "log": "packed-potato.log",
+      "code": 0,
+      "seconds": 0.891
+    },
+    {
+      "name": "build/neural/blitz-neural-cycle",
+      "args": [
+        "/workspace/results/hardware-validation/cycle",
+        "--states",
+        "2",
+        "--updates",
+        "512",
+        "--minutes",
+        "3",
+        "--vertex-storage",
+        "fp32"
+      ],
+      "log": "cycle.log",
+      "code": 0,
+      "seconds": 7.861
+    },
+    {
+      "name": "build/neural/blitz-neural-action-train",
+      "args": [
+        "--replay",
+        "/workspace/results/hardware-validation/cycle/checkpoints/step-3072",
+        "/workspace/results/hardware-validation/replay.json"
+      ],
+      "log": "replay.log",
+      "code": 0,
+      "seconds": 0.639
+    },
+    {
+      "name": "build/neural/blitz-neural-action-train",
+      "args": [
+        "--replay",
+        "research/neural/evidence/hardware-local/replay",
+        "/workspace/results/hardware-validation/cross-device-replay.json"
+      ],
+      "log": "cross-device-replay.log",
+      "code": 0,
+      "seconds": 0.651
+    }
+  ],
+  "packed_cycle_complete": false,
+  "packed_gate_failure": {
+    "asset": "ph_namaqualand_boulder_04",
+    "index": {
+      "accepted": 0,
+      "asset": "ph_namaqualand_boulder_04",
+      "audit": {
+        "action_audit_cache_hits": 0,
+        "action_ranked": 0,
+        "action_trials": 0,
+        "bounded_audits": 0,
+        "confirmation_cancelled": 0,
+        "confirmation_disagreements": 0,
+        "confirmation_failure": null,
+        "confirmation_nonfinite": 0,
+        "confirmation_resources": 0,
+        "decode_seconds": 0,
+        "decoded": 0,
+        "encode_seconds": 0,
+        "fallback_levels": 0,
+        "first_resource_failure": null,
+        "gpu_allocations": 22,
+        "gpu_audit_seconds": 0,
+        "gpu_buffer_reuses": 337,
+        "gpu_candidate_render_hits": 0,
+        "gpu_confirmation_seconds": 0,
+        "gpu_download_bytes": 2832,
+        "gpu_evaluations": 85,
+        "gpu_measurement_cache_hits": 0,
+        "gpu_peak_bytes": 128478296,
+        "gpu_rasters": 86,
+        "gpu_reference_render_hits": 84,
+        "gpu_sparse_failures": 84,
+        "gpu_sparse_fallbacks": 0,
+        "gpu_sparse_passes": 0,
+        "gpu_sparse_queries": 1378,
+        "gpu_upload_bytes": 3584412,
+        "inference_seconds": 0,
+        "legal_collapses": 0,
+        "reference_audit_seconds": 0,
+        "reference_rejections": 0,
+        "rejected_collapses": 0,
+        "resource_failures": 0
+      },
+      "category": "rocks",
+      "complete": false,
+      "contract_sha256": "36068b2eb370929dc43853d8197bbee4f5cb4c3c79cc7af6668d3f761e868bf9",
+      "path": "actions.bin",
+      "preceding_lod_emitted": false,
+      "previous_triangles": 59066,
+      "queries": 84,
+      "reference_confirmed": false,
+      "schema": 3,
+      "seconds": 0.204222018,
+      "sha256": "170b2311466af9509468a527e68b26d7c97c1c4a6fea6cb5bcf3c1c06742e689",
+      "source_triangles": 59066,
+      "states": 1,
+      "teacher_triangles": 59066,
+      "training_started": false
+    },
+    "failure": {
+      "complete": false,
+      "error": "incomplete teacher shard retained; training skipped"
+    },
+    "trace": [
+      {
+        "pixels": 128,
+        "previous_triangles": 59066,
+        "queries": [
+          {
+            "adjacent_error": null,
+            "candidate": 0,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 1,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 2,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 3,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 4,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 5,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 6,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 7,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 8,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 9,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 10,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 11,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 12,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 13,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 14,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 15,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 16,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 17,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 18,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 19,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 20,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15384
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 0,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 1,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 2,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 3,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 4,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 5,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 6,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 7,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 8,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 9,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 10,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 11,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 12,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 13,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 14,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 15,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 16,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 17,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 18,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 19,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 20,
+            "faces": 59064,
+            "from": 15386,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 15385
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 0,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 1,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 2,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 3,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 4,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 5,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 6,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 7,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 8,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 9,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 10,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 11,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 12,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 13,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 14,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 15,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 16,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 17,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 18,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 19,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 20,
+            "faces": 59064,
+            "from": 19254,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 19245
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 0,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 1,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 2,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 3,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 4,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 5,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 6,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 7,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 8,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 9,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 10,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 11,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 12,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 13,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 14,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 15,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 16,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 17,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 18,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 19,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          },
+          {
+            "adjacent_error": null,
+            "candidate": 20,
+            "faces": 59064,
+            "from": 10013,
+            "known_mask": 24,
+            "source_error": null,
+            "to": 10296
+          }
+        ],
+        "revision": 0,
+        "stopped": "no feasible queried placement",
+        "triangles": 59066
+      }
+    ]
+  },
+  "packed_potato": {
+    "accepted": 2,
+    "asset": "ph_sweet_potato",
+    "audit": {
+      "action_audit_cache_hits": 0,
+      "action_ranked": 0,
+      "action_trials": 0,
+      "bounded_audits": 0,
+      "confirmation_cancelled": 0,
+      "confirmation_disagreements": 0,
+      "confirmation_failure": null,
+      "confirmation_nonfinite": 0,
+      "confirmation_resources": 0,
+      "decode_seconds": 0,
+      "decoded": 0,
+      "encode_seconds": 0,
+      "fallback_levels": 0,
+      "first_resource_failure": null,
+      "gpu_allocations": 37,
+      "gpu_audit_seconds": 0,
+      "gpu_buffer_reuses": 1495,
+      "gpu_candidate_render_hits": 0,
+      "gpu_confirmation_seconds": 0,
+      "gpu_download_bytes": 14912,
+      "gpu_evaluations": 159,
+      "gpu_measurement_cache_hits": 0,
+      "gpu_peak_bytes": 30510480,
+      "gpu_rasters": 390,
+      "gpu_reference_render_hits": 374,
+      "gpu_sparse_failures": 0,
+      "gpu_sparse_fallbacks": 0,
+      "gpu_sparse_passes": 358,
+      "gpu_sparse_queries": 2215,
+      "gpu_upload_bytes": 132644,
+      "inference_seconds": 0,
+      "legal_collapses": 0,
+      "reference_audit_seconds": 0,
+      "reference_rejections": 0,
+      "rejected_collapses": 0,
+      "resource_failures": 0
+    },
+    "category": "organic",
+    "complete": true,
+    "contract_sha256": "e430a74f5f116580cfd0652ad896a85c9f793f16137b323c2dc935fb80b041db",
+    "path": "actions.bin",
+    "preceding_lod_emitted": false,
+    "previous_triangles": 2042,
+    "queries": 156,
+    "reference_confirmed": true,
+    "schema": 3,
+    "seconds": 0.331179365,
+    "sha256": "2853443ed886e1612512c0b84b9a79862c7feca0281edb531ff78eb588dc41ab",
+    "source_triangles": 2042,
+    "states": 2,
+    "teacher_triangles": 2038,
+    "training_started": false
+  },
+  "cycle": {
+    "active_training": null,
+    "checkpoint": "checkpoints/step-3072",
+    "checkpoint_sha256": "2e7da826b289a203e49e54c9226353c6f7e382b16a31df894a4fe004ad0420e2",
+    "complete": true,
+    "datasets": [
+      "shard-0",
+      "shard-1",
+      "shard-2",
+      "shard-3",
+      "shard-4",
+      "shard-5"
+    ],
+    "last_audit_iteration": 6,
+    "next_condition": 6,
+    "phases": [
+      {
+        "index": {
+          "accepted": 2,
+          "asset": "ph_painted_wooden_bench",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 32,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 1012,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 11264,
+            "gpu_evaluations": 142,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 26232874,
+            "gpu_rasters": 276,
+            "gpu_reference_render_hits": 260,
+            "gpu_sparse_failures": 5,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 239,
+            "gpu_sparse_queries": 434,
+            "gpu_upload_bytes": 60820,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "manufactured",
+          "complete": true,
+          "contract_sha256": "24f05fd56d25205045c8ecfba57d47e1dac9851d9b1f2e9e5cf8b040967dfe23",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 630,
+          "queries": 156,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.256398976,
+          "sha256": "713e413b49ae351b237857bb903ab9f67f16309007d7cbf35e75c6e6de1231d6",
+          "source_triangles": 630,
+          "states": 2,
+          "teacher_triangles": 626,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.510886506
+      },
+      {
+        "append_seconds": 0.006527387,
+        "capture_seconds": 0.04628313,
+        "captures": 1,
+        "checkpoint_seconds": 0.007187165,
+        "gradient": 0.20457391440868378,
+        "loss": 0.014712880365550518,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 3320,
+        "seconds": 0.354048804,
+        "step": 512,
+        "target_step": 512,
+        "update_seconds": 0.059237738
+      },
+      {
+        "index": {
+          "accepted": 2,
+          "asset": "ph_sweet_potato",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 32,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 1172,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 12544,
+            "gpu_evaluations": 171,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 44805992,
+            "gpu_rasters": 316,
+            "gpu_reference_render_hits": 300,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 284,
+            "gpu_sparse_queries": 3116,
+            "gpu_upload_bytes": 132644,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "organic",
+          "complete": true,
+          "contract_sha256": "e5053e5fb63199533dc2609ff267717e880c5835820f7ca3230e34f182aa6783",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 2042,
+          "queries": 168,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.240757919,
+          "sha256": "1472b49a1d53d3fbd1eb3496dae2bf65f866370c50b35a5696bffc425d51009b",
+          "source_triangles": 2042,
+          "states": 2,
+          "teacher_triangles": 2038,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.496383163
+      },
+      {
+        "append_seconds": 0.000236323,
+        "capture_seconds": 7.11e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.026037493,
+        "gradient": 0.029742050915956497,
+        "loss": 0.007779999170452356,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 6592,
+        "seconds": 0.308914059,
+        "step": 1024,
+        "target_step": 1024,
+        "update_seconds": 0.059336542
+      },
+      {
+        "index": {
+          "accepted": 2,
+          "asset": "ph_namaqualand_boulder_04",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 31,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 961,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 10848,
+            "gpu_evaluations": 170,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 184840440,
+            "gpu_rasters": 263,
+            "gpu_reference_render_hits": 247,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 231,
+            "gpu_sparse_queries": 1410,
+            "gpu_upload_bytes": 3584292,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "rocks",
+          "complete": true,
+          "contract_sha256": "413b6f3e6e04a015b148e3b818f4846699029f97d236c252c347d39b0de852bb",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 59066,
+          "queries": 167,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.318173603,
+          "sha256": "2cbccd4641976095e56d8f34c5ae05e2abe06d5238404ea3a7d868319b207f05",
+          "source_triangles": 59066,
+          "states": 2,
+          "teacher_triangles": 59062,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.589623799
+      },
+      {
+        "append_seconds": 0.000264978,
+        "capture_seconds": 6.52e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.005747424,
+        "gradient": 0.014341594651341438,
+        "loss": 0.00700774323195219,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 9864,
+        "seconds": 0.308527355,
+        "step": 1536,
+        "target_step": 1536,
+        "update_seconds": 0.059334117000000006
+      },
+      {
+        "index": {
+          "accepted": 4,
+          "asset": "ph_painted_wooden_bench",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 62,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 3296,
+            "gpu_candidate_render_hits": 106,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 36544,
+            "gpu_evaluations": 327,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 445431464,
+            "gpu_rasters": 808,
+            "gpu_reference_render_hits": 866,
+            "gpu_sparse_failures": 60,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 758,
+            "gpu_sparse_queries": 22550,
+            "gpu_upload_bytes": 121304,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "manufactured",
+          "complete": true,
+          "contract_sha256": "23838201a5541ecb6315bfc648b868c56c1a9b1dc0f65b315162ad6008da93b5",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 626,
+          "queries": 323,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.390293831,
+          "sha256": "1edb219acbb35814d52de8101c356293ac0aef7f14066ed392d15085f507e7d0",
+          "source_triangles": 630,
+          "states": 4,
+          "teacher_triangles": 622,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.651735839
+      },
+      {
+        "append_seconds": 0.000257473,
+        "capture_seconds": 4.11e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.004621411,
+        "gradient": 0.28639543056488037,
+        "loss": 0.005877477582544088,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 16360,
+        "seconds": 0.281872061,
+        "step": 2048,
+        "target_step": 2048,
+        "update_seconds": 0.053609496
+      },
+      {
+        "index": {
+          "accepted": 4,
+          "asset": "ph_sweet_potato",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 62,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 2570,
+            "gpu_candidate_render_hits": 104,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 30720,
+            "gpu_evaluations": 351,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 447435326,
+            "gpu_rasters": 628,
+            "gpu_reference_render_hits": 684,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 636,
+            "gpu_sparse_queries": 35314,
+            "gpu_upload_bytes": 265048,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "organic",
+          "complete": true,
+          "contract_sha256": "c201c43c59c3b984b03dbd114ff3900ebfce3e95b16b2b63a5bedae00b339b1b",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 2038,
+          "queries": 332,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.331408184,
+          "sha256": "be3cdd0889c95d0831a0fbdbcb0bc62ca5b2a50b7bb8961dddb2ab73f3459e7c",
+          "source_triangles": 2042,
+          "states": 4,
+          "teacher_triangles": 2034,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.611536584
+      },
+      {
+        "append_seconds": 0.000245,
+        "capture_seconds": 4.31e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.005414489,
+        "gradient": 0.02719171904027462,
+        "loss": 0.010790097527205944,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 22856,
+        "seconds": 0.343094932,
+        "step": 2560,
+        "target_step": 2560,
+        "update_seconds": 0.05363824
+      },
+      {
+        "index": {
+          "accepted": 4,
+          "asset": "ph_namaqualand_boulder_04",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 62,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 2018,
+            "gpu_candidate_render_hits": 88,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 26176,
+            "gpu_evaluations": 327,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 447435326,
+            "gpu_rasters": 502,
+            "gpu_reference_render_hits": 542,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 494,
+            "gpu_sparse_queries": 3358,
+            "gpu_upload_bytes": 7168344,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "rocks",
+          "complete": true,
+          "contract_sha256": "3507ed9cb725f2f6e65634e8910391b46738a09425a0adceb43cb3cb9d40bf11",
+          "path": "actions.bin",
+          "preceding_lod_emitted": true,
+          "previous_triangles": 59062,
+          "queries": 310,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.376593465,
+          "sha256": "417d3e636cfea98a5709dbf99b055f7d72ebb0f0b931cfb9bbb189590ab610f5",
+          "source_triangles": 59066,
+          "states": 4,
+          "teacher_triangles": 59058,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.631093107
+      },
+      {
+        "append_seconds": 0.000263485,
+        "capture_seconds": 6.92e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.006132636,
+        "gradient": 0.4222579598426819,
+        "loss": 0.012466240674257278,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 29352,
+        "seconds": 0.264045653,
+        "step": 3072,
+        "target_step": 3072,
+        "update_seconds": 0.053639652999999995
+      },
+      {
+        "phase": "quality_audit",
+        "ranking": "constant",
+        "rows": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                },
+                "triangles": [
+                  524,
+                  522,
+                  522
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00026688780227426535,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.3535533905932738,
+                  "coverage_upper_px": 1.0606611717798213,
+                  "error_px": 1.1181808318873672,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.53812044752989,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 9
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 522,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.0002658311971897845,
+                  "changed_area_worst_view": 5,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 0.9571077811865476,
+                  "nonfinite_error": false,
+                  "normal_degrees": 105.47179897896305,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 5
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 522,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5214707453781718,
+                  "negative_winding_faces": 522
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 3108,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.006894548,
+              "decoded": 4,
+              "encode_seconds": 0.000262323,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 88,
+              "gpu_audit_seconds": 0.150536357,
+              "gpu_buffer_reuses": 815,
+              "gpu_candidate_render_hits": 54,
+              "gpu_confirmation_seconds": 0.000030658000000000004,
+              "gpu_download_bytes": 37152,
+              "gpu_evaluations": 32,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 570175536,
+              "gpu_rasters": 297,
+              "gpu_reference_render_hits": 165,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 64364,
+              "inference_seconds": 0.0021382610000000002,
+              "legal_collapses": 2,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 234,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 1,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12552,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 30088
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 12552,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 30088
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                },
+                "triangles": [
+                  3304,
+                  3296,
+                  3296
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000017614549617984457,
+                  "changed_area_worst_view": 6,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.8124895365461406,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.736800886549677,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 7
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.000010328657894193228,
+                  "changed_area_worst_view": 11,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.6824067238033955,
+                  "nonfinite_error": false,
+                  "normal_degrees": 19.937341481976134,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 14
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087004401335763,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 57037,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.010940457,
+              "decoded": 4,
+              "encode_seconds": 0.00024160400000000003,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 112,
+              "gpu_audit_seconds": 0.27311106500000004,
+              "gpu_buffer_reuses": 1217,
+              "gpu_candidate_render_hits": 101,
+              "gpu_confirmation_seconds": 0.00011254200000000001,
+              "gpu_download_bytes": 52560,
+              "gpu_evaluations": 32,
+              "gpu_measurement_cache_hits": 5,
+              "gpu_peak_bytes": 703482314,
+              "gpu_rasters": 370,
+              "gpu_reference_render_hits": 259,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 348764,
+              "inference_seconds": 0.0029390650000000003,
+              "legal_collapses": 22,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 234,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0.00031121139033688633,
+                  "changed_area_worst_view": 3,
+                  "complete": false,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.914214562373095,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 48.00528709831069,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 2,
+                  "views_evaluated": 4,
+                  "worst_view": 3
+                }
+              }
+            },
+            "runtime_levels": [
+              0,
+              1
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 79200,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 138304
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          }
+        ],
+        "seconds": 0.873825963
+      },
+      {
+        "phase": "quality_audit",
+        "ranking": "learned",
+        "rows": [
+          {
+            "asset": "ph_painted_wooden_shelves",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12408,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29944
+                },
+                "triangles": [
+                  524,
+                  524,
+                  510
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 17536,
+                  "index_bytes": 12576,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 47648
+                },
+                "triangles": [
+                  524,
+                  524,
+                  524
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 524,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 524,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5215374210986314,
+                  "negative_winding_faces": 524
+                },
+                "vertices": 548
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00003534276592486128,
+                  "changed_area_worst_view": 3,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.0461269465077754,
+                  "nonfinite_error": false,
+                  "normal_degrees": 90,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 1
+                },
+                "reference_triangles": 510,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00003534276592486128,
+                  "changed_area_worst_view": 3,
+                  "complete": true,
+                  "coverage_px": 0.25,
+                  "coverage_upper_px": 0.9571077811865476,
+                  "error_px": 1.0461269465077754,
+                  "nonfinite_error": false,
+                  "normal_degrees": 90,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 1
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 510,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 1.4751209560806373,
+                  "max_density": 0.5749522582002695,
+                  "mean_density": 0.5227519659311374,
+                  "negative_winding_faces": 510
+                },
+                "vertices": 548
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 4040,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.0075008850000000005,
+              "decoded": 4,
+              "encode_seconds": 0.000246011,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 69,
+              "gpu_audit_seconds": 0.12944007600000002,
+              "gpu_buffer_reuses": 823,
+              "gpu_candidate_render_hits": 109,
+              "gpu_confirmation_seconds": 0.000030307000000000003,
+              "gpu_download_bytes": 39600,
+              "gpu_evaluations": 31,
+              "gpu_measurement_cache_hits": 4,
+              "gpu_peak_bytes": 703482314,
+              "gpu_rasters": 261,
+              "gpu_reference_render_hits": 180,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 81762,
+              "inference_seconds": 0.003721944,
+              "legal_collapses": 14,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 252,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 0,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 1,
+                "worst": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": false,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 1.414214562373095,
+                  "error_px": null,
+                  "nonfinite_error": true,
+                  "normal_degrees": 89.88491068814236,
+                  "passed": false,
+                  "resource_limited": false,
+                  "supersample": 2,
+                  "views_evaluated": 2,
+                  "worst_view": 1
+                }
+              }
+            },
+            "runtime_levels": [
+              0,
+              2
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12408,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29944
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 12408,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 29944
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 1,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 6288,
+                  "source_vertex_bytes": 17536,
+                  "total_bytes": 23824
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 12408,
+              "source_vertex_bytes": 17536,
+              "total_bytes": 29944
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          },
+          {
+            "asset": "ph_moon_rock_02",
+            "candidate_evaluations": 4,
+            "candidates": [
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3296
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 59072,
+                  "index_bytes": 79272,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 197448
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3302
+                ]
+              },
+              {
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                },
+                "triangles": [
+                  3304,
+                  3304,
+                  3304
+                ]
+              }
+            ],
+            "lods": [
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 256,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 0,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 0,
+                "transition_limit": 0,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "reference_triangles": 3304,
+                "screen_pixels": 181.01933598375618,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0,
+                  "changed_area_worst_view": 0,
+                  "complete": true,
+                  "coverage_px": 0,
+                  "coverage_upper_px": 0,
+                  "error_px": 0,
+                  "nonfinite_error": false,
+                  "normal_degrees": 0,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 0,
+                  "worst_view": 0
+                },
+                "source_limit": 2,
+                "transition_limit": 2,
+                "triangles": 3304,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.908641984074369,
+                  "negative_winding_faces": 3304
+                },
+                "vertices": 1847
+              },
+              {
+                "adjacent": {
+                  "changed_area": 0.00019547093835823958,
+                  "changed_area_worst_view": 4,
+                  "complete": true,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.2071077811865474,
+                  "error_px": 2.375553073556278,
+                  "nonfinite_error": false,
+                  "normal_degrees": 35.63627097125501,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 12
+                },
+                "reference_triangles": 3296,
+                "screen_pixels": 128,
+                "shared_vertices": true,
+                "source": {
+                  "changed_area": 0.00019547093835823958,
+                  "changed_area_worst_view": 4,
+                  "complete": true,
+                  "coverage_px": 0.5,
+                  "coverage_upper_px": 1.2071077811865474,
+                  "error_px": 2.375553073556278,
+                  "nonfinite_error": false,
+                  "normal_degrees": 35.63627097125501,
+                  "passed": true,
+                  "resource_limited": false,
+                  "supersample": 4,
+                  "views_evaluated": 16,
+                  "worst_view": 12
+                },
+                "source_limit": 3,
+                "transition_limit": 3,
+                "triangles": 3296,
+                "uv_diagnostics": {
+                  "degenerate_uv_faces": 0,
+                  "max_anisotropy": 2.092423223404818,
+                  "max_density": 2.1409602865375836,
+                  "mean_density": 1.9087055329075646,
+                  "negative_winding_faces": 3296
+                },
+                "vertices": 1847
+              }
+            ],
+            "max_changed_area": 0.5,
+            "neural": {
+              "action_audit_cache_hits": 0,
+              "action_ranked": 50680,
+              "action_trials": 32,
+              "bounded_audits": 0,
+              "confirmation_cancelled": 0,
+              "confirmation_disagreements": 0,
+              "confirmation_failure": null,
+              "confirmation_nonfinite": 0,
+              "confirmation_resources": 0,
+              "decode_seconds": 0.006365414000000001,
+              "decoded": 4,
+              "encode_seconds": 0.000262192,
+              "fallback_levels": 1,
+              "first_resource_failure": null,
+              "gpu_allocations": 77,
+              "gpu_audit_seconds": 0.207028713,
+              "gpu_buffer_reuses": 968,
+              "gpu_candidate_render_hits": 97,
+              "gpu_confirmation_seconds": 0.00010981700000000001,
+              "gpu_download_bytes": 41904,
+              "gpu_evaluations": 33,
+              "gpu_measurement_cache_hits": 4,
+              "gpu_peak_bytes": 703482314,
+              "gpu_rasters": 286,
+              "gpu_reference_render_hits": 199,
+              "gpu_sparse_failures": 0,
+              "gpu_sparse_fallbacks": 0,
+              "gpu_sparse_passes": 0,
+              "gpu_sparse_queries": 0,
+              "gpu_upload_bytes": 362170,
+              "inference_seconds": 0.002514689,
+              "legal_collapses": 5,
+              "reference_audit_seconds": 0,
+              "reference_rejections": 0,
+              "rejected_collapses": 232,
+              "resource_failures": 0
+            },
+            "proposal_diagnostics": {
+              "component_builds": 0,
+              "component_unavailable": 0,
+              "duplicate_proposals": 1,
+              "topology_fallback_proposals": 0,
+              "transition_reconnections": 0
+            },
+            "reference_candidate": 0,
+            "rejections": {
+              "adjacent_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "adjacent_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_audit": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              },
+              "source_search": {
+                "area_only_count": 0,
+                "count": 0,
+                "worst": null
+              }
+            },
+            "runtime_levels": [
+              0,
+              2
+            ],
+            "runtime_lod_count": 2,
+            "selected_candidate": 0,
+            "selection_sweep": [
+              {
+                "overhead_bps": 0,
+                "reference": 0,
+                "selected": 0,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 79200,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 138304
+                }
+              },
+              {
+                "overhead_bps": 200,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 500,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              },
+              {
+                "overhead_bps": 1000,
+                "reference": 0,
+                "selected": 2,
+                "storage": {
+                  "added_vertex_bytes": 0,
+                  "index_bytes": 39648,
+                  "source_vertex_bytes": 59104,
+                  "total_bytes": 98752
+                }
+              }
+            ],
+            "status": "complete",
+            "storage": {
+              "added_vertex_bytes": 0,
+              "index_bytes": 79200,
+              "source_vertex_bytes": 59104,
+              "total_bytes": 138304
+            },
+            "triangle_overhead_bps": 0,
+            "version": 2
+          }
+        ],
+        "seconds": 0.772769501
+      }
+    ],
+    "release_quality_proven": false,
+    "score": null,
+    "seconds": 7.408973587,
+    "states": 18,
+    "step": 3072,
+    "updates_this_invocation": 3072
+  },
+  "replay": {
+    "expected_sha256": "f572e63e39d7350aa668f6813f96f6f6db899e4dc10897745401f3a30ed80af8",
+    "fp64": {
+      "finite": true,
+      "max_abs": 0.0000034564213561849577,
+      "max_relative": 0.002492913403391922,
+      "rms": 5.291475640043815e-7,
+      "same_shape": true,
+      "worst_index": 144
+    },
+    "input_sha256": "8b5c49af36963df0ef517126e5ef85dcad9bcb4d635b1e0a23ec145679a40dd4",
+    "model_sha256": "41c2ae11d3603aaee0c4333fbebdc22e03f0e3060d2433d343b4fb9eceeb5d95",
+    "native": {
+      "finite": true,
+      "max_abs": 0,
+      "max_relative": 0,
+      "rms": 0,
+      "same_shape": true,
+      "worst_index": 0
+    },
+    "passed": true,
+    "training_started": false
+  },
+  "cross_device_replay": {
+    "expected_sha256": "1bbd72fe0618ff445520eb8deccec58296e5c1adc2c87a8cd8dd02b8a3bdf17e",
+    "fp64": {
+      "finite": true,
+      "max_abs": 0.000018896190386641365,
+      "max_relative": 0.0005903463059488264,
+      "rms": 0.0000022665212192054663,
+      "same_shape": true,
+      "worst_index": 336
+    },
+    "input_sha256": "adaa54ceefe7a478df52ad29c81f3e41496118e7b3c9a2ae249cc8a3dd498e30",
+    "model_sha256": "9acef433fe393d437d2da643747940054c653373956c3d2f2b2dcfd3a0f8c1a4",
+    "native": {
+      "finite": true,
+      "max_abs": 0.00001621246337890625,
+      "max_relative": 0.0010423905489923557,
+      "rms": 0.0000023794915487970924,
+      "same_shape": true,
+      "worst_index": 336
+    },
+    "passed": true,
+    "training_started": false
+  },
+  "ready_for_two_hour_packed_cycle": false,
+  "finished": 1790765975762
+}

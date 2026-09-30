@@ -58,5 +58,26 @@
     "full_packed_cycle_complete": false,
     "blocked_asset": "ph_namaqualand_boulder_04",
     "reason": "no feasible queried placement under unchanged visual gate"
-  }
+  },
+  "final_build_control": {
+    "evidence": "final-control-cycle.json",
+    "complete": true,
+    "states": 54,
+    "updates": 12288,
+    "identical_datasets": true,
+    "identical_parameters": true
+  },
+  "egl_headless_validation": {
+    "evidence": "egl-validation.log",
+    "passed": true,
+    "synchronization_validation": true,
+    "errors": 0
+  },
+  "final_cloud_contracts": {
+    "ctest_passed": 2,
+    "ctest_failed": 0,
+    "node_cases": 21,
+    "evidence": "final-cloud-ctest.log"
+  },
+  "remote_validation_evidence": "../hardware-remote/validated-06/manifest.json"
 }

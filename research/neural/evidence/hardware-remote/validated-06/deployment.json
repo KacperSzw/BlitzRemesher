@@ -1,0 +1,33 @@
+{
+  "deployment": {
+    "id": "hardware-validation-ada",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "catalog_vram_gb": 24,
+    "device_memory_mib": 22000,
+    "compute_capability": "8.9",
+    "cuda_architecture": 89,
+    "minimum_driver": [
+      575,
+      51,
+      3
+    ],
+    "minimum_cuda": "12.9",
+    "host_ram_gb": 16,
+    "vcpus": 4,
+    "gpu_hourly_usd_cap": 0.8,
+    "container_disk_gb": 50,
+    "network_volume_gb": 20,
+    "setup_minutes": 20,
+    "training_minutes": 10,
+    "collection_minutes": 5,
+    "staged_rental_minutes": 150,
+    "staged_experiment_minutes": 110,
+    "graphics": true
+  },
+  "device": {
+    "name": "NVIDIA GeForce RTX 4090",
+    "compute_capability": "8.9",
+    "memory_mib": 24564,
+    "driver": "580.126.16"
+  }
+}

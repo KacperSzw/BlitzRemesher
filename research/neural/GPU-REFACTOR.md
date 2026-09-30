@@ -198,17 +198,23 @@ status summaries; geometry, rasterization, comparisons and updates run on GPU.
    one compact result per candidate. Target the 1.47 s of teacher setup/remainder
    and repeated host synchronization. Keep explicit layer ownership and a bounded
    memory budget; measure complete teacher time as well as GPU kernel time.
-3. **Read raster targets directly in the threshold scan.** Fuse CUDA surface
+3. **Measure and reduce checkpoint publication waits on remote storage.** The
+   remote control spends 1.41 s in writer joins, refresh and bookkeeping versus
+   0.34 s in optimizer updates. First time those operations separately. Test
+   local scratch for active checkpoints with a bounded background copy to durable
+   storage; publish a recovery pointer only after the durable copy and checksums
+   succeed. Preserve the forced-crash recovery contract and bound queued snapshots.
+4. **Read raster targets directly in the threshold scan.** Fuse CUDA surface
    decoding with queue construction to remove the temporary linear pixel write
    and reread on sparse queries. Materialize linear images lazily for exact
    fallback. Conversion plus scanning currently account for 39.9% of profiled
    CUDA time, but scanning remains necessary, so that share is not a promised
    speedup. Compare sparse results and exact fallback against the current oracle.
-4. **Optimize appearance searches after those changes.** Exact and sparse
+5. **Optimize appearance searches after those changes.** Exact and sparse
    appearance together use 38.6% of the profiled CUDA time. Test compact tile
    summaries and cooperative searches against the complete opposing image.
    Preserve witnesses outside changed pixels and exact audits before commit.
-5. **Then run the two-hour learning comparison.** Reuse frozen inputs, cameras,
+6. **Then run the two-hour learning comparison.** Reuse frozen inputs, cameras,
    seeds and work accounting; report useful teacher states, updates, accepted
    reductions, visual errors, fallbacks and wall time. Require successful packed
    pilots, checkpoint recovery and remote replay before the long run.
@@ -260,32 +266,71 @@ Its internal cycle time was 11.19 s: teacher 6.32 s, training 2.45 s, and qualit
 the matched three-repeat comparison remains the speedup evidence. See
 [final-control-cycle.json](evidence/hardware-local/final-control-cycle.json).
 
-Remote validation is a separate bounded job using the existing spending grant.
-It runs graphics/interop tests, memory checks, a packed default cycle with
-explicit visual-gate failure reporting, a complete FP32 control cycle, remote
-replay and replay of the local checkpoint on the remote GPU. It never starts a new
-two-hour training session. Remote results will be recorded after collection.
+## Remote validation
 
-The first RTX PRO 6000 rental never exposed a runtime/SSH endpoint. It was
-stopped after 12.14 minutes, before inputs or an application job were uploaded;
-compute and the empty volume were both confirmed deleted. The conservative
-rental charge is at most $0.51. A bounded $0.60/hour-cap RTX PRO 4000 Blackwell
-profile provides a cheaper validation retry within the same grant. Both devices
-support compute capability 12.0 ([NVIDIA device table](https://developer.nvidia.com/cuda/gpus)).
-The 21 cloud/budget contract checks pass with the additional profile.
-The smaller Blackwell allocation was rejected by the provider (HTTP 400), and
-its empty volume was deleted. An RTX 4090 profile capped at $0.80/hour is also
-available for bounded validation; it compiles the same implementation for SM89
-and retains the same memory, visual and replay checks. Failed allocation records
-remain under [evidence/hardware-remote](evidence/hardware-remote/).
-The RTX 4090 quote lost capacity before allocation. A subsequent L40S rental
-reached the container but failed NVIDIA Vulkan ICD loading before compilation.
-Its logs were verified and all resources deleted. The setup now explicitly
-installs the graphics driver's GLVND/X11 runtime dependencies and records the
-actual GPU/driver, ICD and linked libraries before attempting Vulkan. This is
-an infrastructure correction; the local neural runtime remains unchanged.
-The headless bundle selects the EGL entry from the host-injected NVIDIA ICD,
-preserving its API version and library directory. NVIDIA documents this
-[X11-independent Vulkan entry](https://download.nvidia.com/XFree86/Linux-x86_64/570.86.16/README/installedcomponents.html).
-Local packed draw/storage tests pass through this entry with synchronization
-validation enabled. Unavailable subsequent quotes create no billable resources.
+Validated commit `e3ee066` on an RTX 4090 (SM89, 24,564 MiB), driver 580.126.16,
+CUDA 12.9 and LibTorch 2.10/cu128 on 2026-09-30. **26/26 CTest tests passed**,
+along with Vulkan validation and three CUDA memchecks (sparse metrics, Vulkan
+interop and resident training), each reporting zero errors. The bounded job
+completed in 27.12 s after setup. Its results were collected and checksum-verified.
+
+The remote checkpoint replays exactly on the same device. The saved local
+checkpoint also passes the existing replay tolerance on the remote GPU: maximum
+absolute difference **1.62e-5** for native inference and **1.89e-5** against the
+FP64 oracle. Cross-device results are not bit-identical. All raw checks and
+provenance are in [validated-06](evidence/hardware-remote/validated-06/).
+
+The smaller remote FP32 control uses **18 teacher states, 3,072 updates and six
+checkpoints**, starting from initialization. Its workload and initialization
+differ from the matched local benchmark; it is a validation timing, not another
+end-to-end speedup comparison:
+
+```text
+Remote FP32 control, including process lifetime      7.861 s
+├─ Six teacher phases                               3.491 s
+│  ├─ Teacher core work                             1.914 s
+│  └─ Setup / remainder                             1.578 s
+├─ Training phases                                  1.861 s
+│  ├─ 3,072 updates                                 0.339 s (110 µs/update)
+│  ├─ One graph capture                             0.046 s
+│  ├─ Dataset append                                0.008 s
+│  ├─ Foreground checkpoint preparation/checks       0.055 s
+│  └─ Writer joins / refresh / bookkeeping           1.412 s
+├─ Quality diagnostics                              1.647 s
+└─ Startup / teardown / other remainder              0.863 s
+```
+
+The last dataset occupies 29,352 GPU bytes. Checkpoints are written to the remote
+network volume; separating its I/O cost from other writer/refresh work is a
+follow-up measurement, not something the current grouped timer establishes.
+The six short phases end at a checkpoint, leaving little update work to overlap
+with each final write.
+
+Remote bench rasterization takes **0.189–0.206 ms/view packed**, versus
+0.182–0.200 ms for FP32 Vulkan and 0.416–0.539 ms for CUDA. Hardware passes take
+10.7–12.5 µs; packed draw preparation takes 15.1–16.4 µs and target conversion
+7.9–8.6 µs. Packed vertex bytes remain 21,664 → 9,478. This again supports a
+memory saving, without an extra speedup over FP32 Vulkan.
+
+**The packed full curriculum remains blocked.** The default packed remote cycle
+completes bench and potato, then rejects boulder under the unchanged visual gate,
+matching the local result. A separate packed potato pilot passes. The failed
+packed cycle exits after 3.009 s; that is time to failure, not a complete-cycle
+timing or quality score. The validation job passes because it verifies this
+expected rejection separately from the successful FP32 control. Its
+`ready_for_two_hour_packed_cycle` remains `false`; no new two-hour run was started.
+
+The successful rental lasted 650.10 s at $0.74/hour. Including failed setup and
+allocation attempts, the conservative charge is **under $0.73**, within the
+existing additional grant. The provider confirms **zero live pods and zero
+network volumes**. See [billing.json](evidence/hardware-remote/billing.json).
+Earlier provisioning failures and the L40S graphics-preflight failure remain
+visible under [hardware-remote](evidence/hardware-remote/).
+
+The container now installs GLVND/X11 runtime dependencies and selects the EGL
+entry from the host-injected NVIDIA ICD, preserving its API version and directory.
+NVIDIA documents this [headless Vulkan entry](https://download.nvidia.com/XFree86/Linux-x86_64/570.86.16/README/installedcomponents.html).
+Local packed draw/storage tests also pass through EGL with synchronization
+validation. The container changes do not modify the neural runtime measured by
+the local benchmark. All 21 cloud/budget contract cases and the two corresponding
+CTest targets pass after the final infrastructure changes.

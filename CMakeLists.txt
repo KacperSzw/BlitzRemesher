@@ -108,7 +108,10 @@ if(BLITZ_TOOLS)
     target_link_libraries(blitz-neural-action-prepare PRIVATE blitz_io)
     add_executable(blitz-neural-placement-prepare tools/neural_placement_prepare.cpp)
     target_include_directories(blitz-neural-placement-prepare PRIVATE src)
-    target_link_libraries(blitz-neural-placement-prepare PRIVATE blitz_io)
+    # The shared teacher catches CUDA resource failures through neural_cuda.cuh.
+    # Declare its toolkit dependency; a development shell's include path is not
+    # available to an ordinary C++ compiler in the deployment container.
+    target_link_libraries(blitz-neural-placement-prepare PRIVATE blitz_io CUDA::cudart CUDA::cublas)
     add_executable(blitz-neural-profile tools/neural_profile.cpp)
     target_include_directories(blitz-neural-profile PRIVATE src)
     target_link_libraries(blitz-neural-profile PRIVATE blitz_io CUDA::cudart)

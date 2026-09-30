@@ -101,3 +101,17 @@ The small MLP update and frequent checkpoint publication also matter. Keep setup
 and graph capture amortized in the resident run; use its telemetry to decide
 whether larger update batches or a bounded checkpoint cadence justify further work.
 Packing precision and visual thresholds should remain unchanged for those controls.
+
+## First remote attempt
+
+The first allocated rental (setup-02, Blackwell Server) stopped during compilation:
+`blitz-neural-placement-prepare` included CUDA implementation headers without an
+explicit CMake CUDA dependency. Nix's ambient include path had hidden this existing
+portability bug. The target now declares CUDA runtime and cuBLAS dependencies;
+its generated compile command contains the toolkit include directory explicitly.
+The target rebuilt and its bounded coverage preparation smoke passed locally.
+
+No training started. Failure evidence was checksum-collected, and both compute and
+volume deletion were verified. Conservative billed-time upper estimate: $0.4311,
+charged to the same $8 grant. [Failure evidence](evidence/coverage-remote/setup-02/).
+A retry remains subject to the original pinned cumulative cap.

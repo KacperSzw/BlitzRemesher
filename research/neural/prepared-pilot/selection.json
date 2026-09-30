@@ -1,0 +1,458 @@
+{
+  "version": 1,
+  "selection": "Frozen metadata-only pilot: three distinct source groups/category; <=150000 triangles; sorted (triangles,id), indices 0,floor(n/2),n-1.",
+  "source_hashes": {
+    "research/corpus.json": "3219a4fdfb46c04e73914401d0b11f798d459b5d59007146b9b0ae358af6dc63",
+    "research/neural/training-manifest.json": "c4365db7abe9fd0ba99dd48f865a75306360bc02395d25cbb400e5747e20c281"
+  },
+  "score_eligible": false,
+  "assets": [
+    {
+      "bytes": 28279,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 1.5474131104467563,
+      "files": [
+        {
+          "bytes": 25444,
+          "path": "data/polyhaven/painted_wooden_bench/painted_wooden_bench.bin",
+          "sha256": "5799bcb20924105cccd6424de8cdb8e67eb57fddc19c395befeac634a7b2e013",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin"
+        },
+        {
+          "bytes": 2835,
+          "path": "data/polyhaven/painted_wooden_bench/source.gltf",
+          "sha256": "2289ab82f3fe3045bf18f7b9541743d2c65b9f071cb34bbe424d2bc998f3e507",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "0bdead3064c8170ae88af3d106797da0e14e1809833a9ecbd83d8a59cb33e5b2",
+      "id": "ph_painted_wooden_bench",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/painted_wooden_bench/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:painted_wooden_bench",
+      "source_identity": "painted_wooden_bench",
+      "source_url": "https://polyhaven.com/a/painted_wooden_bench",
+      "split": "development",
+      "triangles": 630,
+      "uv": true,
+      "vertices": 677,
+      "woody": false
+    },
+    {
+      "bytes": 213803,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 0.5068302009795094,
+      "files": [
+        {
+          "bytes": 211020,
+          "path": "data/polyhaven/rusted_hacksaw/rusted_hacksaw.bin",
+          "sha256": "3a0cfb36df9b3e66912fd9a9905d20270c30d1d3434a27e691c90c607e27107b",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/rusted_hacksaw/rusted_hacksaw.bin"
+        },
+        {
+          "bytes": 2783,
+          "path": "data/polyhaven/rusted_hacksaw/source.gltf",
+          "sha256": "3bd152a8f1a690b0a4fbc2647ae3350f3bf7f4868d322173cf71561d96cd27b1",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/rusted_hacksaw/rusted_hacksaw_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "d74c33d76948c5884ae2db97f86c4dacef4f09baa63183a47444650a8800a6d8",
+      "id": "ph_rusted_hacksaw",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/rusted_hacksaw/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:rusted_hacksaw",
+      "source_identity": "rusted_hacksaw",
+      "source_url": "https://polyhaven.com/a/rusted_hacksaw",
+      "split": "development",
+      "triangles": 6546,
+      "uv": true,
+      "vertices": 5367,
+      "woody": false
+    },
+    {
+      "bytes": 872337,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 2.801342579103161,
+      "files": [
+        {
+          "bytes": 865700,
+          "path": "data/polyhaven/CoffeeCart_01/CoffeeCart_01.bin",
+          "sha256": "0c0f9ed417ba85208c7f42b674ee3ce99a7e6fb63e67c7ea8d312304c470db50",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/CoffeeCart_01/CoffeeCart_01.bin"
+        },
+        {
+          "bytes": 6637,
+          "path": "data/polyhaven/CoffeeCart_01/source.gltf",
+          "sha256": "3f4e7e79e751662a767c22b21c34dfb6f7d414d56dda60a236ad7d621d211934",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/CoffeeCart_01/CoffeeCart_01_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "5843ab824288825e78c66e5f73226f37dd2714b0e5d9d25f5bb4b876d9feec0f",
+      "id": "ph_CoffeeCart_01",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/CoffeeCart_01/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:CoffeeCart",
+      "source_identity": "CoffeeCart_01",
+      "source_url": "https://polyhaven.com/a/CoffeeCart_01",
+      "split": "development",
+      "triangles": 27659,
+      "uv": true,
+      "vertices": 21867,
+      "woody": false
+    },
+    {
+      "bytes": 52822,
+      "category": "organic",
+      "colors": false,
+      "diameter": 0.10123330071716698,
+      "files": [
+        {
+          "bytes": 50044,
+          "path": "data/polyhaven/sweet_potato/sweet_potato.bin",
+          "sha256": "37608ecca6f9a9c2d25bc166819fb56f2a61076247e732852239662d75295f82",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/sweet_potato/sweet_potato.bin"
+        },
+        {
+          "bytes": 2778,
+          "path": "data/polyhaven/sweet_potato/source.gltf",
+          "sha256": "36a226b95a63b2e22711d75e17818f33f99a17e54737e5469a8c7d2a41896097",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sweet_potato/sweet_potato_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "170d2befdfae18d5cd475b18838405e23f3aec1ddd80795f22fa47e8b653824c",
+      "id": "ph_sweet_potato",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/sweet_potato/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:sweet_potato",
+      "source_identity": "sweet_potato",
+      "source_url": "https://polyhaven.com/a/sweet_potato",
+      "split": "development",
+      "triangles": 2042,
+      "uv": true,
+      "vertices": 1181,
+      "woody": false
+    },
+    {
+      "bytes": 471016,
+      "category": "organic",
+      "colors": false,
+      "diameter": 1.5648081837489456,
+      "files": [
+        {
+          "bytes": 465172,
+          "path": "data/polyhaven/dry_branches_medium_01/dry_branches_medium_01.bin",
+          "sha256": "969da1e8cbb2d8201e7fa0fc0dac5b19ef354b32c3d8c62dd9faa7cb3833d8ca",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dry_branches_medium_01/dry_branches_medium_01.bin"
+        },
+        {
+          "bytes": 5844,
+          "path": "data/polyhaven/dry_branches_medium_01/source.gltf",
+          "sha256": "23f328ded9be1e151ccd7994b303c70221551544c4857a71474c1c01a14b8a22",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dry_branches_medium_01/dry_branches_medium_01_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "389b82334f71fab45c25d427aed2fbfc6e4d7f04bd2209a5245aab96583dadc1",
+      "id": "ph_dry_branches_medium_01",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/dry_branches_medium_01/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:dry_branches_medium",
+      "source_identity": "dry_branches_medium_01",
+      "source_url": "https://polyhaven.com/a/dry_branches_medium_01",
+      "split": "development",
+      "triangles": 16803,
+      "uv": true,
+      "vertices": 11386,
+      "woody": true
+    },
+    {
+      "bytes": 1977201,
+      "category": "organic",
+      "colors": false,
+      "diameter": 4.1665923727480845,
+      "files": [
+        {
+          "bytes": 1974352,
+          "path": "data/polyhaven/dead_tree_trunk_02/dead_tree_trunk_02.bin",
+          "sha256": "2b1b7ca07d98396ddc1987e367dcff9734df16b62e997c14837512d134687ded",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/dead_tree_trunk_02/dead_tree_trunk_02.bin"
+        },
+        {
+          "bytes": 2849,
+          "path": "data/polyhaven/dead_tree_trunk_02/source.gltf",
+          "sha256": "b486ab1f0c7f4972e0eec97b19de53b26a34d09f07da5f9c2a70f8621f9e574c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dead_tree_trunk_02/dead_tree_trunk_02_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "dbf0a6e4b4c688e38df57f484f095a2aac687ec228cc74baef6c7d6e75b3e836",
+      "id": "ph_dead_tree_trunk_02",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/dead_tree_trunk_02/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:dead_tree_trunk",
+      "source_identity": "dead_tree_trunk_02",
+      "source_url": "https://polyhaven.com/a/dead_tree_trunk_02",
+      "split": "development",
+      "triangles": 83128,
+      "uv": true,
+      "vertices": 46112,
+      "woody": true
+    },
+    {
+      "bytes": 1322494,
+      "category": "rocks",
+      "colors": false,
+      "diameter": 3.4459839022125327,
+      "files": [
+        {
+          "bytes": 1319676,
+          "path": "data/polyhaven/namaqualand_boulder_04/namaqualand_boulder_04.bin",
+          "sha256": "99ba28ddc8da9ba24e1a419e69ed05f14c4b483bf06268a8a77495545985318a",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_boulder_04/namaqualand_boulder_04.bin"
+        },
+        {
+          "bytes": 2818,
+          "path": "data/polyhaven/namaqualand_boulder_04/source.gltf",
+          "sha256": "04c858a3bdb22873efa988633e0c0d9d1468055f34c94d47742f75165a192078",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_boulder_04/namaqualand_boulder_04_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "2edda029b2ad360e6ec54000c50c447e247004940b307ea0f2d0f3c2330e6934",
+      "id": "ph_namaqualand_boulder_04",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/namaqualand_boulder_04/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:namaqualand_boulder",
+      "source_identity": "namaqualand_boulder_04",
+      "source_url": "https://polyhaven.com/a/namaqualand_boulder_04",
+      "split": "development",
+      "triangles": 59066,
+      "uv": true,
+      "vertices": 30165,
+      "woody": false
+    },
+    {
+      "bytes": 2941581,
+      "category": "rocks",
+      "colors": false,
+      "diameter": 2.0511085600344456,
+      "files": [
+        {
+          "bytes": 2938808,
+          "path": "data/polyhaven/boulder_01/boulder_01.bin",
+          "sha256": "7f5b06503d62bd95bfe9c6b8a354a5cc8ff04a4d271a8cf87a3e3125db4232d7",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/boulder_01/boulder_01.bin"
+        },
+        {
+          "bytes": 2773,
+          "path": "data/polyhaven/boulder_01/source.gltf",
+          "sha256": "51487934db898b4c24072780a451e34eca5c02e3ada24a62bbc600bbc4019e92",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/boulder_01/boulder_01_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "dd7114fff137edaf98b42ae6b4e43666e34528c49580a9d2725de6eca05b1f68",
+      "id": "ph_boulder_01",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/boulder_01/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:boulder",
+      "source_identity": "boulder_01",
+      "source_url": "https://polyhaven.com/a/boulder_01",
+      "split": "development",
+      "triangles": 66122,
+      "uv": true,
+      "vertices": 67042,
+      "woody": false
+    },
+    {
+      "bytes": 1960063,
+      "category": "rocks",
+      "colors": false,
+      "diameter": 1.453018947204719,
+      "files": [
+        {
+          "bytes": 1952600,
+          "path": "data/polyhaven/namaqualand_rocks_01/namaqualand_rocks_01.bin",
+          "sha256": "3369a32902e3c59ac92475f5ed08a64b3a993322e0f8649ddda462bdbe4a0cab",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/namaqualand_rocks_01/namaqualand_rocks_01.bin"
+        },
+        {
+          "bytes": 7463,
+          "path": "data/polyhaven/namaqualand_rocks_01/source.gltf",
+          "sha256": "b13a569b72c9f2131d4a27e7b7861d8bd207f6caf3552998fd39f6c0cc69feb2",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/namaqualand_rocks_01/namaqualand_rocks_01_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "eb70b0a7061093e6f8a1ebf0c0ca23c1ac0dbd5cdbf0bb91b0a33e3cc49eb498",
+      "id": "ph_namaqualand_rocks_01",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/namaqualand_rocks_01/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:namaqualand_rocks",
+      "source_identity": "namaqualand_rocks_01",
+      "source_url": "https://polyhaven.com/a/namaqualand_rocks_01",
+      "split": "development",
+      "triangles": 85716,
+      "uv": true,
+      "vertices": 44947,
+      "woody": false
+    },
+    {
+      "archive_sha256": "98d54386b7975a58b420daeccbfa37978dbf44d4300ca051065086d7814a2a01",
+      "bytes": 18559303,
+      "category": "stress",
+      "colors": true,
+      "diameter": 253.17948667737673,
+      "files": [
+        {
+          "bytes": 18559303,
+          "path": "data/smithsonian/3d_package_4313ff92-0816-476e-aa74-46f296f10074/source.obj",
+          "sha256": "189ec19dfee2991e39d2bb825ae86ca2081cb6cd85c6b2f0a9039a6bb91c9a33"
+        }
+      ],
+      "geometry_sha256": "ea3ef3383d2feda009d6d66136be1e25839abec67d5d1e9905cf4460a762ce8f",
+      "id": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_evidence": {
+        "media_rights": "public-domain",
+        "url": "https://3d.si.edu/object/3d/seriatopora-hystrix:4313ff92-0816-476e-aa74-46f296f10074"
+      },
+      "license_url": "https://www.si.edu/openaccess",
+      "normals": true,
+      "opaque": true,
+      "path": "data/smithsonian/3d_package_4313ff92-0816-476e-aa74-46f296f10074/source.obj",
+      "provider": "smithsonian",
+      "rights_verified_on": "2026-09-27",
+      "source_group": "smithsonian:Seriatopora hystrix",
+      "source_identity": "3d_package:4313ff92-0816-476e-aa74-46f296f10074",
+      "source_url": "https://3d-api.si.edu/content/document/3d_package:4313ff92-0816-476e-aa74-46f296f10074/resources/usnm_346-100k-obj.zip",
+      "split": "development",
+      "title": "Seriatopora hystrix",
+      "triangles": 99772,
+      "uv": true,
+      "variant": "Low_resolution",
+      "vertices": 299316,
+      "woody": false
+    },
+    {
+      "archive_sha256": "d49f586ef3feb1e720338c791853db84fc5bf4981c427443376642e99224f36d",
+      "bytes": 15271132,
+      "category": "stress",
+      "colors": true,
+      "diameter": 301.7800742658433,
+      "files": [
+        {
+          "bytes": 15271132,
+          "path": "data/smithsonian/3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641/source.obj",
+          "sha256": "8f0b842879d144d89a7271193a252b6091a2e63b1d33ba2f3097cd78eafa5e21"
+        }
+      ],
+      "geometry_sha256": "6b60bcdcc1dbdf18584f37b44dd8e6174f945ed5656d0d1d4045968f2bcca19c",
+      "id": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_evidence": {
+        "media_rights": "public-domain",
+        "url": "https://3d.si.edu/object/3d/rutherford-b-hayes:1f3700e8-6d01-4488-8ab9-ea14031ef641"
+      },
+      "license_url": "https://www.si.edu/openaccess",
+      "normals": true,
+      "opaque": true,
+      "path": "data/smithsonian/3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641/source.obj",
+      "provider": "smithsonian",
+      "rights_verified_on": "2026-09-27",
+      "source_group": "smithsonian:Rutherford B. Hayes",
+      "source_identity": "3d_package:1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "source_url": "https://3d-api.si.edu/content/document/3d_package:1f3700e8-6d01-4488-8ab9-ea14031ef641/resources/rutherford-b.-hayes-plaster-bust-150k-4096-obj.zip",
+      "split": "development",
+      "title": "Rutherford B. Hayes",
+      "triangles": 150000,
+      "uv": true,
+      "variant": "Low_resolution",
+      "vertices": 86205,
+      "woody": false
+    },
+    {
+      "archive_sha256": "0c98902c94f612bc2e17e0d3a6d5a434019660920c3bcdf5275aebff764055b8",
+      "bytes": 15119437,
+      "category": "stress",
+      "colors": true,
+      "diameter": 197.53562548270833,
+      "files": [
+        {
+          "bytes": 15119437,
+          "path": "data/smithsonian/3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664/source.obj",
+          "sha256": "36245b3aa70db1e1e213e068ce283af96b664112a71caae6243b274060c914c4"
+        }
+      ],
+      "geometry_sha256": "ae794a3b87a2d4be141aa47b290d08e6b612c365110bb6e0bd9416a7ff13a476",
+      "id": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_evidence": {
+        "media_rights": "public-domain",
+        "url": "https://3d.si.edu/object/3d/lidded-incense-burner-xianglu-geometric-decoration-and-narrative-scenes:ce850625-2cf1-4c6f-9086-0d5845d9a664"
+      },
+      "license_url": "https://www.si.edu/openaccess",
+      "normals": true,
+      "opaque": true,
+      "path": "data/smithsonian/3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664/source.obj",
+      "provider": "smithsonian",
+      "rights_verified_on": "2026-09-27",
+      "source_group": "smithsonian:Lidded incense burner (<em>xianglu</em>) with geometric decoration and narrative scenes",
+      "source_identity": "3d_package:ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "source_url": "https://3d-api.si.edu/content/document/3d_package:ce850625-2cf1-4c6f-9086-0d5845d9a664/resources/incense-burner-in-the-form-of-a-mountain-(boshanlu)-150k-4096-obj.zip",
+      "split": "development",
+      "title": "Lidded incense burner (<em>xianglu</em>) with geometric decoration and narrative scenes",
+      "triangles": 150000,
+      "uv": true,
+      "variant": "Low_resolution",
+      "vertices": 80662,
+      "woody": false
+    }
+  ]
+}

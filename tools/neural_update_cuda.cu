@@ -113,7 +113,7 @@ __global__ void norm_parts(const AdamParameter* parameters,uint32_t count,uint32
 __global__ void norm_finish(const float* partial,uint32_t parts,UpdateState* state,UpdateSettings settings) {
     if(state->failure)return;float sum=0;for(uint32_t i=threadIdx.x;i<parts;i+=blockDim.x)sum+=partial[i];
     __shared__ cub::BlockReduce<float,256>::TempStorage temp;sum=cub::BlockReduce<float,256>(temp).Sum(sum);
-    if(threadIdx.x==0){state->gradient=sqrtf(sum);if(!isfinite(state->gradient)){state->failure=2;return;}
+    if(threadIdx.x==0){if(state->step==UINT32_MAX){state->failure=3;return;}state->gradient=sqrtf(sum);if(!isfinite(state->gradient)){state->failure=2;return;}
         state->clip=fminf(1.f,settings.max_norm/(state->gradient+1e-6f));
         state->correction1=float(double(settings.lr)/(1-pow(.9,double(state->step)+1)));
         state->correction2=float(sqrt(1-pow(.999,double(state->step)+1)));}

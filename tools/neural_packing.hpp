@@ -33,7 +33,7 @@ inline json diagnose_packing(MeshView source,MeshView candidate,const NeuralOpti
 }
 struct PackingRepair {Mesh mesh;Measurement initial,final;uint32_t trials{},changed_vertices{};json diagnostics;};
 inline PackingRepair repair_packing(MeshView source,const NeuralOptions& options,const EvalSettings& e,uint32_t budget=64,MeshView prepared={}){
-    auto repair=repair_packing_gpu(source,options,e,budget,prepared);json attempts=json::array();for(const auto& a:repair.attempts)attempts.push_back({{"trial",a.trial},{"view",a.view},{"vertex",a.vertex},{"axis",a.axis},{"direction",a.direction},{"unmatched_before",a.before},{"unmatched_after",a.after},{"kept",a.kept}});
+    auto repair=repair_packing_gpu(source,options,e,budget,prepared);json attempts=json::array();for(const auto& a:repair.attempts)attempts.push_back({{"trial",a.trial},{"view",a.view},{"vertex",a.vertex},{"axis",a.axis},{"direction",a.direction},{"unmatched_before",a.before},{"unmatched_after",a.after},{"kept",a.kept},{"patch_face",a.patch_face==UINT32_MAX?json(nullptr):json(a.patch_face)}});
     auto diagnostics=json{{"initial",measurement_json(repair.initial)},{"final",measurement_json(repair.final)},{"trials",repair.trials},{"changed_vertices",repair.changed_vertices},{"attempts",attempts}};
     return {std::move(repair.mesh),repair.initial,repair.final,repair.trials,repair.changed_vertices,std::move(diagnostics)};
 }

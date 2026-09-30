@@ -12,7 +12,7 @@ const blackwell={
 };
 export const profiles=Object.freeze({
   blackwell:Object.freeze(blackwell),
-  'gpu-refactor':Object.freeze({...blackwell,id:'gpu-refactor',setup_minutes:20,training_minutes:130,collection_minutes:10}),
+  'gpu-refactor':Object.freeze({...blackwell,id:'gpu-refactor',setup_minutes:20,training_minutes:130,collection_minutes:10,graphics:true}),
   'hardware-validation':Object.freeze({...blackwell,id:'hardware-validation',setup_minutes:20,training_minutes:10,collection_minutes:5,graphics:true}),
   'hardware-validation-small':Object.freeze({...blackwell,id:'hardware-validation-small',
     gpu:'NVIDIA RTX PRO 4000 Blackwell',catalog_vram_gb:24,device_memory_mib:22000,
@@ -21,6 +21,10 @@ export const profiles=Object.freeze({
   'hardware-validation-ada':Object.freeze({...blackwell,id:'hardware-validation-ada',
     gpu:'NVIDIA GeForce RTX 4090',catalog_vram_gb:24,device_memory_mib:22000,
     compute_capability:'8.9',cuda_architecture:89,host_ram_gb:16,vcpus:4,gpu_hourly_usd_cap:.80,
+    setup_minutes:20,training_minutes:10,collection_minutes:5,graphics:true}),
+  'hardware-validation-ada16':Object.freeze({...blackwell,id:'hardware-validation-ada16',
+    gpu:'NVIDIA RTX 2000 Ada Generation',catalog_vram_gb:16,device_memory_mib:14000,
+    compute_capability:'8.9',cuda_architecture:89,host_ram_gb:16,vcpus:4,gpu_hourly_usd_cap:.30,
     setup_minutes:20,training_minutes:10,collection_minutes:5,graphics:true}),
   'hardware-validation-l40s':Object.freeze({...blackwell,id:'hardware-validation-l40s',
     gpu:'NVIDIA L40S',catalog_vram_gb:48,device_memory_mib:45000,

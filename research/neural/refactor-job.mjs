@@ -3,7 +3,8 @@
 import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
-import {validateRefactor,architectureReport,learningCycle,cycleWindow} from './refactor-cycle.mjs';
+import {validateRefactor,architectureReport,cycleWindow} from './refactor-cycle.mjs';
+import {persistentLearningCycle} from './resident-cycle.mjs';
 const [setup,latest,minutes]=process.argv.slice(2).map(Number),started=Date.now(),results='/workspace/results',root=results+'/gpu-refactor';
 if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||minutes!==130)throw new Error('Invalid refactor rental deadline');
 const deadline=Math.min(latest,started+minutes*60000);cycleWindow(started,deadline);
@@ -32,8 +33,11 @@ try{
   const ctx={root,execute,phase:setPhase,latest:deadline},validation=await validateRefactor(ctx);
   result.validation_passed=true;result.architecture_written_at=Date.now();
   fs.writeFileSync(root+'/ARCHITECTURE.md',architectureReport(validation));
+
+  await execute('blitz-neural-pilot-prepare',[root+'/packed-pilot','16384'],root+'/packed-pilot.log',3);
+  if(!read(root+'/packed-pilot/report.json').complete)throw new Error('Packed development preparation failed; long training blocked');
   const window=cycleWindow(Date.now(),deadline);activeDeadline=window.deadline;
-  result.cycle=await learningCycle(ctx,validation);result.complete=result.cycle.complete;
+  result.cycle=await persistentLearningCycle(ctx,validation);result.complete=result.cycle.complete;
   if(!result.complete)throw new Error('Learning cycle did not meet completion contracts');
   if(monitorError)throw new Error(monitorError);
 }catch(error){result.error=String(error);process.exitCode=1;}

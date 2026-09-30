@@ -84,20 +84,29 @@ class ResidentUpdate {
     uint32_t batch_,pool_{},width_,outputs_;
     std::unique_ptr<at::cuda::CUDAGraph> graph_;
     torch::Tensor losses_,derivative_,placements_;
+    UpdateBackend backend_;
+    torch::Tensor hidden_[2],delta_[2],workspace_;
+    std::unique_ptr<FusedMlp,decltype(&destroy_fused_mlp)> fused_{nullptr,destroy_fused_mlp};
 public:
     DeviceAdam optimizer;torch::Tensor input,target,ids,prediction;
     uint32_t captures{};
-    ResidentUpdate(ActionNetwork& model,ResidentDataset& data,uint32_t batch,UpdateSettings settings={}):model_(model),data_(data),batch_(batch),width_(policy_inputs(model->architecture)),outputs_(policy_outputs(model->architecture)),optimizer(model->parameters(),settings){if(!batch||batch>4096||data.architecture()!=model->architecture)throw std::invalid_argument("resident update contract");reserve();}
+    ResidentUpdate(ActionNetwork& model,ResidentDataset& data,uint32_t batch,UpdateSettings settings={},UpdateBackend backend=UpdateBackend::Reference):model_(model),data_(data),batch_(batch),width_(policy_inputs(model->architecture)),outputs_(policy_outputs(model->architecture)),backend_(backend),optimizer(model->parameters(),settings){if(!batch||batch>4096||data.architecture()!=model->architecture||(backend==UpdateBackend::Fused&&model->architecture!=placement_schema))throw std::invalid_argument("resident update contract");reserve();}
     ~ResidentUpdate(){cudaStreamSynchronize(c10::cuda::getCurrentCUDAStream());graph_.reset();}
     uint32_t pool()const{return pool_;}
-    void reserve(){if(pool_>=data_.maximum_rows)return;cuda_check(cudaDeviceSynchronize());graph_.reset();prediction=torch::Tensor{};pool_=data_.maximum_rows;auto options=model_->parameters()[0].options().requires_grad(false);
+    uint32_t fused_epilogues()const{return fused_?fused_mlp_epilogues(fused_.get()):0;}
+    std::array<int32_t,3> fused_algorithms()const{return fused_?fused_mlp_algorithms(fused_.get()):std::array<int32_t,3>{-1,-1,-1};}
+    void reserve(){if(pool_>=data_.maximum_rows)return;cuda_check(cudaDeviceSynchronize());graph_.reset();fused_.reset();prediction=torch::Tensor{};pool_=data_.maximum_rows;auto options=model_->parameters()[0].options().requires_grad(false);
         input=torch::zeros({batch_,pool_,width_},options);target=torch::zeros({batch_,pool_},options.dtype(torch::kUInt8));ids=torch::zeros({batch_},options.dtype(torch::kInt32));losses_=torch::empty({batch_},options);derivative_=torch::zeros({batch_,pool_,outputs_},options);if(model_->architecture==placement_schema)placements_=torch::empty({batch_,pool_,9},options);
+        if(backend_==UpdateBackend::Fused){prediction=torch::empty({batch_,pool_,outputs_},options);FusedMlpBuffers b;b.rows=batch_*pool_;b.input=input.data_ptr<float>();b.output=prediction.data_ptr<float>();b.derivative=derivative_.data_ptr<float>();
+            for(unsigned i=0;i<2;++i){hidden_[i]=torch::empty({b.rows,64},options);delta_[i]=torch::empty_like(hidden_[i]);b.hidden[i]=hidden_[i].data_ptr<float>();b.delta[i]=delta_[i].data_ptr<float>();}
+            workspace_=torch::empty({4<<20},options.dtype(torch::kUInt8));b.workspace=workspace_.data_ptr();b.workspace_bytes=workspace_.nbytes();
+            for(unsigned i=0;i<6;++i){b.parameter[i]=optimizer.parameters[i].data_ptr<float>();b.gradient[i]=optimizer.parameters[i].grad().data_ptr<float>();}fused_.reset(create_fused_mlp(b));}
     }
     void gather(){sample_resident_update(records<ResidentRoot>(data_.root),input.data_ptr<float>(),target.data_ptr<uint8_t>(),placements_.defined()?placements_.data_ptr<float>():nullptr,reinterpret_cast<uint32_t*>(ids.data_ptr<int32_t>()),records<UpdateState>(optimizer.control),batch_,pool_,width_,c10::cuda::getCurrentCUDAStream());cuda_check(cudaGetLastError());}
-    void eager(){auto stream=c10::cuda::getCurrentCUDAStream();gather();optimizer.zero_grad();prediction=model_->forward(input);
+    void eager(){auto stream=c10::cuda::getCurrentCUDAStream();gather();if(fused_)fused_mlp_forward(fused_.get(),stream);else {optimizer.zero_grad();prediction=model_->forward(input);}
         if(placements_.defined())placement_loss_update(prediction.data_ptr<float>(),target.data_ptr<uint8_t>(),placements_.data_ptr<float>(),nullptr,derivative_.data_ptr<float>(),losses_.data_ptr<float>(),records<UpdateState>(optimizer.control),batch_,pool_,optimizer.settings,stream);
         else loss_update(prediction.data_ptr<float>(),target.data_ptr<uint8_t>(),derivative_.data_ptr<float>(),losses_.data_ptr<float>(),records<UpdateState>(optimizer.control),batch_,pool_,optimizer.settings,stream);
-        prediction.backward(derivative_);optimizer.update();}
+        if(fused_)fused_mlp_backward(fused_.get(),stream);else prediction.backward(derivative_);optimizer.update();}
     void capture(){reserve();if(graph_)return;auto saved=optimizer.snapshot();cuda_check(cudaDeviceSynchronize());{c10::cuda::CUDAStreamGuard stream(c10::cuda::getStreamFromPool());for(unsigned i=0;i<3;++i)eager();cuda_check(cudaStreamSynchronize(stream.current_stream()));optimizer.restore(saved);graph_=std::make_unique<at::cuda::CUDAGraph>();graph_->capture_begin();eager();graph_->capture_end();optimizer.restore(saved);cuda_check(cudaStreamSynchronize(stream.current_stream()));}++captures;}
     void run(uint32_t count){if(!data_.states())throw std::invalid_argument("resident update requires a populated dataset window");capture();for(uint32_t i=0;i<count;++i)graph_->replay();}
 };

@@ -62,6 +62,15 @@ void graph_contracts() {
     hooks.propose=[](MeshView input,const ReduceSettings& rs,const EvalSettings&,double){return reduce(input,rs);};
     hooks.evaluate=[](MeshView,MeshView,const Bounds&,const EvalSettings&){return Measurement{};};hooks.confirm=[&](Result&){stop=true;return false;};
     auto cancelled=detail::generate_with_hooks(original.view(),s,{},&hooks);require(cancelled.status==Status::Cancelled&&same_mesh_data(cancelled.lods.back().view(original.view()),original.view()),"confirmation cancellation lost status or incumbent");
+    // A validated packed baseline can have the same topology as its source,
+    // but different positions. Retain that exact baseline through selection.
+    stop=false;s.cancelled={};s.levels=3;s.research.output=OutputMode::Rebuild;
+    auto repaired=original;repaired.positions[0].z+=.001f;unsigned fallback_calls=0;
+    hooks.propose=[&](MeshView,const ReduceSettings&,const EvalSettings&,double){Lod l;l.data=repaired;l.shared_vertices=false;return l;};
+    hooks.fallback=[&](MeshView,const EvalSettings&,const EvalSettings&,const EvalSettings&,const EvalSettings&){++fallback_calls;Lod l;l.data=repaired;l.shared_vertices=false;return l;};
+    hooks.evaluate=[&](MeshView,MeshView candidate,const Bounds&,const EvalSettings&){Measurement m;m.passed=same_mesh_data(candidate,repaired.view());return m;};
+    hooks.confirm=[&](Result& result){return std::all_of(result.lods.begin()+1,result.lods.end(),[&](const auto& lod){return same_mesh_data(lod.view(original.view()),repaired.view());});};
+    auto packed=detail::generate_with_hooks(original.view(),s,{},&hooks);require(packed.status==Status::Complete&&packed.lods.size()==3&&fallback_calls==2,"validated equal-topology fallback was replaced by unaudited source");
 }
 #ifdef BLITZ_CUDA
 #include <cuda_runtime_api.h>

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "conditions": [
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 32,
+      "previous_steps": 0
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 64,
+      "previous_steps": 0
+    },
+    {
+      "asset": "ph_namaqualand_boulder_04",
+      "pixels": 128,
+      "previous_steps": 0
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 64,
+      "previous_steps": 2
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 64,
+      "previous_steps": 2
+    },
+    {
+      "asset": "ph_namaqualand_boulder_04",
+      "pixels": 64,
+      "previous_steps": 2
+    }
+  ],
+  "note": "Frozen timing-only control: predecessor preparation <=128px to fit the shared local GPU; quality gates and final inference audits unchanged."
+}

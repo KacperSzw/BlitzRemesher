@@ -29,7 +29,7 @@ const std::string& NeuralModel::sha256() const {if(!impl_)throw std::invalid_arg
 #ifndef BLITZ_CUDA
 bool neural_available(int32_t) noexcept {return false;}
 Measurement evaluate_cuda(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*) {throw NeuralUnavailable("CUDA evaluator was not built");}
-Measurement evaluate_gpu(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*) {throw NeuralUnavailable("GPU evaluator was not built");}
+Measurement evaluate_gpu(MeshView,MeshView,const Bounds&,const EvalSettings&,const NeuralOptions&,NeuralStats*,MeshView) {throw NeuralUnavailable("GPU evaluator was not built");}
 double overlap_cuda(MeshView,const Bounds&,double,ViewSet,const NeuralOptions&) {throw NeuralUnavailable("CUDA evaluator was not built");}
 #endif
 #ifdef BLITZ_CUDA
@@ -78,14 +78,28 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
     hooks.evaluate=[&](MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& e){auto begin=Clock::now();auto bounded=e;
         bounded.max_supersample=neural::bounded_refinement(e);if(bounded.max_supersample<e.max_supersample)++counters.bounded_audits;
         auto m=audit.evaluate(a,b,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(begin);return m;};
-    std::unique_ptr<neural::GpuActionState> action_state,placement_state;double placement_pixels=-1;auto quantization=neural::vertex_bounds(source);
+    std::unique_ptr<neural::GpuActionState> action_state,placement_state;auto quantization=neural::vertex_bounds(source);
+    Mesh baseline_mesh,baseline_previous;std::array<EvalSettings,4> baseline_settings;uint64_t baseline_revision=0,placement_revision=0;
+    auto packed_baseline=[&](MeshView previous,const EvalSettings& source_eval,const EvalSettings& adjacent_eval,const EvalSettings& search_source,const EvalSettings& search_adjacent)->const Mesh& {
+        std::array<EvalSettings,4> settings{source_eval,adjacent_eval,search_source,search_adjacent};
+        bool cached=baseline_revision&&same_mesh_data(previous,baseline_previous.view());for(unsigned i=0;i<4&&cached;++i)cached=neural::same_packing_settings(settings[i],baseline_settings[i]);
+        if(!cached){placement_state.reset();baseline_previous=copy_mesh(previous);baseline_settings=settings;
+            std::array<neural::PackingAudit,4> checks{{{source,settings[0]},{baseline_previous.view(),settings[1]},{source,settings[2]},{baseline_previous.view(),settings[3]}}};
+            auto fixed=neural::repair_packing_gpu(source,options,checks,256);counters.packing_trials+=fixed.trials;counters.packing_changed_vertices+=fixed.changed_vertices;counters.packing_failures+=!fixed.final.passed;
+            if(!fixed.final.complete||!fixed.final.passed){if(options.capture_confirmation_failure){auto& f=counters.confirmation_failure.emplace();auto& check=checks[fixed.failed_check];f.source=copy_mesh(source);f.reference=copy_mesh(check.reference);f.candidate=std::move(fixed.mesh);f.bounds=bounds(source);f.settings=check.settings;f.settings.cancelled={};f.settings.performance=nullptr;f.gpu=fixed.final;f.backend=NeuralConfirmation::Gpu;f.raster=options.raster_backend;f.storage=options.draw_storage();f.stage=NeuralAuditStage::PackingBaseline;f.adjacent=fixed.failed_check%2;f.reason=fixed.final.resource_limited?NeuralConfirmationReason::Resource:NeuralConfirmationReason::Visual;}throw std::logic_error("packed baseline failed reference audit");}baseline_mesh=std::move(fixed.mesh);++baseline_revision;
+        }return baseline_mesh;
+    };
+    if(action_network&&weights.architecture==neural::placement_schema&&options.draw_storage()!=NeuralVertexStorage::Float32&&s.research.output!=OutputMode::Reuse)
+        hooks.fallback=[&](MeshView previous,const EvalSettings& a,const EvalSettings& b,const EvalSettings& sa,const EvalSettings& sb){Lod lod;lod.shared_vertices=false;lod.data=packed_baseline(previous,a,b,sa,sb);return lod;};
     if(action_network)action_state=std::make_unique<neural::GpuActionState>(source,options);
     if(action_network)hooks.propose_guarded=[&](MeshView input,MeshView fixed_source,MeshView previous,const Bounds& bounds,const ReduceSettings& rs,const EvalSettings& source_eval,const EvalSettings& adjacent_eval){
         auto begin=Clock::now();auto nested_before=counters.inference_ns+counters.gpu_audit_ns;neural::ActionStats stats;
         auto* state=action_state.get();if(weights.architecture==neural::placement_schema&&rs.output==OutputMode::Rebuild){
-            if(!placement_state||(options.draw_storage()!=NeuralVertexStorage::Float32&&placement_pixels!=source_eval.screen_size)){placement_state.reset();
-                if(options.draw_storage()==NeuralVertexStorage::Float32)placement_state=std::make_unique<neural::GpuActionState>(source,options,true);
-                else {auto search=source_eval;search.views=s.search_views;search.supersample=s.search_supersample;auto baseline=neural::repair_packing_gpu(source,options,source_eval,64,{},&search);counters.packing_trials+=baseline.trials;counters.packing_changed_vertices+=baseline.changed_vertices;counters.packing_failures+=!baseline.final.passed;placement_state=std::make_unique<neural::GpuActionState>(baseline.mesh.view(),options,true,&quantization);}placement_pixels=source_eval.screen_size;}state=placement_state.get();}state->reset();
+            if(options.draw_storage()==NeuralVertexStorage::Float32){if(!placement_state)placement_state=std::make_unique<neural::GpuActionState>(source,options,true);}
+            else {auto search=source_eval,search_adjacent=adjacent_eval;for(auto* e:{&search,&search_adjacent}){e->views=s.search_views;e->supersample=s.search_supersample;e->max_changed_area=1;}
+                auto& baseline=packed_baseline(previous,source_eval,adjacent_eval,search,search_adjacent);
+                if(!placement_state||placement_revision!=baseline_revision){placement_state=std::make_unique<neural::GpuActionState>(baseline.view(),options,true,&quantization);placement_revision=baseline_revision;}}
+            state=placement_state.get();}state->reset();
         auto evaluate_device=[&](MeshView reference,neural::DeviceMeshView candidate,const EvalSettings& config){auto t=Clock::now();auto bounded=config;
             bounded.max_supersample=neural::bounded_refinement(config);if(bounded.max_supersample<config.max_supersample)++counters.bounded_audits;
             auto result=audit.evaluate(reference,candidate,bounds,bounded,&counters);counters.gpu_audit_ns+=nanos(t);return result;};
@@ -124,7 +138,8 @@ Result generate_neural(MeshView source,const Settings& settings,const NeuralMode
             if(!counters.confirmation_failure){
                 auto& failure=counters.confirmation_failure.emplace();failure.bounds=r.reference_bounds;failure.settings=e;failure.settings.cancelled={};failure.settings.performance=nullptr;
                 failure.cpu=cpu;failure.gpu=gpu;failure.level=level;failure.backend=options.confirmation;failure.reason=reason;failure.adjacent=adjacent;failure.nanoseconds=nanos(begin);
-                if(options.capture_confirmation_failure){failure.reference=copy_mesh(reference);failure.candidate=copy_mesh(candidate);}
+                failure.raster=options.raster_backend;failure.storage=options.draw_storage();
+                if(options.capture_confirmation_failure){failure.reference=copy_mesh(reference);failure.candidate=copy_mesh(candidate);failure.source=copy_mesh(source);}
             }
             output.complete=false;output.passed=false;return false;
         };

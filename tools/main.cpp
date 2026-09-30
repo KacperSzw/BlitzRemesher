@@ -20,7 +20,7 @@ int main(int argc,char** argv) {
         if(command=="audit-replay"){
             if(argc<3)throw std::invalid_argument("audit-replay FILE [--gpu-memory-mib N] [--device N]");NeuralOptions o;
             for(int i=3;i<argc;i+=2){if(i+1>=argc)throw std::invalid_argument("option needs a value");std::string k=argv[i];if(k=="--gpu-memory-mib")o.memory_mib=neural_unsigned(argv[i+1]);else if(k=="--device")o.device=std::stoi(argv[i+1]);else throw std::invalid_argument("unknown replay option");}
-            auto report=replay_audit(argv[2],o);std::cout<<report.dump(2)<<'\n';return report.at("decisions_agree").get<bool>()?0:2;
+            auto report=replay_audit(argv[2],o);std::cout<<report.dump(2)<<'\n';return report.at("reproduced").get<bool>()?0:2;
         }
         if(command=="corpus-check"){if(argc!=4)throw std::invalid_argument("corpus-check MANIFEST REPORT");return corpus_check(argv[2],argv[3]);}
         if(argc<3)throw std::invalid_argument("missing input");
@@ -41,7 +41,10 @@ int main(int argc,char** argv) {
         if(command=="simplify") {
             neural_options.capture_confirmation_failure=true;
             PerformanceStats work;s.performance=&work;
-            auto begin=std::chrono::steady_clock::now();std::unique_ptr<NeuralModel> model;if(!neural_file.empty())model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);NeuralStats neural_stats;auto r=model?generate_neural(m.view(),s,*model,&neural_stats):generate(m.view(),s);auto generated=std::chrono::steady_clock::now();save_chain(r,out);auto exported=std::chrono::steady_clock::now();
+            auto begin=std::chrono::steady_clock::now();std::unique_ptr<NeuralModel> model;if(!neural_file.empty())model=std::make_unique<NeuralModel>(neural_file.c_str(),neural_options);NeuralStats neural_stats;Result r;
+            try{r=model?generate_neural(m.view(),s,*model,&neural_stats):generate(m.view(),s);}
+            catch(...){save_audit_failure(neural_stats,out/"confirmation-failure.json");throw;}
+            auto generated=std::chrono::steady_clock::now();save_chain(r,out);auto exported=std::chrono::steady_clock::now();
             save_audit_failure(neural_stats,out/"confirmation-failure.json");
             auto j=result_json(r);if(model){j["method"]=neural_options.ranking==NeuralRanking::Learned?"neural":"neural-control-"+std::string(ranking_name(neural_options.ranking));j["model_sha256"]=model->sha256();j["neural_options"]=neural_json(neural_options);j["neural"]=neural_json(neural_stats);}j["seconds"]=std::chrono::duration<double>(exported-begin).count();j["generation_seconds"]=std::chrono::duration<double>(generated-begin).count();j["export_seconds"]=std::chrono::duration<double>(exported-generated).count();j["stage_seconds"]={{"reduction",work.reduction_ns*1e-9},{"raster",work.raster_ns*1e-9},{"distance",work.distance_ns*1e-9}};j["output"]=out.string();std::cout<<j.dump(2)<<'\n';return r.status==Status::Complete?0:2;
         }

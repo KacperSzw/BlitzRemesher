@@ -1,6 +1,7 @@
 #pragma once
 #include <cuda_runtime_api.h>
 #include <cstdint>
+#include <array>
 #include "neural_compact.hpp"
 
 namespace blitz::neural::training {
@@ -26,6 +27,19 @@ struct UpdateState {
 };
 struct AdamParameter { float *value,*gradient,*mean,*variance;uint32_t count,offset; };
 struct UpdateSettings {float margin{1},auxiliary{.25f},penalty{1e-4f},lr{.001f},decay{.0001f},max_norm{1};};
+enum class UpdateBackend:uint8_t { Reference,Fused };
+// Fixed v3 MLP. Every pointer borrows stable tensor storage through graph replay.
+struct FusedMlpBuffers {
+    float *parameter[6]{},*gradient[6]{},*input{},*hidden[2]{},*delta[2]{},*output{},*derivative{};
+    void* workspace{};size_t workspace_bytes{};uint32_t rows{};
+};
+struct FusedMlp;
+FusedMlp* create_fused_mlp(const FusedMlpBuffers&);
+void destroy_fused_mlp(FusedMlp*) noexcept;
+void fused_mlp_forward(FusedMlp*,cudaStream_t);
+void fused_mlp_backward(FusedMlp*,cudaStream_t);
+uint32_t fused_mlp_epilogues(const FusedMlp*);
+std::array<int32_t,3> fused_mlp_algorithms(const FusedMlp*);
 // Counter-based sampling has no hidden RNG state. Version 1 is keyed by
 // (seed, completed update, batch lane, hierarchy draw), including rejection draws.
 inline constexpr uint32_t sampler_version=1,update_checkpoint_version=2;

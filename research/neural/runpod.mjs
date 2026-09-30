@@ -29,7 +29,7 @@ async function prepare(){
   if(!refactor&&!hardware){const remote=sync('git',['ls-remote','origin','refs/heads/'+branch]).split(/\s/)[0];
     if(remote!==revision)throw new Error('Current branch is not fully pushed');}
   if(refactor&&deployment.id!=='gpu-refactor')throw new Error('Select BLITZ_RUNPOD_PROFILE=gpu-refactor');
-  if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada','hardware-validation-l40s'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
+  if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada','hardware-validation-ada16','hardware-validation-l40s'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
   fs.mkdirSync(dir,{recursive:true,mode:0o700});
   const stage=dir+'/input';fs.mkdirSync(stage,{recursive:true});
   sync('git',['bundle','create',stage+'/source.bundle','HEAD']);
@@ -55,6 +55,7 @@ async function prepare(){
   }
   if(actions&&!evaluation){const selected=new Set(['ph_sweet_potato','ph_painted_wooden_bench']);
     if(command==='prepare-action-staged'||refactor||hardware)for(const c of freshConditions)selected.add(c.asset);
+    if(refactor||hardware)for(const a of read(root+'/research/neural/prepared-pilot/selection.json').assets)selected.add(a.id);
     const allowed=new Set(read(root+'/research/neural/training-manifest.json').assets.map(a=>a.id));
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');

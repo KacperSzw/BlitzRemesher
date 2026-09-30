@@ -147,7 +147,7 @@ public:
     void configure(DeviceMeshView m,const Bounds& b,const EvalSettings& e){auto next=key(b,e);
         if(!m.identity)throw std::invalid_argument("device render cache requires owned mesh identity");
         auto& old=device_mesh_;
-        if(next!=key_||old.identity!=m.identity||old.revision!=m.revision||old.positions!=m.positions||old.normals!=m.normals||old.colors!=m.colors||old.indices!=m.indices||old.materials!=m.materials||old.double_sided!=m.double_sided||old.vertices!=m.vertices||old.faces!=m.faces||old.sided_count!=m.sided_count||old.fixed_quantization!=m.fixed_quantization||std::memcmp(&old.quant_low,&m.quant_low,sizeof(Vec3))||std::memcmp(&old.quant_extent,&m.quant_extent,sizeof(Vec3))){clear();device_mesh_=m;key_=next;mesh_={};}enabled_=true;}
+        if(next!=key_||old.identity!=m.identity||old.revision!=m.revision||old.positions!=m.positions||old.normals!=m.normals||old.colors!=m.colors||old.indices!=m.indices||old.materials!=m.materials||old.double_sided!=m.double_sided||old.vertices!=m.vertices||old.faces!=m.faces||old.trial_status!=m.trial_status||old.sided_count!=m.sided_count||old.fixed_quantization!=m.fixed_quantization||std::memcmp(&old.quant_low,&m.quant_low,sizeof(Vec3))||std::memcmp(&old.quant_extent,&m.quant_extent,sizeof(Vec3))){clear();device_mesh_=m;key_=next;mesh_={};}enabled_=true;}
     const Image* find(uint32_t view,uint8_t sampling)const{if(enabled_)for(auto& entry:entries_)if(entry.view==view&&entry.sampling==sampling)return entry.image.get();return nullptr;}
     bool room(size_t bytes)const{return enabled_&&bytes<=limit_-bytes_&&entries_.size()<4096;}
     const Image* retain(uint32_t view,uint8_t sampling,Image&& image){size_t bytes=image.pixels.n*(sizeof(AuditPixel)+(image.cache_field?sizeof(float):0))+image.colors.n*sizeof(Vec3);
@@ -403,22 +403,24 @@ struct RasterBackend {
 };
 #ifdef BLITZ_VULKAN
 Measurement compare_images(Device&,const Image&,const Image&,const EvalSettings&,uint8_t,bool);
-std::vector<Measurement> measure_batch(Device& device,DeviceMeshView a,DeviceMeshView b,const Bounds& bounds,std::span<const Camera> cameras,const EvalSettings& config,uint8_t ss,RasterMemo& reference,uint32_t first_view,NeuralStats* stats,RasterBackend backend){
+std::vector<Measurement> measure_batch(Device& device,DeviceMeshView a,DeviceMeshView b,const Bounds& bounds,std::span<const Camera> cameras,const EvalSettings& config,uint8_t ss,RasterMemo& reference,uint32_t first_view,NeuralStats* stats,RasterBackend backend,std::span<const DeviceMeshView> candidates={},std::span<uint32_t> live={}){
+    const bool many=!candidates.empty();
     uint32_t extent=uint32_t(std::ceil(config.screen_size+8))*ss,n=extent*extent;
     if(uint64_t(extent)*extent>max_raster_samples)throw ResourceError(NeuralResourceLimit::SampleCount,uint64_t(extent)*extent,max_raster_samples,"hardware raster exceeds sample cap");
     size_t count=cameras.size();std::vector<std::optional<Image>> temporary(count);std::vector<const Image*> x(count);std::vector<Image> y;std::vector<RasterOutput> outputs;std::vector<Camera> missing;std::vector<size_t> indices;
-    for(size_t i=0;i<count;++i){x[i]=reference.find(first_view+uint32_t(i),ss);if(x[i]){if(stats)++stats->gpu_reference_render_hits;continue;}
+    for(size_t i=0;i<count;++i){if(many&&i)continue;x[i]=reference.find(first_view+uint32_t(i),ss);if(x[i]){if(stats)++stats->gpu_reference_render_hits;continue;}
         temporary[i].emplace(Image{Buffer<AuditPixel>(device,n),Buffer<Vec3>(device,a.colors&&config.profile==Profile::Attributes?n:0),extent,false,true});outputs.push_back({temporary[i]->pixels.p,temporary[i]->colors.p});missing.push_back(cameras[i]);indices.push_back(i);}
     if(!missing.empty()){backend.hardware->render_batch(a,bounds,missing,config.screen_size,ss,config.force_two_sided,backend.reference_storage,outputs);
         for(size_t j=0;j<indices.size();++j){auto i=indices[j];temporary[i]->clipped=outputs[j].clipped;if(auto* saved=reference.retain(first_view+uint32_t(i),ss,std::move(*temporary[i]))){temporary[i].reset();x[i]=saved;}else x[i]=&*temporary[i];}if(stats)stats->gpu_rasters+=missing.size();}
+    if(many)for(size_t i=1;i<count;++i)x[i]=x[0];
     bool direct=backend.predicate&&backend.direct;outputs.clear();y.reserve(count);
-    for(size_t i=0;i<count;++i){y.push_back(Image{Buffer<AuditPixel>(device,direct?0:n),Buffer<Vec3>(device,b.colors&&config.profile==Profile::Attributes?(direct?1:n):0),extent,false,true});outputs.push_back({y.back().pixels.p,y.back().colors.p});}
-    backend.hardware->render_batch(b,bounds,cameras,config.screen_size,ss,config.force_two_sided,backend.storage,outputs);if(stats)stats->gpu_rasters+=count;
-    for(size_t i=0;i<count;++i){y[i].clipped=outputs[i].clipped;if(direct)y[i].surfaces={outputs[i].surfaces.mask,outputs[i].surfaces.attributes,outputs[i].surfaces.colors};}
+    for(size_t i=0;i<count;++i){y.push_back(Image{Buffer<AuditPixel>(device,direct?0:n),Buffer<Vec3>(device,(many?candidates[i]:b).colors&&config.profile==Profile::Attributes?(direct?1:n):0),extent,false,true});outputs.push_back({y.back().pixels.p,y.back().colors.p});}
+    if(many)backend.hardware->render_candidates(candidates,bounds,cameras[0],config.screen_size,ss,config.force_two_sided,backend.storage,outputs);else backend.hardware->render_batch(b,bounds,cameras,config.screen_size,ss,config.force_two_sided,backend.storage,outputs);if(stats)stats->gpu_rasters+=count;
+    for(size_t i=0;i<count;++i){if(!live.empty())live[i]=outputs[i].faces;y[i].clipped=outputs[i].clipped;if(direct)y[i].surfaces={outputs[i].surfaces.mask,outputs[i].surfaces.attributes,outputs[i].surfaces.colors};}
     std::vector<Measurement> result(count);std::vector<bool> sparse(count,false);uint32_t capacity=std::min(n,262144u);
     if(backend.predicate&&config.limit*ss<=512&&2*std::sqrt(2.)/ss+1e-6<=config.limit){
         Buffer<uint32_t> cq(device,count*capacity),aq(device,count*capacity);Buffer<PredicateSummary> summary(device,count);summary.zero();double sq=std::nextafter(config.limit*config.limit,0.);float squared=float(sq);if(double(squared)>sq)squared=std::nextafter(squared,0.f);
-        for(size_t i=0;i<count;++i){if(x[i]->clipped||y[i].clipped)continue;sparse[i]=true;auto sx=samples(*x[i]),sy=samples(y[i]);
+        for(size_t i=0;i<count;++i){if(!outputs[i].faces||x[i]->clipped||y[i].clipped)continue;sparse[i]=true;auto sx=samples(*x[i]),sy=samples(y[i]);
             predicate_initialize<<<blocks(n),256>>>(sx,sy,n,cq.p+i*capacity,aq.p+i*capacity,capacity,summary.p+i,int(config.profile),config.weights,squared);
             predicate_search<false><<<128,128>>>(sx,sy,cq.p+i*capacity,capacity,summary.p+i,extent,ss,config.limit,int(config.profile),config.weights);
             predicate_search<true><<<128,128>>>(sx,sy,aq.p+i*capacity,capacity,summary.p+i,extent,ss,config.limit,int(config.profile),config.weights);}
@@ -430,7 +432,7 @@ std::vector<Measurement> measure_batch(Device& device,DeviceMeshView a,DeviceMes
     }
     // All surface consumers finish before a refinement can overwrite a target.
     // Exact comparisons are evaluated by the caller after this declaration.
-    for(size_t i=0;i<count;++i)if(!sparse[i])result[i]=compare_images(device,*x[i],y[i],config,ss,true);
+    for(size_t i=0;i<count;++i)if(!outputs[i].faces){result[i].passed=false;result[i].complete=false;result[i].error=infinity;}else if(!sparse[i])result[i]=compare_images(device,*x[i],y[i],config,ss,true);
     return result;
 }
 #endif
@@ -662,7 +664,13 @@ struct AuditCuda::Impl {
                 auto perform=[&]{return measure(device,a,b,bounds,views[v],config,sampling,images,candidate_images,parent_images,v,stats,backend);};
                 try{current=ss==config.supersample&&batched[v]?*batched[v]:perform();}catch(const ResourceError& error){
                     if(error.kind!=NeuralResourceLimit::WorkspaceMemory&&error.kind!=NeuralResourceLimit::DeviceMemory)throw;
-                    clear_images();current=perform();}
+                    clear_images();
+#ifdef BLITZ_VULKAN
+                    // A refined single view must not keep the previous four
+                    // lower-resolution attachments alive during its retry.
+                    if(backend.hardware)backend.hardware->trim_targets(0);
+#endif
+                    current=perform();}
                 if(current.passed||ss>=config.max_supersample||current.coverage-2*std::sqrt(2.)/ss>config.limit||!std::isfinite(current.error)||current.coverage_upper<=config.limit)break;}
             ++result.views_evaluated;if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}
             result.coverage=std::max(result.coverage,current.coverage);result.coverage_upper=std::max(result.coverage_upper,current.coverage_upper);result.normal_degrees=std::max(result.normal_degrees,current.normal_degrees);
@@ -676,7 +684,7 @@ struct AuditCuda::Impl {
     Impl(const NeuralOptions& options,MeshView mesh):owned_budget{size_t(options.memory_mib)<<20,0,0,options.device},device(options,true),id(options.device),source(mesh),memo(mesh),options(options),
         source_images(options.cache_rasters?device.limit/12:0),reference_images(options.cache_rasters?device.limit/12:0),candidate_images(options.cache_rasters?device.limit/12:0),parent_images(options.cache_rasters?device.limit/12:0){
         quantization=vertex_bounds(mesh);
-        if(options.raster_backend>NeuralRasterBackend::Vulkan||options.vertex_storage>NeuralVertexStorage::Automatic||options.view_batch<1||options.view_batch>4)throw std::invalid_argument("invalid raster backend, vertex storage or view batch");
+        if(options.raster_backend>NeuralRasterBackend::Vulkan||options.vertex_storage>NeuralVertexStorage::Automatic||options.view_batch<1||options.view_batch>4||(options.candidate_batch!=1&&options.candidate_batch!=2&&options.candidate_batch!=4))throw std::invalid_argument("invalid raster backend, vertex storage or audit batch");
         if(!device.shared)device.shared=&owned_budget;
         if(options.raster_backend==NeuralRasterBackend::Vulkan){
 #ifdef BLITZ_VULKAN
@@ -743,6 +751,41 @@ AuditPredicate AuditCuda::certify(MeshView a,DeviceMeshView b,const Bounds& boun
         else if(m.error>config.limit||m.changed_area>config.max_changed_area)p.verdict=AuditVerdict::Fail;
     }return p;
 }
+std::vector<CandidateAudit> AuditCuda::certify_candidates(MeshView a,std::span<const DeviceMeshView> candidates,const Bounds& bounds,const EvalSettings& config,NeuralStats* stats,double incumbent){
+    if(candidates.empty()||candidates.size()>4||incumbent<0)throw std::invalid_argument("candidate audit batch contract");
+    auto serial=[&](DeviceMeshView b){CandidateAudit result;if(b.trial_status){DeviceTrialStatus status;check(cudaMemcpy(&status,b.trial_status,sizeof(status),cudaMemcpyDeviceToHost));if(status.invalid||!status.faces)return result;b.faces=status.faces;b.trial_status=nullptr;}result.valid=true;result.faces=b.faces;result.value=certify(a,b,bounds,config,stats,incumbent,std::isfinite(incumbent)?&result.pruned:nullptr);return result;};
+    CurrentDevice scope(impl_->id);auto& p=*impl_;auto& device=p.device;
+#ifdef BLITZ_VULKAN
+    if(p.backend.hardware){
+        try{AuditCounters counters(device,stats);if(auto e=validate(a);!e.empty())throw std::invalid_argument(e);(void)blitz::evaluate(a,a,bounds,config);
+            for(auto b:candidates)if(!b.identity||!b.positions||!b.indices||!b.vertices||!b.faces)throw std::invalid_argument("invalid candidate device storage");
+            if(p.source.positions.count&&!p.uploaded)p.uploaded=std::make_unique<UploadedMesh>(device,p.source,nullptr,true,true);
+            const UploadedMesh* reference=p.uploaded&&source_attributes(a,p.source)?(same_mesh_data(a,p.source)?p.uploaded.get():p.reference.get(device,a,p.uploaded.get(),true)):p.reference.get(device,a,nullptr,true);
+            auto& images=p.source.positions.count&&same_mesh_data(a,p.source)?p.source_images:p.reference_images;images.configure(a,bounds,config);
+            auto backend=p.backend;backend.predicate=true;backend.reference_storage=&images==&p.source_images||!p.source.positions.count?NeuralVertexStorage::Float32:backend.storage;
+            DeviceMeshView from=*reference;if(p.source.positions.count&&backend.storage!=NeuralVertexStorage::Float32){from.fixed_quantization=true;from.quant_low=p.quantization.low;from.quant_extent=p.quantization.extent;}
+            std::vector<CandidateAudit> result(candidates.size());std::array<bool,4> done{};std::array<Measurement,4> total{};auto cameras_=cameras(bounds,config.screen_size,config.views);if(stats)stats->gpu_evaluations+=candidates.size();
+            for(uint32_t view=0;view<cameras_.size();++view){if(config.cancelled&&config.cancelled())return result;
+                std::vector<DeviceMeshView> active;std::vector<Camera> cameras;std::vector<size_t> ids;
+                for(size_t i=0;i<candidates.size();++i)if(!done[i]){auto b=candidates[i];if(p.source.positions.count&&backend.storage!=NeuralVertexStorage::Float32){b.fixed_quantization=true;b.quant_low=p.quantization.low;b.quant_extent=p.quantization.extent;}active.push_back(b);cameras.push_back(cameras_[view]);ids.push_back(i);}
+                if(active.empty())break;std::array<uint32_t,4> faces{};
+                auto measured=measure_batch(device,from,active[0],bounds,cameras,config,config.supersample,images,view,stats,backend,active,{faces.data(),active.size()});
+                for(size_t lane=0;lane<ids.size();++lane){auto i=ids[lane];auto& out=result[i];out.faces=faces[lane];out.valid=out.faces!=0;if(!out.valid){done[i]=true;continue;}auto current=measured[lane];
+                    for(unsigned ss=config.supersample;!current.passed&&ss<config.max_supersample&&current.coverage-2*std::sqrt(2.)/ss<=config.limit&&std::isfinite(current.error)&&current.coverage_upper>config.limit;){
+                        ss=std::min<unsigned>(config.max_supersample,ss*2);p.candidate_images.configure(active[lane],bounds,config);current=measure(device,from,active[lane],bounds,cameras_[view],config,uint8_t(ss),images,p.candidate_images,p.parent_images,view,stats,backend);}
+                    auto& m=total[i];++m.views_evaluated;if(current.error>m.error){m.error=current.error;m.worst_view=view;m.supersample=current.supersample;}m.coverage=std::max(m.coverage,current.coverage);m.coverage_upper=std::max(m.coverage_upper,current.coverage_upper);m.changed_area=std::max(m.changed_area,current.changed_area);
+                    out.value.error_upper=m.error;out.value.changed_area=m.changed_area;out.value.views=m.views_evaluated;out.value.supersample=m.supersample?m.supersample:config.supersample;
+                    if(std::isfinite(incumbent)&&config.max_changed_area>0&&current.changed_area/config.max_changed_area>=incumbent){out.pruned=true;done[i]=true;}
+                    else if(!current.passed){out.value.verdict=current.error>config.limit||current.changed_area>config.max_changed_area?AuditVerdict::Fail:AuditVerdict::Unknown;done[i]=true;}
+                    else if(view+1==cameras_.size())out.value.verdict=AuditVerdict::Pass;
+                }
+            }return result;
+        }catch(const ResourceError& error){if(error.kind!=NeuralResourceLimit::WorkspaceMemory&&error.kind!=NeuralResourceLimit::DeviceMemory)throw;p.clear_images();p.backend.hardware->trim_targets(0);
+            if(candidates.size()>1){auto split=(candidates.size()+1)/2;auto a1=certify_candidates(a,candidates.first(split),bounds,config,stats,incumbent),a2=certify_candidates(a,candidates.subspan(split),bounds,config,stats,incumbent);a1.insert(a1.end(),a2.begin(),a2.end());return a1;}}
+    }
+#endif
+    std::vector<CandidateAudit> result;for(auto b:candidates)result.push_back(serial(b));return result;
+}
 Measurement AuditCuda::evaluate_device(MeshView a,DeviceMeshView b,const Bounds& bounds,const EvalSettings& config,NeuralStats* stats,double incumbent,bool* pruned,bool predicate){
     if(pruned)*pruned=false;if(std::isfinite(incumbent)&&(!pruned||incumbent<0))throw std::invalid_argument("audit incumbent requires explicit pruning status");
     CurrentDevice current_device(impl_->id);auto& p=*impl_;auto& device=p.device;AuditCounters counters(device,stats);
@@ -767,8 +810,8 @@ namespace blitz {
 Measurement evaluate_cuda(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats) {
     auto reference=options;reference.raster_backend=NeuralRasterBackend::Cuda;reference.vertex_storage=NeuralVertexStorage::Float32;neural::AuditCuda workspace(reference,a);return workspace.evaluate(a,b,bounds,config,stats);
 }
-Measurement evaluate_gpu(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats) {
-    neural::AuditCuda workspace(options,a);return workspace.evaluate(a,b,bounds,config,stats);
+Measurement evaluate_gpu(MeshView a,MeshView b,const Bounds& bounds,const EvalSettings& config,const NeuralOptions& options,NeuralStats* stats,MeshView fixed_source) {
+    neural::AuditCuda workspace(options,fixed_source.positions.count?fixed_source:a);return workspace.evaluate(a,b,bounds,config,stats);
 }
 double overlap_cuda(MeshView m,const Bounds& bounds,double screen,ViewSet views,const NeuralOptions& options) {
     if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);neural::gpu::Device device(options,true);neural::UploadedMesh uploaded(device,m);auto cameras_=cameras(bounds,screen,views);if(cameras_.empty())throw std::invalid_argument("overlap requires views");double overlap=0;

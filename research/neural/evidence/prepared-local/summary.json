@@ -1,0 +1,75 @@
+{
+  "score": null,
+  "comparison": "five alternating repeats, 54 states, 12288 updates, compact examples, FP32 draw control, unchanged final quality audits; shared RTX 2080",
+  "exact_reference_labels_and_weights": true,
+  "variants": {
+    "control": {
+      "seconds": [
+        8.820100427,
+        8.822959524,
+        8.744018263,
+        8.961214372,
+        8.760789901
+      ],
+      "median_seconds": 8.820100427,
+      "phases": {
+        "teacher": 4.456897778,
+        "training": 2.40809875,
+        "quality_audit": 1.562940236
+      },
+      "updates_seconds": 2.290610624,
+      "queries": 4375
+    },
+    "serial": {
+      "seconds": [
+        6.427565323,
+        6.414576531,
+        6.392648707,
+        6.625801572,
+        6.54599534
+      ],
+      "median_seconds": 6.427565323,
+      "phases": {
+        "teacher": 2.090513052,
+        "training": 2.420439403,
+        "quality_audit": 1.580248662
+      },
+      "updates_seconds": 2.306013633,
+      "queries": 549
+    },
+    "batch2": {
+      "seconds": [
+        6.342473859,
+        6.140285193,
+        6.256380131,
+        6.528117584,
+        6.237001277
+      ],
+      "median_seconds": 6.256380131,
+      "phases": {
+        "teacher": 1.930780359,
+        "training": 2.406381414,
+        "quality_audit": 1.5609736010000002
+      },
+      "updates_seconds": 2.279684172,
+      "queries": 549
+    },
+    "combined": {
+      "seconds": [
+        6.447268306,
+        6.157126849,
+        6.135539541,
+        6.596089139,
+        6.122543347
+      ],
+      "median_seconds": 6.157126849,
+      "phases": {
+        "teacher": 1.9668762019999997,
+        "training": 2.124510581,
+        "quality_audit": 1.724389313
+      },
+      "updates_seconds": 2.0219477120000002,
+      "queries": 549
+    }
+  }
+}

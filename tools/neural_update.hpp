@@ -56,7 +56,7 @@ public:
         if(v.item<int64_t>()!=update_checkpoint_version||s.item<int64_t>()!=sampler_version)throw std::invalid_argument("incompatible device optimizer checkpoint");
         auto copy=[&](const std::string& name,torch::Tensor& target){torch::Tensor value;archive.read(name,value);if(value.sizes()!=target.sizes()||value.scalar_type()!=target.scalar_type())throw std::invalid_argument("optimizer checkpoint tensor layout: "+name+" got "+c10::str(value.sizes())+" expected "+c10::str(target.sizes()));target.copy_(value);};
         copy("control",control);for(size_t i=0;i<mean.size();++i){copy("mean"+std::to_string(i),mean[i]);copy("variance"+std::to_string(i),variance[i]);}
-        auto current=state();if(current.step>1000000||current.failure)throw std::invalid_argument("failed or out-of-range optimizer checkpoint");
+        auto current=state();if(current.failure||current.segment_start>current.step)throw std::invalid_argument("failed or invalid optimizer checkpoint");
         for(auto* group:{&parameters,&mean,&variance})for(auto& p:*group)if(!torch::isfinite(p).all().item<bool>())throw std::invalid_argument("nonfinite optimizer checkpoint");}
 };
 class ActionUpdate {

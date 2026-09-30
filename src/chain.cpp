@@ -326,8 +326,12 @@ Result detail::generate_with_hooks(MeshView source,const Settings& s,const Propo
             }
         }
         // Always keep an exact source path; it also handles zero-error and unusual nonmonotonic views.
-        auto fallback=std::make_shared<Node>();fallback->parent=source_path;fallback->lod=unchanged(source,steps[level]);
-        fallback->triangles=uint64_t(level)*source.triangles();fallback->storage=root->storage;source_path=fallback;next.push_back(fallback);
+        if(hooks&&hooks->fallback){auto fallback=hooks->fallback(source_path->lod.view(source),audit_source,audit_adj,search_source,search_adj);
+            auto existing=std::find_if(next.begin(),next.end(),[&](const auto& node){return node->parent==source_path&&same_lod(node->lod,fallback);});
+            if(existing!=next.end())source_path=*existing;
+            else {if(offer(std::move(fallback),source_path)!=0)throw std::logic_error("packed baseline failed reference audit");source_path=next.back();}}
+        else {auto fallback=std::make_shared<Node>();fallback->parent=source_path;fallback->lod=unchanged(source,steps[level]);
+            fallback->triangles=uint64_t(level)*source.triangles();fallback->storage=root->storage;source_path=fallback;next.push_back(fallback);}
         std::stable_sort(next.begin(),next.end(),[&](auto& a,auto& b){return a->triangles!=b->triangles?a->triangles<b->triangles:automatic&&a->storage.total()<b->storage.total();});
         std::vector<std::shared_ptr<Node>> distinct;
         for(auto& node:next)if(std::none_of(distinct.begin(),distinct.end(),[&](auto& n){

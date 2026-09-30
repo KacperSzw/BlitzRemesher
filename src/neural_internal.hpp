@@ -66,6 +66,7 @@ struct AuditPredicate {
     uint32_t views{};uint8_t supersample{};
     bool resource_limited{};
 };
+struct CandidateAudit {AuditPredicate value;uint32_t faces{};bool valid{},pruned{};};
 // Test/research boundary: compare supplied images without invoking a rasterizer.
 Measurement measure_rasters_cuda(const Raster&,const Raster&,const EvalSettings&,const NeuralOptions&);
 AuditPredicate certify_rasters_cuda(const Raster&,const Raster&,const EvalSettings&,const NeuralOptions&,uint32_t queue_capacity=262144);
@@ -81,6 +82,7 @@ public:
     // A pruned result is a bound, never a pass/fail training label.
     Measurement evaluate(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_margin=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
     AuditPredicate certify(MeshView,DeviceMeshView,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_area=std::numeric_limits<double>::infinity(),bool* pruned=nullptr);
+    std::vector<CandidateAudit> certify_candidates(MeshView,std::span<const DeviceMeshView>,const Bounds&,const EvalSettings&,NeuralStats* = nullptr,double incumbent_area=std::numeric_limits<double>::infinity());
 };
 // Explicit per-thread session: device/pipelines survive asset-local evaluators.
 // The session must outlive every evaluator created in its scope.

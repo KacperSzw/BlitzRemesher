@@ -8,6 +8,9 @@ struct GenerationHooks {
     std::function<Measurement(MeshView,MeshView,const Bounds&,const EvalSettings&)> evaluate;
     std::function<bool(Result&)> confirm;
     std::function<double(const Result&)> tiebreak;
+    // Packed rendering may make the raw source an invalid fallback. Supply an
+    // owned baseline; the chain still applies every source/adjacent gate.
+    std::function<Lod(MeshView,const EvalSettings&,const EvalSettings&,const EvalSettings&,const EvalSettings&)> fallback;
 };
 Result generate_with_hooks(MeshView,const Settings&,const Proposer&,const GenerationHooks*);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "blitz/mesh.hpp"
 namespace blitz::neural {
+struct DeviceTrialStatus {uint32_t faces{},invalid{};};
 // Borrowed device storage. The owner keeps every stream alive until all queued
 // kernels finish. Counts describe initialized, contiguous elements, not capacity.
 struct DeviceMeshView {
@@ -21,5 +22,8 @@ struct DeviceMeshView {
     // All three remain valid until the owner builds another trial or commits.
     const DeviceMeshView* raster_parent{};
     const uint32_t *parent_keep{},*parent_offsets{};
+    // Trial batches use faces as capacity; this device record supplies the live
+    // draw count and placement validity without a host round trip.
+    const DeviceTrialStatus* trial_status{};
 };
 }

@@ -147,3 +147,27 @@ validation groups, with identical gates and work budgets. A wider model needs
 at least 5% improvement in mean per-asset retained-triangle ratio for each of the
 three seeds, at no more than twice generation time. Every audit must complete;
 partial comparisons retain width 64. The smallest width passing is selected.
+
+The first L40S validation at revision `7144ec4` passed all 32 CTest contracts,
+Vulkan validation layers, the resident optimizer memory check, and 16,384 updates
+from the formerly failing checkpoint. The cancellation fixture's maximum CUDA
+error was 0.0000035703; the continuation remained below the unchanged 0.0002
+FP64 verification limit. Its verified archive hash is recorded in
+`evidence/throughput-remote/validation-01/collection.json`.
+
+That validation stopped during the interruption/recovery test: a reduced seed
+was sent directly to the packed renderer before conversion to its fixed source
+domain. Seeds now enter the packed GPU working representation before the
+original-source audit, and the accepted GPU state is reused by the teacher.
+Unsupported proposals are recorded as rejections and fall back to the audited
+source baseline. A Vulkan fixture checks domain mapping, immutable input streams,
+the unchanged coverage audit and rejection of unsupported UVs. Recovery and
+the 100-mesh qualification still require a complete run; this attempt receives
+no throughput or quality score. The pod and its volume were both deleted.
+
+Readiness validation prioritizes exact interrupted/resumed recovery, a sustained
+one-minute learning cycle with checkpoints and final quality audits, the fixed
+work matrix, seeded episodes, and all 100 training meshes. The prior checkpoint
+and initializer are also audited on all 20 validation groups. Optional wider
+network experiments require an explicit validation configuration flag and do
+not delay these gates. Width 64 remains the proposed training configuration.

@@ -36,16 +36,24 @@ inline PlacementResult prepare_placements(const std::string& asset,const fs::pat
     // Seeds are proposals, never targets. Every seed passes the unchanged
     // original-source audit; a rejected seed remains visible and uses LOD0.
     if(!std::isfinite(retained)||retained<=0||retained>1)throw std::invalid_argument("episode retained fraction");
+    auto quantization=vertex_bounds(source);std::unique_ptr<GpuActionState> prepared_state;
     json seed_result={{"requested",contract.at("episode")},{"accepted",false}};
     if(!episode.empty()||simplifier){Mesh candidate;
         if(!episode.empty()){std::ifstream f(episode,std::ios::binary);candidate=read_packed_mesh(f).first;}
         else {ReduceSettings r;r.target_triangles=std::max<size_t>(1,size_t(source.triangles()*retained));r.output=OutputMode::Rebuild;r.coupled_wedges=true;r.cancelled=cancel;auto reduced=reduce(baseline.mesh.view(),r);candidate=copy_mesh(reduced.view(baseline.mesh.view()));}
-        auto measured=audit.evaluate(source,candidate.view(),bounds,e,&stats);auto d=previous_steps?audit.evaluate(source,candidate.view(),bounds,destination,&stats):measured;
-        seed_result["audit"]=measurement_json(measured);seed_result["destination"]=measurement_json(d);seed_result["triangles"]=candidate.view().triangles();
-        if(measured.complete&&measured.passed&&d.complete&&d.passed&&candidate.view().triangles()<=source.triangles()){baseline.mesh=std::move(candidate);seed_result["accepted"]=true;}
+        seed_result["triangles"]=candidate.view().triangles();
+        // Audit the exact packed working representation. A QEM proposal may
+        // extend beyond the source bounds; the UNorm grid maps it into the
+        // supported domain before evaluation. Unsupported UVs/precision remain
+        // visible seed rejections, never fatal errors or accepted labels.
+        try{auto proposed=std::make_unique<GpuActionState>(candidate.view(),options,true,&quantization,source);
+            auto measured=audit.evaluate(source,proposed->view(),bounds,e,&stats);auto d=previous_steps?audit.evaluate(source,proposed->view(),bounds,destination,&stats):measured;
+            seed_result["audit"]=measurement_json(measured);seed_result["destination"]=measurement_json(d);
+            if(measured.complete&&measured.passed&&d.complete&&d.passed&&candidate.view().triangles()<=source.triangles()){prepared_state=std::move(proposed);baseline.mesh=std::move(candidate);seed_result["accepted"]=true;}
+        }catch(const std::invalid_argument& error){seed_result["rejection"]=error.what();}
     }
     seed_result["start_retained"]=double(baseline.mesh.view().triangles())/source.triangles();write_json(output/"seed.json",seed_result);
-    double packing_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-packing_start).count();auto state_start=std::chrono::steady_clock::now();auto quantization=vertex_bounds(source);GpuActionState state(baseline.mesh.view(),options,true,&quantization,source);double setup_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-state_start).count();
+    double packing_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-packing_start).count();auto state_start=std::chrono::steady_clock::now();if(!prepared_state)prepared_state=std::make_unique<GpuActionState>(baseline.mesh.view(),options,true,&quantization,source);auto& state=*prepared_state;double setup_seconds=std::chrono::duration<double>(std::chrono::steady_clock::now()-state_start).count();
     struct TeacherAudit {bool known{},passed{};double error{},changed_area{};};
     auto query=[&](MeshView reference,DeviceMeshView candidate,const EvalSettings& config,double cutoff,bool* pruned){
         if(sparse){auto p=timed(audit_seconds,[&]{return audit.certify(reference,candidate,bounds,config,&stats,cutoff,pruned);});return TeacherAudit{p.verdict!=AuditVerdict::Unknown,p.verdict==AuditVerdict::Pass,p.error_upper,p.changed_area};}

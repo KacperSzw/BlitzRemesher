@@ -1,0 +1,25 @@
+{
+  "complete": false,
+  "score": null,
+  "rows": [
+    {
+      "name": "resumed",
+      "interrupt": true,
+      "code": 2,
+      "signalled": true,
+      "seconds": 6.645
+    },
+    {
+      "name": "resumed",
+      "interrupt": false,
+      "code": 1,
+      "signalled": false,
+      "seconds": 4.004
+    }
+  ],
+  "interruption": {
+    "condition": 1,
+    "step": "checkpoints/step-6272"
+  },
+  "error": "Error: recovery execution failed: resumed 1"
+}

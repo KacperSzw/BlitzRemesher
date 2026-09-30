@@ -3,7 +3,7 @@
 namespace blitz::neural::training {
 inline void benchmark_updates(const fs::path& shard,const fs::path& output,const fs::path& weights){
     if(fs::exists(output))throw std::invalid_argument("choose a fresh update benchmark report");
-    torch::Device device(torch::kCUDA);auto index=read_json(shard/"index.json");auto dataset=load_actions(shard/"actions.bin");ResidentDataset data(device,519,true);data.append(dataset,index.at("asset"),index.at("category"));auto initial=load_weights(weights);
+    auto initial=load_weights(weights);if(initial.architecture!=placement_schema||initial.hidden_width!=64)throw std::invalid_argument("update benchmark needs a width-64 placement policy");torch::Device device(torch::kCUDA);auto index=read_json(shard/"index.json");auto dataset=load_actions(shard/"actions.bin");ResidentDataset data(device,519,true);data.append(dataset,index.at("asset"),index.at("category"));
     json report={{"complete",false},{"score",nullptr},{"updates",2048},{"batch",512},{"input_sha256",file_sha256(shard/"actions.bin")},{"binary_sha256",file_sha256("/proc/self/exe")},{"model_sha256",file_sha256(weights)},{"rows",json::array()}};
     for(unsigned repeat=0;repeat<5;++repeat)for(unsigned variant=0;variant<2;++variant){auto backend=(variant^(repeat&1))?UpdateBackend::Fused:UpdateBackend::Reference;
         ActionNetwork model(placement_schema);model->to(device);{torch::NoGradGuard guard;size_t at=0;for(auto& p:model->parameters()){p.copy_(torch::from_blob(initial.values.data()+at,p.sizes(),torch::kFloat32));at+=p.numel();}}

@@ -57,7 +57,7 @@ async function prepare(){
   }
   if(actions&&!evaluation){const selected=new Set(['ph_sweet_potato','ph_painted_wooden_bench']);
     if(command==='prepare-action-staged'||refactor||hardware)for(const c of freshConditions)selected.add(c.asset);
-    if(refactor||hardware)for(const a of read(root+'/research/neural/prepared-pilot/selection.json').assets)selected.add(a.id);
+    if(refactor||hardware||pipeline)for(const a of read(root+'/research/neural/prepared-pilot/selection.json').assets)selected.add(a.id);
     const allowed=new Set(read(root+'/research/neural/training-manifest.json').assets.map(a=>a.id));
     for(const asset of read(root+'/research/corpus.json').assets.filter(a=>selected.has(a.id))){if(!allowed.has(asset.id))throw new Error('Action proof asset outside training selection');for(const file of asset.files)auditFiles.set(file.path,file.sha256);selected.delete(asset.id);}
     if(selected.size)throw new Error('Missing action proof assets');

@@ -14,7 +14,7 @@ inline void storage_proof(const fs::path& shards,const fs::path& output,const fs
         report["shards"].push_back({{"path",directory.string()},{"sha256",file_sha256(directory/"actions.bin")},{"states",data.states()},{"rows",data.labels.size()}});
     }
     for(auto& x:square)x=std::sqrt(x/rows);report["feature_max_error"]=maximum;report["feature_rms_error"]=square;report["target_max_error"]=target_error;report["exceptions"]=exceptions;report["disk_bytes"]={{"fp32",legacy_bytes},{"compact",compact_bytes}};report["resident_bytes"]={{"fp32",fp32.bytes()},{"compact",compact.bytes()}};
-    auto weights=load_weights(initial);if(weights.architecture!=placement_schema)throw std::invalid_argument("storage proof needs placement policy");std::vector<std::vector<float>> final;
+    auto weights=load_weights(initial);if(weights.architecture!=placement_schema||weights.hidden_width!=64)throw std::invalid_argument("storage proof needs a width-64 placement policy");std::vector<std::vector<float>> final;
     for(bool packed:{false,true}){
         ActionNetwork model(placement_schema);model->to(device);{torch::NoGradGuard guard;size_t offset=0;for(auto& p:model->parameters()){p.copy_(torch::from_blob(weights.values.data()+offset,p.sizes(),torch::kFloat32));offset+=p.numel();}}
         auto& data=packed?compact:fp32;ResidentUpdate update(model,data,512);update.capture();auto t=std::chrono::steady_clock::now();update.run(2048);auto state=update.optimizer.state();double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-t).count();if(state.failure||!std::isfinite(state.loss)||!std::isfinite(state.gradient))throw std::runtime_error("storage proof nonfinite update");

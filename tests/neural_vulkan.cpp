@@ -26,8 +26,21 @@ static void candidate_contracts(){
     }
     require(state.view().faces==mesh.view().triangles(),"speculative batch committed geometry");
 }
+void packed_seed_domain(){auto source=fixture(),seed=source,original=source;auto q=vertex_bounds(source.view());
+    for(auto& p:seed.positions){if(p.x==-1)p.x=-1.25f;else if(p.x==1)p.x=1.5f;}
+    auto proposal=seed;NeuralOptions options;options.memory_mib=128;options.vertex_storage=NeuralVertexStorage::Packed;options.raster_backend=NeuralRasterBackend::Vulkan;
+    GpuActionState state(seed.view(),options,true,&q,source.view());auto working=state.snapshot().data;
+    require(working.view().triangles()==source.view().triangles()&&state.view().fixed_quantization,"packed episode lost topology or its fixed domain");
+    for(const auto& p:working.positions)require(p.x>=-1&&p.x<=1&&p.y>=-1&&p.y<=1&&p.z==0,"packed seed escaped source bounds");
+    EvalSettings e;e.profile=Profile::Coverage;e.screen_size=16;e.limit=2;e.supersample=2;e.max_supersample=4;e.views={2,1,819};
+    AuditCuda audit(options,source.view());auto measured=audit.evaluate(source.view(),state.view(),bounds(source.view()),e);
+    require(measured.complete&&measured.passed,"supported packed seed failed unchanged source audit");
+    require(same_mesh_data(source.view(),original.view())&&same_mesh_data(seed.view(),proposal.view()),"seed preparation changed supplied streams");
+    seed.uv[0].x=8.01f;bool rejected=false;try{GpuActionState invalid(seed.view(),options,true,&q,source.view());}catch(const std::invalid_argument&){rejected=true;}
+    require(rejected,"packed seed silently clamped an unsupported UV");
+}
 int main(){try{if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
-    candidate_contracts();
+    packed_seed_domain();candidate_contracts();
     // Each worker must retain the serial verdicts on an independent stream.
     MemoryBudget shared{size_t(384)<<20,0,0,0};std::barrier ready(2);
     auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts();};

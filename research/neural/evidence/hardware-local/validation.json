@@ -1,11 +1,11 @@
 {
   "complete": true,
   "binaries": {
-    "blitz-neural-cycle": "d48155a548c2783d68030ee06239c049119a7d554ed4e889d448ed2ac0a27a1e",
-    "blitz-neural-placement-prepare": "9c8b484d29955ad8ed5b5766e3d7d898333357f6afe21d4c250b6ffd04886525",
-    "blitz-neural-vulkan-tests": "610c7d8a635f945bc5083a5311422e6cfd7be22e2e61db90213be75724228912",
-    "blitz-neural-predicate-tests": "1a459bc3872a8d99b47d72aa0b376f5220feb8d8809637d345cc66f4f1638ed8",
-    "blitz-neural-hardware-profile": "ef982f39be91412a52cd6cf912f1f508f68d06f4b391975e7df6ff89d191764d"
+    "blitz-neural-cycle": "c4bdbae3cbc771f50320ae91da867304dfdc7245985b99399cdea8498ba58fc4",
+    "blitz-neural-placement-prepare": "0c2950b2c0c7986aaaf66d478f2abbfa27f5dc34eaae5c211ac60ec5a003d786",
+    "blitz-neural-vulkan-tests": "acbd4523042a351e5f1b3a636370d9b119348697fc9dbf6fd608150ae5cd0941",
+    "blitz-neural-predicate-tests": "3d60330bb6bac098b8a2decc3cc846fed296b61e0fac62dcdaa51d7a5a6cd62a",
+    "blitz-neural-hardware-profile": "e982a2eda4031cef3ecffd43dc97a3fd170e3aa19fdbc6b492a2ebace9dd3f2f"
   },
   "ctest": {
     "passed": 26,
@@ -49,5 +49,14 @@
     "identical_datasets": true,
     "same_completed_work": true
   },
-  "timing_build_note": "Throughput and raster traces precede final configuration-check and old autograd-graph lifetime fixes; hot algorithm unchanged. Final binaries pass CTest, resident memcheck and forced process-death recovery again."
+  "timing_build_note": "Throughput and raster traces precede final configuration-check and old autograd-graph lifetime fixes; hot algorithm unchanged. Final binaries pass CTest, resident memcheck and forced process-death recovery again. Hardware now defaults to packed; full-cycle timing comparison explicitly uses FP32. Packed default full-cycle failure is retained separately.",
+  "packed_default": {
+    "verified": true,
+    "cuda_default": "fp32",
+    "vulkan_default": "packed",
+    "explicit_fp32_override": true,
+    "full_packed_cycle_complete": false,
+    "blocked_asset": "ph_namaqualand_boulder_04",
+    "reason": "no feasible queried placement under unchanged visual gate"
+  }
 }

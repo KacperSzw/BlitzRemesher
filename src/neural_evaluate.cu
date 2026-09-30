@@ -487,7 +487,7 @@ Raster raster_gpu(MeshView m,const Bounds& b,const Camera& c,double screen,uint8
 #ifdef BLITZ_VULKAN
     if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);Device device(options,true);UploadedMesh uploaded(device,m,nullptr,true,true);VulkanRaster hardware(options);
     uint32_t size=uint32_t(std::ceil(screen+8))*ss;Buffer<AuditPixel> pixels(device,size_t(size)*size);Buffer<Vec3> colors(device,m.colors.count?pixels.n:0);
-    bool clipped=hardware.render(uploaded,b,c,screen,ss,two,options.vertex_storage,pixels.p,colors.p);auto p=pixels.download();auto rgb=colors.download();Raster result{size,size,{},clipped};result.pixels.reserve(p.size());
+    bool clipped=hardware.render(uploaded,b,c,screen,ss,two,options.draw_storage(),pixels.p,colors.p);auto p=pixels.download();auto rgb=colors.download();Raster result{size,size,{},clipped};result.pixels.reserve(p.size());
     for(size_t i=0;i<p.size();++i){Pixel x=Pixel(p[i]);if(!rgb.empty())x.color={rgb[i].x,rgb[i].y,rgb[i].z,1};result.pixels.push_back(x);}return result;
 #else
     throw NeuralUnavailable("Vulkan rasterizer was not built");
@@ -501,7 +501,7 @@ RasterBenchmarkResult raster_benchmark(MeshView m,const Bounds& b,const Camera& 
     if(options.raster_backend==NeuralRasterBackend::Vulkan){
 #ifdef BLITZ_VULKAN
         VulkanRaster hardware(options,true);uint32_t size=uint32_t(std::ceil(screen+8))*ss;output.emplace(Image{Buffer<AuditPixel>(device,size_t(size)*size),Buffer<Vec3>(device,m.colors.count?size_t(size)*size:0),size,false});
-        auto run=[&]{++mesh.revision;output->clipped=hardware.render(mesh,b,c,screen,ss,two,options.vertex_storage,output->pixels.p,output->colors.p);};
+        auto run=[&]{++mesh.revision;output->clipped=hardware.render(mesh,b,c,screen,ss,two,options.draw_storage(),output->pixels.p,output->colors.p);};
         // Warm all four bounded geometry slots as well as shader pipelines.
         for(unsigned i=0;i<4;++i)run();result.setup_seconds=seconds(begin);auto before=hardware.timing();auto start=std::chrono::steady_clock::now();for(uint32_t i=0;i<repeats;++i)run();result.seconds=seconds(start)/repeats;auto after=hardware.timing();
         result.packing_seconds=(after.packing_seconds-before.packing_seconds)/repeats;result.render_seconds=(after.render_seconds-before.render_seconds)/repeats;result.unpack_seconds=(after.unpack_seconds-before.unpack_seconds)/repeats;result.gpu_bytes=device.peak+hardware.bytes();
@@ -509,7 +509,7 @@ RasterBenchmarkResult raster_benchmark(MeshView m,const Bounds& b,const Camera& 
         throw NeuralUnavailable("Vulkan rasterizer was not built");
 #endif
     }else {output.emplace(render(device,mesh,b,c,screen,ss,two));check(cudaDeviceSynchronize());output.reset();result.setup_seconds=seconds(begin);auto start=std::chrono::steady_clock::now();for(uint32_t i=0;i<repeats;++i){output.reset();output.emplace(render(device,mesh,b,c,screen,ss,two));check(cudaDeviceSynchronize());}result.seconds=seconds(start)/repeats;result.gpu_bytes=device.peak;}
-    result.draw_bytes=m.positions.count*(options.vertex_storage==NeuralVertexStorage::Float32?12:6)+m.normals.count*(options.vertex_storage==NeuralVertexStorage::Packed?4:12)+m.uv.count*(options.vertex_storage==NeuralVertexStorage::Packed?4:8)+m.colors.count*4+m.tangents.count*(options.vertex_storage==NeuralVertexStorage::Packed?4:16);
+    result.draw_bytes=m.positions.count*(options.draw_storage()==NeuralVertexStorage::Float32?12:6)+m.normals.count*(options.draw_storage()==NeuralVertexStorage::Packed?4:12)+m.uv.count*(options.draw_storage()==NeuralVertexStorage::Packed?4:8)+m.colors.count*4+m.tangents.count*(options.draw_storage()==NeuralVertexStorage::Packed?4:16);
     auto pixels=output->pixels.download();auto colors=output->colors.download();result.raster={output->size,output->size,{},output->clipped};result.raster.pixels.reserve(pixels.size());for(size_t i=0;i<pixels.size();++i){Pixel p=Pixel(pixels[i]);if(!colors.empty())p.color={colors[i].x,colors[i].y,colors[i].z,1};result.raster.pixels.push_back(p);}return result;
 }
 RasterPrecisionResult raster_precision_cuda(MeshView m,const Bounds& b,const Camera& c,double screen,uint8_t ss,bool two,uint8_t attribute_bits,uint8_t depth_bits,uint8_t position_bits,const NeuralOptions& options){
@@ -571,15 +571,15 @@ struct AuditCuda::Impl {
     }
     Impl(const NeuralOptions& options,MeshView mesh):owned_budget{size_t(options.memory_mib)<<20,0,0,options.device},device(options,true),id(options.device),source(mesh),memo(mesh),options(options),
         source_images(options.cache_rasters?device.limit/12:0),reference_images(options.cache_rasters?device.limit/12:0),candidate_images(options.cache_rasters?device.limit/12:0),parent_images(options.cache_rasters?device.limit/12:0){
-        if(options.raster_backend>NeuralRasterBackend::Vulkan||options.vertex_storage>NeuralVertexStorage::Packed)throw std::invalid_argument("invalid raster backend or vertex storage");
+        if(options.raster_backend>NeuralRasterBackend::Vulkan||options.vertex_storage>NeuralVertexStorage::Automatic)throw std::invalid_argument("invalid raster backend or vertex storage");
         if(!device.shared)device.shared=&owned_budget;
         if(options.raster_backend==NeuralRasterBackend::Vulkan){
 #ifdef BLITZ_VULKAN
-            hardware=std::make_unique<VulkanRaster>(options,false,device.shared);backend.hardware=hardware.get();backend.storage=options.vertex_storage;
+            hardware=std::make_unique<VulkanRaster>(options,false,device.shared);backend.hardware=hardware.get();backend.storage=options.draw_storage();
 #else
             throw NeuralUnavailable("Vulkan rasterizer was not built");
 #endif
-        }else if(options.vertex_storage!=NeuralVertexStorage::Float32)throw std::invalid_argument("packed draw storage requires Vulkan");
+        }else if(options.draw_storage()!=NeuralVertexStorage::Float32)throw std::invalid_argument("packed draw storage requires Vulkan");
         check(cudaSetDevice(device.previous));}
     ~Impl(){cudaSetDevice(id);}
 };

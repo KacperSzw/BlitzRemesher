@@ -21,7 +21,7 @@ int main(){try{if(!neural_available())return 77;NeuralOptions options;options.me
         flat.normals.assign(4,{});auto zero_image=raster_gpu(flat.view(),b,c,24,2,false,options);for(auto p:zero_image.pixels)if(p.visible)require(p.normal.z>.999,"zero-normal flat fallback");
         auto outside=mesh;outside.positions[0].x-=100;require(raster_gpu(outside.view(),b,c,24,2,true,options).clipped,"out-of-frame hardware draw escaped audit");
     }
-    options.vertex_storage=NeuralVertexStorage::Packed;auto bad=mesh;bad.uv[0].x=std::nextafter(8.f,INFINITY);bool rejected=false;try{(void)raster_gpu(bad.view(),b,c,24,2,true,options);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"out-of-range UV silently clamped");
+    options.vertex_storage=NeuralVertexStorage::Automatic;require(options.draw_storage()==NeuralVertexStorage::Packed,"hardware default must pack draw streams");auto bad=mesh;bad.uv[0].x=std::nextafter(8.f,INFINITY);bool rejected=false;try{(void)raster_gpu(bad.view(),b,c,24,2,true,options);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"default packed draw silently clamped out-of-range UV");
     EvalSettings e;e.screen_size=24;e.supersample=2;e.max_supersample=4;e.limit=3;e.views={2,1,51};e.profile=Profile::Attributes;
     auto identical=evaluate_gpu(mesh.view(),mesh.view(),b,e,options);require(identical.complete&&identical.passed&&identical.views_evaluated==3,"packed identity bypassed raster audit");
     // Same hardware images: threshold certificates must agree with the exact

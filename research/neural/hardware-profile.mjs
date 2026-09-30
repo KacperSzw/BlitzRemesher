@@ -17,7 +17,7 @@ const report={complete:false,score:null,started:new Date().toISOString(),revisio
 const save=()=>fs.writeFileSync(root+'/comparison.json',JSON.stringify(report,null,2)+'\n');save();
 async function execute(kind,index){
  const run=root+'/'+kind+'-'+index,fd=fs.openSync(run+'.log','w');
- const args=kind==='native'?[run,'--states','8','--updates','2048','--minutes','3','--gpu-memory-mib','1024','--initialize',path.resolve(model),'--warmstart',path.resolve(checkpoint)]:['research/neural/pipeline-profile.mjs',run,path.resolve(model),path.resolve(checkpoint),'224768'];
+ const args=kind==='native'?[run,'--states','8','--updates','2048','--minutes','3','--gpu-memory-mib','1024','--vertex-storage','fp32','--initialize',path.resolve(model),'--warmstart',path.resolve(checkpoint)]:['research/neural/pipeline-profile.mjs',run,path.resolve(model),path.resolve(checkpoint),'224768'];
  const binary=kind==='native'?'build/neural/blitz-neural-cycle':process.execPath,row={kind,index,gpu_before:gpu(),binary,args};report.rows.push(row);save();
  const start=performance.now(),child=spawn(binary,args,{stdio:['ignore',fd,fd]});let hard;
  const timer=setTimeout(()=>{child.kill('SIGTERM');hard=setTimeout(()=>child.kill('SIGKILL'),5000);},240000);

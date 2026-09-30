@@ -33,7 +33,7 @@ struct VulkanRaster::Impl {
     struct Target {VkImage image{};VkDeviceMemory memory{};VkImageView view{};cudaExternalMemory_t external{};cudaMipmappedArray_t mip{};cudaSurfaceObject_t surface{};size_t bytes{};bool released{};};
     Target mask,attributes,colors,depth;uint32_t extent{};bool with_colors{};
     explicit Impl(const NeuralOptions& o,bool timing,MemoryBudget* shared):limit(size_t(o.memory_mib)<<20),budget(shared),timings(timing){
-        if(o.vertex_storage>NeuralVertexStorage::Packed||o.memory_mib<128||o.memory_mib>65536)throw std::invalid_argument("invalid Vulkan draw options");
+        if(o.vertex_storage>NeuralVertexStorage::Automatic||o.memory_mib<128||o.memory_mib>65536)throw std::invalid_argument("invalid Vulkan draw options");
         if(!budget&&current_memory_budget&&current_memory_budget->device==o.device)budget=current_memory_budget;
         try{initialize(o);}catch(...){destroy();throw;}
     }

@@ -1,0 +1,3846 @@
+{
+  "binary_sha256": "c4bdbae3cbc771f50320ae91da867304dfdc7245985b99399cdea8498ba58fc4",
+  "args": [
+    "runs/neural/packed-default-local-02",
+    "--states",
+    "2",
+    "--updates",
+    "512",
+    "--minutes",
+    "1",
+    "--gpu-memory-mib",
+    "1024",
+    "--initialize",
+    "runs/neural/runpod-gpu-refactor-01/final-model.blzn",
+    "--warmstart",
+    "runs/neural/runpod-gpu-refactor-01/final-checkpoint.pt"
+  ],
+  "gpu": "NVIDIA GeForce RTX 2080, 595.71.05",
+  "seconds": 1.808352987,
+  "code": 1,
+  "score": null,
+  "contract": {
+    "batch": 512,
+    "binary_sha256": "c4bdbae3cbc771f50320ae91da867304dfdc7245985b99399cdea8498ba58fc4",
+    "diagnostic_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+    "gpu_memory_mib": 1024,
+    "initialize": "9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185",
+    "quality": true,
+    "quality_settings_sha256": "b295d58ea372279b26c81d0a19f9da8785c5d0647f0b6b32c4de6a75d8d5ae6a",
+    "raster": "vulkan-v1",
+    "seed": 101,
+    "sparse": true,
+    "states": 2,
+    "storage": "packed",
+    "training_selection_sha256": "c4365db7abe9fd0ba99dd48f865a75306360bc02395d25cbb400e5747e20c281",
+    "updates": 512,
+    "version": 2,
+    "warmstart": "d44d2f8591ae2abb75f4af790577e57cb0bbd45fd2212ee8e6301c85ebf421ed"
+  },
+  "failure": {
+    "complete": false,
+    "error": "incomplete teacher shard retained; training skipped"
+  },
+  "last_durable": {
+    "active_training": null,
+    "checkpoint": "checkpoints/step-225792",
+    "checkpoint_sha256": "14aeeca0035627da1d3ea6bcc0054a2e6b576f1040a4239b519246c5bcb652ef",
+    "complete": false,
+    "datasets": [
+      "shard-0",
+      "shard-1"
+    ],
+    "last_audit_iteration": 0,
+    "next_condition": 2,
+    "phases": [
+      {
+        "index": {
+          "accepted": 2,
+          "asset": "ph_painted_wooden_bench",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 32,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 1012,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 11264,
+            "gpu_evaluations": 142,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 26196010,
+            "gpu_rasters": 276,
+            "gpu_reference_render_hits": 260,
+            "gpu_sparse_failures": 5,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 239,
+            "gpu_sparse_queries": 279,
+            "gpu_upload_bytes": 60820,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "manufactured",
+          "complete": true,
+          "contract_sha256": "a78ddd30ebd1744985389cb2f33e341a7b05ea844b20c4fd9818ced5e2fa6e92",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 630,
+          "queries": 156,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.125281958,
+          "sha256": "713e413b49ae351b237857bb903ab9f67f16309007d7cbf35e75c6e6de1231d6",
+          "source_triangles": 630,
+          "states": 2,
+          "teacher_triangles": 626,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.294344923
+      },
+      {
+        "append_seconds": 0.028149305,
+        "capture_seconds": 0.044377124,
+        "captures": 1,
+        "checkpoint_seconds": 0.001543635,
+        "gradient": 0.0019269405165687203,
+        "loss": 0.0036367662250995636,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 3320,
+        "seconds": 0.172249441,
+        "step": 225280,
+        "target_step": 225280,
+        "update_seconds": 0.094826395
+      },
+      {
+        "index": {
+          "accepted": 2,
+          "asset": "ph_sweet_potato",
+          "audit": {
+            "action_audit_cache_hits": 0,
+            "action_ranked": 0,
+            "action_trials": 0,
+            "bounded_audits": 0,
+            "confirmation_cancelled": 0,
+            "confirmation_disagreements": 0,
+            "confirmation_failure": null,
+            "confirmation_nonfinite": 0,
+            "confirmation_resources": 0,
+            "decode_seconds": 0,
+            "decoded": 0,
+            "encode_seconds": 0,
+            "fallback_levels": 0,
+            "first_resource_failure": null,
+            "gpu_allocations": 37,
+            "gpu_audit_seconds": 0,
+            "gpu_buffer_reuses": 1719,
+            "gpu_candidate_render_hits": 0,
+            "gpu_confirmation_seconds": 0,
+            "gpu_download_bytes": 16704,
+            "gpu_evaluations": 171,
+            "gpu_measurement_cache_hits": 0,
+            "gpu_peak_bytes": 48129152,
+            "gpu_rasters": 446,
+            "gpu_reference_render_hits": 430,
+            "gpu_sparse_failures": 0,
+            "gpu_sparse_fallbacks": 0,
+            "gpu_sparse_passes": 414,
+            "gpu_sparse_queries": 3250,
+            "gpu_upload_bytes": 132644,
+            "inference_seconds": 0,
+            "legal_collapses": 0,
+            "reference_audit_seconds": 0,
+            "reference_rejections": 0,
+            "rejected_collapses": 0,
+            "resource_failures": 0
+          },
+          "category": "organic",
+          "complete": true,
+          "contract_sha256": "0d4d3088e285894ef4e82ed289fba689ff5775e5904f08518f6a7b423a4ac373",
+          "path": "actions.bin",
+          "preceding_lod_emitted": false,
+          "previous_triangles": 2042,
+          "queries": 168,
+          "reference_confirmed": true,
+          "schema": 3,
+          "seconds": 0.175373936,
+          "sha256": "1472b49a1d53d3fbd1eb3496dae2bf65f866370c50b35a5696bffc425d51009b",
+          "source_triangles": 2042,
+          "states": 2,
+          "teacher_triangles": 2038,
+          "training_started": false
+        },
+        "phase": "teacher",
+        "seconds": 0.316941963
+      },
+      {
+        "append_seconds": 0.000377114,
+        "capture_seconds": 5.11e-7,
+        "captures": 1,
+        "checkpoint_seconds": 0.001111481,
+        "gradient": 0.006760729942470789,
+        "loss": 0.0037801184225827456,
+        "phase": "training",
+        "pool": 4,
+        "resident_data_bytes": 6592,
+        "seconds": 0.088908043,
+        "step": 225792,
+        "target_step": 225792,
+        "update_seconds": 0.084342858
+      }
+    ],
+    "release_quality_proven": false,
+    "score": null,
+    "seconds": 1.044961879,
+    "states": 4,
+    "step": 225792
+  },
+  "shards": [
+    {
+      "name": "shard-0",
+      "index": {
+        "accepted": 2,
+        "asset": "ph_painted_wooden_bench",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 32,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 1012,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 11264,
+          "gpu_evaluations": 142,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 26196010,
+          "gpu_rasters": 276,
+          "gpu_reference_render_hits": 260,
+          "gpu_sparse_failures": 5,
+          "gpu_sparse_fallbacks": 0,
+          "gpu_sparse_passes": 239,
+          "gpu_sparse_queries": 279,
+          "gpu_upload_bytes": 60820,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "manufactured",
+        "complete": true,
+        "contract_sha256": "a78ddd30ebd1744985389cb2f33e341a7b05ea844b20c4fd9818ced5e2fa6e92",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 630,
+        "queries": 156,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 0.125281958,
+        "sha256": "713e413b49ae351b237857bb903ab9f67f16309007d7cbf35e75c6e6de1231d6",
+        "source_triangles": 630,
+        "states": 2,
+        "teacher_triangles": 626,
+        "training_started": false
+      },
+      "trace": [
+        {
+          "pixels": 32,
+          "previous_triangles": 630,
+          "queries": [
+            {
+              "adjacent_error": 3,
+              "candidate": 2,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 203
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 3,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 203
+            },
+            {
+              "candidate": 4,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 5,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 6,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 203
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 7,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 203
+            },
+            {
+              "candidate": 8,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 9,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 10,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 11,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 14,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 15,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 18,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 19,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "candidate": 20,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 203
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 1,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 2,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 3,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 4,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 5,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 6,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 7,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 8,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 9,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 10,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 11,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 14,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 15,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 18,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 19,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 20,
+              "faces": 628,
+              "from": 483,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 158
+            },
+            {
+              "candidate": 1,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 2,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 3,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 4,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 5,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 6,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 7,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 8,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 9,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 10,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 11,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 12,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 13,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 14,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 15,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 16,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 17,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 18,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 19,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 20,
+              "faces": 628,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 651
+            },
+            {
+              "candidate": 1,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 2,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 3,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 4,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 5,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 6,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 7,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 8,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 9,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 10,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 11,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 12,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 651
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 13,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 651
+            },
+            {
+              "candidate": 14,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 15,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 16,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 17,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 18,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 651
+            },
+            {
+              "candidate": 19,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            },
+            {
+              "candidate": 20,
+              "faces": 628,
+              "from": 598,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 651
+            }
+          ],
+          "revision": 0,
+          "selected": {
+            "from": 483,
+            "to": 203,
+            "triangles": 628
+          },
+          "triangles": 630
+        },
+        {
+          "pixels": 32,
+          "previous_triangles": 630,
+          "queries": [
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 158
+            },
+            {
+              "candidate": 1,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 2,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 3,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 4,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 5,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 6,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 7,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 8,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 9,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 10,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 11,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 12,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 13,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 14,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 15,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 16,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 17,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 18,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 19,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "candidate": 20,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 158
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 75
+            },
+            {
+              "candidate": 1,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 2,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 3,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 4,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 5,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 6,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 7,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 8,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 9,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 10,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 11,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 12,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 13,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 14,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 15,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 16,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 17,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "candidate": 20,
+              "faces": 626,
+              "from": 160,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 75
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 253
+            },
+            {
+              "candidate": 1,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 2,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 3,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 4,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 5,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 6,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 7,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 8,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 9,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 10,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 11,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 12,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 13,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 14,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 15,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 16,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 17,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 18,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 19,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "candidate": 20,
+              "faces": 626,
+              "from": 255,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 253
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 1,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 2,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 3,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 4,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 5,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 6,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 207
+            },
+            {
+              "candidate": 7,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 8,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 9,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 10,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 11,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 12,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 13,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 14,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 15,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 16,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 17,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 18,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 19,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            },
+            {
+              "candidate": 20,
+              "faces": 626,
+              "from": 205,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 207
+            }
+          ],
+          "revision": 1,
+          "selected": {
+            "from": 160,
+            "to": 158,
+            "triangles": 626
+          },
+          "triangles": 628
+        }
+      ]
+    },
+    {
+      "name": "shard-1",
+      "index": {
+        "accepted": 2,
+        "asset": "ph_sweet_potato",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 37,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 1719,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 16704,
+          "gpu_evaluations": 171,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 48129152,
+          "gpu_rasters": 446,
+          "gpu_reference_render_hits": 430,
+          "gpu_sparse_failures": 0,
+          "gpu_sparse_fallbacks": 0,
+          "gpu_sparse_passes": 414,
+          "gpu_sparse_queries": 3250,
+          "gpu_upload_bytes": 132644,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "organic",
+        "complete": true,
+        "contract_sha256": "0d4d3088e285894ef4e82ed289fba689ff5775e5904f08518f6a7b423a4ac373",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 2042,
+        "queries": 168,
+        "reference_confirmed": true,
+        "schema": 3,
+        "seconds": 0.175373936,
+        "sha256": "1472b49a1d53d3fbd1eb3496dae2bf65f866370c50b35a5696bffc425d51009b",
+        "source_triangles": 2042,
+        "states": 2,
+        "teacher_triangles": 2038,
+        "training_started": false
+      },
+      "trace": [
+        {
+          "pixels": 64,
+          "previous_triangles": 2042,
+          "queries": [
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 533
+            },
+            {
+              "candidate": 1,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 2,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 3,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 4,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 5,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 6,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 7,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 8,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 9,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 10,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 11,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 12,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 13,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 14,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 15,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 16,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 17,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 18,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 19,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "candidate": 20,
+              "faces": 2040,
+              "from": 527,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 533
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 310
+            },
+            {
+              "candidate": 1,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 2,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 3,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 4,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 5,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 6,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 7,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 8,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 9,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 10,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 11,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 12,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 13,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 14,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 15,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 16,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 17,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 18,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 19,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 20,
+              "faces": 2040,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 1015
+            },
+            {
+              "candidate": 1,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 2,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 1015
+            },
+            {
+              "candidate": 3,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 4,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 5,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 6,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 7,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 8,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 9,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 10,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 11,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 12,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 13,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 14,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 15,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 16,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 17,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 18,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 19,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "candidate": 20,
+              "faces": 2040,
+              "from": 115,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 1015
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 940
+            },
+            {
+              "candidate": 1,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 2,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 3,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 4,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 5,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 6,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 7,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 8,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 9,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 10,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 11,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 12,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 13,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 14,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 15,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 16,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 17,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 18,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 19,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            },
+            {
+              "candidate": 20,
+              "faces": 2040,
+              "from": 1001,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 940
+            }
+          ],
+          "revision": 0,
+          "selected": {
+            "from": 527,
+            "to": 533,
+            "triangles": 2040
+          },
+          "triangles": 2042
+        },
+        {
+          "pixels": 64,
+          "previous_triangles": 2042,
+          "queries": [
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 310
+            },
+            {
+              "candidate": 1,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 2,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 3,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 4,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 5,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 6,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 7,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 8,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 9,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 10,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 11,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 12,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 13,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 14,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 15,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 16,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 17,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 18,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 19,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "candidate": 20,
+              "faces": 2038,
+              "from": 1131,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 310
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 663
+            },
+            {
+              "candidate": 1,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 2,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 3,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 4,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 5,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 6,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 7,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 8,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 9,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 10,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 11,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 12,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 13,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 14,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 15,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 16,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 17,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 18,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 19,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "candidate": 20,
+              "faces": 2038,
+              "from": 684,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 663
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 779
+            },
+            {
+              "candidate": 1,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 2,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 3,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 4,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 5,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 6,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 7,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 8,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 9,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 10,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 11,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 12,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 13,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 14,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 15,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 16,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 17,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 18,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 19,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "candidate": 20,
+              "faces": 2038,
+              "from": 788,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 779
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 0,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 208
+            },
+            {
+              "candidate": 1,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "adjacent_error": 3,
+              "candidate": 2,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 27,
+              "source_error": 3,
+              "to": 208
+            },
+            {
+              "candidate": 3,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 4,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 5,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 6,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 7,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 8,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 9,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 10,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 11,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 12,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 13,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 14,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 15,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 16,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 17,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 18,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 19,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            },
+            {
+              "candidate": 20,
+              "faces": 2038,
+              "from": 968,
+              "known_mask": 0,
+              "pruned_by_incumbent": true,
+              "to": 208
+            }
+          ],
+          "revision": 1,
+          "selected": {
+            "from": 1131,
+            "to": 310,
+            "triangles": 2038
+          },
+          "triangles": 2040
+        }
+      ]
+    },
+    {
+      "name": "shard-2",
+      "index": {
+        "accepted": 0,
+        "asset": "ph_namaqualand_boulder_04",
+        "audit": {
+          "action_audit_cache_hits": 0,
+          "action_ranked": 0,
+          "action_trials": 0,
+          "bounded_audits": 0,
+          "confirmation_cancelled": 0,
+          "confirmation_disagreements": 0,
+          "confirmation_failure": null,
+          "confirmation_nonfinite": 0,
+          "confirmation_resources": 0,
+          "decode_seconds": 0,
+          "decoded": 0,
+          "encode_seconds": 0,
+          "fallback_levels": 0,
+          "first_resource_failure": null,
+          "gpu_allocations": 22,
+          "gpu_audit_seconds": 0,
+          "gpu_buffer_reuses": 337,
+          "gpu_candidate_render_hits": 0,
+          "gpu_confirmation_seconds": 0,
+          "gpu_download_bytes": 2832,
+          "gpu_evaluations": 85,
+          "gpu_measurement_cache_hits": 0,
+          "gpu_peak_bytes": 128497752,
+          "gpu_rasters": 86,
+          "gpu_reference_render_hits": 84,
+          "gpu_sparse_failures": 84,
+          "gpu_sparse_fallbacks": 0,
+          "gpu_sparse_passes": 0,
+          "gpu_sparse_queries": 1398,
+          "gpu_upload_bytes": 3584412,
+          "inference_seconds": 0,
+          "legal_collapses": 0,
+          "reference_audit_seconds": 0,
+          "reference_rejections": 0,
+          "rejected_collapses": 0,
+          "resource_failures": 0
+        },
+        "category": "rocks",
+        "complete": false,
+        "contract_sha256": "99f16fc6506704e31874db37b1ba53ba6269bd858ae51eedb2a2580f2477f7cc",
+        "path": "actions.bin",
+        "preceding_lod_emitted": false,
+        "previous_triangles": 59066,
+        "queries": 84,
+        "reference_confirmed": false,
+        "schema": 3,
+        "seconds": 0.115743009,
+        "sha256": "170b2311466af9509468a527e68b26d7c97c1c4a6fea6cb5bcf3c1c06742e689",
+        "source_triangles": 59066,
+        "states": 1,
+        "teacher_triangles": 59066,
+        "training_started": false
+      },
+      "trace": [
+        {
+          "pixels": 128,
+          "previous_triangles": 59066,
+          "queries": [
+            {
+              "adjacent_error": null,
+              "candidate": 0,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 1,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 2,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 3,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 4,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 5,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 6,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 7,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 8,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 9,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 10,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 11,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 12,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 13,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 14,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 15,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 16,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 17,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 18,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 19,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 20,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15384
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 0,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 1,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 2,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 3,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 4,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 5,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 6,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 7,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 8,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 9,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 10,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 11,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 12,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 13,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 14,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 15,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 16,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 17,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 18,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 19,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 20,
+              "faces": 59064,
+              "from": 15386,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 15385
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 0,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 1,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 2,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 3,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 4,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 5,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 6,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 7,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 8,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 9,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 10,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 11,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 12,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 13,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 14,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 15,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 16,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 17,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 18,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 19,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 20,
+              "faces": 59064,
+              "from": 19254,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 19245
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 0,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 1,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 2,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 3,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 4,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 5,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 6,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 7,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 8,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 9,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 10,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 11,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 12,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 13,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 14,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 15,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 16,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 17,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 18,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 19,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            },
+            {
+              "adjacent_error": null,
+              "candidate": 20,
+              "faces": 59064,
+              "from": 10013,
+              "known_mask": 24,
+              "source_error": null,
+              "to": 10296
+            }
+          ],
+          "revision": 0,
+          "stopped": "no feasible queried placement",
+          "triangles": 59066
+        }
+      ]
+    }
+  ],
+  "complete": false,
+  "verified_default": true
+}

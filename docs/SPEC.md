@@ -58,7 +58,7 @@ hardware conservative coverage, center-sampled D32 visibility with first-face
 depth ties, and FP32 interpolated attributes. It uses the same metric, limits,
 camera schedule and refinement allowance, including final GPU confirmation.
 Hardware edges/interpolation can differ from the CPU/CUDA reference; record the
-backend when comparing results. Packed draw storage is an explicit experiment:
+backend when comparing results. Packed draw storage is the Vulkan default:
 the original source remains FP32 and candidate quantization consumes the existing
 budget. It does not alter master/source streams. See
 research/neural/GPU-REFACTOR.md for formats, measured limits and evidence.

@@ -7,7 +7,7 @@ class NeuralUnavailable : public std::runtime_error { using std::runtime_error::
 enum class NeuralRanking:uint8_t { Learned,Constant,Shuffled,ShortestEdge,CurrentPlane };
 enum class NeuralConfirmation:uint8_t { Cpu,Gpu,Compare };
 enum class NeuralRasterBackend:uint8_t { Cuda,Vulkan };
-enum class NeuralVertexStorage:uint8_t { Float32,Position16,Packed };
+enum class NeuralVertexStorage:uint8_t { Float32,Position16,Packed,Automatic };
 enum class NeuralConfirmationReason:uint8_t { Visual,Cancelled,Resource,Nonfinite,Disagreement };
 struct NeuralConfirmationFailure {
     Mesh reference,candidate; // Optional owned replay snapshots; never borrowed past generation.
@@ -28,7 +28,10 @@ struct NeuralOptions {
     bool capture_confirmation_failure{};
     bool cache_rasters{true}; // Optional bounded cache; false supports matched profiling.
     NeuralRasterBackend raster_backend{NeuralRasterBackend::Cuda};
-    NeuralVertexStorage vertex_storage{NeuralVertexStorage::Float32};
+    NeuralVertexStorage vertex_storage{NeuralVertexStorage::Automatic};
+    // Hardware draws pack by default. The diagnostic CUDA rasterizer consumes
+    // FP32 master streams; explicit selections always override the default.
+    NeuralVertexStorage draw_storage()const{return vertex_storage==NeuralVertexStorage::Automatic?(raster_backend==NeuralRasterBackend::Vulkan?NeuralVertexStorage::Packed:NeuralVertexStorage::Float32):vertex_storage;}
 };
 enum class NeuralResourceLimit:uint8_t { None,SampleCount,WorkspaceMemory,DeviceMemory,TileEntries };
 struct NeuralAuditFailure {

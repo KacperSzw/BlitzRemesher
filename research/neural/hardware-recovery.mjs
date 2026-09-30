@@ -8,7 +8,7 @@ const root=path.resolve(directory);fs.mkdirSync(root,{recursive:true});const rea
 const report={complete:false,binary_sha256:hash('build/neural/blitz-neural-cycle'),score:null};
 async function execute(name,interrupt=false){
  const run=root+'/'+name,fd=fs.openSync(run+(interrupt?'-interrupt':fs.existsSync(run)?'-resume':'-whole')+'.log','w');
- const child=spawn('build/neural/blitz-neural-cycle',[run,'--states','1','--updates','2048','--minutes','1','--gpu-memory-mib','1024','--quality','off'],{stdio:['ignore',fd,fd]});
+ const child=spawn('build/neural/blitz-neural-cycle',[run,'--states','1','--updates','2048','--minutes','1','--gpu-memory-mib','1024','--vertex-storage','fp32','--quality','off'],{stdio:['ignore',fd,fd]});
  let killed=false;const timer=setTimeout(()=>child.kill('SIGKILL'),70000);
  const poll=interrupt?setInterval(()=>{if(!killed&&fs.existsSync(run+'/latest.json')){const latest=read(run+'/latest.json');if(latest.active_training&&latest.step<latest.active_training.target_step){report.interrupted_step=latest.step;report.interrupted_target=latest.active_training.target_step;killed=true;child.kill('SIGKILL');}}},5):null;
  try{const status=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',(code,signal)=>resolve({code,signal}));});if(interrupt?!killed||status.signal!=='SIGKILL':status.code!==0)throw new Error('Unexpected cycle status '+JSON.stringify(status));}

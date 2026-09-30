@@ -1,7 +1,7 @@
 # Hardware rasterization and resident learning
 
 Local RTX 2080, driver 595.71.05, CUDA 12.9, LibTorch 2.10/cu128.
-The implemented pipeline is **2.90× faster end to end** on the frozen local
+The complete FP32 draw-control pipeline is **2.90× faster end to end** on the frozen local
 learning pass. Three sequential repeats: legacy 38.61–40.55 s; new
 13.57–14.25 s. Both paths start from optimizer step 224,768 and perform
 54 teacher states, 12,288 updates, 24 checkpoints, and constant/learned audits
@@ -9,7 +9,7 @@ on the same two development assets. Settings, cameras, work budgets, and
 visual limits are unchanged. Hardware raster semantics and teacher ordering
 are versioned changes; training labels and final models can differ.
 
-| Measured component | Legacy median | New median | Speedup |
+| Measured component | Legacy median | Vulkan FP32 median | Speedup |
 |---|---:|---:|---:|
 | Entire pass, including startup/teardown | 39.75 s | 13.73 s | 2.90× |
 | Six teacher phases | 20.53 s | 7.61 s | 2.70× |
@@ -88,7 +88,7 @@ transform. Empty masks are handled before NPP. Twenty-one deterministic
 cases, including odd dimensions and the upper boundary, matched an independent
 integer oracle with zero mismatches. Immutable reference fields are cached.
 
-## Storage experiment
+## Packed draw default
 
 Separate GPU streams use the requested formats:
 
@@ -116,9 +116,14 @@ Packed Vulkan took 0.313–0.432 ms: **no consistent additional speedup** over
 FP32 Vulkan on this mesh. Packing adds work and the shader does not currently
 consume UV/tangent data.
 
-FP32 remains the training default. A packed bench pilot failed the unchanged
-visual gate and is retained as negative evidence; a packed sweet-potato pilot
-completed. A few edge pixels changed face ownership, producing up to ~90°
+**Packed draw data is the Vulkan and resident-cycle default**, as requested.
+`--vertex-storage fp32` explicitly selects the diagnostic control used for the
+complete timing comparison above. Automatic storage resolves to FP32 for the
+legacy CUDA renderer, which has no packed draw interface. A packed bench pilot
+failed the unchanged visual gate and is retained as negative evidence; a packed
+sweet-potato pilot completed. The packed full-cycle pilot completes bench 32 px
+and sweet potato 64 px, then stops at boulder 128 px with no feasible queried
+placement. It has no complete-cycle throughput result or quality score. A few edge pixels changed face ownership, producing up to ~90°
 pixel-normal differences despite small numeric quantization. Original source
 renders stay FP32, so storage error consumes the existing visual budget.
 Master geometry, depth, render attributes and optimizer arithmetic remain FP32;
@@ -169,9 +174,8 @@ nix develop .#neural -c build/neural/blitz-neural-cycle RUN_DIRECTORY \
 ```
 
 Run the same command/directory to resume a matching checkpoint. The binary,
-dataset hashes, work configuration and source manifests are checked. Use
-`--vertex-storage position16` or `--vertex-storage packed` for explicit storage
-experiments. The library/CLI selection is `NeuralOptions::raster_backend` /
+dataset hashes, work configuration and source manifests are checked. Packed is the hardware default; use `--vertex-storage fp32` for the complete
+control workload, or `--vertex-storage position16` to isolate position packing. The library/CLI selection is `NeuralOptions::raster_backend` /
 `--raster-backend vulkan`; the legacy library default stays CUDA for compatibility.
 Vulkan needs a graphics-capable NVIDIA device matching CUDA's UUID, Linux FD
 external memory/semaphores, conservative rasterization and Vulkan 1.3 features.
@@ -184,6 +188,7 @@ release an old autograd graph before capacity recapture, and reject an invalid
 CUDA/packed option combination. The hot algorithm is unchanged.
 
 Remote validation is a separate bounded job using the existing spending grant.
-It runs graphics/interop tests, memory checks, a small full cycle, remote replay
-and replay of the local checkpoint on the remote GPU. It never starts a new
+It runs graphics/interop tests, memory checks, a packed default cycle with
+explicit visual-gate failure reporting, a complete FP32 control cycle, remote
+replay and replay of the local checkpoint on the remote GPU. It never starts a new
 two-hour training session. Remote results will be recorded after collection.

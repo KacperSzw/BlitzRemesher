@@ -2,7 +2,8 @@
 
 The current GPU implementation adds authoritative Vulkan audits, sparse threshold
 queries and a persistent placement-policy learning process. The frozen local
-pass is 2.90× faster; packed draw storage is available as an explicit experiment.
+FP32 control pass is 2.90× faster. Packed draw storage is the hardware default;
+its stricter quantization-inclusive audits can stop an infeasible teacher shard.
 See [the implementation and timing graph](GPU-REFACTOR.md) for measured evidence,
 remaining costs, build/run commands and the bounded remote validation.
 

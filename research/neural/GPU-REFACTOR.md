@@ -278,3 +278,9 @@ its empty volume was deleted. An RTX 4090 profile capped at $0.80/hour is also
 available for bounded validation; it compiles the same implementation for SM89
 and retains the same memory, visual and replay checks. Failed allocation records
 remain under [evidence/hardware-remote](evidence/hardware-remote/).
+The RTX 4090 quote lost capacity before allocation. A subsequent L40S rental
+reached the container but failed NVIDIA Vulkan ICD loading before compilation.
+Its logs were verified and all resources deleted. The setup now explicitly
+installs the graphics driver's GLVND/X11 runtime dependencies and records the
+actual GPU/driver, ICD and linked libraries before attempting Vulkan. This is
+an infrastructure correction; the local neural runtime remains unchanged.

@@ -8,13 +8,21 @@ export CUDAToolkit_ROOT=/usr/local/cuda
 "$CUDACXX" --version > /workspace/results/cuda-toolkit.txt
 apt-get update -qq
 apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
+nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv,noheader,nounits | tee /workspace/results/gpu.csv
 blitz_vulkan=OFF
 if [[ "${BLITZ_HARDWARE_VALIDATION:-0}" == 1 ]]; then
   blitz_vulkan=ON
-  apt-get install -y --no-install-recommends libvulkan-dev vulkan-tools vulkan-validationlayers glslang-tools
+  # NVIDIA mounts its ICD into the CUDA container, but its GLVND/X11 runtime
+  # dependencies must come from the container. No display or kernel driver is installed.
+  apt-get install -y --no-install-recommends libvulkan-dev vulkan-tools vulkan-validationlayers glslang-tools libgl1 libegl1 libx11-6 libxext6
+  ldconfig -p > /workspace/results/graphics-libraries.txt
+  for blitz_icd in /usr/share/vulkan/icd.d/*nvidia*.json /etc/vulkan/icd.d/*nvidia*.json; do
+    if [[ -f "$blitz_icd" ]]; then cat "$blitz_icd"; fi
+  done > /workspace/results/nvidia-icd.json
+  blitz_glx=$(ldconfig -p | rg -m1 -o '/[^ ]*/libGLX_nvidia[.]so[.]0' || true)
+  if [[ -n "$blitz_glx" ]]; then ldd "$blitz_glx" > /workspace/results/nvidia-glx-dependencies.txt; fi
   vulkaninfo --summary > /workspace/results/vulkan.txt
 fi
-nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv,noheader,nounits | tee /workspace/results/gpu.csv
 node --input-type=module <<'JS'
 import fs from 'node:fs';
 import {deployment,verifyDevice} from './research/neural/runpod-profile.mjs';

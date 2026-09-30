@@ -1,0 +1,148 @@
+Generating SQLite file runs/neural/throughput-timeline-02.sqlite from runs/neural/throughput-timeline-02.nsys-rep
+Processing [runs/neural/throughput-timeline-02.sqlite] with [/nix/store/g0vbj24r0w4x5268k02pvngb04nby50l-nsight-systems-2026.5.1/opt/nvidia/nsight-systems/2026.5.1/target-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+17.0,49139027,7744,6345.4,6368.0,1024,11168,647.0,"blitz::neural::clip_draw(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *, blitz::Bounds, blitz::Camera, unsigned int, unsigned char, unsigned int)"
+15.3,44294696,6930,6391.7,7360.0,3136,10688,2085.5,"blitz::neural::<unnamed>::predicate_initialize(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, unsigned int, unsigned int *, unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, blitz::Weights, float)"
+12.9,37187148,2007,18528.7,18880.0,9568,27360,3013.0,"blitz::neural::<unnamed>::place_vertices(blitz::neural::DeviceMeshView, blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const blitz::neural::Placement *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Vec3 *, blitz::Vec3 *, blitz::Vec2 *, blitz::ColorRGBA8 *, blitz::Vec4 *)"
+5.8,16854967,2007,8398.1,8353.0,8096,13632,203.2,"blitz::neural::<unnamed>::validate_placement(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const blitz::Vec3 *, const blitz::Vec3 *, const blitz::Vec2 *, unsigned int *)"
+4.5,13123146,78,168245.5,164385.5,158370,231107,10881.0,"blitz::neural::<unnamed>::enumerate(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const unsigned int *, blitz::neural::<unnamed>::Edit *, unsigned char *, unsigned int, bool)"
+4.4,12774940,1928,6626.0,6689.0,1280,8352,1154.0,"blitz::neural::draw_streams(blitz::neural::DeviceMeshView, blitz::NeuralVertexStorage, blitz::neural::DrawLayout, char *)"
+4.4,12739876,6930,1838.4,1120.0,928,5248,1178.4,"void blitz::neural::<unnamed>::predicate_search<(bool)0>(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, const unsigned int *, unsigned int, blitz::neural::<unnamed>::PredicateSummary *, int, int, double, int, blitz::Weights)"
+3.6,10517424,78,134838.8,128769.5,127137,152353,7677.9,"blitz::neural::<unnamed>::vertex_features(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, const unsigned int *, const unsigned int *, blitz::Bounds, float *)"
+3.4,9820964,7744,1268.2,1024.0,928,3616,489.6,"blitz::neural::clear_draw_clip(blitz::neural::DrawMetadata *, unsigned int)"
+3.0,8520055,2306,3694.7,3616.0,1632,6784,1003.7,"blitz::neural::gather_draw_status(blitz::neural::DrawStatusSources, unsigned int *)"
+2.7,7796614,295,26429.2,26176.0,21920,36480,2290.2,"blitz::neural::<unnamed>::teacher_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::GpuActionState::Proposal *, const blitz::neural::Placement *, bool)"
+2.1,5941116,1928,3081.5,2912.0,1056,6176,642.0,"blitz::neural::draw_bounds(blitz::neural::DeviceMeshView, blitz::neural::DrawMetadata *, bool, blitz::neural::DrawLayout, char *)"
+1.9,5502801,74,74362.2,54896.5,52160,1509936,169173.7,"blitz::neural::<unnamed>::rank_actions(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, float *, unsigned int *, blitz::NeuralRanking, double, unsigned int, unsigned int, unsigned int)"
+1.7,5019951,656,7652.4,6000.0,4704,10816,2192.7,"blitz::neural::<unnamed>::initialize(blitz::neural::<unnamed>::SampleImage, blitz::neural::<unnamed>::SampleImage, float *, float *, blitz::neural::<unnamed>::Summary *, unsigned long)"
+1.5,4215244,96,43908.8,44480.0,42049,45728,1239.5,"kernelColor(short2 *, short2 *, int)"
+1.3,3866440,74,52249.2,51489.0,44193,82145,5618.7,"blitz::neural::<unnamed>::fill_action_features(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, blitz::neural::<unnamed>::TopologyView, const blitz::neural::<unnamed>::Edit *, const float *, const float *, blitz::Bounds, unsigned int, float *, unsigned int, unsigned int, const unsigned int *)"
+1.1,3305986,78,42384.4,51729.0,26913,55457,12762.3,"blitz::neural::<unnamed>::connected_fans(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::TopologyView, const unsigned int *, unsigned int *, unsigned char *)"
+0.9,2654268,544,4879.2,4896.0,4576,7232,309.7,"void cub::CUB_200802_SM_750::DeviceRadixSortOnesweepKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int, int, int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T7 *, T7 *, T5 *, const T5 *, T3 *, const T3 *, T4 *, const T4 *, T6, int, int, T8)"
+0.8,2391992,128,18687.4,16512.0,16288,28032,3823.2,"void cub::CUB_200802_SM_750::DeviceRadixSortOnesweepKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, unsigned int, int, int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T7 *, T7 *, T5 *, const T5 *, T3 *, const T3 *, T4 *, const T4 *, T6, int, int, T8)"
+0.8,2297949,368,6244.4,4000.0,2368,11712,3000.7,"blitz::neural::<unnamed>::single_edit(blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, unsigned int, unsigned int, unsigned int, unsigned int *)"
+0.8,2240473,904,2478.4,2464.0,2208,2880,98.8,"blitz::neural::<unnamed>::copy_trial(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, const unsigned int *, unsigned int *, unsigned short *, unsigned int)"
+0.7,2060825,904,2279.7,2400.0,1824,4032,295.5,"void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::detail::InputValue<unsigned int, unsigned int *>, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)"
+0.7,1986225,904,2197.2,2176.0,1952,3264,77.9,"blitz::neural::<unnamed>::keep_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int)"
+0.7,1913530,736,2599.9,2400.0,1472,22176,1157.8,"blitz::neural::coverage_bits(unsigned long long, unsigned int *, unsigned int)"
+0.6,1829007,1566,1167.9,1152.0,1088,1984,68.3,"blitz::neural::<unnamed>::assign_trial(const unsigned int *, blitz::neural::Placement *, blitz::neural::Placement, blitz::neural::DeviceTrialStatus *, const unsigned int *)"
+0.6,1756815,312,5630.8,4897.0,3840,9568,1586.4,"blitz::neural::<unnamed>::sort_lists(const unsigned int *, unsigned int *, unsigned int)"
+0.6,1726935,904,1910.3,1920.0,1344,3328,328.4,"blitz::neural::<unnamed>::apply_map(const blitz::neural::<unnamed>::Edit *, const unsigned int *, const blitz::neural::<unnamed>::State *, unsigned int *)"
+0.6,1714356,88,19481.3,19456.5,19328,19808,132.7,"void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)"
+0.5,1375727,480,2866.1,2848.0,2112,4000,499.2,"kernelMergeBands(short2 *, short2 *, short2 *, int, int)"
+0.4,1154448,172,6711.9,6337.0,5856,7904,589.8,"blitz::neural::<unnamed>::directed_coverage(blitz::neural::<unnamed>::SampleImage, const float *, blitz::neural::<unnamed>::Summary *, unsigned long)"
+0.4,1066154,1216,876.8,864.0,800,1376,32.3,"void cub::CUB_200802_SM_750::DeviceScanInitKernel<cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>>(T1, int)"
+0.3,1009775,96,10518.5,10464.0,10368,12385,307.6,"kernelFloodUp(short2 *, short2 *, int, int)"
+0.3,999434,441,2266.3,2272.0,1088,2976,171.5,"blitz::neural::<unnamed>::assign_placement(const unsigned int *, blitz::neural::Placement *, blitz::neural::Placement)"
+0.3,975914,96,10165.8,10144.0,10080,10720,96.0,"kernelFloodDown(short2 *, short2 *, int, int)"
+0.3,963561,231,4171.3,2208.0,2048,78945,9782.7,"blitz::neural::compensated_linear_kernel(const float *, const float *, const float *, float *, unsigned int, unsigned int, unsigned int, bool)"
+0.3,747430,42,17796.0,17792.0,17600,17920,48.6,"void cub::CUB_200802_SM_750::DeviceRadixSortSingleTileKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(const T3 *, T3 *, const T4 *, T4 *, T5, int, int, T6)"
+0.2,714372,96,7441.4,7328.0,7264,11296,686.6,"kernelUpdateVertical(short2 *, short2 *, short2 *, int, int)"
+0.2,543460,312,1741.9,1728.0,1632,2592,97.6,"void cub::CUB_200802_SM_750::DeviceScanKernel<cub::CUB_200802_SM_750::detail::scan::policy_hub<unsigned int, unsigned int, unsigned int, unsigned int, cuda::std::__4::plus<void>>::Policy1000, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<unsigned int, (bool)1>, cuda::std::__4::plus<void>, cub::CUB_200802_SM_750::NullType, unsigned int, unsigned int, (bool)0>(T2, T3, T4, int, T5, T6, T7)"
+0.2,462503,156,2964.8,2912.5,2624,4928,189.1,"void cub::CUB_200802_SM_750::DeviceReduceByKeyKernel<cub::CUB_200802_SM_750::detail::rle::encode::policy_hub<unsigned int, unsigned long>::Policy1000, unsigned long *, unsigned long *, thrust::THRUST_200802_SM_750_NS::constant_iterator<unsigned int, int, thrust::THRUST_200802_SM_750_NS::use_default>, unsigned int *, unsigned int *, cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, cuda::std::__4::equal_to<void>, cuda::std::__4::plus<void>, int, unsigned int>(T2, T3, T4, T5, T6, T7, int, T8, T9, T10)"
+0.1,415013,96,4323.1,4256.0,4064,6336,328.4,"kernelProximatePoints(short2 *, short2 *, int, int)"
+0.1,407909,74,5512.3,5696.0,4896,6272,376.3,"blitz::neural::<unnamed>::decode_placements(blitz::neural::DeviceMeshView, blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const float *, blitz::neural::Placement *, const unsigned int *, unsigned int, bool)"
+0.1,345762,156,2216.4,1920.0,1600,3264,515.8,"blitz::neural::<unnamed>::edge_keys(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned long *, unsigned int *, unsigned int *, unsigned int)"
+0.1,331938,68,4881.4,4768.0,4704,8544,637.6,"void cub::CUB_200802_SM_750::DeviceRadixSortHistogramKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, (bool)0, unsigned long, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T4 *, const T3 *, T4, int, int, T5)"
+0.1,307908,96,3207.4,3104.0,3008,9920,698.8,"void initInputVoronoi<unsigned char>(T1 *, unsigned long, T1, T1, short2 *, double *, double *, int, NppiSize, NppiSize)"
+0.1,278500,156,1785.3,1728.0,1632,2944,156.9,"blitz::neural::<unnamed>::scatter_faces(blitz::neural::DeviceMeshView, const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)"
+0.1,260033,156,1666.9,1632.0,1536,2176,91.8,"blitz::neural::<unnamed>::scatter_edges(blitz::neural::<unnamed>::TopologyView, unsigned int *, unsigned int *, unsigned int)"
+0.1,257473,156,1650.5,1632.0,1472,2240,91.7,"blitz::neural::<unnamed>::edge_degrees(const unsigned long *, const unsigned int *, const unsigned int *, unsigned int *, unsigned int *, unsigned int)"
+0.1,234980,96,2447.7,2432.0,2368,2752,55.7,"kernelCreateForwardPointers(short2 *, short2 *, int, int)"
+0.1,232454,78,2980.2,2400.0,2208,6880,820.6,"void cub::CUB_200802_SM_750::DeviceSelectSweepKernel<cub::CUB_200802_SM_750::detail::select::policy_hub<blitz::neural::<unnamed>::Edit, unsigned char, int, (bool)0, (bool)0, (bool)0>::Policy1000, blitz::neural::<unnamed>::Edit *, unsigned char *, blitz::neural::<unnamed>::Edit *, unsigned int *, cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, cub::CUB_200802_SM_750::NullType, cub::CUB_200802_SM_750::NullType, int, cub::CUB_200802_SM_750::detail::select::streaming_context_t<long, (bool)1>, (bool)0, (bool)0>(T2, T3, T4, T5, T6, T7, T8, T9, int, T10, cub::CUB_200802_SM_750::detail::vsmem_t)"
+0.1,205632,96,2142.0,2144.0,2080,2304,39.6,"kernelDoubleToSingleList(short2 *, short2 *, short2 *, int)"
+0.1,197217,74,2665.1,2560.0,1152,3392,416.6,"blitz::neural::<unnamed>::teacher_records(const blitz::neural::<unnamed>::State *, const blitz::neural::<unnamed>::Edit *, const unsigned int *, blitz::neural::Action *, unsigned int)"
+0.1,186211,96,1939.7,1856.0,1568,3296,364.5,"blitz::neural::<unnamed>::npp_mask(blitz::neural::<unnamed>::SampleImage, unsigned char *, unsigned long)"
+0.1,177539,96,1849.4,1824.0,1792,2304,69.2,"kernelPropagateInterband(short2 *, short2 *, int, int)"
+0.1,164226,96,1710.7,1696.0,1600,2464,132.9,"blitz::neural::<unnamed>::npp_squared(const short2 *, float *, unsigned int)"
+0.0,138785,32,4337.0,4256.0,4224,6720,436.4,"void cub::CUB_200802_SM_750::DeviceRadixSortHistogramKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, (bool)1, float, unsigned int, cub::CUB_200802_SM_750::detail::identity_decomposer_t>(T4 *, const T3 *, T4, int, int, T5)"
+0.0,136965,156,878.0,864.0,832,1056,27.5,"void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ReduceByKeyScanTileState<unsigned int, int, (bool)1>, unsigned int *>(T1, int, T2)"
+0.0,134882,73,1847.7,1824.0,1728,2080,64.9,"blitz::neural::<unnamed>::copy_commit(unsigned int *, unsigned short *, const unsigned int *, const unsigned short *, const unsigned int *, unsigned int)"
+0.0,116385,74,1572.8,1568.0,1536,1696,35.8,"blitz::neural::<unnamed>::teacher_selection(const blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int *, unsigned int, unsigned int)"
+0.0,110625,9,12291.7,12065.0,4192,20800,6244.7,"blitz::neural::training::<unnamed>::derivative_bias(float *, const float *, float *, unsigned int, unsigned int)"
+0.0,82592,68,1214.6,1216.0,1152,1632,62.9,"void cub::CUB_200802_SM_750::DeviceRadixSortExclusiveSumKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<unsigned long, cub::CUB_200802_SM_750::NullType, unsigned int>::Policy1000, unsigned int>(T2 *)"
+0.0,82592,73,1131.4,1120.0,1088,1248,28.4,"blitz::neural::<unnamed>::commit_faces(blitz::neural::<unnamed>::State *, const unsigned int *, unsigned int)"
+0.0,70464,78,903.4,864.0,832,1536,119.2,"void cub::CUB_200802_SM_750::DeviceCompactInitKernel<cub::CUB_200802_SM_750::ScanTileState<int, (bool)1>, unsigned int *>(T1, int, T2)"
+0.0,65504,10,6550.4,6960.0,1984,10720,4289.8,"blitz::neural::<unnamed>::lookup_vertices(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int, unsigned int *, bool)"
+0.0,63425,6,10570.8,9648.0,9025,14368,2004.4,volta_sgemm_64x32_sliced1x4_nt
+0.0,56192,3,18730.7,18624.0,18464,19104,333.1,"blitz::neural::training::<unnamed>::gather_resident(const blitz::neural::training::ResidentRoot *, float *, unsigned char *, float *, const unsigned int *, const blitz::neural::training::UpdateState *, unsigned int, unsigned int, unsigned int)"
+0.0,51426,10,5142.6,5536.0,2496,7808,2212.9,"blitz::neural::<unnamed>::insert_vertices(blitz::neural::DeviceMeshView, unsigned int *, unsigned int, bool)"
+0.0,40704,3,13568.0,16352.0,7264,17088,5471.8,volta_sgemm_32x32_sliced1x4_nt
+0.0,39137,32,1223.0,1216.0,1152,1664,84.0,"void cub::CUB_200802_SM_750::DeviceRadixSortExclusiveSumKernel<cub::CUB_200802_SM_750::detail::radix::policy_hub<float, unsigned int, unsigned int>::Policy1000, unsigned int>(T2 *)"
+0.0,37344,6,6224.0,6384.0,3776,9024,1772.9,volta_sgemm_32x128_nn
+0.0,22049,20,1102.5,928.0,864,2720,504.5,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+0.0,21696,9,2410.7,2208.0,1536,3872,688.4,"void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, float, float, float, (bool)1, (bool)0, (bool)0, (bool)0>(cublasLt::cublasSplitKParams<T6>, const T4 *, const T10 *, T9 *, T5 *, const T6 *, const T6 *, const T11 *, const T4 *, T11 *, void *, long, T6 *, int *, T6 *, T6 *, const T6 *, const T6 *, const T6 *, const T6 *, const T6 *)"
+0.0,19200,5,3840.0,4288.0,2688,4544,855.4,"blitz::neural::decode_working_mesh(const unsigned short *, const unsigned int *, const unsigned short *, const unsigned int *, unsigned int, blitz::neural::VertexBounds, blitz::Vec3 *, blitz::Vec3 *, blitz::Vec2 *, blitz::Vec4 *)"
+0.0,18112,3,6037.3,5824.0,5824,6464,369.5,"blitz::neural::training::<unnamed>::norm_finish(const float *, unsigned int, blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)"
+0.0,11104,5,2220.8,2144.0,2112,2432,133.1,"blitz::neural::<unnamed>::mark_seams(blitz::neural::DeviceMeshView, const unsigned int *, unsigned int *)"
+0.0,10688,3,3562.7,3648.0,3296,3744,235.9,"blitz::neural::training::<unnamed>::placement_gradient(const float *, const unsigned char *, const float *, const unsigned int *, float *, float *, const blitz::neural::training::UpdateState *, unsigned int, blitz::neural::training::UpdateSettings)"
+0.0,10624,3,3541.3,3296.0,3200,4128,510.3,"blitz::neural::training::<unnamed>::select_resident_states(const blitz::neural::training::ResidentRoot *, unsigned int *, const blitz::neural::training::UpdateState *, unsigned int)"
+0.0,10528,3,3509.3,3552.0,3360,3616,133.2,"blitz::neural::training::<unnamed>::adam(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, const blitz::neural::training::UpdateState *, blitz::neural::training::UpdateSettings)"
+0.0,10400,3,3466.7,3552.0,2880,3968,549.0,"blitz::neural::training::<unnamed>::norm_parts(const blitz::neural::training::AdamParameter *, unsigned int, unsigned int, float *, const blitz::neural::training::UpdateState *)"
+0.0,7424,3,2474.7,2464.0,2464,2496,18.5,"blitz::neural::training::<unnamed>::placement_denominators(const unsigned char *, blitz::neural::training::UpdateState *, unsigned int, unsigned int)"
+0.0,5248,3,1749.3,1056.0,1024,3168,1228.7,blitz::neural::training::<unnamed>::finish(blitz::neural::training::UpdateState *)
+0.0,4480,3,1493.3,1504.0,1440,1536,48.9,"blitz::neural::training::<unnamed>::sum_loss(const float *, blitz::neural::training::UpdateState *, unsigned int)"
+0.0,2144,2,1072.0,1072.0,1024,1120,67.9,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<unsigned char>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+0.0,1952,2,976.0,976.0,896,1056,113.1,"void at::native::vectorized_elementwise_kernel<(int)2, at::native::FillFunctor<long>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+0.0,1024,1,1024.0,1024.0,1024,1024,0.0,"void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<int>, std::array<char *, (unsigned long)1>>(int, T2, T3)"
+
+Processing [runs/neural/throughput-timeline-02.sqlite] with [/nix/store/g0vbj24r0w4x5268k02pvngb04nby50l-nsight-systems-2026.5.1/opt/nvidia/nsight-systems/2026.5.1/target-linux-x64/reports/cuda_api_sum.py]... 
+Time (%),Total Time (ns),Num Calls,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+86.2,17248525868,8861,1946566.5,1301272.0,2301,63067865,5294606.5,cudaMemcpyAsync
+7.7,1545362885,2307,669858.2,3325.0,1609,60093437,6166822.0,cudaSignalExternalSemaphoresAsync
+2.2,431550982,8230,52436.3,4515.5,829,4010301,301421.5,cudaStreamSynchronize
+1.5,290501774,53970,5382.7,3062.5,656,12080439,67199.4,cudaLaunchKernel
+1.3,261736291,11,23794208.3,10812186.0,70439,59539477,26190474.0,cudaFree
+0.5,108046624,8192,13189.3,8413.0,7938,11141498,201187.3,cudaGraphLaunch
+0.3,55032200,5478,10046.0,9149.5,1556,5432753,79529.6,cudaMemsetAsync
+0.1,16776955,8200,2046.0,407.0,290,12834201,141743.6,cudaStreamIsCapturing
+0.0,8588302,14,613450.1,47743.0,20831,7918413,2102723.1,cudaDestroyExternalMemory
+0.0,8068258,2307,3497.3,3092.0,2152,69929,3796.1,cudaWaitExternalSemaphoresAsync
+0.0,6975634,716,9742.5,987.0,520,5399222,201715.9,cudaMallocAsync
+0.0,5349843,19,281570.7,442.0,317,5316214,1219200.1,cudaEventCreateWithFlags
+0.0,3755208,6,625868.0,600425.0,535713,784521,88006.8,cudaGetDeviceProperties
+0.0,3397766,128,26545.0,1321.5,1140,2267056,202344.6,cudaStreamCreateWithPriority
+0.0,1784496,26,68634.5,60517.5,36004,190068,30337.0,cudaImportExternalMemory
+0.0,1736570,18,96476.1,86265.5,47370,191401,36799.4,cudaExternalMemoryGetMappedBuffer
+0.0,1587487,8,198435.9,137466.0,106297,623349,175035.1,cudaExternalMemoryGetMappedMipmappedArray
+0.0,1272615,96,13256.4,13354.0,5236,38337,4366.8,cudaMemcpy2DAsync
+0.0,1148752,4,287188.0,165780.0,62264,754928,321925.1,cudaFreeMipmappedArray
+0.0,911387,6,151897.8,126981.5,92966,299290,74087.9,cudaMalloc
+0.0,517138,599,863.3,727.0,541,8864,688.2,cudaFreeAsync
+0.0,357734,2095,170.8,145.0,104,2592,93.3,cuGetProcAddress_v2
+0.0,284777,2,142388.5,142388.5,133849,150928,12076.7,cudaImportExternalSemaphore
+0.0,205841,1,205841.0,205841.0,205841,205841,0.0,cudaStreamCreateWithFlags
+0.0,103913,1,103913.0,103913.0,103913,103913,0.0,cudaGraphInstantiateWithFlags
+0.0,97633,4,24408.3,10623.0,6585,69802,30378.0,cudaDestroySurfaceObject
+0.0,89891,8,11236.4,9659.5,5380,18318,4545.3,cudaCreateSurfaceObject
+0.0,76506,12,6375.5,6217.0,2393,12063,2832.9,cudaEventRecord
+0.0,27034,1,27034.0,27034.0,27034,27034,0.0,cudaMemGetInfo
+0.0,26688,4,6672.0,6027.0,5317,9317,1808.5,cudaEventSynchronize
+0.0,15806,3,5268.7,5785.0,3493,6528,1582.0,cudaStreamWaitEvent
+0.0,15470,10,1547.0,1386.0,433,3054,1086.1,cudaEventCreate
+0.0,14454,1,14454.0,14454.0,14454,14454,0.0,cudaStreamBeginCapture
+0.0,13619,8,1702.4,1021.0,472,6457,2004.5,cudaEventDestroy
+0.0,11966,7,1709.4,1712.0,755,2357,521.3,cuInit
+0.0,6534,1,6534.0,6534.0,6534,6534,0.0,cudaGraphDestroy
+0.0,4361,6,726.8,170.0,113,3592,1403.9,cuModuleGetLoadingMode
+0.0,3436,2,1718.0,1718.0,443,2993,1803.1,cudaGetDriverEntryPoint
+0.0,2012,1,2012.0,2012.0,2012,2012,0.0,cudaStreamEndCapture
+0.0,1611,1,1611.0,1611.0,1611,1611,0.0,cudaGraphGetNodes
+0.0,1169,1,1169.0,1169.0,1169,1169,0.0,cudaStreamGetCaptureInfo_v2
+
+Processing [runs/neural/throughput-timeline-02.sqlite] with [/nix/store/g0vbj24r0w4x5268k02pvngb04nby50l-nsight-systems-2026.5.1/opt/nvidia/nsight-systems/2026.5.1/target-linux-x64/reports/nvtx_sum.py]... 
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Style,Range
+32.9,14083034113,5,2816606822.6,2621072596.0,1584614953,3916336072,988980898.7,PushPop,:wait-teacher
+19.8,8453025437,463,18257074.4,10510380.0,0,129535947,18915308.7,PushPop,:candidate-audit
+11.6,4962413724,1,4962413724.0,4962413724.0,4962413724,4962413724,0.0,PushPop,:teacher-3
+11.3,4831892452,1,4831892452.0,4831892452.0,4831892452,4831892452,0.0,PushPop,:teacher-1
+9.5,4071683801,64,63620059.4,63963724.5,61149235,65263895,998704.7,PushPop,:optimizer-window
+5.8,2497966032,1,2497966032.0,2497966032.0,2497966032,2497966032,0.0,PushPop,:teacher-0
+5.2,2241131208,1,2241131208.0,2241131208.0,2241131208,2241131208,0.0,PushPop,:teacher-2
+3.7,1584586022,1,1584586022.0,1584586022.0,1584586022,1584586022,0.0,PushPop,:teacher-4
+0.0,19396567,904,21456.4,20622.0,13023,56026,3616.1,PushPop,CCCL:cub::DeviceScan::ExclusiveSum
+0.0,10854051,230,47191.5,11754.0,5517,2638713,174657.8,PushPop,CCCL:cub::DeviceRadixSort
+0.0,3782177,312,12122.4,11281.5,10519,52317,3046.9,PushPop,CCCL:cub::DeviceScan::InclusiveSum
+0.0,2242473,156,14374.8,13882.0,11058,72865,5652.2,PushPop,CCCL:cub::DeviceRunLengthEncode::Encode
+0.0,1013467,78,12993.2,12155.5,11297,46969,4143.2,PushPop,CCCL:cub::DeviceSelect::Flagged
+

@@ -21,7 +21,7 @@ inline void upload_working_mesh(gpu::Device& device,MeshView m,VertexBounds q,Ve
     for(size_t i=0;i<tangent.size();++i){auto v=m.tangents[i];tangent[i]=pack_direction({v.x,v.y,v.z},v.w<0?-1:1);}
     gpu::Buffer<uint16_t> dp(device,p.size()),du(device,uv.size());gpu::Buffer<uint32_t> dn(device,normal.size()),dt(device,tangent.size()),di(device,ids.size());gpu::Buffer<Vec3> de(device,exact.size());
     dp.upload(p);dn.upload(normal);du.upload(uv);dt.upload(tangent);di.upload(ids);de.upload(exact);
-    decode_working_mesh<<<gpu::blocks(m.positions.count),256>>>(dp.p,dn.p,du.p,dt.p,uint32_t(m.positions.count),q,positions,normals,texcoords,tangents);
-    if(!ids.empty())restore_exact_positions<<<gpu::blocks(ids.size()),256>>>(di.p,de.p,uint32_t(ids.size()),positions);gpu::check(cudaGetLastError());
+    decode_working_mesh<<<gpu::blocks(m.positions.count),256,0,gpu::stream()>>>(dp.p,dn.p,du.p,dt.p,uint32_t(m.positions.count),q,positions,normals,texcoords,tangents);
+    if(!ids.empty())restore_exact_positions<<<gpu::blocks(ids.size()),256,0,gpu::stream()>>>(di.p,de.p,uint32_t(ids.size()),positions);gpu::check(cudaGetLastError());
 }
 }

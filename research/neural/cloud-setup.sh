@@ -8,6 +8,9 @@ export CUDAToolkit_ROOT=/usr/local/cuda
 "$CUDACXX" --version > /workspace/results/cuda-toolkit.txt
 apt-get update -qq
 apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
+if [[ "${BLITZ_PIPELINE_VALIDATION:-0}" == 1 ]]; then
+  apt-get install -y --no-install-recommends cuda-nsight-systems-12-9
+fi
 nvidia-smi --query-gpu=name,compute_cap,memory.total,driver_version --format=csv,noheader,nounits | tee /workspace/results/gpu.csv
 blitz_vulkan=OFF
 if [[ "${BLITZ_HARDWARE_VALIDATION:-0}" == 1 ]]; then

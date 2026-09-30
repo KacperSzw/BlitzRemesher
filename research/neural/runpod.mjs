@@ -70,6 +70,10 @@ async function prepare(){
     for(const name of fs.readdirSync(source+'/'+relative(latest.checkpoint)))await copy(source+'/'+latest.checkpoint+'/'+relative(name),'forensic/'+latest.checkpoint+'/'+name);
     for(const shard of latest.datasets.slice(latest.resident_start??0))for(const name of ['actions.bin','index.json','contract.json'])await copy(source+'/data/'+relative(shard)+'/'+name,'forensic/data/'+shard+'/'+name);
     const config={mode:process.env.BLITZ_VALIDATION_MODE??'forensic',next_training_launch:false};
+    if(config.mode==='pipeline'){
+      for(const name of ['training','validation'])for(const asset of read(root+'/research/neural/corpus-v2/'+name+'.json').assets)for(const file of asset.files)auditFiles.set(file.path,file.sha256);
+      await copy(root+'/runs/neural/runpod-gpu-refactor-01/final-model.blzn','initial-model.blzn','9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185');
+    }
     if(!['forensic','pipeline'].includes(config.mode))throw new Error('Unknown validation mode');
     write(stage+'/validation.json',config);files.push({path:'validation.json',sha256:await sha(stage+'/validation.json'),bytes:fs.statSync(stage+'/validation.json').size});
   }

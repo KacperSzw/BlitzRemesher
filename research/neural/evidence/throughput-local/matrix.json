@@ -1,0 +1,2962 @@
+{
+  "complete": true,
+  "score": null,
+  "mode": "matrix",
+  "started": 1790794067396,
+  "rows": [
+    {
+      "variant": "workers1-batch1",
+      "seconds": 2.238345453,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.361101506461973,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.035963772,
+        "published": 1,
+        "serialize_seconds": 0.000930319,
+        "snapshot_seconds": 0.000548415,
+        "verify_seconds": 0.001901503,
+        "wait_seconds": 0.038841777
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.085615098,
+          "wait_seconds": 0.192379296,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.05685723399999999,
+            "candidate_build_seconds": 0.0027717290000000006,
+            "commit_seconds": 0.000371184,
+            "features_and_proposals_seconds": 0.004493866000000001,
+            "load_and_session_seconds": 0.000036327,
+            "other_preparation_seconds": 0.0035319740000000176,
+            "packing_and_baseline_seconds": 0.015432341,
+            "state_setup_seconds": 0.001666594
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.025189961,
+          "capture_seconds": 0.017888415,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.090296116,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.047105472
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.23726761,
+          "wait_seconds": 0.146906831,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.18518442899999996,
+            "candidate_build_seconds": 0.015970228999999996,
+            "commit_seconds": 0.000442099,
+            "features_and_proposals_seconds": 0.002315839,
+            "load_and_session_seconds": 0.000020928,
+            "other_preparation_seconds": 0.0050394140000000216,
+            "packing_and_baseline_seconds": 0.027382753,
+            "state_setup_seconds": 0.000435303
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000321204,
+          "capture_seconds": 7.21e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.047628215,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.047212733
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.039474829,
+          "wait_seconds": 0.039551113,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.015627663,
+            "candidate_build_seconds": 0.003266436,
+            "commit_seconds": 0.002816646,
+            "features_and_proposals_seconds": 0.001977258,
+            "load_and_session_seconds": 0.00002727,
+            "other_preparation_seconds": 0.010292748999999993,
+            "packing_and_baseline_seconds": 0.004770884,
+            "state_setup_seconds": 0.000272244
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000554379,
+          "capture_seconds": 4.35e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.047658197,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.047006149
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.202922715,
+          "wait_seconds": 0.155150349,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.11609610799999998,
+            "candidate_build_seconds": 0.017272465999999997,
+            "commit_seconds": 0.000452205,
+            "features_and_proposals_seconds": 0.009675864999999999,
+            "load_and_session_seconds": 0.000023649,
+            "other_preparation_seconds": 0.004896952000000035,
+            "packing_and_baseline_seconds": 0.053658591,
+            "state_setup_seconds": 0.000367133
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000536538,
+          "capture_seconds": 4.44e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.047845697,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.047214025
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.053861034,
+          "wait_seconds": 0.053936122,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.023970477000000004,
+            "candidate_build_seconds": 0.016137755,
+            "commit_seconds": 0.00032042400000000003,
+            "features_and_proposals_seconds": 0.003979369000000001,
+            "load_and_session_seconds": 0.000031026,
+            "other_preparation_seconds": 0.004016440999999992,
+            "packing_and_baseline_seconds": 0.004703542,
+            "state_setup_seconds": 0.000273185
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000855432,
+          "capture_seconds": 4.06e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.048123185,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047166676
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.204024889,
+          "wait_seconds": 0.155740971,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.11970145800000004,
+            "candidate_build_seconds": 0.018232384999999986,
+            "commit_seconds": 0.000459462,
+            "features_and_proposals_seconds": 0.006432047999999999,
+            "load_and_session_seconds": 0.000024649,
+            "other_preparation_seconds": 0.00510581799999995,
+            "packing_and_baseline_seconds": 0.053237932,
+            "state_setup_seconds": 0.000360295
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.009113568,
+          "capture_seconds": 3.85e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.053733005,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.044519857
+        }
+      ]
+    },
+    {
+      "variant": "workers1-batch2",
+      "seconds": 2.14545604,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.5932150740138615,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.033240641,
+        "published": 1,
+        "serialize_seconds": 0.000853337,
+        "snapshot_seconds": 0.000508409,
+        "verify_seconds": 0.001910409,
+        "wait_seconds": 0.036059658
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.090271241,
+          "wait_seconds": 0.202088186,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.051196352,
+            "candidate_build_seconds": 0.0008334549999999999,
+            "commit_seconds": 0.00038655099999999995,
+            "features_and_proposals_seconds": 0.004796859,
+            "load_and_session_seconds": 0.000034049,
+            "other_preparation_seconds": 0.013719726,
+            "packing_and_baseline_seconds": 0.011754465,
+            "state_setup_seconds": 0.007105488
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.026394645,
+          "capture_seconds": 0.022784791,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.093968153,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.044685974
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.188445293,
+          "wait_seconds": 0.094440175,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.14740417999999997,
+            "candidate_build_seconds": 0.0020787880000000003,
+            "commit_seconds": 0.000450228,
+            "features_and_proposals_seconds": 0.0016780219999999997,
+            "load_and_session_seconds": 0.000019634,
+            "other_preparation_seconds": 0.004949298000000043,
+            "packing_and_baseline_seconds": 0.03094399,
+            "state_setup_seconds": 0.000443163
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000298619,
+          "capture_seconds": 4.51e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.047621505,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.047235206
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.041855521,
+          "wait_seconds": 0.041906577,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.021399427000000002,
+            "candidate_build_seconds": 0.0030887869999999995,
+            "commit_seconds": 0.00033543,
+            "features_and_proposals_seconds": 0.007877294,
+            "load_and_session_seconds": 0.000026288,
+            "other_preparation_seconds": 0.003671824000000002,
+            "packing_and_baseline_seconds": 0.004753634,
+            "state_setup_seconds": 0.000271582
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.003318207,
+          "capture_seconds": 3.95e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.051578163,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.048161449
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.156007959,
+          "wait_seconds": 0.104371586,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.07000715299999999,
+            "candidate_build_seconds": 0.0026896819999999992,
+            "commit_seconds": 0.000875835,
+            "features_and_proposals_seconds": 0.004076758,
+            "load_and_session_seconds": 0.000025459,
+            "other_preparation_seconds": 0.024185837000000023,
+            "packing_and_baseline_seconds": 0.053316325,
+            "state_setup_seconds": 0.000369025
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000309807,
+          "capture_seconds": 4.19e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.047206982,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.046809102
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.054674874,
+          "wait_seconds": 0.054721655,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.042369638999999994,
+            "candidate_build_seconds": 0.001968278,
+            "commit_seconds": 0.000313941,
+            "features_and_proposals_seconds": 0.0014192509999999998,
+            "load_and_session_seconds": 0.000030039,
+            "other_preparation_seconds": 0.0032386620000000015,
+            "packing_and_baseline_seconds": 0.004629076,
+            "state_setup_seconds": 0.000268286
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000314093,
+          "capture_seconds": 4.28e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.047773122,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047373165
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.154388925,
+          "wait_seconds": 0.106549327,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.07092654999999998,
+            "candidate_build_seconds": 0.001766705,
+            "commit_seconds": 0.000446951,
+            "features_and_proposals_seconds": 0.004160606000000001,
+            "load_and_session_seconds": 0.000026325,
+            "other_preparation_seconds": 0.02305949900000004,
+            "packing_and_baseline_seconds": 0.053144003,
+            "state_setup_seconds": 0.000365169
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000291154,
+          "capture_seconds": 4.23e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.047060164,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.046678828
+        }
+      ]
+    },
+    {
+      "variant": "workers1-batch4",
+      "seconds": 2.044405609,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.869675185117889,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.038882389,
+        "published": 1,
+        "serialize_seconds": 0.000874819,
+        "snapshot_seconds": 0.00053484,
+        "verify_seconds": 0.001879682,
+        "wait_seconds": 0.041718491
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.083844201,
+          "wait_seconds": 0.19216629,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.055506228000000005,
+            "candidate_build_seconds": 0.0020518539999999997,
+            "commit_seconds": 0.00036352,
+            "features_and_proposals_seconds": 0.004295139,
+            "load_and_session_seconds": 0.00003347,
+            "other_preparation_seconds": 0.004153119999999995,
+            "packing_and_baseline_seconds": 0.015409934,
+            "state_setup_seconds": 0.001560189
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.024923993,
+          "capture_seconds": 0.019448756,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.09312857,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.048652965
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.175118469,
+          "wait_seconds": 0.081955482,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.12221934100000001,
+            "candidate_build_seconds": 0.001298035,
+            "commit_seconds": 0.00045815799999999996,
+            "features_and_proposals_seconds": 0.002234537,
+            "load_and_session_seconds": 0.000021736,
+            "other_preparation_seconds": 0.02010385299999999,
+            "packing_and_baseline_seconds": 0.027882358,
+            "state_setup_seconds": 0.000429604
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.002336959,
+          "capture_seconds": 4.54e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.047087455,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.044674313
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.054449639,
+          "wait_seconds": 0.054494929,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.018656274,
+            "candidate_build_seconds": 0.0018513899999999996,
+            "commit_seconds": 0.000322823,
+            "features_and_proposals_seconds": 0.003974971999999999,
+            "load_and_session_seconds": 0.000030902,
+            "other_preparation_seconds": 0.021681900000000004,
+            "packing_and_baseline_seconds": 0.007230822,
+            "state_setup_seconds": 0.000269371
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000424487,
+          "capture_seconds": 4.54e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.046519987,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.046019412
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.136015963,
+          "wait_seconds": 0.089434981,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.06995289599999999,
+            "candidate_build_seconds": 0.001194018,
+            "commit_seconds": 0.00043924100000000005,
+            "features_and_proposals_seconds": 0.0018811580000000004,
+            "load_and_session_seconds": 0.000023515,
+            "other_preparation_seconds": 0.007982966000000015,
+            "packing_and_baseline_seconds": 0.053708467,
+            "state_setup_seconds": 0.000364192
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000289366,
+          "capture_seconds": 4.32e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.047467986,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.047098831
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.054377827,
+          "wait_seconds": 0.054459611,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.027184785999999996,
+            "candidate_build_seconds": 0.0034731770000000005,
+            "commit_seconds": 0.000330489,
+            "features_and_proposals_seconds": 0.0053261260000000005,
+            "load_and_session_seconds": 0.000029721,
+            "other_preparation_seconds": 0.012987543000000008,
+            "packing_and_baseline_seconds": 0.004340008,
+            "state_setup_seconds": 0.000264186
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000318557,
+          "capture_seconds": 3.95e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.048027355,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047606584
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.136753644,
+          "wait_seconds": 0.088661454,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.067377966,
+            "candidate_build_seconds": 0.0014471039999999996,
+            "commit_seconds": 0.000440786,
+            "features_and_proposals_seconds": 0.00164176,
+            "load_and_session_seconds": 0.000033065,
+            "other_preparation_seconds": 0.011320080000000008,
+            "packing_and_baseline_seconds": 0.053653126,
+            "state_setup_seconds": 0.00035868
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000290782,
+          "capture_seconds": 3.93e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.045967523,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.045596359
+        }
+      ]
+    },
+    {
+      "variant": "workers1-batch8",
+      "seconds": 2.05713892,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.833341866216186,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.030471128,
+        "published": 1,
+        "serialize_seconds": 0.001344821,
+        "snapshot_seconds": 0.000754505,
+        "verify_seconds": 0.003078185,
+        "wait_seconds": 0.034970329
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.082983598,
+          "wait_seconds": 0.193577299,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.048180011,
+            "candidate_build_seconds": 0.002302166,
+            "commit_seconds": 0.000366895,
+            "features_and_proposals_seconds": 0.011664077,
+            "load_and_session_seconds": 0.000033539,
+            "other_preparation_seconds": 0.0034868430000000025,
+            "packing_and_baseline_seconds": 0.014774685,
+            "state_setup_seconds": 0.001707194
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.025640974,
+          "capture_seconds": 0.018976746,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.093424719,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.048487385
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.168358906,
+          "wait_seconds": 0.074907156,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.128962807,
+            "candidate_build_seconds": 0.0012204879999999996,
+            "commit_seconds": 0.00046239,
+            "features_and_proposals_seconds": 0.001916743,
+            "load_and_session_seconds": 0.000019326,
+            "other_preparation_seconds": 0.0056908420000000084,
+            "packing_and_baseline_seconds": 0.029156418,
+            "state_setup_seconds": 0.000438052
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.010278472,
+          "capture_seconds": 4.31e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.054857397,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.044498123
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.055803649,
+          "wait_seconds": 0.055841009,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.029004281,
+            "candidate_build_seconds": 0.000953428,
+            "commit_seconds": 0.000337666,
+            "features_and_proposals_seconds": 0.003961605,
+            "load_and_session_seconds": 0.000029858,
+            "other_preparation_seconds": 0.013198540000000002,
+            "packing_and_baseline_seconds": 0.007574524,
+            "state_setup_seconds": 0.000279723
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000433925,
+          "capture_seconds": 5.53e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.046475284,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.045966352
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.124260424,
+          "wait_seconds": 0.077726921,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.049880742000000006,
+            "candidate_build_seconds": 0.004764025999999999,
+            "commit_seconds": 0.000457379,
+            "features_and_proposals_seconds": 0.009374951,
+            "load_and_session_seconds": 0.000025327,
+            "other_preparation_seconds": 0.0052161690000000005,
+            "packing_and_baseline_seconds": 0.053689193,
+            "state_setup_seconds": 0.00035873
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.008992745,
+          "capture_seconds": 4.3e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.053227053,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.044157259
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.057425443,
+          "wait_seconds": 0.057518575,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.034722600000000006,
+            "candidate_build_seconds": 0.0034916570000000004,
+            "commit_seconds": 0.000344684,
+            "features_and_proposals_seconds": 0.004504203,
+            "load_and_session_seconds": 0.000029296,
+            "other_preparation_seconds": 0.006665122999999993,
+            "packing_and_baseline_seconds": 0.006941887,
+            "state_setup_seconds": 0.000279567
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000445895,
+          "capture_seconds": 4.18e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.047576294,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047045634
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.126245076,
+          "wait_seconds": 0.078571752,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.055331913999999996,
+            "candidate_build_seconds": 0.002848536,
+            "commit_seconds": 0.000441759,
+            "features_and_proposals_seconds": 0.006720337,
+            "load_and_session_seconds": 0.000024256,
+            "other_preparation_seconds": 0.006211470000000011,
+            "packing_and_baseline_seconds": 0.053786983,
+            "state_setup_seconds": 0.000350497
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.007354738,
+          "capture_seconds": 6.99e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.052613989,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.045169844
+        }
+      ]
+    },
+    {
+      "variant": "workers2-batch1",
+      "seconds": 2.329227739,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.151920747013979,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.035084802,
+        "published": 1,
+        "serialize_seconds": 0.000931777,
+        "snapshot_seconds": 0.000554807,
+        "verify_seconds": 0.001926482,
+        "wait_seconds": 0.03801505
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.21653336,
+          "wait_seconds": 0.348051122,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.08471917399999998,
+            "candidate_build_seconds": 0.011781636,
+            "commit_seconds": 0.0009397979999999999,
+            "features_and_proposals_seconds": 0.005551871000000001,
+            "load_and_session_seconds": 0.000032557,
+            "other_preparation_seconds": 0.01482837500000001,
+            "packing_and_baseline_seconds": 0.088086709,
+            "state_setup_seconds": 0.010080185
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.035131329,
+          "capture_seconds": 0.022328858,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.105330425,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.047762015
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.376869299,
+          "wait_seconds": 0.126722091,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.27360910799999993,
+            "candidate_build_seconds": 0.034027313999999996,
+            "commit_seconds": 0.000899323,
+            "features_and_proposals_seconds": 0.013993225,
+            "load_and_session_seconds": 0.00002076,
+            "other_preparation_seconds": 0.020699188000000097,
+            "packing_and_baseline_seconds": 0.031399412,
+            "state_setup_seconds": 0.000818889
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.008996935,
+          "capture_seconds": 4.04e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.056236012,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.047153118
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.133963059,
+          "wait_seconds": 0.00000538,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.09474736499999999,
+            "candidate_build_seconds": 0.004923203,
+            "commit_seconds": 0.000566802,
+            "features_and_proposals_seconds": 0.005415575,
+            "load_and_session_seconds": 0.000018656,
+            "other_preparation_seconds": 0.007035747000000014,
+            "packing_and_baseline_seconds": 0.019666886,
+            "state_setup_seconds": 0.00053264
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.005079004,
+          "capture_seconds": 4.75e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.050227796,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.045043544
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.313781161,
+          "wait_seconds": 0.109016541,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.23351861900000007,
+            "candidate_build_seconds": 0.019799514000000004,
+            "commit_seconds": 0.0029874040000000004,
+            "features_and_proposals_seconds": 0.008093312,
+            "load_and_session_seconds": 0.000021517,
+            "other_preparation_seconds": 0.021311499999999928,
+            "packing_and_baseline_seconds": 0.025361188,
+            "state_setup_seconds": 0.000568791
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000298196,
+          "capture_seconds": 4.56e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.050225641,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.04984926
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.087247077,
+          "wait_seconds": 0.087309376,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.046160723,
+            "candidate_build_seconds": 0.008656047000000004,
+            "commit_seconds": 0.000593338,
+            "features_and_proposals_seconds": 0.002424731,
+            "load_and_session_seconds": 0.000021783,
+            "other_preparation_seconds": 0.022549294999999997,
+            "packing_and_baseline_seconds": 0.005987033,
+            "state_setup_seconds": 0.000333558
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000820969,
+          "capture_seconds": 4.39e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.048543541,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047628886
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.240526787,
+          "wait_seconds": 0.104654866,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.20568990500000003,
+            "candidate_build_seconds": 0.019640593,
+            "commit_seconds": 0.00045637,
+            "features_and_proposals_seconds": 0.002335029,
+            "load_and_session_seconds": 0.000031056,
+            "other_preparation_seconds": 0.004939748999999977,
+            "packing_and_baseline_seconds": 0.006527923,
+            "state_setup_seconds": 0.000368977
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000297842,
+          "capture_seconds": 8.47e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.048682587,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.048291552
+        }
+      ]
+    },
+    {
+      "variant": "workers2-batch2",
+      "seconds": 2.163289957,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.547105339251651,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.034613264,
+        "published": 1,
+        "serialize_seconds": 0.000875622,
+        "snapshot_seconds": 0.00052982,
+        "verify_seconds": 0.001935829,
+        "wait_seconds": 0.03748489
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.227869228,
+          "wait_seconds": 0.362734448,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.08196945300000001,
+            "candidate_build_seconds": 0.0023733530000000004,
+            "commit_seconds": 0.007623365,
+            "features_and_proposals_seconds": 0.008537993000000002,
+            "load_and_session_seconds": 0.000031639,
+            "other_preparation_seconds": 0.03089046499999997,
+            "packing_and_baseline_seconds": 0.087885014,
+            "state_setup_seconds": 0.008070003
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.031559807,
+          "capture_seconds": 0.01763016,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.094999636,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.045693909
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.272998576,
+          "wait_seconds": 0.027574309,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.229255267,
+            "candidate_build_seconds": 0.0035633200000000005,
+            "commit_seconds": 0.0006617330000000001,
+            "features_and_proposals_seconds": 0.005383608999999999,
+            "load_and_session_seconds": 0.000019465,
+            "other_preparation_seconds": 0.008531534999999977,
+            "packing_and_baseline_seconds": 0.024336196,
+            "state_setup_seconds": 0.000715567
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.001991508,
+          "capture_seconds": 4.17e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.051863014,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.049419246
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.182462268,
+          "wait_seconds": 0.008116578,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.152833802,
+            "candidate_build_seconds": 0.001347378,
+            "commit_seconds": 0.000612008,
+            "features_and_proposals_seconds": 0.002399973,
+            "load_and_session_seconds": 0.000020195,
+            "other_preparation_seconds": 0.005296074999999981,
+            "packing_and_baseline_seconds": 0.016560597,
+            "state_setup_seconds": 0.000309573
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.006218667,
+          "capture_seconds": 6.4e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.05160473,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.045289198
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.206540872,
+          "wait_seconds": 0.094798694,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.1411180619999999,
+            "candidate_build_seconds": 0.0018199300000000006,
+            "commit_seconds": 0.000495211,
+            "features_and_proposals_seconds": 0.002386423,
+            "load_and_session_seconds": 0.000020139,
+            "other_preparation_seconds": 0.004795006000000097,
+            "packing_and_baseline_seconds": 0.054810521,
+            "state_setup_seconds": 0.000600156
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000305426,
+          "capture_seconds": 3.96e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.047125391,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.046734022
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.10302388,
+          "wait_seconds": 0.103113593,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.063430339,
+            "candidate_build_seconds": 0.0018347920000000005,
+            "commit_seconds": 0.0016893239999999999,
+            "features_and_proposals_seconds": 0.004949865,
+            "load_and_session_seconds": 0.000028244,
+            "other_preparation_seconds": 0.020656305999999992,
+            "packing_and_baseline_seconds": 0.007743653,
+            "state_setup_seconds": 0.000355848
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.001103229,
+          "capture_seconds": 4.54e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.046174011,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.044981986
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.194509283,
+          "wait_seconds": 0.045233743,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.17317426100000005,
+            "candidate_build_seconds": 0.0021869759999999998,
+            "commit_seconds": 0.000479712,
+            "features_and_proposals_seconds": 0.003129301,
+            "load_and_session_seconds": 0.000027638,
+            "other_preparation_seconds": 0.00657975599999993,
+            "packing_and_baseline_seconds": 0.008028468,
+            "state_setup_seconds": 0.000341993
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000308103,
+          "capture_seconds": 4.24e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.047155681,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.046741837
+        }
+      ]
+    },
+    {
+      "variant": "workers2-batch4",
+      "seconds": 2.109971701,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.687278346027986,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.037118296,
+        "published": 1,
+        "serialize_seconds": 0.000923592,
+        "snapshot_seconds": 0.00052834,
+        "verify_seconds": 0.001870958,
+        "wait_seconds": 0.039955209
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.185660246,
+          "wait_seconds": 0.335082552,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.078933704,
+            "candidate_build_seconds": 0.0028857520000000005,
+            "commit_seconds": 0.0015864310000000001,
+            "features_and_proposals_seconds": 0.004823488,
+            "load_and_session_seconds": 0.000032909,
+            "other_preparation_seconds": 0.008492829000000007,
+            "packing_and_baseline_seconds": 0.086134141,
+            "state_setup_seconds": 0.001752996
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.030787073,
+          "capture_seconds": 0.015462245,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.093019957,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.046661912
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.235729505,
+          "wait_seconds": 0.027500389,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.163729747,
+            "candidate_build_seconds": 0.005560661,
+            "commit_seconds": 0.0007508220000000001,
+            "features_and_proposals_seconds": 0.014306781999999999,
+            "load_and_session_seconds": 0.000020477,
+            "other_preparation_seconds": 0.018093723000000016,
+            "packing_and_baseline_seconds": 0.032065249,
+            "state_setup_seconds": 0.000672516
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000555288,
+          "capture_seconds": 4.32e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.051503679,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.050858069
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.191940062,
+          "wait_seconds": 0.01972467,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.140679012,
+            "candidate_build_seconds": 0.003850323,
+            "commit_seconds": 0.00327955,
+            "features_and_proposals_seconds": 0.002596855,
+            "load_and_session_seconds": 0.000025269,
+            "other_preparation_seconds": 0.012109050000000031,
+            "packing_and_baseline_seconds": 0.026115977,
+            "state_setup_seconds": 0.001508911
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000694414,
+          "capture_seconds": 4.31e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.046947317,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.046168444
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.19203029,
+          "wait_seconds": 0.07506384,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.11313040699999996,
+            "candidate_build_seconds": 0.0024883640000000003,
+            "commit_seconds": 0.000437778,
+            "features_and_proposals_seconds": 0.004628294,
+            "load_and_session_seconds": 0.000019956,
+            "other_preparation_seconds": 0.014984495000000042,
+            "packing_and_baseline_seconds": 0.055446867,
+            "state_setup_seconds": 0.000394223
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000310268,
+          "capture_seconds": 4.27e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.046239043,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.045853455
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.091426904,
+          "wait_seconds": 0.091452203,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.063545686,
+            "candidate_build_seconds": 0.002229484,
+            "commit_seconds": 0.0030602549999999996,
+            "features_and_proposals_seconds": 0.0049634100000000006,
+            "load_and_session_seconds": 0.000030208,
+            "other_preparation_seconds": 0.009740227000000002,
+            "packing_and_baseline_seconds": 0.00659713,
+            "state_setup_seconds": 0.000748451
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.00045621,
+          "capture_seconds": 7.71e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.050284181,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.049736104
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.180335144,
+          "wait_seconds": 0.038609782,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.12686233400000002,
+            "candidate_build_seconds": 0.0030586450000000005,
+            "commit_seconds": 0.00066927,
+            "features_and_proposals_seconds": 0.0025043870000000003,
+            "load_and_session_seconds": 0.000027833,
+            "other_preparation_seconds": 0.02378452999999997,
+            "packing_and_baseline_seconds": 0.022165336,
+            "state_setup_seconds": 0.000707452
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000289363,
+          "capture_seconds": 6.06e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.047395773,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.047029233
+        }
+      ]
+    },
+    {
+      "variant": "workers2-batch8",
+      "seconds": 2.091153836,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.73845725760921,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.024253248,
+        "published": 1,
+        "serialize_seconds": 0.000980983,
+        "snapshot_seconds": 0.000590614,
+        "verify_seconds": 0.002053337,
+        "wait_seconds": 0.027374878
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.206071294,
+          "wait_seconds": 0.334067946,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.067839993,
+            "candidate_build_seconds": 0.002215916,
+            "commit_seconds": 0.001254253,
+            "features_and_proposals_seconds": 0.011565175,
+            "load_and_session_seconds": 0.000031642,
+            "other_preparation_seconds": 0.024370611000000025,
+            "packing_and_baseline_seconds": 0.091992598,
+            "state_setup_seconds": 0.006131743
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.03009078,
+          "capture_seconds": 0.018238751,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.093212558,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.044766008
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.230633796,
+          "wait_seconds": 0.011704356,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.11423065800000003,
+            "candidate_build_seconds": 0.010288839,
+            "commit_seconds": 0.001259567,
+            "features_and_proposals_seconds": 0.006904796000000001,
+            "load_and_session_seconds": 0.000024635,
+            "other_preparation_seconds": 0.06011096699999999,
+            "packing_and_baseline_seconds": 0.030147866,
+            "state_setup_seconds": 0.007007032
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000795641,
+          "capture_seconds": 5e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.04828647,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.047211264
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.190479387,
+          "wait_seconds": 0.037119538,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.15942832499999998,
+            "candidate_build_seconds": 0.001381076,
+            "commit_seconds": 0.000580027,
+            "features_and_proposals_seconds": 0.004748937,
+            "load_and_session_seconds": 0.000019691,
+            "other_preparation_seconds": 0.008654341999999992,
+            "packing_and_baseline_seconds": 0.014934194,
+            "state_setup_seconds": 0.00026094
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000641523,
+          "capture_seconds": 4.17e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.04802313,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.04729345
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.189311723,
+          "wait_seconds": 0.055736275,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.104347113,
+            "candidate_build_seconds": 0.0026657709999999995,
+            "commit_seconds": 0.001680658,
+            "features_and_proposals_seconds": 0.010270296,
+            "load_and_session_seconds": 0.000021117,
+            "other_preparation_seconds": 0.013695240000000013,
+            "packing_and_baseline_seconds": 0.055787591,
+            "state_setup_seconds": 0.000348399
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000291541,
+          "capture_seconds": 4.09e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.045697739,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.045332018
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.09360722,
+          "wait_seconds": 0.093665158,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.05472034499999999,
+            "candidate_build_seconds": 0.0016547349999999996,
+            "commit_seconds": 0.000692486,
+            "features_and_proposals_seconds": 0.0033375789999999994,
+            "load_and_session_seconds": 0.000029246,
+            "other_preparation_seconds": 0.023716248000000002,
+            "packing_and_baseline_seconds": 0.008195633,
+            "state_setup_seconds": 0.000629183
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000794257,
+          "capture_seconds": 4.13e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.048178427,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.047285539
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.164663894,
+          "wait_seconds": 0.024390415,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.125798677,
+            "candidate_build_seconds": 0.003543622,
+            "commit_seconds": 0.0007153680000000001,
+            "features_and_proposals_seconds": 0.009080478999999999,
+            "load_and_session_seconds": 0.000027753,
+            "other_preparation_seconds": 0.015434003999999994,
+            "packing_and_baseline_seconds": 0.009148073,
+            "state_setup_seconds": 0.000382027
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000422338,
+          "capture_seconds": 4.57e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.046434172,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.045914896
+        }
+      ]
+    },
+    {
+      "variant": "workers3-batch1",
+      "seconds": 2.385512181,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.030365094642698,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.028152112,
+        "published": 1,
+        "serialize_seconds": 0.000856653,
+        "snapshot_seconds": 0.000524633,
+        "verify_seconds": 0.001862377,
+        "wait_seconds": 0.030950845
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.33042595,
+          "wait_seconds": 0.490261837,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.12952574500000003,
+            "candidate_build_seconds": 0.008942622999999999,
+            "commit_seconds": 0.000713829,
+            "features_and_proposals_seconds": 0.008523027,
+            "load_and_session_seconds": 0.000031839,
+            "other_preparation_seconds": 0.008349069999999986,
+            "packing_and_baseline_seconds": 0.168011126,
+            "state_setup_seconds": 0.002492248
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.045302229,
+          "capture_seconds": 0.022626522,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.115483826,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.047416151
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.545486858,
+          "wait_seconds": 0.174164106,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.36559027099999997,
+            "candidate_build_seconds": 0.034087817,
+            "commit_seconds": 0.0046587320000000005,
+            "features_and_proposals_seconds": 0.012034830000000002,
+            "load_and_session_seconds": 0.000020924,
+            "other_preparation_seconds": 0.018697638000000016,
+            "packing_and_baseline_seconds": 0.104060948,
+            "state_setup_seconds": 0.005803628
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000928751,
+          "capture_seconds": 6.28e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.050003104,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.04885503
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.109719522,
+          "wait_seconds": 0.000007543,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.054345525,
+            "candidate_build_seconds": 0.004559767000000001,
+            "commit_seconds": 0.002281466,
+            "features_and_proposals_seconds": 0.009907337,
+            "load_and_session_seconds": 0.000020505,
+            "other_preparation_seconds": 0.016357691999999997,
+            "packing_and_baseline_seconds": 0.018524703,
+            "state_setup_seconds": 0.000504195
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.003469924,
+          "capture_seconds": 3.73e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.048717199,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.045153383
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.526772395,
+          "wait_seconds": 0.071121914,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.41840105199999994,
+            "candidate_build_seconds": 0.04175496700000001,
+            "commit_seconds": 0.003454512,
+            "features_and_proposals_seconds": 0.007363345,
+            "load_and_session_seconds": 0.000023059,
+            "other_preparation_seconds": 0.017326929999999983,
+            "packing_and_baseline_seconds": 0.029327139,
+            "state_setup_seconds": 0.008419945
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000734431,
+          "capture_seconds": 4.13e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.048109688,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.047284868
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.193364317,
+          "wait_seconds": 0.000005602,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.126681701,
+            "candidate_build_seconds": 0.020280338,
+            "commit_seconds": 0.0006315030000000001,
+            "features_and_proposals_seconds": 0.005068506999999999,
+            "load_and_session_seconds": 0.000021836,
+            "other_preparation_seconds": 0.009633673999999986,
+            "packing_and_baseline_seconds": 0.028001784,
+            "state_setup_seconds": 0.000853995
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.00504157,
+          "capture_seconds": 3.58e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.049787125,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.044647771
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.454424774,
+          "wait_seconds": 0.089966645,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.3292773439999999,
+            "candidate_build_seconds": 0.025695142000000004,
+            "commit_seconds": 0.000612393,
+            "features_and_proposals_seconds": 0.004773479000000001,
+            "load_and_session_seconds": 0.000021282,
+            "other_preparation_seconds": 0.06369452500000004,
+            "packing_and_baseline_seconds": 0.027683582,
+            "state_setup_seconds": 0.000699818
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000825761,
+          "capture_seconds": 6.9e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.046002345,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.045087449
+        }
+      ]
+    },
+    {
+      "variant": "workers3-batch2",
+      "seconds": 2.290702331,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.238566723028246,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.045501218,
+        "published": 1,
+        "serialize_seconds": 0.000884722,
+        "snapshot_seconds": 0.00055853,
+        "verify_seconds": 0.001875725,
+        "wait_seconds": 0.048318279
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.35423158,
+          "wait_seconds": 0.51363488,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.129496328,
+            "candidate_build_seconds": 0.003158751,
+            "commit_seconds": 0.001127474,
+            "features_and_proposals_seconds": 0.003933463999999999,
+            "load_and_session_seconds": 0.000030788,
+            "other_preparation_seconds": 0.03285302400000002,
+            "packing_and_baseline_seconds": 0.167200622,
+            "state_setup_seconds": 0.012665141
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.036358479,
+          "capture_seconds": 0.024464429,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.108269113,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.047331218
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.441731604,
+          "wait_seconds": 0.051497662,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.275383488,
+            "candidate_build_seconds": 0.007923631,
+            "commit_seconds": 0.000787611,
+            "features_and_proposals_seconds": 0.008435169,
+            "load_and_session_seconds": 0.000020789,
+            "other_preparation_seconds": 0.03717913599999997,
+            "packing_and_baseline_seconds": 0.110197323,
+            "state_setup_seconds": 0.000703098
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.00132774,
+          "capture_seconds": 4.06e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.048161907,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.046757964
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.128152647,
+          "wait_seconds": 0.000003966,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.06481973499999999,
+            "candidate_build_seconds": 0.002672557,
+            "commit_seconds": 0.000829039,
+            "features_and_proposals_seconds": 0.006755459000000001,
+            "load_and_session_seconds": 0.000020313,
+            "other_preparation_seconds": 0.026828773000000018,
+            "packing_and_baseline_seconds": 0.025276285,
+            "state_setup_seconds": 0.000377882
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.006470611,
+          "capture_seconds": 5.31e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.051296579,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.04473507
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.42177733,
+          "wait_seconds": 0.092833407,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.344205322,
+            "candidate_build_seconds": 0.006495291000000001,
+            "commit_seconds": 0.0010019249999999999,
+            "features_and_proposals_seconds": 0.020530913999999997,
+            "load_and_session_seconds": 0.000020291,
+            "other_preparation_seconds": 0.018081426000000025,
+            "packing_and_baseline_seconds": 0.03033199,
+            "state_setup_seconds": 0.00057602
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000288405,
+          "capture_seconds": 4.26e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.047687664,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.047309457
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.303902691,
+          "wait_seconds": 0.000005819,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.24188102300000003,
+            "candidate_build_seconds": 0.004854461,
+            "commit_seconds": 0.0009859040000000001,
+            "features_and_proposals_seconds": 0.005297707999999999,
+            "load_and_session_seconds": 0.00002134,
+            "other_preparation_seconds": 0.027115049999999957,
+            "packing_and_baseline_seconds": 0.021439867,
+            "state_setup_seconds": 0.000324309
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.005022933,
+          "capture_seconds": 3.62e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.049990454,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.044878683
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.33645914,
+          "wait_seconds": 0.046055669,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.20648295599999994,
+            "candidate_build_seconds": 0.004124027000000001,
+            "commit_seconds": 0.0004728,
+            "features_and_proposals_seconds": 0.008603474000000002,
+            "load_and_session_seconds": 0.000021568,
+            "other_preparation_seconds": 0.007197579000000088,
+            "packing_and_baseline_seconds": 0.108319197,
+            "state_setup_seconds": 0.000597681
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.008827323,
+          "capture_seconds": 4.26e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.053726345,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.044798346
+        }
+      ]
+    },
+    {
+      "variant": "workers3-batch4",
+      "seconds": 2.224799134,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.39374268566915,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.041282174,
+        "published": 1,
+        "serialize_seconds": 0.000864262,
+        "snapshot_seconds": 0.000524545,
+        "verify_seconds": 0.001855402,
+        "wait_seconds": 0.044250127
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.336338124,
+          "wait_seconds": 0.49501077,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.12456954,
+            "candidate_build_seconds": 0.006137003,
+            "commit_seconds": 0.002212276,
+            "features_and_proposals_seconds": 0.005519464,
+            "load_and_session_seconds": 0.000028846,
+            "other_preparation_seconds": 0.026956163999999963,
+            "packing_and_baseline_seconds": 0.168229599,
+            "state_setup_seconds": 0.00169999
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.031710476,
+          "capture_seconds": 0.022305434,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.101479229,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.047352418
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.31107171,
+          "wait_seconds": 0.024975891,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.22380483600000003,
+            "candidate_build_seconds": 0.004759688999999999,
+            "commit_seconds": 0.003951584,
+            "features_and_proposals_seconds": 0.012029648999999998,
+            "load_and_session_seconds": 0.000020857,
+            "other_preparation_seconds": 0.017899862000000023,
+            "packing_and_baseline_seconds": 0.047002161,
+            "state_setup_seconds": 0.000957654
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000841215,
+          "capture_seconds": 4.08e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.048552115,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.047374615
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.14859354,
+          "wait_seconds": 0.000004057,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.08238401499999999,
+            "candidate_build_seconds": 0.002455097,
+            "commit_seconds": 0.0013501350000000001,
+            "features_and_proposals_seconds": 0.005041707,
+            "load_and_session_seconds": 0.000018518,
+            "other_preparation_seconds": 0.026472373999999996,
+            "packing_and_baseline_seconds": 0.029817772,
+            "state_setup_seconds": 0.000559114
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.004641935,
+          "capture_seconds": 3.43e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.05238218,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.047665056
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.357570832,
+          "wait_seconds": 0.095235323,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.30188409399999994,
+            "candidate_build_seconds": 0.00433866,
+            "commit_seconds": 0.000541465,
+            "features_and_proposals_seconds": 0.0034871700000000004,
+            "load_and_session_seconds": 0.00001982,
+            "other_preparation_seconds": 0.01127199800000008,
+            "packing_and_baseline_seconds": 0.033271069,
+            "state_setup_seconds": 0.000454754
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.002683265,
+          "capture_seconds": 4.09e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.048383794,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.0456202
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.284364646,
+          "wait_seconds": 0.000006205,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.237700007,
+            "candidate_build_seconds": 0.0024079279999999993,
+            "commit_seconds": 0.0011284950000000002,
+            "features_and_proposals_seconds": 0.002297172,
+            "load_and_session_seconds": 0.000021394,
+            "other_preparation_seconds": 0.022681803000000007,
+            "packing_and_baseline_seconds": 0.016073153,
+            "state_setup_seconds": 0.001103401
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.005459863,
+          "capture_seconds": 5.25e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.05118576,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.045639157
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.341590262,
+          "wait_seconds": 0.045520879,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.21077531000000002,
+            "candidate_build_seconds": 0.0018653160000000001,
+            "commit_seconds": 0.000468235,
+            "features_and_proposals_seconds": 0.0033577189999999995,
+            "load_and_session_seconds": 0.000019356,
+            "other_preparation_seconds": 0.015395792999999946,
+            "packing_and_baseline_seconds": 0.108786931,
+            "state_setup_seconds": 0.000381862
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000294164,
+          "capture_seconds": 5.71e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.047812041,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.047420403
+        }
+      ]
+    },
+    {
+      "variant": "workers3-batch8",
+      "seconds": 2.20317011,
+      "fresh_states": 12,
+      "fresh_states_per_second": 5.446694697742023,
+      "checkpoint": {
+        "bytes": 244632,
+        "local_wait_seconds": 0,
+        "publish_seconds": 0.023213826,
+        "published": 1,
+        "serialize_seconds": 0.000962461,
+        "snapshot_seconds": 0.000557982,
+        "verify_seconds": 0.002072916,
+        "wait_seconds": 0.026287035
+      },
+      "phases": [
+        {
+          "phase": "teacher",
+          "seconds": 0.327678391,
+          "wait_seconds": 0.484886996,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.125115458,
+            "candidate_build_seconds": 0.005028828999999999,
+            "commit_seconds": 0.000651925,
+            "features_and_proposals_seconds": 0.017242657,
+            "load_and_session_seconds": 0.000029895,
+            "other_preparation_seconds": 0.009971213999999949,
+            "packing_and_baseline_seconds": 0.165672591,
+            "state_setup_seconds": 0.002759788
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.041121251,
+          "capture_seconds": 0.023066357,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.22327527403831482,
+          "loss": 0.04505893960595131,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 3324,
+          "seconds": 0.113661719,
+          "step": 128,
+          "target_step": 128,
+          "update_seconds": 0.049077584
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.375704547,
+          "wait_seconds": 0.007047784,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.17761184000000002,
+            "candidate_build_seconds": 0.006600159,
+            "commit_seconds": 0.004777226000000001,
+            "features_and_proposals_seconds": 0.011018869,
+            "load_and_session_seconds": 0.00002126,
+            "other_preparation_seconds": 0.06556676000000003,
+            "packing_and_baseline_seconds": 0.108062836,
+            "state_setup_seconds": 0.001343373
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000820418,
+          "capture_seconds": 4.04e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.08289287984371185,
+          "loss": 0.02526695281267166,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 5048,
+          "seconds": 0.053284963,
+          "step": 256,
+          "target_step": 256,
+          "update_seconds": 0.052127399
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.172278193,
+          "wait_seconds": 0.000003617,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.11134104199999999,
+            "candidate_build_seconds": 0.002510088,
+            "commit_seconds": 0.000943789,
+            "features_and_proposals_seconds": 0.004043796,
+            "load_and_session_seconds": 0.000021164,
+            "other_preparation_seconds": 0.02080598500000004,
+            "packing_and_baseline_seconds": 0.031129238,
+            "state_setup_seconds": 0.000783721
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.003664095,
+          "capture_seconds": 3.48e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.02692258544266224,
+          "loss": 0.01431154552847147,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 6772,
+          "seconds": 0.050410004,
+          "step": 384,
+          "target_step": 384,
+          "update_seconds": 0.046652781
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.343878525,
+          "wait_seconds": 0.11301223,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.2697422850000001,
+            "candidate_build_seconds": 0.007087213000000001,
+            "commit_seconds": 0.003234256,
+            "features_and_proposals_seconds": 0.009601795999999998,
+            "load_and_session_seconds": 0.000020407,
+            "other_preparation_seconds": 0.017041727999999968,
+            "packing_and_baseline_seconds": 0.035698817,
+            "state_setup_seconds": 0.00071145
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000372366,
+          "capture_seconds": 8.45e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.030678657814860344,
+          "loss": 0.013909903354942799,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 8240,
+          "seconds": 0.048147874,
+          "step": 512,
+          "target_step": 512,
+          "update_seconds": 0.047693314
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.284921089,
+          "wait_seconds": 0.000006158,
+          "asset": "ph_painted_wooden_bench",
+          "timings": {
+            "candidate_audit_seconds": 0.18134843399999998,
+            "candidate_build_seconds": 0.004395268000000002,
+            "commit_seconds": 0.000746251,
+            "features_and_proposals_seconds": 0.004642345,
+            "load_and_session_seconds": 0.000024024,
+            "other_preparation_seconds": 0.06604088400000002,
+            "packing_and_baseline_seconds": 0.025239333,
+            "state_setup_seconds": 0.000426525
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.004779936,
+          "capture_seconds": 3.97e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.0899093821644783,
+          "loss": 0.013942445628345013,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 9789,
+          "seconds": 0.051043586,
+          "step": 640,
+          "target_step": 640,
+          "update_seconds": 0.046146262
+        },
+        {
+          "phase": "teacher",
+          "seconds": 0.325997435,
+          "wait_seconds": 0.009735502,
+          "asset": "ph_sweet_potato",
+          "timings": {
+            "candidate_audit_seconds": 0.185239608,
+            "candidate_build_seconds": 0.0027959630000000003,
+            "commit_seconds": 0.002050334,
+            "features_and_proposals_seconds": 0.007230802000000001,
+            "load_and_session_seconds": 0.000023226,
+            "other_preparation_seconds": 0.015561371999999976,
+            "packing_and_baseline_seconds": 0.111344674,
+            "state_setup_seconds": 0.001144071
+          },
+          "states": 2
+        },
+        {
+          "append_seconds": 0.000299874,
+          "capture_seconds": 4.23e-7,
+          "captures": 1,
+          "checkpoint_seconds": 0,
+          "fused_algorithms": [
+            -2,
+            -2,
+            -2
+          ],
+          "fused_epilogues": 7,
+          "gradient": 0.04191378876566887,
+          "loss": 0.012851935811340809,
+          "phase": "training",
+          "pool": 4,
+          "resident_data_bytes": 11257,
+          "seconds": 0.047484522,
+          "step": 768,
+          "target_step": 768,
+          "update_seconds": 0.047107779
+        }
+      ]
+    }
+  ],
+  "identical_labels": true,
+  "seconds": 32.498
+}

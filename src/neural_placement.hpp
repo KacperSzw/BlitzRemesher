@@ -9,7 +9,7 @@ constexpr uint32_t placement_schema=3,placement_features=128,placement_outputs=1
 constexpr size_t placement_weight_count=hidden*(placement_features+1)+hidden*(hidden+1)+placement_outputs*(hidden+1);
 constexpr uint32_t policy_inputs(uint32_t architecture){return architecture==action_schema?action_features:architecture==placement_schema?placement_features:0;}
 constexpr uint32_t policy_outputs(uint32_t architecture){return architecture==action_schema?action_outputs:architecture==placement_schema?placement_outputs:0;}
-constexpr size_t policy_weights(uint32_t architecture){return architecture==action_schema?action_weight_count:architecture==placement_schema?placement_weight_count:0;}
+constexpr size_t policy_weights(uint32_t architecture,uint32_t width=64){return (width==64||width==128||width==256)&&policy_inputs(architecture)?size_t(width)*(policy_inputs(architecture)+1)+size_t(width)*(width+1)+policy_outputs(architecture)*(width+1):0;}
 struct Placement {Vec3 position;Vec3 normals[2];};
 struct PlacementRecord {Action action;std::array<float,placement_features> x{};};
 // Source/adjacent verdicts are independently known. Unknown is never a failure.

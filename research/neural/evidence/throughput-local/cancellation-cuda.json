@@ -1,0 +1,85 @@
+{
+  "compensated_cuda": {
+    "finite": true,
+    "max_abs": 3.57032374154187e-06,
+    "max_relative": 6.633930772153267e-05,
+    "rms": 4.00383915723261e-07,
+    "same_shape": true,
+    "worst_index": 216
+  },
+  "compensated_cuda_pass": true,
+  "layers": [
+    {
+      "compensated_fp32": {
+        "finite": true,
+        "max_abs": 5.863376557613265e-07,
+        "max_relative": 0.00020179602729690336,
+        "rms": 5.179248070918643e-08,
+        "same_shape": true,
+        "worst_index": 1556
+      },
+      "largest_absolute_dot_sum": 67.53492152807861,
+      "layer": 0,
+      "sequential_fp32": {
+        "finite": true,
+        "max_abs": 2.868031272029725e-06,
+        "max_relative": 0.00016102745550973662,
+        "rms": 1.5119456735403679e-07,
+        "same_shape": true,
+        "worst_index": 1960
+      }
+    },
+    {
+      "compensated_fp32": {
+        "finite": true,
+        "max_abs": 3.4385372446044116e-06,
+        "max_relative": 0.000452733991309073,
+        "rms": 1.61736272329228e-07,
+        "same_shape": true,
+        "worst_index": 1978
+      },
+      "largest_absolute_dot_sum": 446.344250796258,
+      "layer": 1,
+      "sequential_fp32": {
+        "finite": true,
+        "max_abs": 0.0001712924789144532,
+        "max_relative": 0.0006913383011548583,
+        "rms": 3.80297526733026e-06,
+        "same_shape": true,
+        "worst_index": 1978
+      }
+    },
+    {
+      "compensated_fp32": {
+        "finite": true,
+        "max_abs": 4.079662446754284e-06,
+        "max_relative": 1.4485844478621669e-05,
+        "rms": 4.1295910663307703e-07,
+        "same_shape": true,
+        "worst_index": 360
+      },
+      "largest_absolute_dot_sum": 117.42750280421738,
+      "layer": 2,
+      "sequential_fp32": {
+        "finite": true,
+        "max_abs": 0.00022599426638625353,
+        "max_relative": 0.0001520486100051247,
+        "rms": 1.156697104605032e-05,
+        "same_shape": true,
+        "worst_index": 360
+      }
+    }
+  ],
+  "model_sha256": "a5a648f62fb099a6cd1c67c9eb3932aa32b07b52a63ab98c530a1d15fa838e99",
+  "saved_gpu": {
+    "finite": true,
+    "max_abs": 0.00023266998660109728,
+    "max_relative": 0.00015654002474621944,
+    "rms": 1.189924967653327e-05,
+    "same_shape": true,
+    "worst_index": 360
+  },
+  "worst_compensated": -1.4863331317901611,
+  "worst_expected": -1.4860963821411133,
+  "worst_fp64": -1.4863290521277144
+}

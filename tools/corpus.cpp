@@ -14,6 +14,8 @@
 #include <set>
 #include <regex>
 #include "foliage.hpp"
+#include "blitz/io.hpp"
+#include "neural_mesh_cache.hpp"
 using json=nlohmann::json;
 namespace fs=std::filesystem;
 static constexpr uint64_t max_file=1024ull*1024*1024;
@@ -131,7 +133,10 @@ static json smithsonian(const json& row,const fs::path& root) {
       {"files",json::array({{{"path",path.string()},{"sha256",hash(bytes)},{"bytes",bytes.size()}}})},
       {"archive_sha256",ziphash},{"bytes",bytes.size()},{"variant",c.value("quality","unknown")},{"opaque",true}};
 }
+#include "neural_corpus.hpp"
 int main(int argc,char** argv) try {
+    if(argc>1&&std::string_view(argv[1])=="neural-expand")return expand_neural_corpus(argc-1,argv+1);
+    if(argc>1&&std::string_view(argv[1])=="neural-cache")return prepare_neural_corpus_cache(argc-1,argv+1);
     if(argc>1&&std::string_view(argv[1]).starts_with("foliage-"))return foliage::main(argc-1,argv+1);
     fs::path root=argc>1?argv[1]:"data";
     const auto start=std::chrono::steady_clock::now();

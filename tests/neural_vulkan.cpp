@@ -5,6 +5,8 @@
 #include "neural_cuda.cuh"
 #include "neural_raster_pixel.cuh"
 #include <iostream>
+#include <future>
+#include <barrier>
 using namespace blitz;using namespace blitz::neural;
 static void require(bool value,const char* message){if(!value)throw std::runtime_error(message);}
 static Mesh fixture(){Mesh m;m.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0}};m.normals.assign(4,{0,0,1});m.uv={{-8,-8},{8,-8},{8,8},{-8,8}};m.tangents.assign(4,{1,0,0,-1});m.colors.assign(4,{31,127,255,47});m.indices={0,1,2,0,2,3};m.materials={65535,65535};return m;}
@@ -13,10 +15,10 @@ static void candidate_contracts(){
     for(uint32_t y=0;y<3;++y)for(uint32_t x=0;x<3;++x){auto i=y*4+x;mesh.indices.insert(mesh.indices.end(),{i,i+1,i+4,i+1,i+5,i+4});}mesh.double_sided={1};
     NeuralOptions options;options.memory_mib=256;options.raster_backend=NeuralRasterBackend::Vulkan;options.view_batch=1;AuditSession session(options);GpuActionState state(mesh.view(),options,true);AuditCuda audit(options,mesh.view());
     auto rows=state.teacher_actions({},1,917);require(!rows.empty(),"candidate fixture has no legal edits");auto alternatives=state.teacher_proposals(rows[0].action);
-    std::array<GpuActionState::Proposal,4> proposals{alternatives[0],alternatives[2],alternatives[4],alternatives[4]};proposals[3].placement.position.x=INFINITY;
+    std::array<GpuActionState::Proposal,8> proposals{alternatives[0],alternatives[2],alternatives[4],alternatives[4],alternatives[0],alternatives[2],alternatives[4],alternatives[4]};proposals[3].placement.position.x=INFINITY;proposals[7].placement.position.y=INFINITY;
     EvalSettings e;e.screen_size=24;e.limit=3;e.views={3,1,817};e.supersample=2;e.max_supersample=4;e.max_changed_area=.4;auto box=bounds(mesh.view());
-    for(auto profile:{Profile::Coverage,Profile::Attributes})for(auto count:{1u,2u,4u})for(double cutoff:{std::numeric_limits<double>::infinity(),0.,.02}){
-        e.profile=profile;std::array<CandidateAudit,4> expected;
+    for(auto profile:{Profile::Coverage,Profile::Attributes})for(auto count:{1u,2u,4u,8u})for(double cutoff:{std::numeric_limits<double>::infinity(),0.,.02}){
+        e.profile=profile;std::array<CandidateAudit,8> expected;
         for(unsigned i=0;i<count;++i){DeviceMeshView candidate;auto& q=expected[i];q.valid=state.trial(rows[0].action,proposals[i].placement,candidate);if(q.valid){q.faces=candidate.faces;q.value=audit.certify(mesh.view(),candidate,box,e,nullptr,cutoff,std::isfinite(cutoff)?&q.pruned:nullptr);}}
         auto views=state.trial_batch(rows[0].action,std::span(proposals).first(count));auto actual=audit.certify_candidates(mesh.view(),views,box,e,nullptr,cutoff);
         for(unsigned i=0;i<count;++i){auto& a=actual[i];auto& b=expected[i];require(a.valid==b.valid,"GPU indirect validity differs");if(!a.valid)continue;
@@ -26,6 +28,11 @@ static void candidate_contracts(){
 }
 int main(){try{if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
     candidate_contracts();
+    // Each worker must retain the serial verdicts on an independent stream.
+    MemoryBudget shared{size_t(384)<<20,0,0,0};std::barrier ready(2);
+    auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts();};
+    auto first=std::async(std::launch::async,worker),second=std::async(std::launch::async,worker);first.get();second.get();
+    require(shared.live==0&&shared.peak>0&&shared.peak<=shared.limit,"worker shared budget/lifetime contract");
     auto mesh=fixture();auto original=mesh;auto b=bounds(mesh.view());Camera c{{1,0,0},{0,1,0},{0,0,1},b.radius*4,1,24/b.diameter(),false};
     for(auto storage:{NeuralVertexStorage::Float32,NeuralVertexStorage::Position16,NeuralVertexStorage::Packed}){
         options.vertex_storage=storage;auto image=raster_gpu(mesh.view(),b,c,24,2,false,options);unsigned visible=0,covered=0;

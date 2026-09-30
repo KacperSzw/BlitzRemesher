@@ -14,7 +14,7 @@ struct DrawLayout {
 };
 DrawLayout draw_layout(DeviceMeshView,NeuralVertexStorage,bool coverage_only=false);
 void pack_draw(DeviceMeshView,NeuralVertexStorage,const DrawLayout&,void* device_buffer,bool coverage_only=false);
-struct DrawStatusSources {const DrawMetadata* metadata[4]{};const DeviceTrialStatus* trial[4]{};uint32_t faces[4]{},layers[4]{},count{};};
+struct DrawStatusSources {const DrawMetadata* metadata[8]{};const DeviceTrialStatus* trial[8]{};uint32_t faces[8]{},layers[8]{},count{};};
 void collect_draw_status(DrawStatusSources,uint32_t*);
 void check_draw_clip(DeviceMeshView,NeuralVertexStorage,const DrawLayout&,void*,const Bounds&,const Camera&,uint32_t,uint8_t,uint32_t layer=0);
 void pack_coverage_mask(cudaSurfaceObject_t,uint32_t* bits,uint32_t size);

@@ -7,7 +7,7 @@
 #include <map>
 namespace blitz::neural::training {
 inline void restore_model(torch::serialize::InputArchive& archive,ActionNetwork& model,torch::Device device){
-    ActionNetwork restored(model->architecture);restored->to(device);restored->load(archive);torch::NoGradGuard guard;auto current=model->parameters(),loaded=restored->parameters();
+    ActionNetwork restored(model->architecture,model->hidden_width);restored->to(device);restored->load(archive);torch::NoGradGuard guard;auto current=model->parameters(),loaded=restored->parameters();
     for(size_t i=0;i<current.size();++i){if(current[i].sizes()!=loaded[i].sizes())throw std::invalid_argument("checkpoint model dimensions");current[i].copy_(loaded[i]);}
 }
 inline void load_checkpoint_model(const fs::path& path,ActionNetwork& model,torch::Device device){
@@ -33,8 +33,9 @@ public:
     void join(){if(pending_.valid()){auto t=std::chrono::steady_clock::now();auto done=pending_.get();totals_["wait_seconds"]=totals_["wait_seconds"].get<double>()+elapsed(t);for(auto key:{"serialize_seconds","verify_seconds","publish_seconds"})totals_[key]=totals_[key].get<double>()+done.at(key).get<double>();totals_["published"]=totals_["published"].get<uint64_t>()+1;totals_["bytes"]=totals_["bytes"].get<uint64_t>()+done.at("bytes").get<uint64_t>();}}
     fs::path local_checkpoint(){if(!local_ready_.valid())return {};auto t=std::chrono::steady_clock::now();auto p=local_ready_.get();totals_["local_wait_seconds"]=totals_["local_wait_seconds"].get<double>()+elapsed(t);return p;}
     json stats()const{return totals_;}
+    bool busy(){if(!pending_.valid())return false;if(pending_.wait_for(std::chrono::seconds(0))!=std::future_status::ready)return true;join();return false;}
     void submit(const fs::path& path,ActionNetwork& model,DeviceAdam& optimizer,const json& provenance,torch::Tensor input={},torch::Tensor expected={},fs::path journal_path={},json journal={}){
-        join();if(!scratch_.empty()&&!last_local_.empty())fs::remove_all(last_local_);auto began=std::chrono::steady_clock::now();torch::NoGradGuard guard;ActionNetwork frozen(model->architecture);auto source=model->parameters(),target=frozen->parameters();for(size_t i=0;i<source.size();++i)target[i].copy_(source[i].detach().cpu());
+        join();if(!scratch_.empty()&&!last_local_.empty())fs::remove_all(last_local_);auto began=std::chrono::steady_clock::now();torch::NoGradGuard guard;ActionNetwork frozen(model->architecture,model->hidden_width);auto source=model->parameters(),target=frozen->parameters();for(size_t i=0;i<source.size();++i)target[i].copy_(source[i].detach().cpu());
         auto control=optimizer.control.cpu().clone();std::vector<torch::Tensor> mean,variance;for(auto& v:optimizer.mean)mean.push_back(v.cpu().clone());for(auto& v:optimizer.variance)variance.push_back(v.cpu().clone());auto step=optimizer.state().step;
         if(input.defined())input=input.detach().cpu().clone();if(expected.defined())expected=expected.detach().cpu().clone();totals_["snapshot_seconds"]=totals_["snapshot_seconds"].get<double>()+elapsed(began);
         auto ready=std::make_shared<std::promise<fs::path>>();local_ready_=ready->get_future().share();last_local_=scratch_.empty()?path:scratch_/path.filename();auto local=last_local_;auto hook=before_publish_;

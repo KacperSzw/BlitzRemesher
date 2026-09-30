@@ -22,6 +22,8 @@ training_deadline_ms=$2
 export BLITZ_ACTION_V2=0
 if [[ "${4:-vertex-v1}" == action-v2* || "${4:-vertex-v1}" == gpu-refactor || "${4:-vertex-v1}" == hardware-validation || "${4:-vertex-v1}" == pipeline-validation ]]; then export BLITZ_ACTION_V2=1; fi
 export BLITZ_HARDWARE_VALIDATION=0
+export BLITZ_PIPELINE_VALIDATION=0
+if [[ "${4:-vertex-v1}" == pipeline-validation ]]; then export BLITZ_PIPELINE_VALIDATION=1; fi
 if [[ "${4:-vertex-v1}" == hardware-validation || "${4:-vertex-v1}" == gpu-refactor || "${4:-vertex-v1}" == pipeline-validation ]]; then
   export BLITZ_HARDWARE_VALIDATION=1
   export VK_DRIVER_FILES=/workspace/results/nvidia-headless.json

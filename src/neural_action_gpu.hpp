@@ -7,7 +7,9 @@ namespace blitz::neural {
 class GpuActionState {
     struct Impl;std::unique_ptr<Impl> impl_;
 public:
-    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false,const VertexBounds* quantization=nullptr);
+    // Episode seeds retain the source normalization and progress denominator.
+    // The optional origin is borrowed only during construction.
+    GpuActionState(MeshView,const NeuralOptions&,bool free_placement=false,const VertexBounds* quantization=nullptr,MeshView origin={});
     ~GpuActionState();
     GpuActionState(const GpuActionState&)=delete;
     GpuActionState& operator=(const GpuActionState&)=delete;

@@ -12,13 +12,15 @@ inline int replay_cycle_checkpoint(const fs::path& source,const fs::path& output
     if(file_sha256(checkpoint/"checkpoint.pt")!=journal.at("checkpoint_sha256").get<std::string>())throw std::invalid_argument("replay checkpoint checksum differs");
     fs::create_directories(output);torch::Device device(torch::kCUDA);
     ResidentDataset data(device,contract.at("seed"),contract.at("data_storage")=="compact-v1");
+    if(journal.contains("replay_order"))data.restore_order(journal.at("replay_order"));
     for(size_t i=journal.value("resident_start",size_t(0));i<journal.at("datasets").size();++i){
         auto directory=source/"data"/journal.at("datasets")[i].get<std::string>();auto index=read_json(directory/"index.json");
         if(!index.at("complete").get<bool>()||!index.at("reference_confirmed").get<bool>()||index.at("sha256")!=file_sha256(directory/"actions.bin")||index.at("contract_sha256")!=file_sha256(directory/"contract.json"))throw std::invalid_argument("replay dataset checksum differs");
         if(contract.at("data_storage")=="compact-v1")data.append(load_compact_actions(directory/"actions.bin"),index.at("asset"),index.at("category"));
         else data.append(load_actions(directory/"actions.bin"),index.at("asset"),index.at("category"));
     }
-    ActionNetwork model(placement_schema);model->to(device);
+    data.maximum_rows=std::max(data.maximum_rows,journal.value("replay_maximum_rows",1u));
+    ActionNetwork model(placement_schema,contract.value("hidden_width",64u));model->to(device);
     ResidentUpdate update(model,data,contract.at("batch"),{},contract.at("update_backend")=="reference"?UpdateBackend::Reference:UpdateBackend::Fused);
     const auto initial=load_state(checkpoint/"checkpoint.pt",model,update.optimizer,device);
     const auto target=update_target(uint32_t(initial),updates);cudaDeviceProp properties{};cuda_check(cudaGetDeviceProperties(&properties,0));

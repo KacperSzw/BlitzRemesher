@@ -19,7 +19,7 @@ struct ResidentPage {
     CompactView compact{};bool encoded{};
 };
 struct ResidentState {uint32_t page,first,condition,rows;};
-struct ResidentRoot {SamplingView sampling;const ResidentState* states;const ResidentPage* pages;};
+struct ResidentRoot {SamplingView sampling;const ResidentState* states;const ResidentPage* pages;const uint32_t* const* bin_states{};};
 struct UpdateState {
     uint32_t step{},failure{},pairs{},valid{},segment_start{};
     uint32_t known[5]{};
@@ -28,10 +28,10 @@ struct UpdateState {
 struct AdamParameter { float *value,*gradient,*mean,*variance;uint32_t count,offset; };
 struct UpdateSettings {float margin{1},auxiliary{.25f},penalty{1e-4f},lr{.001f},decay{.0001f},max_norm{1};};
 enum class UpdateBackend:uint8_t { Reference,Fused };
-// Fixed v3 MLP. Every pointer borrows stable tensor storage through graph replay.
+// V3 features, versioned hidden width. Every pointer borrows stable tensor storage through graph replay.
 struct FusedMlpBuffers {
     float *parameter[6]{},*gradient[6]{},*input{},*hidden[2]{},*delta[2]{},*output{},*derivative{};
-    void* workspace{};size_t workspace_bytes{};uint32_t rows{};
+    void* workspace{};size_t workspace_bytes{};uint32_t rows{},width{64};
 };
 struct FusedMlp;
 FusedMlp* create_fused_mlp(const FusedMlpBuffers&);

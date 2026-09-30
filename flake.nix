@@ -11,7 +11,7 @@
       };
       neural = (pkgs.mkShell.override { stdenv = pkgs.gcc14Stdenv; }) {
         packages = with pkgs; [ cmake ninja pkg-config git jq nodejs unzip patchelf glslang vulkan-tools ];
-        buildInputs = with pkgs; [ curl openssl nlohmann_json libarchive cudaPackages.cudatoolkit vulkan-headers vulkan-loader vulkan-validation-layers ];
+        buildInputs = with pkgs; [ curl openssl nlohmann_json libarchive cudaPackages.cudatoolkit cudaPackages.cuda_nvtx vulkan-headers vulkan-loader vulkan-validation-layers ];
         CUDACXX = "${pkgs.cudaPackages.cudatoolkit}/bin/nvcc";
         CUDAHOSTCXX = "${pkgs.gcc14}/bin/g++";
         CUDA_PATH = "${pkgs.cudaPackages.cudatoolkit}";

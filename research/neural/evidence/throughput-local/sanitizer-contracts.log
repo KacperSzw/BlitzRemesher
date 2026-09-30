@@ -1,0 +1,33 @@
+warning: Git tree '/home/kacper/Projects/BlitzRemesher-neural' is dirty
+error (ignored): SQLite database '/home/kacper/.cache/nix/eval-cache-v6/763ccae2b70f26ec236d29e4dd216d905f2c85834e453adf32315d859de6fdb9.sqlite' is busy
+Test project /home/kacper/Projects/BlitzRemesher-neural/build/sanitize
+      Start  1: neural-vertex-storage-contracts
+ 1/13 Test  #1: neural-vertex-storage-contracts ....   Passed    0.01 sec
+      Start  2: neural-compact-storage-contracts
+ 2/13 Test  #2: neural-compact-storage-contracts ...   Passed    0.01 sec
+      Start  3: neural-contracts
+ 3/13 Test  #3: neural-contracts ...................   Passed    0.03 sec
+      Start  4: neural-action-contracts
+ 4/13 Test  #4: neural-action-contracts ............   Passed    0.14 sec
+      Start  5: coverage-cache-contracts
+ 5/13 Test  #5: coverage-cache-contracts ...........   Passed    2.61 sec
+      Start  6: hybrid-contracts
+ 6/13 Test  #6: hybrid-contracts ...................   Passed    0.71 sec
+      Start  7: vegetation-contracts
+ 7/13 Test  #7: vegetation-contracts ...............   Passed    0.36 sec
+      Start  8: contracts
+ 8/13 Test  #8: contracts ..........................   Passed    0.79 sec
+      Start  9: precision-contracts
+ 9/13 Test  #9: precision-contracts ................   Passed    0.18 sec
+      Start 10: render-cost-contracts
+10/13 Test #10: render-cost-contracts ..............   Passed    0.01 sec
+      Start 11: c-abi
+11/13 Test #11: c-abi ..............................   Passed    0.01 sec
+      Start 12: foliage-contracts
+12/13 Test #12: foliage-contracts ..................   Passed    0.03 sec
+      Start 13: io-contracts
+13/13 Test #13: io-contracts .......................   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 13
+
+Total Test time (real) =   4.96 sec

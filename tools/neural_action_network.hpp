@@ -2,15 +2,28 @@
 #include "neural_action_data.hpp"
 #include "neural_placement.hpp"
 #include "neural_network.hpp"
+#include "neural_linear.hpp"
+#include <c10/cuda/CUDAStream.h>
 namespace blitz::neural::training {
+struct CompensatedLinear:torch::autograd::Function<CompensatedLinear> {
+    static torch::Tensor forward(torch::autograd::AutogradContext* ctx,torch::Tensor input,torch::Tensor weight,torch::Tensor bias){
+        input=input.contiguous();weight=weight.contiguous();bias=bias.contiguous();
+        ctx->save_for_backward({input,weight});auto sizes=input.sizes().vec();sizes.back()=weight.size(0);auto output=torch::empty(sizes,input.options());
+        compensated_linear(input.data_ptr<float>(),weight.data_ptr<float>(),bias.data_ptr<float>(),output.data_ptr<float>(),uint32_t(input.numel()/weight.size(1)),uint32_t(weight.size(1)),uint32_t(weight.size(0)),false,c10::cuda::getCurrentCUDAStream());return output;
+    }
+    static torch::autograd::variable_list backward(torch::autograd::AutogradContext* ctx,torch::autograd::variable_list gradients){
+        auto saved=ctx->get_saved_variables();auto x=saved[0].reshape({-1,saved[1].size(1)}),dy=gradients[0].reshape({-1,saved[1].size(0)});
+        return {torch::matmul(dy,saved[1]).reshape(saved[0].sizes()),torch::matmul(dy.t(),x),dy.sum(0)};
+    }
+};
 struct ActionNetworkImpl:torch::nn::Module {
     std::vector<torch::nn::Linear> layers;
-    uint32_t architecture;
-    explicit ActionNetworkImpl(uint32_t version=action_schema):architecture(version){if(!policy_weights(version))throw std::invalid_argument("unsupported action policy architecture");for(unsigned i=0;i<3;++i)layers.push_back(register_module("layer"+std::to_string(i),torch::nn::Linear(i?hidden:policy_inputs(version),i==2?policy_outputs(version):hidden)));}
-    torch::Tensor forward(torch::Tensor x){for(unsigned i=0;i<3;++i){x=layers[i]->forward(x);if(i<2)x=torch::relu(x);}return x;}
+    uint32_t architecture,hidden_width;
+    explicit ActionNetworkImpl(uint32_t version=action_schema,uint32_t width=64):architecture(version),hidden_width(width){if(!policy_weights(version,width))throw std::invalid_argument("unsupported action policy architecture");for(unsigned i=0;i<3;++i)layers.push_back(register_module("layer"+std::to_string(i),torch::nn::Linear(i?width:policy_inputs(version),i==2?policy_outputs(version):width)));}
+    torch::Tensor forward(torch::Tensor x){for(unsigned i=0;i<3;++i){x=x.is_cuda()?CompensatedLinear::apply(x,layers[i]->weight,layers[i]->bias):layers[i]->forward(x);if(i<2)x=torch::relu(x);}return x;}
 };TORCH_MODULE(ActionNetwork);
 inline WeightsData export_actions(ActionNetwork& model,const json& provenance) {
-    WeightsData w;w.architecture=model->architecture;w.provenance=provenance.dump();
+    WeightsData w;w.architecture=model->architecture;w.hidden_width=model->hidden_width;w.provenance=provenance.dump();
     for(auto& p:model->parameters()){auto cpu=p.detach().to(torch::kCPU).contiguous();w.values.insert(w.values.end(),cpu.data_ptr<float>(),cpu.data_ptr<float>()+cpu.numel());}return w;
 }
 inline torch::Tensor action_loss(const torch::Tensor& prediction,const torch::Tensor& labels,const torch::Tensor& valid,double margin=1,double auxiliary=.25,double penalty=1e-4) {
@@ -29,9 +42,9 @@ inline double action_membership(const torch::Tensor& prediction,const torch::Ten
 }
 inline std::vector<double> action_oracle(std::span<const float> x,const WeightsData& w) {
     auto width=policy_inputs(w.architecture),outputs=policy_outputs(w.architecture);
-    if(!width||w.values.size()!=policy_weights(w.architecture)||x.size()%width)throw std::invalid_argument("action oracle dimensions");
+    if(!width||w.values.size()!=policy_weights(w.architecture,w.hidden_width)||x.size()%width)throw std::invalid_argument("action oracle dimensions");
     std::vector<double> input(x.begin(),x.end());const auto rows=x.size()/width;size_t at=0;
-    for(unsigned l=0;l<3;++l){auto in=l?hidden:width,out=l==2?outputs:hidden;std::vector<double> next(rows*out);
+    for(unsigned l=0;l<3;++l){auto in=l?w.hidden_width:width,out=l==2?outputs:w.hidden_width;std::vector<double> next(rows*out);
         for(size_t row=0;row<rows;++row)for(unsigned j=0;j<out;++j){double sum=w.values[at+size_t(in)*out+j],correction=0;
             for(unsigned k=0;k<in;++k){double term=input[row*in+k]*w.values[at+size_t(j)*in+k]-correction,next_sum=sum+term;correction=(next_sum-sum)-term;sum=next_sum;}
             next[row*out+j]=l<2?std::max(0.,sum):sum;}

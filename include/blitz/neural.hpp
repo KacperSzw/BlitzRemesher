@@ -35,7 +35,7 @@ struct NeuralOptions {
     bool mask_only_coverage{true}; // Single R8 pass; false is the matched renderer control.
     bool direct_targets{true}; // Sparse queries read shared Vulkan targets directly.
     uint8_t view_batch{4}; // Bounded simultaneous camera targets; 1 is the control.
-    uint8_t candidate_batch{1}; // Independent teacher placements; 1, 2 or 4.
+    uint8_t candidate_batch{1}; // Independent teacher placements; 1, 2, 4 or 8.
     NeuralRasterBackend raster_backend{NeuralRasterBackend::Cuda};
     NeuralVertexStorage vertex_storage{NeuralVertexStorage::Automatic};
     // Hardware draws pack by default. The diagnostic CUDA rasterizer consumes

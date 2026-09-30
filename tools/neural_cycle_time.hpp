@@ -4,6 +4,12 @@
 #include <limits>
 #include <stdexcept>
 namespace blitz::neural::training {
+struct CheckpointCadence {
+    int64_t period_ms,next_ms;
+    CheckpointCadence(int64_t now,uint32_t seconds):period_ms(int64_t(seconds)*1000),next_ms(now+period_ms){if(!seconds||seconds>3600)throw std::invalid_argument("checkpoint interval outside 1..3600 seconds");}
+    bool due(int64_t now)const{return now>=next_ms;}
+    void submitted(int64_t now){next_ms=now+period_ms;}
+};
 // Learning and finalization are separate budgets. Recovery resumes from durable
 // completed learning time; downtime does not count as training.
 struct CycleTime {

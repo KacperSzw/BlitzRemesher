@@ -14,7 +14,7 @@ DrawLayout draw_layout(DeviceMeshView m,NeuralVertexStorage storage,bool coverag
     l.color=stream(size_t(m.colors?m.vertices:1)*4);
     l.tangent=stream(m.tangents?size_t(m.vertices)*(storage==NeuralVertexStorage::Packed?4:16):0);
     if(m.exact_position_bits&&storage!=NeuralVertexStorage::Float32){size_t words=(size_t(m.vertices)+31)/32;l.exact_bits=stream(words*4);l.exact_rank=stream(words*4);l.used=stream(words*4);l.exact_positions=stream((uint64_t(m.vertices)*m.exact_position_bps/10000)*sizeof(Vec3));}
-    l.indices=stream(size_t(m.faces)*12);at=(at+255)&~size_t(255);l.faces=stream(size_t(m.faces)*4);at=(at+255)&~size_t(255);l.metadata=stream(sizeof(DrawMetadata));l.indirect=stream(5*sizeof(uint32_t));l.status=stream(6*sizeof(uint32_t));l.bytes=at;return l;
+    l.indices=stream(size_t(m.faces)*12);at=(at+255)&~size_t(255);l.faces=stream(size_t(m.faces)*4);at=(at+255)&~size_t(255);l.metadata=stream(sizeof(DrawMetadata));l.indirect=stream(5*sizeof(uint32_t));l.status=stream(10*sizeof(uint32_t));l.bytes=at;return l;
 }
 struct MinMax {Vec3 lo,hi;uint32_t invalid;};
 struct CombineBounds {__device__ MinMax operator()(MinMax a,MinMax b){return {{fminf(a.lo.x,b.lo.x),fminf(a.lo.y,b.lo.y),fminf(a.lo.z,b.lo.z)},{fmaxf(a.hi.x,b.hi.x),fmaxf(a.hi.y,b.hi.y),fmaxf(a.hi.z,b.hi.z)},a.invalid|b.invalid};}};
@@ -50,10 +50,10 @@ __global__ void draw_streams(DeviceMeshView m,NeuralVertexStorage storage,DrawLa
 }
 __global__ void referenced_positions(DeviceMeshView m,DrawLayout l,char* buffer){uint32_t i=blockIdx.x*blockDim.x+threadIdx.x,faces=m.trial_status?(m.trial_status->invalid?0:m.trial_status->faces):m.faces;if(i>=faces*3)return;auto v=m.indices[i],bit=1u<<(v%32);atomicOr(reinterpret_cast<uint32_t*>(buffer+l.used)+v/32,bit);if(m.exact_position_bits[v/32]&bit)atomicOr(reinterpret_cast<uint32_t*>(buffer+l.exact_bits)+v/32,bit);}
 void pack_draw(DeviceMeshView m,NeuralVertexStorage storage,const DrawLayout& l,void* out,bool coverage_only){
-    if(l.exact_bits){gpu::check(cudaMemsetAsync(static_cast<char*>(out)+l.exact_bits,0,((size_t(m.vertices)+31)/32)*4));gpu::check(cudaMemsetAsync(static_cast<char*>(out)+l.used,0,((size_t(m.vertices)+31)/32)*4));referenced_positions<<<gpu::blocks(size_t(m.faces)*3),256>>>(m,l,static_cast<char*>(out));}
-    draw_bounds<<<1,256>>>(m,reinterpret_cast<DrawMetadata*>(static_cast<char*>(out)+l.metadata),storage==NeuralVertexStorage::Packed,l,static_cast<char*>(out));
+    if(l.exact_bits){gpu::check(gpu::memset(static_cast<char*>(out)+l.exact_bits,0,((size_t(m.vertices)+31)/32)*4));gpu::check(gpu::memset(static_cast<char*>(out)+l.used,0,((size_t(m.vertices)+31)/32)*4));referenced_positions<<<gpu::blocks(size_t(m.faces)*3),256,0,gpu::stream()>>>(m,l,static_cast<char*>(out));}
+    draw_bounds<<<1,256,0,gpu::stream()>>>(m,reinterpret_cast<DrawMetadata*>(static_cast<char*>(out)+l.metadata),storage==NeuralVertexStorage::Packed,l,static_cast<char*>(out));
     if(coverage_only){m.normals=nullptr;m.uv=nullptr;m.colors=nullptr;m.tangents=nullptr;}
-    draw_streams<<<gpu::blocks(std::max(m.vertices,m.faces)),256>>>(m,storage,l,static_cast<char*>(out));gpu::check(cudaGetLastError());
+    draw_streams<<<gpu::blocks(std::max(m.vertices,m.faces)),256,0,gpu::stream()>>>(m,storage,l,static_cast<char*>(out));gpu::check(cudaGetLastError());
 }
 __global__ void clip_draw(DeviceMeshView m,NeuralVertexStorage storage,DrawLayout l,char* buffer,Bounds bounds,Camera c,uint32_t size,uint8_t ss,uint32_t layer){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;uint32_t faces=m.trial_status?(m.trial_status->invalid?0:m.trial_status->faces):m.faces;if(i>=faces*3)return;auto& b=*reinterpret_cast<DrawMetadata*>(buffer+l.metadata);uint32_t vertex=m.indices[i];Vec3 p;
@@ -62,14 +62,16 @@ __global__ void clip_draw(DeviceMeshView m,NeuralVertexStorage storage,DrawLayou
     double x=double(p.x)-bounds.center.x,y=double(p.y)-bounds.center.y,z=double(p.z)-bounds.center.z;
     double d=c.distance-(x*c.forward.x+y*c.forward.y+z*c.forward.z),scale=(c.perspective?c.focal/d:c.scale)*ss;
     double px=(x*c.right.x+y*c.right.y+z*c.right.z)*scale+size*.5,py=(x*c.up.x+y*c.up.y+z*c.up.z)*scale+size*.5;
-    if(!isfinite(px)||!isfinite(py)||px<0||py<0||px>size||py>size||d<=fmax(bounds.radius*.01,c.distance-bounds.radius*2)||d>=c.distance+bounds.radius*2)atomicExch(&b.unused[layer],1u);
+    if(!isfinite(px)||!isfinite(py)||px<0||py<0||px>size||py>size||d<=fmax(bounds.radius*.01,c.distance-bounds.radius*2)||d>=c.distance+bounds.radius*2)atomicOr(&b.unused[0],1u<<layer);
 }
+__global__ void clear_draw_clip(DrawMetadata* metadata,uint32_t layer){metadata->unused[0]&=~(1u<<layer);}
 void check_draw_clip(DeviceMeshView m,NeuralVertexStorage storage,const DrawLayout& l,void* out,const Bounds& b,const Camera& c,uint32_t size,uint8_t ss,uint32_t layer){
-    gpu::check(cudaMemsetAsync(static_cast<char*>(out)+l.metadata+offsetof(DrawMetadata,unused)+layer*sizeof(uint32_t),0,sizeof(uint32_t)));
-    clip_draw<<<gpu::blocks(size_t(m.faces)*3),256>>>(m,storage,l,static_cast<char*>(out),b,c,size,ss,layer);gpu::check(cudaGetLastError());
+    if(layer>=8)throw std::invalid_argument("draw clip layer outside 0..7");
+    clear_draw_clip<<<1,1,0,gpu::stream()>>>(reinterpret_cast<DrawMetadata*>(static_cast<char*>(out)+l.metadata),layer);
+    clip_draw<<<gpu::blocks(size_t(m.faces)*3),256,0,gpu::stream()>>>(m,storage,l,static_cast<char*>(out),b,c,size,ss,layer);gpu::check(cudaGetLastError());
 }
-__global__ void gather_draw_status(DrawStatusSources s,uint32_t* out){uint32_t invalid=0,clipped=0;for(uint32_t i=0;i<s.count;++i){invalid|=uint32_t(s.metadata[i]->invalid!=0)<<i;clipped|=uint32_t(s.metadata[i]->unused[s.layers[i]]!=0)<<i;out[2+i]=s.trial[i]?(s.trial[i]->invalid?0:s.trial[i]->faces):s.faces[i];}out[0]=invalid;out[1]=clipped;}
-void collect_draw_status(DrawStatusSources s,uint32_t* out){gather_draw_status<<<1,1>>>(s,out);gpu::check(cudaGetLastError());}
+__global__ void gather_draw_status(DrawStatusSources s,uint32_t* out){uint32_t invalid=0,clipped=0;for(uint32_t i=0;i<s.count;++i){invalid|=uint32_t(s.metadata[i]->invalid!=0)<<i;clipped|=uint32_t((s.metadata[i]->unused[0]&(1u<<s.layers[i]))!=0)<<i;out[2+i]=s.trial[i]?(s.trial[i]->invalid?0:s.trial[i]->faces):s.faces[i];}out[0]=invalid;out[1]=clipped;}
+void collect_draw_status(DrawStatusSources s,uint32_t* out){gather_draw_status<<<1,1,0,gpu::stream()>>>(s,out);gpu::check(cudaGetLastError());}
 __global__ void unpack_targets(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t rgb,AuditPixel* out,Vec3* color,uint32_t size,cudaSurfaceObject_t debug,RasterDebugPixel* witnesses){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=size*size)return;auto x=i%size,y=i/size;
     auto a=attributes?surf2Dread<float4>(attributes,x*sizeof(float4),y):float4{};AuditPixel p{};p.normal={a.x,a.y,a.z};p.covered=surf2Dread<unsigned char>(mask,x,y)!=0;p.visible=a.w>0;p.material=p.visible?uint16_t(uint32_t(a.w)-1):0;out[i]=p;
@@ -82,6 +84,6 @@ __global__ void coverage_bits(cudaSurfaceObject_t mask,uint32_t* bits,uint32_t s
     uint32_t word=__ballot_sync(0xffffffffu,covered);
     if((threadIdx.x&31)==0&&i<size*size)bits[i/32]=word;
 }
-void pack_coverage_mask(cudaSurfaceObject_t mask,uint32_t* bits,uint32_t size){coverage_bits<<<gpu::blocks(size_t(size)*size),256>>>(mask,bits,size);gpu::check(cudaGetLastError());}
-void unpack_hardware(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t colors,AuditPixel* out,Vec3* rgb,uint32_t size,cudaSurfaceObject_t debug,RasterDebugPixel* witnesses){unpack_targets<<<gpu::blocks(size_t(size)*size),256>>>(mask,attributes,colors,out,rgb,size,debug,witnesses);gpu::check(cudaGetLastError());}
+void pack_coverage_mask(cudaSurfaceObject_t mask,uint32_t* bits,uint32_t size){coverage_bits<<<gpu::blocks(size_t(size)*size),256,0,gpu::stream()>>>(mask,bits,size);gpu::check(cudaGetLastError());}
+void unpack_hardware(cudaSurfaceObject_t mask,cudaSurfaceObject_t attributes,cudaSurfaceObject_t colors,AuditPixel* out,Vec3* rgb,uint32_t size,cudaSurfaceObject_t debug,RasterDebugPixel* witnesses){unpack_targets<<<gpu::blocks(size_t(size)*size),256,0,gpu::stream()>>>(mask,attributes,colors,out,rgb,size,debug,witnesses);gpu::check(cudaGetLastError());}
 }

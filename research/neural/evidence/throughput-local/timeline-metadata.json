@@ -1,0 +1,10 @@
+{
+  "status": "cancelled",
+  "complete": false,
+  "score": null,
+  "seconds": 20.713639342,
+  "step": 8576,
+  "note": "Intentional 20-second Nsight sample. Graph-level tracing omits internal optimizer kernel durations. NVTX ranges overlap and must not be summed as a wall-time hierarchy.",
+  "trace": "runs/neural/throughput-timeline-02.nsys-rep",
+  "command": "nsys profile --trace=cuda,nvtx,vulkan --sample=none --cpuctxsw=none --duration=20 --kill=sigterm ..."
+}

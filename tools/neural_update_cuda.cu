@@ -25,7 +25,7 @@ __global__ void select_states(SamplingView s,uint32_t* ids,const UpdateState* st
 __global__ void select_resident_states(const ResidentRoot* root,uint32_t* ids,const UpdateState* state,uint32_t batch){
     uint32_t i=blockIdx.x*blockDim.x+threadIdx.x;if(i>=batch||state->failure)return;auto s=root->sampling;
     uint64_t counter=(uint64_t(s.seed)<<32)^uint64_t(state->step)*0xd1342543de82ef95ull^uint64_t(i)*0xa24baed4963ee407ull;
-    auto c=s.categories[choose(counter,s.category_count)];auto a=s.assets[c.first+choose(counter,c.count)];auto b=s.bins[a.first+choose(counter,a.count)];ids[i]=s.states[b.first+choose(counter,b.count)];
+    auto c=s.categories[choose(counter,s.category_count)];auto a=s.assets[c.first+choose(counter,c.count)];auto bin=a.first+choose(counter,a.count);auto b=s.bins[bin];auto selected=choose(counter,b.count);ids[i]=root->bin_states?root->bin_states[bin][selected]:s.states[b.first+selected];
 }
 __global__ void gather(const float* x,const uint8_t* labels,float* input,uint8_t* target,const uint32_t* ids,const UpdateState* state,uint32_t batch,uint32_t pool,uint32_t width) {
     size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x,n=size_t(batch)*pool;

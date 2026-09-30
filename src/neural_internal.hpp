@@ -32,7 +32,7 @@ Lod decode(MeshView,const Graph&,const Prediction&,size_t target,OutputMode,Deco
 struct WeightsData {
     std::vector<float> values;
     std::string provenance;
-    uint32_t architecture{schema};
+    uint32_t architecture{schema},hidden_width{64};
 };
 constexpr uint32_t layer_in[5]={features*2,hidden*2,hidden*2,hidden+conditions,hidden};
 constexpr uint32_t layer_out[5]={hidden,hidden,hidden,hidden,outputs};

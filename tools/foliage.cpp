@@ -1,7 +1,5 @@
 #include "foliage.hpp"
-#define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
-#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 #include <archive.h>
 #include <archive_entry.h>

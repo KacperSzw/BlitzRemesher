@@ -30,18 +30,18 @@ struct VulkanRaster::Impl {
     size_t allocated{},limit;MemoryBudget* budget{};
     bool timings;VulkanTiming measured;VkQueryPool queries{};std::array<cudaEvent_t,4> events{};
     struct Geometry {VkBuffer buffer{};VkDeviceMemory memory{};cudaExternalMemory_t external{};void* cuda{};size_t bytes{},capacity{};DeviceMeshView mesh{};NeuralVertexStorage storage{};DrawLayout layout{};VkDescriptorSet set{};bool released{},coverage_only{};};
-    std::array<Geometry,4> geometries{};unsigned next_geometry{};
+    std::array<Geometry,8> geometries{};unsigned next_geometry{};
     struct Target {VkImage image{};VkDeviceMemory memory{};VkImageView view{};cudaExternalMemory_t external{};cudaMipmappedArray_t mip{};cudaSurfaceObject_t surface{};size_t bytes{};bool released{};};
     struct Attachments {Target mask,attributes,colors,depth,witness;uint32_t extent{};bool colors_enabled{},debug_enabled{},coverage_only{};};
-    std::array<Attachments,4> targets;
+    std::array<Attachments,8> targets;
     explicit Impl(const NeuralOptions& o,bool timing,MemoryBudget* shared):limit(size_t(o.memory_mib)<<20),budget(shared),timings(timing){
         if(o.exact_position_bps>10000||o.vertex_storage>NeuralVertexStorage::Automatic||o.memory_mib<128||o.memory_mib>65536)throw std::invalid_argument("invalid Vulkan draw options");
         if(!budget&&current_memory_budget&&current_memory_budget->device==o.device)budget=current_memory_budget;
         try{initialize(o);}catch(...){destroy();throw;}
     }
     ~Impl(){destroy();}
-    void account(size_t bytes){if(bytes>limit-allocated||(budget&&bytes>budget->limit-budget->live))throw gpu::ResourceError(NeuralResourceLimit::WorkspaceMemory,(budget?budget->live:allocated)+bytes,budget?budget->limit:limit,"Vulkan workspace exceeds memory cap");allocated+=bytes;if(budget){budget->live+=bytes;budget->peak=std::max(budget->peak,budget->live);}}
-    void unaccount(size_t bytes){allocated-=bytes;if(budget)budget->live-=bytes;}
+    void account(size_t bytes){if(bytes>limit-allocated||(budget&&!budget->reserve(bytes)))throw gpu::ResourceError(NeuralResourceLimit::WorkspaceMemory,(budget?budget->live.load():allocated)+bytes,budget?budget->limit:limit,"Vulkan workspace exceeds memory cap");allocated+=bytes;}
+    void unaccount(size_t bytes){allocated-=bytes;if(budget)budget->release(bytes);}
     uint32_t memory_type(uint32_t bits){for(uint32_t i=0;i<memory.memoryTypeCount;++i)if((bits&(1u<<i))&&(memory.memoryTypes[i].propertyFlags&VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT))return i;throw NeuralUnavailable("no Vulkan device-local memory");}
     int memory_fd(VkDeviceMemory value){auto i=info<VkMemoryGetFdInfoKHR>(VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR);i.memory=value;i.handleType=VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;int fd=-1;vkcheck(get_memory_fd(device,&i,&fd));return fd;}
     void initialize(const NeuralOptions& o){
@@ -75,7 +75,7 @@ struct VulkanRaster::Impl {
         auto ca=info<VkCommandBufferAllocateInfo>(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO);ca.commandPool=commands;ca.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY;ca.commandBufferCount=1;vkcheck(vkAllocateCommandBuffers(device,&ca,&command));
         std::array<VkDescriptorSetLayoutBinding,3> bindings={VkDescriptorSetLayoutBinding{0,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_VERTEX_BIT,nullptr},VkDescriptorSetLayoutBinding{1,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_FRAGMENT_BIT,nullptr},VkDescriptorSetLayoutBinding{2,VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,1,VK_SHADER_STAGE_VERTEX_BIT,nullptr}};
         auto sl=info<VkDescriptorSetLayoutCreateInfo>(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO);sl.bindingCount=bindings.size();sl.pBindings=bindings.data();vkcheck(vkCreateDescriptorSetLayout(device,&sl,nullptr,&set_layout));
-        VkDescriptorPoolSize ps{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,12};auto dp=info<VkDescriptorPoolCreateInfo>(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);dp.maxSets=4;dp.poolSizeCount=1;dp.pPoolSizes=&ps;vkcheck(vkCreateDescriptorPool(device,&dp,nullptr,&descriptors));
+        VkDescriptorPoolSize ps{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,24};auto dp=info<VkDescriptorPoolCreateInfo>(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);dp.maxSets=8;dp.poolSizeCount=1;dp.pPoolSizes=&ps;vkcheck(vkCreateDescriptorPool(device,&dp,nullptr,&descriptors));
         for(auto& g:geometries){auto ds=info<VkDescriptorSetAllocateInfo>(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);ds.descriptorPool=descriptors;ds.descriptorSetCount=1;ds.pSetLayouts=&set_layout;vkcheck(vkAllocateDescriptorSets(device,&ds,&g.set));}
         VkPushConstantRange range{VK_SHADER_STAGE_VERTEX_BIT|VK_SHADER_STAGE_FRAGMENT_BIT,0,sizeof(Push)};auto pl=info<VkPipelineLayoutCreateInfo>(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO);pl.setLayoutCount=1;pl.pSetLayouts=&set_layout;pl.pushConstantRangeCount=1;pl.pPushConstantRanges=&range;vkcheck(vkCreatePipelineLayout(device,&pl,nullptr,&pipeline_layout));
         for(auto format:{VK_FORMAT_R32G32B32_SFLOAT,VK_FORMAT_R16G16B16_UNORM,VK_FORMAT_A2B10G10R10_SNORM_PACK32,VK_FORMAT_R8G8B8A8_UNORM}){VkFormatProperties p;vkGetPhysicalDeviceFormatProperties(physical,format,&p);if(!(p.bufferFeatures&VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT))throw NeuralUnavailable("unsupported packed Vulkan vertex format");}
@@ -149,13 +149,13 @@ struct VulkanRaster::Impl {
     }
     void release_targets(Attachments& t){drop(t.mask);drop(t.attributes);drop(t.colors);drop(t.depth);drop(t.witness);t.extent=0;}
     void render_batch(std::span<const DeviceMeshView> meshes,const Bounds& bounds,std::span<const Camera> cameras,double screen,uint8_t ss,bool two,NeuralVertexStorage storage,std::span<RasterOutput> out,bool coverage_only){
-        if(cameras.empty()||cameras.size()>targets.size()||cameras.size()!=out.size()||meshes.size()!=cameras.size())throw std::invalid_argument("Vulkan camera batch outside 1..4");
+        if(cameras.empty()||cameras.size()>targets.size()||cameras.size()!=out.size()||meshes.size()!=cameras.size())throw std::invalid_argument("Vulkan camera batch outside 1..8");
         if(storage==NeuralVertexStorage::Automatic)storage=NeuralVertexStorage::Packed;
         if(storage>NeuralVertexStorage::Packed||!std::isfinite(screen)||screen<=0||!ss)throw std::invalid_argument("invalid Vulkan draw");
         uint32_t size=uint32_t(std::ceil(screen+8))*ss;if(!size||size>properties.limits.maxImageDimension2D)throw NeuralUnavailable("Vulkan target extent exceeds device limit");
         if(submitted){vkcheck(vkWaitForFences(device,1,&completion,VK_TRUE,UINT64_MAX));vkcheck(vkResetFences(device,1,&completion));submitted=false;}
-        std::array<Geometry*,4> geometry{};uint32_t repacked=0;DrawStatusSources status{};status.count=uint32_t(meshes.size());
-        if(timings)cucheck(cudaEventRecord(events[0]));
+        std::array<Geometry*,8> geometry{};uint32_t repacked=0;DrawStatusSources status{};status.count=uint32_t(meshes.size());
+        if(timings)cucheck(cudaEventRecord(events[0],gpu::stream()));
         for(size_t slot=0;slot<meshes.size();++slot){auto mesh=meshes[slot];if(!mesh.identity)throw std::invalid_argument("Vulkan candidate identity");Geometry* found=nullptr;
         for(auto& g:geometries)if(g.buffer&&g.mesh.identity==mesh.identity&&g.mesh.revision==mesh.revision&&g.mesh.positions==mesh.positions&&g.mesh.exact_position_bits==mesh.exact_position_bits&&g.mesh.exact_position_bps==mesh.exact_position_bps&&g.mesh.normals==mesh.normals&&g.mesh.uv==mesh.uv&&g.mesh.colors==mesh.colors&&g.mesh.tangents==mesh.tangents&&g.mesh.materials==mesh.materials&&g.mesh.double_sided==mesh.double_sided&&g.mesh.sided_count==mesh.sided_count&&g.mesh.indices==mesh.indices&&g.mesh.trial_status==mesh.trial_status&&g.mesh.faces==mesh.faces&&g.mesh.vertices==mesh.vertices&&g.storage==storage&&g.coverage_only==coverage_only&&g.mesh.fixed_quantization==mesh.fixed_quantization&&(!mesh.fixed_quantization||(!std::memcmp(&g.mesh.quant_low,&mesh.quant_low,sizeof(Vec3))&&!std::memcmp(&g.mesh.quant_extent,&mesh.quant_extent,sizeof(Vec3))))){found=&g;break;}
 
@@ -167,13 +167,13 @@ struct VulkanRaster::Impl {
 
         status.metadata[slot]=reinterpret_cast<const DrawMetadata*>(static_cast<char*>(g.cuda)+g.layout.metadata);status.trial[slot]=mesh.trial_status;status.faces[slot]=mesh.faces;status.layers[slot]=uint32_t(slot);
         }
-        if(timings)cucheck(cudaEventRecord(events[1]));
+        if(timings)cucheck(cudaEventRecord(events[1],gpu::stream()));
         bool rgb=out[0].colors!=nullptr,debug=out[0].debug!=nullptr;if(coverage_only&&(rgb||debug))throw std::invalid_argument("coverage-only draw has shading attachments");
         for(size_t i=0;i<cameras.size();++i){if(bool(out[i].colors)!=rgb||bool(out[i].debug)!=debug)throw std::invalid_argument("mixed Vulkan attachment batch");auto& t=targets[i];
-            if(size>t.extent||uint64_t(size)*size*4<uint64_t(t.extent)*t.extent||rgb!=t.colors_enabled||debug!=t.debug_enabled||coverage_only!=t.coverage_only){cucheck(cudaDeviceSynchronize());vkcheck(vkDeviceWaitIdle(device));release_targets(t);
+            if(size>t.extent||uint64_t(size)*size*4<uint64_t(t.extent)*t.extent||rgb!=t.colors_enabled||debug!=t.debug_enabled||coverage_only!=t.coverage_only){cucheck(cudaStreamSynchronize(gpu::stream()));vkcheck(vkDeviceWaitIdle(device));release_targets(t);
                 try{target(t.mask,VK_FORMAT_R8_UINT,size,true);if(!coverage_only)target(t.attributes,VK_FORMAT_R32G32B32A32_SFLOAT,size,true);if(rgb)target(t.colors,VK_FORMAT_R32G32B32A32_SFLOAT,size,true);if(!coverage_only)target(t.depth,VK_FORMAT_D32_SFLOAT,size,false);if(debug)target(t.witness,VK_FORMAT_R32G32_UINT,size,true);t.extent=size;t.colors_enabled=rgb;t.debug_enabled=debug;t.coverage_only=coverage_only;}catch(...){release_targets(t);throw;}}
             auto& g=*geometry[i];check_draw_clip(meshes[i],storage,g.layout,g.cuda,bounds,cameras[i],size,ss,uint32_t(i));}
-        cudaExternalSemaphoreSignalParams signal{};signal.params.fence.value=++serial;cucheck(cudaSignalExternalSemaphoresAsync(&cuda_semaphore,&signal,1,0));uint64_t wait_value=serial;
+        cudaExternalSemaphoreSignalParams signal{};signal.params.fence.value=++serial;cucheck(cudaSignalExternalSemaphoresAsync(&cuda_semaphore,&signal,1,gpu::stream()));uint64_t wait_value=serial;
         vkcheck(vkResetCommandBuffer(command,0));auto begin=info<VkCommandBufferBeginInfo>(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);begin.flags=VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;vkcheck(vkBeginCommandBuffer(command,&begin));for(size_t i=0;i<meshes.size();++i)if(std::find(geometry.begin(),geometry.begin()+i,geometry[i])==geometry.begin()+i)buffer_barrier(*geometry[i],true);
         if(timings){vkCmdResetQueryPool(command,queries,0,2);vkCmdWriteTimestamp2(command,VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,queries,0);}
         for(size_t i=0;i<cameras.size();++i){auto mesh=meshes[i];auto& g=*geometry[i];auto coverage_pipeline=pipeline(storage,mesh.normals!=nullptr,rgb,true,debug),visibility_pipeline=coverage_only?VK_NULL_HANDLE:pipeline(storage,mesh.normals!=nullptr,rgb,false,debug);
@@ -190,24 +190,24 @@ struct VulkanRaster::Impl {
         if(timings)vkCmdWriteTimestamp2(command,VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,queries,1);for(size_t i=0;i<meshes.size();++i)if(std::find(geometry.begin(),geometry.begin()+i,geometry[i])==geometry.begin()+i)buffer_barrier(*geometry[i],false);vkcheck(vkEndCommandBuffer(command));
         auto wait=info<VkSemaphoreSubmitInfo>(VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO);wait.semaphore=semaphore;wait.value=wait_value;wait.stageMask=VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;auto done=wait;done.value=++serial;
         auto command_info=info<VkCommandBufferSubmitInfo>(VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO);command_info.commandBuffer=command;auto submit=info<VkSubmitInfo2>(VK_STRUCTURE_TYPE_SUBMIT_INFO_2);submit.waitSemaphoreInfoCount=1;submit.pWaitSemaphoreInfos=&wait;submit.commandBufferInfoCount=1;submit.pCommandBufferInfos=&command_info;submit.signalSemaphoreInfoCount=1;submit.pSignalSemaphoreInfos=&done;vkcheck(vkQueueSubmit2(queue,1,&submit,completion));submitted=true;
-        cudaExternalSemaphoreWaitParams cuda_wait{};cuda_wait.params.fence.value=serial;cucheck(cudaWaitExternalSemaphoresAsync(&cuda_semaphore,&cuda_wait,1,0));if(timings)cucheck(cudaEventRecord(events[2]));
-        for(size_t i=0;i<cameras.size();++i){auto& t=targets[i];out[i].surfaces={t.mask.surface,t.attributes.surface,t.colors.surface,size};if(out[i].pixels)unpack_hardware(t.mask.surface,t.attributes.surface,t.colors.surface,out[i].pixels,out[i].colors,size,t.witness.surface,out[i].debug);if(out[i].mask_bits)pack_coverage_mask(t.mask.surface,out[i].mask_bits,size);}if(timings)cucheck(cudaEventRecord(events[3]));
+        cudaExternalSemaphoreWaitParams cuda_wait{};cuda_wait.params.fence.value=serial;cucheck(cudaWaitExternalSemaphoresAsync(&cuda_semaphore,&cuda_wait,1,gpu::stream()));if(timings)cucheck(cudaEventRecord(events[2],gpu::stream()));
+        for(size_t i=0;i<cameras.size();++i){auto& t=targets[i];out[i].surfaces={t.mask.surface,t.attributes.surface,t.colors.surface,size};if(out[i].pixels)unpack_hardware(t.mask.surface,t.attributes.surface,t.colors.surface,out[i].pixels,out[i].colors,size,t.witness.surface,out[i].debug);if(out[i].mask_bits)pack_coverage_mask(t.mask.surface,out[i].mask_bits,size);}if(timings)cucheck(cudaEventRecord(events[3],gpu::stream()));
         auto* collected=reinterpret_cast<uint32_t*>(static_cast<char*>(geometry[0]->cuda)+geometry[0]->layout.status);collect_draw_status(status,collected);
-        uint32_t flags[6]{};cucheck(cudaMemcpy(flags,collected,(cameras.size()+2)*sizeof(uint32_t),cudaMemcpyDeviceToHost));if(flags[0])throw std::invalid_argument("packed draw requires finite fixed bounds, UVs in [-8,8] and exact positions within the referenced-vertex cap");for(size_t i=0;i<cameras.size();++i){out[i].clipped=(flags[1]&(1u<<i))!=0;out[i].faces=flags[2+i];}
+        uint32_t flags[10]{};cucheck(gpu::copy(flags,collected,(cameras.size()+2)*sizeof(uint32_t),cudaMemcpyDeviceToHost));if(flags[0])throw std::invalid_argument("packed draw requires finite fixed bounds, UVs in [-8,8] and exact positions within the referenced-vertex cap");for(size_t i=0;i<cameras.size();++i){out[i].clipped=(flags[1]&(1u<<i))!=0;out[i].faces=flags[2+i];}
 
         if(timings){float ms=0;if(repacked){cucheck(cudaEventElapsedTime(&ms,events[0],events[1]));measured.packing_seconds+=ms*.001;measured.packed_meshes+=repacked;}cucheck(cudaEventElapsedTime(&ms,events[2],events[3]));measured.unpack_seconds+=ms*.001;uint64_t ticks[2]{};vkcheck(vkGetQueryPoolResults(device,queries,0,2,sizeof(ticks),ticks,sizeof(uint64_t),VK_QUERY_RESULT_64_BIT|VK_QUERY_RESULT_WAIT_BIT));measured.render_seconds+=(ticks[1]-ticks[0])*double(properties.limits.timestampPeriod)*1e-9;measured.draws+=cameras.size();}
     }
     void destroy()noexcept{
-        if(device){cudaDeviceSynchronize();vkDeviceWaitIdle(device);for(auto event:events)if(event)cudaEventDestroy(event);if(queries)vkDestroyQueryPool(device,queries,nullptr);for(auto& g:geometries)drop(g);for(auto& t:targets)release_targets(t);for(auto p:pipelines)if(p)vkDestroyPipeline(device,p,nullptr);if(pipeline_layout)vkDestroyPipelineLayout(device,pipeline_layout,nullptr);if(descriptors)vkDestroyDescriptorPool(device,descriptors,nullptr);if(set_layout)vkDestroyDescriptorSetLayout(device,set_layout,nullptr);if(commands)vkDestroyCommandPool(device,commands,nullptr);if(cuda_semaphore)cudaDestroyExternalSemaphore(cuda_semaphore);if(semaphore)vkDestroySemaphore(device,semaphore,nullptr);if(completion)vkDestroyFence(device,completion,nullptr);vkDestroyDevice(device,nullptr);}if(instance)vkDestroyInstance(instance,nullptr);
+        if(device){cudaStreamSynchronize(gpu::stream());vkDeviceWaitIdle(device);for(auto event:events)if(event)cudaEventDestroy(event);if(queries)vkDestroyQueryPool(device,queries,nullptr);for(auto& g:geometries)drop(g);for(auto& t:targets)release_targets(t);for(auto p:pipelines)if(p)vkDestroyPipeline(device,p,nullptr);if(pipeline_layout)vkDestroyPipelineLayout(device,pipeline_layout,nullptr);if(descriptors)vkDestroyDescriptorPool(device,descriptors,nullptr);if(set_layout)vkDestroyDescriptorSetLayout(device,set_layout,nullptr);if(commands)vkDestroyCommandPool(device,commands,nullptr);if(cuda_semaphore)cudaDestroyExternalSemaphore(cuda_semaphore);if(semaphore)vkDestroySemaphore(device,semaphore,nullptr);if(completion)vkDestroyFence(device,completion,nullptr);vkDestroyDevice(device,nullptr);}if(instance)vkDestroyInstance(instance,nullptr);
     }
 };
 VulkanRaster::VulkanRaster(const NeuralOptions& o,bool timings,MemoryBudget* budget):impl_(std::make_unique<Impl>(o,timings,budget)){}
 VulkanRaster::~VulkanRaster()=default;
-void VulkanRaster::trim_targets(uint32_t keep){cucheck(cudaDeviceSynchronize());vkcheck(vkDeviceWaitIdle(impl_->device));for(size_t i=keep;i<impl_->targets.size();++i)impl_->release_targets(impl_->targets[i]);}
+void VulkanRaster::trim_targets(uint32_t keep){cucheck(cudaStreamSynchronize(gpu::stream()));vkcheck(vkDeviceWaitIdle(impl_->device));for(size_t i=keep;i<impl_->targets.size();++i)impl_->release_targets(impl_->targets[i]);}
 RasterSurfaces VulkanRaster::surfaces()const{auto& t=impl_->targets[0];return {t.mask.surface,t.attributes.surface,t.colors.surface,t.extent};}
 bool VulkanRaster::render(DeviceMeshView m,const Bounds& b,const Camera& c,double s,uint8_t ss,bool two,NeuralVertexStorage storage,AuditPixel* p,Vec3* rgb,RasterDebugPixel* debug,bool coverage_only,uint32_t* mask_bits){RasterOutput out{p,rgb,debug};out.mask_bits=mask_bits;impl_->render_batch({&m,1},b,{&c,1},s,ss,two,storage,{&out,1},coverage_only);return out.clipped;}
 void VulkanRaster::render_batch(DeviceMeshView m,const Bounds& b,std::span<const Camera> c,double s,uint8_t ss,bool two,NeuralVertexStorage storage,std::span<RasterOutput> out,bool coverage_only){std::array<DeviceMeshView,4> meshes;meshes.fill(m);if(c.size()>meshes.size())throw std::invalid_argument("Vulkan view batch size");impl_->render_batch({meshes.data(),c.size()},b,c,s,ss,two,storage,out,coverage_only);}
-void VulkanRaster::render_candidates(std::span<const DeviceMeshView> meshes,const Bounds& b,const Camera& c,double s,uint8_t ss,bool two,NeuralVertexStorage storage,std::span<RasterOutput> out,bool coverage_only){std::array<Camera,4> cameras;cameras.fill(c);if(meshes.size()>cameras.size())throw std::invalid_argument("Vulkan candidate batch size");impl_->render_batch(meshes,b,{cameras.data(),meshes.size()},s,ss,two,storage,out,coverage_only);}
+void VulkanRaster::render_candidates(std::span<const DeviceMeshView> meshes,const Bounds& b,const Camera& c,double s,uint8_t ss,bool two,NeuralVertexStorage storage,std::span<RasterOutput> out,bool coverage_only){std::array<Camera,8> cameras;cameras.fill(c);if(meshes.size()>cameras.size())throw std::invalid_argument("Vulkan candidate batch size");impl_->render_batch(meshes,b,{cameras.data(),meshes.size()},s,ss,two,storage,out,coverage_only);}
 size_t VulkanRaster::bytes()const{return impl_->allocated;}
 VulkanTiming VulkanRaster::timing()const{return impl_->measured;}
 }

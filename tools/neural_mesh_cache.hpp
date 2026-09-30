@@ -16,8 +16,8 @@ inline Mesh read_reference(std::istream& f){
     if(magic[7]=='2')m.exact_position_bits=read_vector<uint32_t>(f,(vertices+31)/32);
     if(f.peek()!=EOF)throw std::invalid_argument("mesh reference trailing data");if(auto error=validate(m.view());!error.empty())throw std::invalid_argument(error);return m;
 }
-inline void write_packed_mesh(std::ostream& f,MeshView m){
-    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);auto q=vertex_bounds(m);std::vector<uint16_t> positions,uv;std::vector<uint32_t> normals,tangents;std::vector<ColorRGBA8> colors;
+inline void write_packed_mesh(std::ostream& f,MeshView m,const VertexBounds* domain=nullptr){
+    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);auto q=domain?*domain:vertex_bounds(m);std::vector<uint16_t> positions,uv;std::vector<uint32_t> normals,tangents;std::vector<ColorRGBA8> colors;
     for(size_t i=0;i<m.positions.count;++i){auto p=m.positions[i];positions.insert(positions.end(),{pack_unorm16(p.x,q.low.x,q.extent.x),pack_unorm16(p.y,q.low.y,q.extent.y),pack_unorm16(p.z,q.low.z,q.extent.z)});}
     for(size_t i=0;i<m.normals.count;++i)normals.push_back(pack_direction(m.normals[i]));
     for(size_t i=0;i<m.uv.count;++i){auto v=m.uv[i];if(v.x< -8||v.x>8||v.y< -8||v.y>8)throw std::invalid_argument("packed cache UV outside [-8,8]");uv.insert(uv.end(),{pack_unorm16(v.x,-8,16),pack_unorm16(v.y,-8,16)});}

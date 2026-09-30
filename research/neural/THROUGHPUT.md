@@ -287,3 +287,42 @@ and mask/full/bitset readback equality. This keeps memory-boundary coverage with
 the bounded setup window. Compute/storage were released after verified collection;
 the retry spends the same $10 grant. Local compilation and runner contracts passed;
 the shared local GPU had only 74 MiB free, so the GPU proof remains remote.
+
+## Training launched: 2026-09-30 21:17:58 UTC
+
+Rental `runpod-expanded-pretraining-02`, revision `a587c33`, passed all 32 CTests,
+Vulkan validation, both Compute Sanitizer checks (zero errors), and the complete
+selected-configuration preflight. Its 100 conditions produced 1,536 fresh states
+and 12,288 updates in 64.05 s, with zero failures and four valid empty conditions.
+Peak tracked GPU allocation was 2,788,481,506 bytes (2.60 GiB). These larger-mesh
+measurements use the real 16-state, 128-update, two-worker/four-lane configuration.
+
+Both previous and initial policies completed all 20 validation groups at the
+original 4,096 MiB cap; the 16 GiB fallback was unnecessary. All 80 rows (20 assets
+× two rankings × two models) completed. The 1,537,926-triangle cliff peaked at
+4,041.67 MiB for the previous learned policy and 4,037.16 MiB for the initializer.
+The two complete model audits took 49.08 and 46.87 s. The former memory blocker is
+resolved. These audits retain the same small generation-work budget and do not
+measure the best achievable triangle reduction.
+
+The two-hour learning window began at 21:17:58 UTC (23:17:58 Europe/Warsaw), with
+an estimated learning end at 23:17:58 UTC (01:17:58 on October 1 in Warsaw), followed
+by finalization and the matched 20-group audit. A four-minute durable snapshot
+contains 56,448 updates and 7,044 fresh states, with zero failed conditions. Its
+checkpoint checksum matches the recovery journal. Across 270 one-second samples,
+GPU activity averaged 76.48%, peaked at 95%, and GPU memory peaked at 2,988 MiB.
+This is running-job evidence, not completed training or a final quality score.
+
+The expanded preflight retained 281 MiB in 64 s. That observed storage growth,
+plus the final archive, exceeds the original 20 GB volume over two hours. The
+same volume was enlarged to 80 GB without interrupting training, and subsequent
+L40S preparations use 80 GB. Up to $0.10 of the existing $1 reserve is assigned
+to the additional storage; the total additional grant remains $10. Capacity
+expansion and standard storage pricing are documented by
+[RunPod](https://docs.runpod.io/storage/network-volumes).
+
+Stable preflight reports, launch arguments, first checkpoint verification and
+telemetry are in `evidence/throughput-remote/training-launch`. The controller and
+independent watchdog remain active; they collect and checksum results, terminate
+compute, and delete the volume after successful collection. Final two-hour
+training results are pending.

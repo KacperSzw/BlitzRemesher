@@ -3,7 +3,8 @@
   "source": [
     "research/neural/evidence/throughput-local/matrix.json",
     "runs/neural/runpod-pipeline-validation-03/collected/results/pipeline-validation/matrix/report.json",
-    "runs/neural/runpod-pipeline-validation-03/collected/results/pipeline-validation"
+    "runs/neural/runpod-pipeline-validation-03/collected/results/pipeline-validation",
+    "research/neural/evidence/throughput-remote/training-launch/status.json"
   ],
   "rows": [
     {
@@ -708,5 +709,114 @@
       "samples": 66
     },
     "other": 1.6826163699999848
+  },
+  "launch": {
+    "captured_at": "2026-09-30T21:22:27.616Z",
+    "status": "running",
+    "complete": false,
+    "score": null,
+    "validation_passed": true,
+    "launch": {
+      "arguments": [
+        "/workspace/results/gpu-refactor/resident-cycle",
+        "--duration-minutes",
+        "120",
+        "--finalize-minutes",
+        "10",
+        "--minutes",
+        "130",
+        "--states",
+        "16",
+        "--updates",
+        "128",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--gpu-memory-mib",
+        "16384",
+        "--raster-backend",
+        "vulkan",
+        "--vertex-storage",
+        "packed",
+        "--data-storage",
+        "compact",
+        "--training-profile",
+        "coverage",
+        "--candidate-batch",
+        "4",
+        "--update-backend",
+        "fused",
+        "--corpus",
+        "research/neural/corpus-v2/corpus.json",
+        "--training-selection",
+        "research/neural/corpus-v2/training.json",
+        "--curriculum",
+        "research/neural/corpus-v2/curriculum.json",
+        "--mesh-cache",
+        "/workspace/results/gpu-refactor/mesh-cache",
+        "--workers",
+        "2",
+        "--hidden-width",
+        "64",
+        "--checkpoint-seconds",
+        "60",
+        "--episode-seeds",
+        "on",
+        "--initialize",
+        "/workspace/initial-model.blzn"
+      ],
+      "started": 1790803078386,
+      "optimizer_processes": 1
+    },
+    "checkpoint": {
+      "step": 56448,
+      "fresh_states": 7044,
+      "condition": 458,
+      "learning_elapsed_ms": 243979,
+      "failed_conditions": 0,
+      "empty_conditions": 18,
+      "coverage_quality_failed": false,
+      "path": "checkpoints/step-56448",
+      "journal_sha256": "4ee25a63de6619db81210733a263f3a4345af49459613f493105d2e6372973ea",
+      "actual_sha256": "4ee25a63de6619db81210733a263f3a4345af49459613f493105d2e6372973ea",
+      "verified": true,
+      "index": {
+        "checkpoint_sha256": "4ee25a63de6619db81210733a263f3a4345af49459613f493105d2e6372973ea",
+        "complete": true,
+        "files": {
+          "checkpoint.pt": "4ee25a63de6619db81210733a263f3a4345af49459613f493105d2e6372973ea",
+          "expected.pt": "807d9b11a58cbae5bc9961ddf00290ad1dabb1f873290ecde4760db730347fd6",
+          "input.pt": "e9b903159877668e26baa17d11f5af2506809d0be6efcbb99238ae36346458ad",
+          "model.blzn": "7d8f3e0e93cd6d1de0c2d94cd9a6c43356cfc41b96c3fc3e34ff7739b1b84d7c",
+          "verification.json": "d9762c2ef2df01e55cc2ded97e578aae362aa7140aaccece569db28d758a5507"
+        },
+        "model_sha256": "7d8f3e0e93cd6d1de0c2d94cd9a6c43356cfc41b96c3fc3e34ff7739b1b84d7c",
+        "step": 56448
+      }
+    },
+    "gpu": {
+      "samples": 270,
+      "mean_activity": 76.47777777777777,
+      "peak_activity": 95,
+      "peak_memory_mib": 2988,
+      "mean_power_w": 129.16925925925923
+    },
+    "revision": "a587c33169e02e7de59e064edd85b7b56516e899",
+    "run_directory": "runs/neural/runpod-expanded-pretraining-02",
+    "estimated_learning_end_utc": "2026-09-30T23:17:58.386Z",
+    "storage": {
+      "requested_at": 1790803257477,
+      "volume_id": "uciupcs8j0",
+      "old_size_gb": 20,
+      "new_size_gb": 80,
+      "reason": "Selected 100-mesh pass produced 281 MiB of retained training evidence in 64 s; two-hour data plus final archive exceed the original 20 GB volume.",
+      "incremental_cost_reserved_usd": 0.1,
+      "reserve_source": "Existing $1 storage/collection reserve inside the approved $10 grant",
+      "pricing_source": "https://docs.runpod.io/storage/network-volumes",
+      "verified": true,
+      "verified_at": 1790803258125,
+      "size_gb": 80
+    }
   }
 }

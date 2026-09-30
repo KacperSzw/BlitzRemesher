@@ -1,0 +1,28 @@
+✔ repeatable SSH calls recover transport failures, preserve command failures and stop retrying (1.593873ms)
+✔ recovery can shorten a rental to its original cutoff without extending the budget (0.35517ms)
+✔ status succeeds with optional state files absent and reports every available record (83.504572ms)
+✔ reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage (0.707882ms)
+✔ Pod request is pinned and forwards only the public key (0.909ms)
+✔ actual allocation must satisfy hardware and rate caps (0.24941ms)
+✔ remote hardware validation requires a full device and a valid compatible driver (0.440627ms)
+✔ each selected profile binds quote, Pod allocation, native architecture and rate cap (0.686232ms)
+✔ lost create response is reconciled after restart without a second rental or deadline reset (0.923111ms)
+✔ ambiguous provisioning must not be reported as terminated when no response is visible yet (0.270229ms)
+✔ deadlines prevent creation; API errors retain storage and retryable termination (0.466055ms)
+✔ independent watchdog enforces setup and hard deadlines regardless of controller progress (0.151417ms)
+✔ a definitive provisioning rejection cleans up the new empty volume (0.261345ms)
+✔ lost volume response is reconciled and cleaned without another volume create (0.248546ms)
+✔ REST handles empty deletions, missing resources, errors and cursor pagination (21.320172ms)
+Frozen pilot selection contracts passed
+✔ tests/neural_pilot.mjs (59.120335ms)
+✔ validation and forensic rentals share the current pinned grant and reserve (1.259306ms)
+✔ prepared plan reaches the real learner without inheriting old pilot settings (0.789628ms)
+✔ preflight rejects incomplete selected work and requires matched complete model audits (68.898372ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 178.047423

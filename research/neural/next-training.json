@@ -1,7 +1,7 @@
 {
   "version": 1,
   "launch": true,
-  "readiness": "authorized; remote large-mesh model audits and selected-configuration preflight must pass before starting",
+  "readiness": "passed: full selected curriculum, 20 validation meshes for both models, CTest and sanitizer gates; training launched",
   "duration_minutes": 120,
   "finalize_minutes": 10,
   "corpus": "research/neural/corpus-v2/corpus.json",
@@ -46,6 +46,11 @@
   "update_backend": "fused",
   "configuration_reason": "Two workers/four lanes passed sustained learning and remained among the fastest configurations in both remote matrices. Small differences between four and eight lanes do not establish the best schedule for the expanded corpus.",
   "initialization": "Verified saved initializer 9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185; fresh Adam state; previous interrupted checkpoint audited separately.",
-  "validation_evidence": "research/neural/evidence/throughput-remote/validation-03",
-  "final_validation": "Compare exact starting and final models on all 20 validation groups with identical bounded generation budgets; no release holdout."
+  "validation_evidence": "research/neural/evidence/throughput-remote/training-launch",
+  "final_validation": "Compare exact starting and final models on all 20 validation groups with identical bounded generation budgets; no release holdout.",
+  "active_run": "runs/neural/runpod-expanded-pretraining-02",
+  "active_revision": "a587c33169e02e7de59e064edd85b7b56516e899",
+  "started_utc": "2026-09-30T21:17:58.386Z",
+  "estimated_learning_end_utc": "2026-09-30T23:17:58.386Z",
+  "network_volume_gb": 80
 }

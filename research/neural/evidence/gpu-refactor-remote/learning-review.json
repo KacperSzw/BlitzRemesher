@@ -1,0 +1,1195 @@
+{
+  "schema": 1,
+  "run": "runs/neural/runpod-gpu-refactor-01",
+  "revision": "1b7bcfba7335959507c4f46a32661ee13316a598",
+  "archive_sha256": "6f3ef3d516622053185e60d3307674a995c623b18703cbcb3b77ff4d2357b0dd",
+  "source_sha256": {
+    "cycle.json": "a2c0f8b7bf4b841f840461125c3329368cf54cab40df3c7e1bc83e3389bf5ed3",
+    "validation.json": "4d2197bb02d3052b11e1d5041d3fc01055a09e0b7072b4ea19b5dd31a397567c",
+    "final-audit/report.json": "f9cba160afc1189d43db4cdf80ae99c27b4757da32baa4924570aa6629d8ca20",
+    "gpu.jsonl": "20d411fe04d31b9d9f4cdca15c0e3f4039aacee1ae51f9d3ddddc35e06ecaaf3"
+  },
+  "complete": true,
+  "quality_proven": false,
+  "score": null,
+  "started": "2026-09-29T20:09:04.036Z",
+  "finished": "2026-09-29T22:08:39.612Z",
+  "active_seconds": 7175.576,
+  "training": {
+    "updates": 223232,
+    "initial_step": 1536,
+    "final_step": 224768,
+    "states": 3875,
+    "resident_bytes": 23994000,
+    "completed_refreshes": 99,
+    "seed_datasets": 1,
+    "excluded_refreshes": 1,
+    "segments": 104,
+    "all_segments_finite": true,
+    "all_segments_complete": true,
+    "native_max_abs": 0,
+    "fp64_max_abs": 0.00007189800792239964,
+    "export_tolerance": 0.0002
+  },
+  "timing": {
+    "teacher_seconds": 6894.450884149,
+    "teacher_fraction": 0.9608219443496939,
+    "trainer_seconds_excluding_capture": 93.58521818399998,
+    "optimizer_update_seconds": 37.772529184999996,
+    "checkpoint_seconds": 50.414547513,
+    "capture_seconds": 9.68284832700001,
+    "note": "Update and checkpoint times are components of trainer seconds, not additive to it. Teacher times include the excluded refresh. Host process startup, transfers and audit scheduling consume the unaccounted remainder."
+  },
+  "telemetry": {
+    "samples": 7169,
+    "gpu_utilization_percent_mean": 94.5882270888548,
+    "peak_memory_mib": 2804,
+    "note": "One-second samples include startup and idle intervals; no extrapolation to unsampled peaks."
+  },
+  "audits": [
+    {
+      "minute": 0,
+      "step": 1536,
+      "model_sha256": "051d85269098878bef8db8856805e8ca38649d07169aa4d587ad31a9d448fcd6",
+      "complete": true,
+      "runs": [
+        {
+          "ranking": "constant",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9961832061068703,
+              "final_ratio": 0.9961832061068703,
+              "seconds": 0.763652381,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 1.1181807520460394,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.1181807520460394,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12552,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30088
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9975786924939467,
+              "final_ratio": 0.9975786924939467,
+              "seconds": 1.060334023,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.8126605877929127,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.8126605877929127,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.6824429340939515,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 79200,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 138304
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        },
+        {
+          "ranking": "learned",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9809160305343512,
+              "final_ratio": 0.9618320610687023,
+              "seconds": 0.819389927,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 504,
+                  "shared_vertices": true,
+                  "source_error_px": 1.842835980306183,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.842835980306183,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12336,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 29872
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9987893462469734,
+              "final_ratio": 0.9975786924939467,
+              "seconds": 1.211314807,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3296,
+                  "shared_vertices": false,
+                  "source_error_px": 2.8739813737242694,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.8739813737242694,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 58976,
+                "index_bytes": 79200,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 197280
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minute": 30.259766666666668,
+      "step": 69120,
+      "model_sha256": "6f31f54192a463bfece2b27485a2c5894139dd7df092cc1f303b8837f8e5934c",
+      "complete": true,
+      "runs": [
+        {
+          "ranking": "constant",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9961832061068703,
+              "final_ratio": 0.9961832061068703,
+              "seconds": 0.693222774,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 1.1181807520460394,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.1181807520460394,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12552,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30088
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9975786924939467,
+              "final_ratio": 0.9975786924939467,
+              "seconds": 1.123696587,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.8126605877929127,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.8126605877929127,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.6824429340939515,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 79200,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 138304
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        },
+        {
+          "ranking": "learned",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": true,
+              "complete": true,
+              "mean_non_source_lod_ratio": 1,
+              "final_ratio": 1,
+              "seconds": 0.815951625,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 6288,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 23824
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9942493946731235,
+              "final_ratio": 0.9897094430992736,
+              "seconds": 0.795496983,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3300,
+                  "shared_vertices": true,
+                  "source_error_px": 1.4580350614006874,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.4580350614006874,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3270,
+                  "shared_vertices": true,
+                  "source_error_px": 2.734580070208551,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.734580070208551,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 118488,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 177592
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minute": 60.38135,
+      "step": 116224,
+      "model_sha256": "548c94cc4af6af84f6d44ad52a793b0b3434b3e782773b9ace53711817185554",
+      "complete": true,
+      "runs": [
+        {
+          "ranking": "constant",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9961832061068703,
+              "final_ratio": 0.9961832061068703,
+              "seconds": 0.719952994,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 1.1181807520460394,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.1181807520460394,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12552,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30088
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9957627118644068,
+              "final_ratio": 0.9939467312348669,
+              "seconds": 1.613073959,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.8126605877929127,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.8126605877929127,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3284,
+                  "shared_vertices": false,
+                  "source_error_px": 2.663430307379658,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.663430307379658,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 58784,
+                "index_bytes": 118608,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 236496
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        },
+        {
+          "ranking": "learned",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9923664122137404,
+              "final_ratio": 0.9923664122137404,
+              "seconds": 0.458654371,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 520,
+                  "shared_vertices": true,
+                  "source_error_px": 0.7071077811865476,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0.7071077811865476,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 520,
+                  "shared_vertices": true,
+                  "source_error_px": 0.7071077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12528,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30064
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.988498789346247,
+              "final_ratio": 0.9782082324455206,
+              "seconds": 1.240929458,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3300,
+                  "shared_vertices": true,
+                  "source_error_px": 1.0688402148862428,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.0688402148862428,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3232,
+                  "shared_vertices": true,
+                  "source_error_px": 2.5417387709395793,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.5417387709395793,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 118032,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 177136
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minute": 90.24311666666667,
+      "step": 161280,
+      "model_sha256": "023c2299245bc885c1aa5479767c33e796b374f3acf91c10c0940926316070f0",
+      "complete": true,
+      "runs": [
+        {
+          "ranking": "constant",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9961832061068703,
+              "final_ratio": 0.9961832061068703,
+              "seconds": 0.719968184,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 1.1181807520460394,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.1181807520460394,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12552,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30088
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9933414043583535,
+              "final_ratio": 0.9891041162227603,
+              "seconds": 1.85535542,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.8126605877929127,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.8126605877929127,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3268,
+                  "shared_vertices": false,
+                  "source_error_px": 2.59816588580805,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.59816588580805,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 58528,
+                "index_bytes": 118416,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 236048
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        },
+        {
+          "ranking": "learned",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9923664122137404,
+              "final_ratio": 0.9923664122137404,
+              "seconds": 0.522693886,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 520,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0.9571077811865476,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 520,
+                  "shared_vertices": true,
+                  "source_error_px": 0.7071077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12528,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30064
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9921307506053268,
+              "final_ratio": 0.9854721549636803,
+              "seconds": 1.186338449,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3300,
+                  "shared_vertices": true,
+                  "source_error_px": 1.2071077811865474,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.2071077811865474,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3256,
+                  "shared_vertices": true,
+                  "source_error_px": 2.213629565369183,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.213629565369183,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 118320,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 177424
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "minute": 119.59293333333333,
+      "step": 224768,
+      "model_sha256": "9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185",
+      "complete": true,
+      "runs": [
+        {
+          "ranking": "constant",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9961832061068703,
+              "final_ratio": 0.9961832061068703,
+              "seconds": 0.774850675,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 1.1181807520460394,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.1181807520460394,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 522,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12552,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30088
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9975786924939467,
+              "final_ratio": 0.9975786924939467,
+              "seconds": 1.504658126,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.8126605877929127,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.8126605877929127,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3296,
+                  "shared_vertices": true,
+                  "source_error_px": 1.6824429340939515,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 79200,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 138304
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        },
+        {
+          "ranking": "learned",
+          "healthy": true,
+          "assets": [
+            {
+              "id": "ph_painted_wooden_shelves",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9847328244274809,
+              "final_ratio": 0.9847328244274809,
+              "seconds": 0.56800686,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 524,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 516,
+                  "shared_vertices": true,
+                  "source_error_px": 0.9571077811865476,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 0.9571077811865476,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 516,
+                  "shared_vertices": true,
+                  "source_error_px": 0.7071077811865476,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 0,
+                "index_bytes": 12480,
+                "source_vertex_bytes": 17536,
+                "total_bytes": 30016
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            },
+            {
+              "id": "ph_moon_rock_02",
+              "fallback": false,
+              "complete": true,
+              "mean_non_source_lod_ratio": 0.9984866828087167,
+              "final_ratio": 0.9975786924939467,
+              "seconds": 0.889927523,
+              "lods": [
+                {
+                  "screen_pixels": 256,
+                  "triangles": 3304,
+                  "shared_vertices": true,
+                  "source_error_px": 0,
+                  "source_limit_px": 0,
+                  "source_passed": true,
+                  "adjacent_error_px": 0,
+                  "transition_limit_px": 0,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 181.01933598375618,
+                  "triangles": 3302,
+                  "shared_vertices": true,
+                  "source_error_px": 1.0688402148862428,
+                  "source_limit_px": 2,
+                  "source_passed": true,
+                  "adjacent_error_px": 1.0688402148862428,
+                  "transition_limit_px": 2,
+                  "adjacent_passed": true
+                },
+                {
+                  "screen_pixels": 128,
+                  "triangles": 3296,
+                  "shared_vertices": false,
+                  "source_error_px": 2.5941097898087464,
+                  "source_limit_px": 3,
+                  "source_passed": true,
+                  "adjacent_error_px": 2.5941097898087464,
+                  "transition_limit_px": 3,
+                  "adjacent_passed": true
+                }
+              ],
+              "storage": {
+                "added_vertex_bytes": 58976,
+                "index_bytes": 118824,
+                "source_vertex_bytes": 59104,
+                "total_bytes": 236904
+              },
+              "confirmation_disagreements": 0,
+              "resource_failures": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "model": {
+    "path": "runs/neural/runpod-gpu-refactor-01/final-model.blzn",
+    "sha256": "9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185",
+    "verified": true
+  },
+  "checkpoint": {
+    "path": "runs/neural/runpod-gpu-refactor-01/final-checkpoint.pt",
+    "sha256": "d44d2f8591ae2abb75f4af790577e57cb0bbd45fd2212ee8e6301c85ebf421ed",
+    "verified": true
+  },
+  "cleanup": {
+    "compute_terminated": true,
+    "volume_deleted": true,
+    "live_api_verified_at": "2026-09-30T05:15:53.434Z",
+    "matching_pods": 0,
+    "matching_volumes": 0
+  },
+  "conservative_rental_usd": 5.308417825,
+  "limitations": [
+    "Two development assets, one seed, bounded smoke search, 16 audit views; no full-protocol score or held-out generalization claim.",
+    "Constant and learned ranking share each checkpoint placement outputs; the constant arm is not an invariant pre-training baseline.",
+    "Final quality is mixed across assets/LODs and regresses from earlier checkpoints; training fit does not establish useful triangle reduction.",
+    "The teacher is the dominant full-cycle cost. CPU orchestration remains outside the captured optimizer graph."
+  ]
+}

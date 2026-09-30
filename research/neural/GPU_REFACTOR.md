@@ -134,9 +134,68 @@ was 8.61e-7. Evidence is in `evidence/gpu-refactor-remote`.
 | 3,042-triangle topology CPU / GPU (median) | 50.0 / 11.8 ms; 4.23× |
 | Eight candidate audits, uncached / cached | 54–58 / 32.6–32.8 ms; exact metrics, 96 / 54 rasters |
 
-The two-hour learning window began at 20:09:04 UTC on 2026-09-29 after the
-measured architecture report was written. Its result is pending; validation and
-throughput do not establish learned reduction quality.
+The two-hour cycle completed on 2026-09-29, from 20:09:04 to 22:08:39 UTC
+(22:09 to 00:08 CEST). Its measured active duration was 7,175.576 seconds; the
+final audit and checkpoint completed before the two-hour deadline. It performed
+223,232 new optimizer updates over 3,875 states: 99 accepted refreshes plus the
+three-state validation seed. One incomplete refresh was excluded. The final
+checkpoint is step 224,768, including 1,536 preflight updates. All 104 training
+segments completed with finite values, exact native exports and maximum FP64
+export difference 7.19e-5, below the unchanged 2e-4 tolerance.
+
+The final model does **not** establish useful reduction quality. The fixed,
+bounded development diagnostic produced these 128px outputs:
+
+| Asset | Source triangles | Constant ranking | Learned ranking | Learned source error / limit |
+| --- | ---: | ---: | ---: | ---: |
+| Painted wooden shelves | 524 | 522 | 516 | 0.707 / 3 px |
+| Moon rock 02 | 3,304 | 3,296 | 3,296 | 2.594 / 3 px |
+
+Both final learned outputs passed the configured source and preceding-LOD gates.
+Their reductions are only 1.53% and 0.24%. Across both non-source LODs, learned
+ranking improves shelves but worsens the rock's mean triangle ratio. The
+constant arm shares the current checkpoint's placement outputs, so it isolates
+ranking within each audit; it is not a fixed pre-training model baseline.
+
+| Learned checkpoint | Shelves at 128px | Rock at 128px |
+| --- | ---: | ---: |
+| Preflight | 504 | 3,296 |
+| About 30 minutes | 524 (unreduced fallback) | 3,270 |
+| About 60 minutes | 520 | 3,232 |
+| About 90 minutes | 520 | 3,256 |
+| Final | 516 | 3,296 |
+
+The final checkpoint regresses from earlier checkpoints on each asset. These are
+two development assets, one seed, bounded proposal work and 16 audit views; they
+do not establish a full-protocol score, default-quality performance, held-out
+generalization or the achievable reduction ceiling. No checkpoint is promoted
+as a quality winner from this screening.
+
+The completed cycle exposes the remaining bottleneck:
+
+| Work during the cycle | Measured time |
+| --- | ---: |
+| Teacher generation and its visual audits, including excluded refresh | 6,894.45 s (96.08% of the cycle) |
+| Trainer execution, excluding graph capture | 93.59 s |
+| Optimizer updates, included in trainer execution | 37.77 s |
+| Checkpoint/export verification, included in trainer execution | 50.41 s |
+| Graph capture | 9.68 s |
+
+The remaining time includes process startup, data loading/transfers, scheduled
+quality audits and orchestration. One-second telemetry averaged 94.59% GPU
+utilization across the cycle and peaked at 2,804 MiB allocated GPU memory; the
+packed final dataset occupied 23,994,000 bytes. The optimizer is fast, but further
+optimizer-only speedups have little impact on the full cycle. Teacher candidate
+auditing and quality retention are the next priorities before another long run.
+
+The checksummed archive, final model and resumable optimizer checkpoint were
+collected under `runs/neural/runpod-gpu-refactor-01`. The GPU was terminated at
+22:09:05 UTC, then persistent storage was deleted after verified collection.
+A live API check on 2026-09-30 confirmed that both resources were absent. The
+conservative rental ledger is **$5.3084 of the $8 additional grant**; this uses
+the rate cap and is not a final provider invoice. Derived measurements, artifact
+hashes and all checkpoint audit rows are retained in
+[`learning-review.json`](evidence/gpu-refactor-remote/learning-review.json).
 
 The user authorized **up to $8 additional**, covering validation and a **two-hour
 full learning cycle**, including new examples, updates and quality audits. The

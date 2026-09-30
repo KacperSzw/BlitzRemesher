@@ -284,3 +284,8 @@ Its logs were verified and all resources deleted. The setup now explicitly
 installs the graphics driver's GLVND/X11 runtime dependencies and records the
 actual GPU/driver, ICD and linked libraries before attempting Vulkan. This is
 an infrastructure correction; the local neural runtime remains unchanged.
+The headless bundle selects the EGL entry from the host-injected NVIDIA ICD,
+preserving its API version and library directory. NVIDIA documents this
+[X11-independent Vulkan entry](https://download.nvidia.com/XFree86/Linux-x86_64/570.86.16/README/installedcomponents.html).
+Local packed draw/storage tests pass through this entry with synchronization
+validation enabled. Unavailable subsequent quotes create no billable resources.

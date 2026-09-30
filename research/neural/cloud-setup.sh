@@ -21,6 +21,20 @@ if [[ "${BLITZ_HARDWARE_VALIDATION:-0}" == 1 ]]; then
   done > /workspace/results/nvidia-icd.json
   blitz_glx=$(ldconfig -p | rg -m1 -o '/[^ ]*/libGLX_nvidia[.]so[.]0' || true)
   if [[ -n "$blitz_glx" ]]; then ldd "$blitz_glx" > /workspace/results/nvidia-glx-dependencies.txt; fi
+  blitz_egl=$(ldconfig -p | rg -m1 -o '/[^ ]*/libEGL_nvidia[.]so[.]0' || true)
+  if [[ -n "$blitz_egl" ]]; then ldd "$blitz_egl" > /workspace/results/nvidia-egl-dependencies.txt; fi
+  # NVIDIA documents EGL as its X11-independent Vulkan ICD. Preserve the
+  # injected host driver's API version and directory; only select its EGL entry.
+  node --input-type=module <<'JS'
+import fs from 'node:fs';
+const source=['/etc/vulkan/icd.d/nvidia_icd.json','/usr/share/vulkan/icd.d/nvidia_icd.json'].find(p=>fs.existsSync(p));
+if(!source)throw new Error('Missing host-injected NVIDIA Vulkan ICD');
+const icd=JSON.parse(fs.readFileSync(source,'utf8'));
+icd.ICD.library_path=icd.ICD.library_path.replace(/libGLX_nvidia[.]so[.]0$/,'libEGL_nvidia.so.0');
+if(!icd.ICD.library_path.endsWith('libEGL_nvidia.so.0'))throw new Error('Unsupported NVIDIA Vulkan ICD entry');
+fs.writeFileSync('/workspace/results/nvidia-headless.json',JSON.stringify(icd,null,2)+'\n');
+JS
+  export VK_DRIVER_FILES=/workspace/results/nvidia-headless.json
   vulkaninfo --summary > /workspace/results/vulkan.txt
 fi
 node --input-type=module <<'JS'

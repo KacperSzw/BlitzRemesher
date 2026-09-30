@@ -37,7 +37,13 @@ export class Api {
       method,headers:{Authorization:`Bearer ${this.key}`,'Content-Type':'application/json'},
       body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
     if(response.status===404&&(method==='GET'||method==='DELETE'))return null;
-    if(!response.ok){const error=new Error(`Runpod ${method} ${resource.split('?')[0]}: HTTP ${response.status}`);error.status=response.status;throw error;}
+    if(!response.ok){
+      const error=new Error(`Runpod ${method} ${resource.split('?')[0]}: HTTP ${response.status}`);error.status=response.status;
+      // Preserve the provider's problem detail locally for failed provisioning.
+      // It is not printed with the error or copied into public evidence automatically.
+      try{const problem=await response.json();if(typeof problem.detail==='string')error.detail=problem.detail;}catch{}
+      throw error;
+    }
     return response.status===204?null:response.json();
   }
   async pods(){

@@ -273,3 +273,8 @@ rental charge is at most $0.51. A bounded $0.60/hour-cap RTX PRO 4000 Blackwell
 profile provides a cheaper validation retry within the same grant. Both devices
 support compute capability 12.0 ([NVIDIA device table](https://developer.nvidia.com/cuda/gpus)).
 The 21 cloud/budget contract checks pass with the additional profile.
+The smaller Blackwell allocation was rejected by the provider (HTTP 400), and
+its empty volume was deleted. An RTX 4090 profile capped at $0.80/hour is also
+available for bounded validation; it compiles the same implementation for SM89
+and retains the same memory, visual and replay checks. Failed allocation records
+remain under [evidence/hardware-remote](evidence/hardware-remote/).

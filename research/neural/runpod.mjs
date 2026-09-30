@@ -29,7 +29,7 @@ async function prepare(){
   if(!refactor&&!hardware){const remote=sync('git',['ls-remote','origin','refs/heads/'+branch]).split(/\s/)[0];
     if(remote!==revision)throw new Error('Current branch is not fully pushed');}
   if(refactor&&deployment.id!=='gpu-refactor')throw new Error('Select BLITZ_RUNPOD_PROFILE=gpu-refactor');
-  if(hardware&&!['hardware-validation','hardware-validation-small'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
+  if(hardware&&!['hardware-validation','hardware-validation-small','hardware-validation-ada'].includes(deployment.id))throw new Error('Select a hardware-validation RunPod profile');
   fs.mkdirSync(dir,{recursive:true,mode:0o700});
   const stage=dir+'/input';fs.mkdirSync(stage,{recursive:true});
   sync('git',['bundle','create',stage+'/source.bundle','HEAD']);
@@ -193,7 +193,7 @@ async function control(){
       await sleep(10000);
     }
   }catch(error){
-    rental.commit({error:String(error)});console.error(String(error));
+    rental.commit({error:String(error),...(error.detail?{error_detail:error.detail}:{})});console.error(String(error));
     // Preserve available evidence on a setup failure or lost SSH session. The
     // watchdog still owns the deadline while this best-effort collection runs.
     if(s.endpoint&&Date.now()<s.deadline_ms-30000){

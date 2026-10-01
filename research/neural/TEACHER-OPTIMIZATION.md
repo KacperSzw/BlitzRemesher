@@ -273,3 +273,34 @@ No subsequent LOD comparison or paired validation ran. Collection preceded
 termination, provider readback confirmed zero Pods and volumes, and conservative
 cumulative cost reached $0.75151035. Investigating the seeded audit failure and
 retrying the requested work remain necessary.
+
+The seed-admission correction `ecfc478` rejects the reproduced CoffeeCart seed
+under its unchanged adjacent limit, then completes all 16 requested teacher states
+from the confirmed source baseline. The corresponding five-minute local cycle
+completed 24,832 updates and 3,104 requested-condition states, with passing final
+checkpoint verification. The earlier 768 MiB local workspace-cap failure remains
+visible alongside the successful 1,024 MiB run.
+
+The corrected `worker-join-seed-v2` baseline and current teacher then completed a
+two-condition local ABBA check: four normal process exits and 24 jobs, including
+16 warmups and eight measured jobs. Actual label and episode bytes, normalized
+contracts and common trajectories match across all four runs. The observed warm
+wall ratio was 1.057 on the shared workstation; it is not an accepted performance
+gain. A preceding test deliberately requested the rejected CoffeeCart simplifier
+seed. Its fallback produced a complete, audited teacher shard, but benchmark
+qualification correctly failed because that requested seed condition was not
+exercised. That incomplete attempt has no speedup result. Both plans, raw outputs,
+baseline build provenance and checksums are preserved in the
+[local admission evidence](evidence/teacher-optimization/seed-admission-local/manifest.json).
+
+The subsequent [local two-asset quality diagnostic](evidence/teacher-optimization/local-quality-24832/README.md)
+compared the initializer with the verified checkpoint after 24,832 updates in a
+five-minute local soak. All three learned shelves LODs improved their triangle
+counts (518/259/247 to 500/250/236), while all three moon-rock LODs regressed
+(1862/932/930 to 3252/1626/1626). Every emitted source and adjacent audit passed.
+The trained constant-ranking control also beats trained learned ranking on
+shelves, and many proposals exhaust the 64-trial budget. This shows changed
+behavior, not consistent progress or a known minimum update count for improvement.
+Raw initial/final outputs, fixed settings, checkpoint hashes and the preceding
+JSON-key-order reporting failure are preserved. No aggregate SCORE or full-quality
+claim follows from these two development assets.

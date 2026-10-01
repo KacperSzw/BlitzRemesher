@@ -303,5 +303,77 @@
     "seconds": 63.92,
     "source": "root-coordinated headless GPU/training CTest; archived log and JUnit",
     "gpu_work_by_archiving_agent": false
+  },
+  "parity": {
+    "complete": true,
+    "scope": "Two source conditions with the corrected seed/lifecycle baseline overlay; local shared workstation",
+    "mode": "parity",
+    "order": [
+      "baseline",
+      "optimized",
+      "optimized",
+      "baseline"
+    ],
+    "normal_process_exits": 4,
+    "verified_jobs": 24,
+    "warmup_jobs": 16,
+    "measured_jobs": 8,
+    "matching_payloads": true,
+    "matching_semantics": true,
+    "actual_files_revalidated": true,
+    "baseline_binary_sha256": "a809f3059b62f80d3cf20b87de415edaa3e7eee53988d35a36cc583b7798eb32",
+    "candidate_binary_sha256": "fb13c12fae9bb7ddc56e88ca5aebb659ed75ee8032956057fc79d1f77c8c7298",
+    "baseline_overlay": {
+      "version": 1,
+      "id": "worker-join-seed-v2",
+      "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+      "original_tree": "dc3fa2f6f40b499663ab3fe11a2ab32e4d29a813",
+      "modified_tree": "92bb18d98cae0e309669bc3933ea96e4b08a3944",
+      "patch_sha256": "a2b7d7fd0cfbb0f10c8c94cdc78335b324c64107da983a76fd27602e9a29bc02",
+      "files": [
+        {
+          "path": "src/neural/teardown_trace.hpp",
+          "before_sha256": null,
+          "after_sha256": "fd2e3f81e015ca10fa7c4268c82a3ab76b5c103fd1be13310ac4d5065a9199f0"
+        },
+        {
+          "path": "training/placement_teacher.hpp",
+          "before_sha256": "663e8055fd1415bf95ce66a22345f56f88bd73ef047a92c19d444db97f3e7fa4",
+          "after_sha256": "137d432172af67a62a7df9047dd54dea25822c4810f28db093cfc56afaeb8c02"
+        },
+        {
+          "path": "training/teacher_seed.hpp",
+          "before_sha256": null,
+          "after_sha256": "ed4e1ba3b418a372d3ef0d9748c6c92519ae007abe236cb3d048332ff4235b9a"
+        },
+        {
+          "path": "training/worker_retirement.hpp",
+          "before_sha256": null,
+          "after_sha256": "8669dc640830061a960dbbb27536b8c3954f02ef3747accfd600d9741eb08174"
+        },
+        {
+          "path": "training/workers.hpp",
+          "before_sha256": "2626881c7cc25a482fc16ede72a918f7e2b6530380ea366f3ae11ce81ad8ed92",
+          "after_sha256": "3857aff573143bb377aed5361fcec34fe82007b89bc98b50edd6f6d34773adb5"
+        }
+      ]
+    },
+    "timing_authority": "local_shared",
+    "observed_warm_wall_ratio": 1.0572236145035674,
+    "accepted_speedup": null,
+    "quality_proven": false,
+    "training_started": false,
+    "optimizer_updates": 0,
+    "prior_attempt": {
+      "complete": false,
+      "error": "incomplete or unavailable benchmark condition: coffee-rejected-simplifier",
+      "native_process_code": 2,
+      "recorded_job_complete": false,
+      "teacher_shard_complete": true,
+      "requested_seed_accepted": false,
+      "source_audit_passed": true,
+      "adjacent_audit_passed": true,
+      "reason": "The rejected simplifier seed safely fell back to the source and produced an audited shard, but did not exercise the benchmark-requested seed condition. Qualification correctly failed; no speedup is accepted."
+    }
   }
 }

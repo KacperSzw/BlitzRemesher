@@ -231,8 +231,8 @@
     {
       "file": "record.json",
       "source": "derived from archived contracts, native reports, CPU commands and controller exit observations",
-      "sha256": "6f94dc2d84bd7667460d52b72946446e37041c7b758ac456e5fd14d10efe7870",
-      "bytes": 10013
+      "sha256": "b3623160828f611d551202b5782ff4f1fb63d9db2f62a91c3a2d8af0cffbc087",
+      "bytes": 12999
     },
     {
       "file": "ctest.log.gz",
@@ -247,6 +247,55 @@
       "uncompressed_sha256": "b97fd0dc9310edc0be5eb4330a1f0267defeecf51349083cdbda3dac8a0993f3",
       "sha256": "949fb08de840d001cb89d799610f97ad1db72408fe4785651d21342ba632dbc1",
       "bytes": 6483
+    },
+    {
+      "file": "parity/local-01.tar.gz",
+      "source": "runs/neural/seed-admission-parity-local-01 (all raw files except regenerated mesh-cache payloads)",
+      "uncompressed_sha256": "34396c1c5d38f5e6cacd9c65e41eac9899bd754a91e9eeb99ad7902e062519cc",
+      "sha256": "f7042ab2a643f1e06e835d570864ef1999a0084fff716a7ee773e59dc109448b",
+      "bytes": 595428
+    },
+    {
+      "file": "parity/local-02.tar.gz",
+      "source": "runs/neural/seed-admission-parity-local-02 (all raw files except regenerated mesh-cache payloads)",
+      "uncompressed_sha256": "7be7e018a108f88539e3208567e7d4b1d90b073e51e4f8cc971faee37a3e681c",
+      "sha256": "7b274a87c135d408f05b7f6fe77f00e6e5b71b90b31a92992516019e0f9ec32b",
+      "bytes": 6626736
+    },
+    {
+      "file": "parity/plan-01.json.gz",
+      "source": "runs/neural/seed-admission-parity-local-plan.json",
+      "uncompressed_sha256": "0ca120e6595140f4c99e5cba4b2256d7d180a222071624f9ea6d5c069c5874c5",
+      "sha256": "5c025b86323a8b14dcf5dc52d3e7fa6bd72bbc8fd9b6c3ba5a376cf9c9df7a8d",
+      "bytes": 609
+    },
+    {
+      "file": "parity/plan-02.json.gz",
+      "source": "runs/neural/seed-admission-parity-local-plan-02.json",
+      "uncompressed_sha256": "bc672d6b0cc90f2f0fc6d33a5eab23743e6729b59e73471215cc6272270826ff",
+      "sha256": "7c6a4cc583b77c84b132c4d046b89e2409b431ae917f60addeab1eeedd173714",
+      "bytes": 594
+    },
+    {
+      "file": "parity/baseline-build.json.gz",
+      "source": "runs/neural/teacher-baseline-seed-validation-01/baseline-build.json",
+      "uncompressed_sha256": "747d373df234683a2080fe8a757768f8b9b7f41d87f4b4b30923c55fa17f4145",
+      "sha256": "49a8dd87e898e2e1aa2316c3126b21185c42affc8f3f3f0b01bb86f61ada36b3",
+      "bytes": 847
+    },
+    {
+      "file": "parity/baseline-build.log.gz",
+      "source": "/tmp/blitz-seed-baseline-build.log",
+      "uncompressed_sha256": "32e624ff0ae7b056763004f81d3256ab8c134e1d11ad1d33fc3d2074ed21d4ad",
+      "sha256": "b0184da5d7129e550da2404ee996ad29d34157c32b66af3b7972efdebb1395e3",
+      "bytes": 2036
+    },
+    {
+      "file": "parity/baseline-configure.log.gz",
+      "source": "/tmp/blitz-seed-baseline-configure.log",
+      "uncompressed_sha256": "91c70cce53d3d5b3a720521a8eb68915d26eb2436088a6eb918dacd6006637e3",
+      "sha256": "3b1a187d1e466ad1e23fefc0b3483adbf26b9da557c3bee26242966251c19a95",
+      "bytes": 908
     }
   ]
 }

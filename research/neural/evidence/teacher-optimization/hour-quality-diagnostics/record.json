@@ -1,0 +1,633 @@
+{
+  "version": 1,
+  "scope": "Intermediate checkpoint diagnostics, not final-hour or release-quality evidence",
+  "archived_at": "2026-10-01T15:24:31.436Z",
+  "training_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+  "teacher_strategy": "exhaustive",
+  "checkpoint": {
+    "step": 183168,
+    "learning_elapsed_ms": 1592177,
+    "training_complete_at_capture": false,
+    "capture_at": 1790866448899,
+    "checkpoint_sha256": "1e1ec4659b7711d201005a9fe88f5f5bb8528837ebf08676449a51b7836a2284",
+    "model_sha256": "0566dfc6a8da19ef8ad814c372226060a82201599e4a30200212494bba9a0f29",
+    "indexed_files_locally_verified": 6,
+    "verification": {
+      "fp64": {
+        "finite": true,
+        "max_abs": 0.000004719989924240053,
+        "max_relative": 0.00014758505704195752,
+        "rms": 3.888086243019025e-7,
+        "same_shape": true,
+        "worst_index": 204
+      },
+      "native": {
+        "finite": true,
+        "max_abs": 0,
+        "max_relative": 0,
+        "rms": 0,
+        "same_shape": true,
+        "worst_index": 0
+      },
+      "native_fp64": {
+        "finite": true,
+        "max_abs": 0.000004719989924240053,
+        "max_relative": 0.00014758505704195752,
+        "rms": 3.888086243019025e-7,
+        "same_shape": true,
+        "worst_index": 204
+      },
+      "passed": true,
+      "threshold": 0.0002
+    }
+  },
+  "diagnostics": {
+    "batch16": {
+      "complete": true,
+      "score": null,
+      "quality_proven": false,
+      "uncensored": false,
+      "action_batch": 16,
+      "action_trials": 64,
+      "timing_authority": "local_shared",
+      "binary_sha256": "5cf56b140a7462469f507ae2a73a09459d4000ea2fa4ead60fe8a80909dad180",
+      "models": {
+        "initial": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+        "final": "0566dfc6a8da19ef8ad814c372226060a82201599e4a30200212494bba9a0f29"
+      },
+      "runs": [
+        {
+          "variant": "initial",
+          "raw_variant": "initial",
+          "termination": {
+            "known": true,
+            "uncensored": false,
+            "reasons": {
+              "trial_budget": 18,
+              "target_reached": 4,
+              "no_accepted_action": 2
+            }
+          },
+          "rows": [
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "constant",
+              "triangles": [
+                524,
+                524,
+                262,
+                244
+              ],
+              "status": "complete",
+              "fallback_levels": 1,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 5,
+                "target_reached": 1
+              },
+              "source_errors": [
+                0.9571077811865476,
+                1.9571077811865474,
+                2.970954065720902
+              ],
+              "adjacent_errors": [
+                0.9571077811865476,
+                1.9571077811865474,
+                2.768660593995378
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "learned",
+              "triangles": [
+                524,
+                518,
+                259,
+                247
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 3,
+                "target_reached": 3
+              },
+              "source_errors": [
+                1.2661247755614948,
+                2.2882466112707376,
+                1.7378841875909627
+              ],
+              "adjacent_errors": [
+                1.2661247755614948,
+                2.2882466112707376,
+                0.9571077811865476
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "constant",
+              "triangles": [
+                3304,
+                3222,
+                1910,
+                1902
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 5,
+                "no_accepted_action": 1
+              },
+              "source_errors": [
+                1.6084956000525448,
+                2.82842812474619,
+                1.9818626595847435
+              ],
+              "adjacent_errors": [
+                1.6084956000525448,
+                2.4748747341529165,
+                1.414214562373095
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "learned",
+              "triangles": [
+                3304,
+                1862,
+                932,
+                930
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 5,
+                "no_accepted_action": 1
+              },
+              "source_errors": [
+                1.9785543905932736,
+                2.0533989829701738,
+                1.6084956000525448
+              ],
+              "adjacent_errors": [
+                1.9785543905932736,
+                1.9571077811865474,
+                1.0606611717798213
+              ],
+              "all_reduced_source_adjacent_pass": true
+            }
+          ]
+        },
+        {
+          "variant": "intermediate183168",
+          "raw_variant": "final",
+          "termination": {
+            "known": true,
+            "uncensored": false,
+            "reasons": {
+              "trial_budget": 16,
+              "target_reached": 5,
+              "no_accepted_action": 3
+            }
+          },
+          "rows": [
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "constant",
+              "triangles": [
+                524,
+                500,
+                250,
+                240
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 4,
+                "target_reached": 2
+              },
+              "source_errors": [
+                1.9571077811865474,
+                2.2071077811865476,
+                2.853554390593274
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                2.4748747341529165,
+                2.84310871751593
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "learned",
+              "triangles": [
+                524,
+                514,
+                257,
+                247
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 3,
+                "target_reached": 3
+              },
+              "source_errors": [
+                1.9571077811865474,
+                2.7071077811865476,
+                2.4571077811865476
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                2.2451476343959684,
+                2.4571077811865476
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "constant",
+              "triangles": [
+                3304,
+                3294,
+                2036,
+                2034
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 5,
+                "no_accepted_action": 1
+              },
+              "source_errors": [
+                1.4976771962286424,
+                2.768660593995378,
+                2.0533989829701738
+              ],
+              "adjacent_errors": [
+                1.4976771962286424,
+                2.478554390593274,
+                1.2661247755614948
+              ],
+              "all_reduced_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "learned",
+              "triangles": [
+                3304,
+                2902,
+                1452,
+                1448
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stop_reasons": {
+                "trial_budget": 4,
+                "no_accepted_action": 2
+              },
+              "source_errors": [
+                1.9571077811865474,
+                1.9571077811865474,
+                1.4976771962286424
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                1.9571077811865474,
+                0.9571077811865476
+              ],
+              "all_reduced_source_adjacent_pass": true
+            }
+          ]
+        }
+      ]
+    },
+    "batch1": {
+      "complete": true,
+      "score": null,
+      "quality_proven": false,
+      "uncensored": false,
+      "action_batch": 1,
+      "action_trials": 64,
+      "timing_authority": "local_shared",
+      "binary_sha256": "5cf56b140a7462469f507ae2a73a09459d4000ea2fa4ead60fe8a80909dad180",
+      "models": {
+        "initial": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+        "final": "0566dfc6a8da19ef8ad814c372226060a82201599e4a30200212494bba9a0f29"
+      },
+      "runs": [
+        {
+          "variant": "initial",
+          "raw_variant": "initial",
+          "termination": {
+            "known": true,
+            "uncensored": false,
+            "reasons": {
+              "trial_budget": 24
+            }
+          },
+          "rows": [
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "constant",
+              "triangles": [
+                524,
+                484,
+                467,
+                442
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.9571077811865474,
+                2.6110510576525248,
+                2.970954065720902
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                2.0533989829701738,
+                2.4571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "learned",
+              "triangles": [
+                524,
+                398,
+                270,
+                248
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.9346932206774634,
+                1.7677679529663688,
+                1.4571077811865474
+              ],
+              "adjacent_errors": [
+                1.9346932206774634,
+                1.7677679529663688,
+                0.9571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "constant",
+              "triangles": [
+                3304,
+                3200,
+                3072,
+                3038
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.778773671967196,
+                2.164845754897873,
+                1.7071077811865474
+              ],
+              "adjacent_errors": [
+                1.778773671967196,
+                2.164845754897873,
+                0.9571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "learned",
+              "triangles": [
+                3304,
+                3176,
+                3048,
+                3020
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.4571077811865474,
+                1.414214562373095,
+                1.0606611717798213
+              ],
+              "adjacent_errors": [
+                1.4571077811865474,
+                1.2661247755614948,
+                0.9571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            }
+          ]
+        },
+        {
+          "variant": "intermediate183168",
+          "raw_variant": "final",
+          "termination": {
+            "known": true,
+            "uncensored": false,
+            "reasons": {
+              "trial_budget": 24
+            }
+          },
+          "rows": [
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "constant",
+              "triangles": [
+                524,
+                484,
+                467,
+                448
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.9571077811865474,
+                2.6110510576525248,
+                2.970954065720902
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                2.0533989829701738,
+                2.4571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_painted_wooden_shelves",
+              "ranking": "learned",
+              "triangles": [
+                524,
+                500,
+                373,
+                351
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.9571077811865474,
+                1.9571077811865474,
+                1.4976771962286424
+              ],
+              "adjacent_errors": [
+                1.9571077811865474,
+                1.9571077811865474,
+                1.2661247755614948
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "constant",
+              "triangles": [
+                3304,
+                3200,
+                3072,
+                3042
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.778773671967196,
+                2.164845754897873,
+                1.7071077811865474
+              ],
+              "adjacent_errors": [
+                1.778773671967196,
+                2.164845754897873,
+                0.9571077811865476
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            },
+            {
+              "asset": "ph_moon_rock_02",
+              "ranking": "learned",
+              "triangles": [
+                3304,
+                3176,
+                3048,
+                3040
+              ],
+              "status": "complete",
+              "fallback_levels": 0,
+              "resource_failures": 0,
+              "confirmation_failure": null,
+              "stops": {
+                "trial_budget": 6
+              },
+              "source_errors": [
+                1.4571077811865474,
+                1.7378841875909627,
+                1.4976771962286424
+              ],
+              "adjacent_errors": [
+                1.4571077811865474,
+                1.7378841875909627,
+                1.4976771962286424
+              ],
+              "all_lod1_3_source_adjacent_pass": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "earlier_local_labels": {
+    "scope": "Completed consumed teacher datasets from the earlier local five-minute 24,832-update run; NOT labels from the live remote hour or the 183,168-update checkpoint.",
+    "summary": {
+      "shards": 194,
+      "states": 3200,
+      "all_four_preferred": 1983,
+      "preferred_histogram": {
+        "1": 74,
+        "2": 337,
+        "3": 806,
+        "4": 1983
+      },
+      "queried_histogram": {
+        "4": 3200
+      },
+      "guaranteed_zero_rank_pair_fraction": 0.6196875
+    },
+    "source_files_rehashed": 388,
+    "independently_recounted_states": 3200,
+    "independently_recounted_all_four_preferred": 1983
+  },
+  "review": {
+    "source": "/tmp/blitz-prophet-quality-review.json",
+    "reviewed_native_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+    "kind": "attached-source static review",
+    "confirmed_semantics": [
+      "teacher rank labels follow independently audited teacher-winner placements",
+      "runtime learned rank uses output0 but executes actor placements from outputs3..11",
+      "constant ranking still uses current model placements",
+      "serial teacher commits and joint-batch production trials differ",
+      "all-preferred states produce zero pairwise ranking comparisons"
+    ],
+    "qualification": "These observations motivate diagnostics; they do not prove which mechanism caused the intermediate LOD results, establish absence of all implementation bugs, or validate a new training objective."
+  },
+  "limitations": [
+    "Raw report field/filename final refers to the compared intermediate checkpoint, not a completed hour.",
+    "Both initial/intermediate models exit normally, but trial-censored results are matched-budget observations, not saturation or release evidence.",
+    "Local timings are shared-workstation observations with Unity/moonlight contention, not speed authority.",
+    "Batch1 and batch16 retain64 trial attempts but differ in maximum edit capacity per accepted attempt; compare ranking effects within each batch.",
+    "Earlier local label counts describe stored states from the completed24832-update five-minute run, not this remote checkpoint or replay sample frequency.",
+    "Model/checkpoint tensor payloads are intentionally excluded; their verified hashes remain in checkpoint index and record.",
+    "Additional pending Prophet audits and final-hour evidence are outside this archive."
+  ]
+}

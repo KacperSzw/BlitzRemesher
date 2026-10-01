@@ -14,6 +14,7 @@ import {
   teacherStrategyGate,
   validateOptimizationPilot,
   validateOptimizationCheckpoint,
+  selectOptimizationAssets,
 } from '../scripts/neural/teacher-optimization.mjs';
 import { profiles } from '../scripts/neural/runpod-profile.mjs';
 import { rentalDeadlines, storageMode } from '../scripts/neural/runpod-api.mjs';
@@ -31,6 +32,32 @@ const request = () => ({
   candidate_batch: 4,
   learning_minutes: 5,
   finalize_minutes: 2,
+});
+
+test('audit-only development assets are bundled without admitting them into teachers', () => {
+  const options = {
+    assets: [
+      { id: 'train', split: 'development' },
+      { id: 'audit', split: 'development' },
+      { id: 'held-out', split: 'validation' },
+    ],
+    trainingIds: ['train'],
+    teacherIds: ['train'],
+    auditIds: ['train', 'audit'],
+  };
+  assert.deepEqual(
+    selectOptimizationAssets(options).map((a) => a.id),
+    ['train', 'audit'],
+  );
+  assert.throws(
+    () => selectOptimizationAssets({ ...options, teacherIds: ['audit'] }),
+    /training split/,
+  );
+  assert.throws(
+    () => selectOptimizationAssets({ ...options, auditIds: ['held-out'] }),
+    /development assets/,
+  );
+  assert.throws(() => selectOptimizationAssets({ ...options, auditIds: ['missing'] }), /Missing/);
 });
 
 test('optimization grant counts failed and active rentals and cannot extend core deadlines', () => {

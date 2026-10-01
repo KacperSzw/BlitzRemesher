@@ -34,6 +34,7 @@ import {
   teacherOptimizationBudget,
   teacherOptimizationProfiles,
   validateOptimizationRequest,
+  selectOptimizationAssets,
 } from './teacher-optimization.mjs';
 
 const [command, directory] = process.argv.slice(2);
@@ -205,26 +206,22 @@ async function prepare() {
       request.initialization_sha256,
     );
     await copy('research/neural/teacher-optimization.json', 'optimization/request.json');
-    const selected = new Set(
-      read('research/neural/teacher-profile.json').conditions.map((c) => c.asset),
-    );
-    for (const c of read('research/neural/teacher-optimization-curriculum.json').conditions)
-      selected.add(c.asset);
-    for (const a of read('research/neural/prepared-pilot/selection.json').assets)
-      selected.add(a.id);
-    // The cycle's final diagnostic is separate from the full quality comparison.
-    for (const a of read('research/neural/action-diagnostic.json').assets) selected.add(a.id);
-    const allowed = new Set(
-      read('research/neural/corpus-v2/training.json').assets.map((a) => a.id),
-    );
-    for (const a of read('research/neural/corpus-v2/corpus.json').assets) {
-      if (!selected.has(a.id)) continue;
-      if (!allowed.has(a.id) || a.split !== 'development')
-        throw new Error('Optimization fixture must belong to the training development split');
+    const selected = selectOptimizationAssets({
+      assets: read('research/neural/corpus-v2/corpus.json').assets,
+      trainingIds: read('research/neural/corpus-v2/training.json').assets.map((a) => a.id),
+      teacherIds: [
+        ...read('research/neural/teacher-profile.json').conditions,
+        ...read('research/neural/teacher-optimization-curriculum.json').conditions,
+      ].map((c) => c.asset),
+      // The cycle's final diagnostic is separate from the full quality comparison.
+      auditIds: [
+        ...read('research/neural/prepared-pilot/selection.json').assets,
+        ...read('research/neural/action-diagnostic.json').assets,
+      ].map((a) => a.id),
+    });
+    for (const a of selected) {
       for (const file of a.files) auditFiles.set(file.path, file.sha256);
-      selected.delete(a.id);
     }
-    if (selected.size) throw new Error('Missing teacher optimization assets');
   }
   if (readiness) {
     await copy(readinessSource, 'readiness/model.blzn', readiness.model.sha256);

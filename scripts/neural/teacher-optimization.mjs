@@ -19,6 +19,24 @@ export const teacherOptimizationProfiles = Object.freeze([
 ]);
 export const teacherOptimizationSeeds = Object.freeze([101, 211, 307]);
 
+export function selectOptimizationAssets({ assets, trainingIds, teacherIds, auditIds }) {
+  const training = new Set(trainingIds),
+    teachers = new Set(teacherIds),
+    selected = new Set([...teachers, ...auditIds]),
+    result = [];
+  for (const asset of assets) {
+    if (!selected.has(asset.id)) continue;
+    if (asset.split !== 'development' || (teachers.has(asset.id) && !training.has(asset.id)))
+      throw new Error(
+        'Teacher fixtures require the training split; audits require development assets',
+      );
+    result.push(asset);
+    selected.delete(asset.id);
+  }
+  if (selected.size) throw new Error('Missing teacher optimization assets');
+  return result;
+}
+
 export function teacherOptimizationBudget({ states = [], rate, now = Date.now(), minutes = 140 }) {
   if (!Number.isFinite(rate) || rate <= 0 || rate > 1.1 || minutes !== 140 || !Number.isFinite(now))
     throw new Error('teacher optimization requires a bounded compatible GPU rental');

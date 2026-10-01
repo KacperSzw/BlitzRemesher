@@ -1,0 +1,904 @@
+diff --git a/src/neural/action.cpp b/src/neural/action.cpp
+index 79ebdff53d6b93e81b5e04e30b009d2470a4d60b..0aefec7289d5f0c61deb93eca34f8f514cde8d8a 100644
+--- a/src/neural/action.cpp
++++ b/src/neural/action.cpp
+@@ -1,4 +1,5 @@
+ #include "neural/action.hpp"
++#include "neural/audit_measurement.hpp"
+ #include <bit>
+ #include <numeric>
+ 
+@@ -18,7 +19,7 @@ template <class T> void unique(std::vector<T>& a) {
+ }
+ } // namespace
+ bool action_audit_known(const Measurement& m, const EvalSettings& e) {
+-    if (m.cancelled || m.resource_limited || std::isnan(m.error) || std::isnan(m.changed_area))
++    if (m.cancelled || m.resource_limited || audit_measurement_nonfinite(m))
+         return false;
+     return (m.complete && m.passed) || (m.views_evaluated && !m.passed &&
+                                         (m.error > e.limit || m.changed_area > e.max_changed_area));
+@@ -460,12 +461,16 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
+     stats = {};
+     ActionState state(input);
+     target = std::max<size_t>(1, target);
++    bool stopped = false, no_legal_actions = false;
++    auto stop = [&] { return stopped = stopped || (cancel && cancel()); };
+     while (state.view().triangles() > target && stats.trials < budget) {
+-        if (cancel && cancel())
++        if (stop())
+             break;
+         auto actions = state.actions(c);
+-        if (actions.empty())
++        if (actions.empty()) {
++            no_legal_actions = true;
+             break;
++        }
+         auto scores = rank(state, actions);
+         stats.ranked += actions.size();
+         if (scores.size() != actions.size())
+@@ -479,7 +484,7 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
+                          [&](auto a, auto b) { return scores[a] > scores[b]; });
+         bool accepted = false;
+         for (size_t position = 0; position < order.size() && stats.trials < budget && !accepted;) {
+-            if (cancel && cancel())
++            if (stop())
+                 break;
+             auto batch = state.independent(actions, std::span(order).subspan(position), batch_size,
+                                            state.view().triangles() - target);
+@@ -487,7 +492,7 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
+                 break;
+             const auto first = batch.front();
+             for (;;) {
+-                if (stats.trials == budget || (cancel && cancel()))
++                if (stats.trials == budget || stop())
+                     break;
+                 auto candidate = state.trial(batch);
+                 ++stats.trials;
+@@ -511,6 +516,11 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
+         if (!accepted)
+             break;
+     }
++    stats.stop_reason = stopped                              ? NeuralActionStop::Cancelled
++                        : state.view().triangles() <= target ? NeuralActionStop::TargetReached
++                        : stats.trials >= budget             ? NeuralActionStop::TrialBudget
++                        : no_legal_actions                   ? NeuralActionStop::NoLegalActions
++                                                             : NeuralActionStop::NoAcceptedAction;
+     return state.lod();
+ }
+ } // namespace blitz::neural
+diff --git a/src/neural/action_gpu.cu b/src/neural/action_gpu.cu
+index b473b3f9add1d0805e9ba0695ae66beb5aab9e70..ce2cf070f40e7478266e0b2a4decd835e6867e42 100644
+--- a/src/neural/action_gpu.cu
++++ b/src/neural/action_gpu.cu
+@@ -1103,7 +1103,8 @@ __global__ void precision_cap(uint32_t* bits, const uint32_t* used, uint32_t wor
+ __global__ void validate_placement(DeviceMeshView current, const State* state,
+                                    const uint32_t* remap, const uint32_t* keep,
+                                    const Vec3* positions, const Vec2* uv, uint32_t* invalid,
+-                                   bool preserve_uv) {
++                                   bool preserve_uv, const uint32_t* geometry, uint32_t* slots,
++                                   uint32_t hash_capacity) {
+     uint32_t f = blockIdx.x * blockDim.x + threadIdx.x;
+     if (f >= state->faces || !keep[f])
+         return;
+@@ -1126,6 +1127,32 @@ __global__ void validate_placement(DeviceMeshView current, const State* state,
+         if (!isfinite(y) || (fabs(x) > 1e-20 && x * y <= 0))
+             atomicExch(invalid, 1u);
+     }
++    // Geometry IDs also anchor the original attribute charts. A placement must
++    // not silently merge two of these classes: rebuilding from its snapshot
++    // would then weld them and discover a different topology. Hash only live
++    // trial vertices; discarded source IDs and existing seam wedges are valid.
++    for (auto v : next) {
++        // Fold high FP32 bits before masking: integer-grid coordinates have
++        // zero low mantissa bits and otherwise cluster in a single bucket.
++        uint32_t hash = hash_position(positions[v]);
++        hash ^= hash >> 16;
++        hash *= 0x7feb352du;
++        hash ^= hash >> 15;
++        hash *= 0x846ca68bu;
++        hash ^= hash >> 16;
++        uint32_t at = hash & (hash_capacity - 1);
++        for (;;) {
++            uint32_t old = atomicCAS(slots + at, none, v);
++            if (old == none)
++                break;
++            if (same_position(positions[v], positions[old])) {
++                if (geometry[v] != geometry[old])
++                    atomicExch(invalid, 1u);
++                break;
++            }
++            at = (at + 1) & (hash_capacity - 1);
++        }
++    }
+ }
+ __global__ void decode_placements(DeviceMeshView m, State* state, const Edit* edits,
+                                   const float* prediction, Placement* proposals,
+@@ -1466,6 +1493,23 @@ struct GpuActionState::Impl {
+             check(gpu::copy(original_indices.p, mesh.indices.p, mesh.indices.n * sizeof(uint32_t),
+                             cudaMemcpyDeviceToDevice));
+         }
++        if (mesh.precision.n) {
++            // Validate the effective initial representation too, including a
++            // resumed episode that never proposes an edit. UV welding above
++            // may change its referenced-ID denominator. Use scratch bits so
++            // validation does not modify the admitted mesh or reset snapshot.
++            precision_used.zero();
++            check(gpu::copy(trial_bits.p, mesh.precision.p, trial_bits.n * sizeof(uint32_t),
++                            cudaMemcpyDeviceToDevice));
++            precision_references<<<blocks(mesh.indices.n), 256, 0, gpu::stream()>>>(
++                mesh.indices.p, &state.p->faces, face_capacity, precision_used.p);
++            precision_cap<<<1, 256, 0, gpu::stream()>>>(
++                trial_bits.p, precision_used.p, uint32_t(trial_bits.n),
++                mesh.view.exact_position_bps, &state.p->invalid_placement);
++            read();
++            if (host.invalid_placement)
++                throw std::invalid_argument("initial mesh exceeds exact position cap");
++        }
+         seams.zero();
+         mark_seams<<<blocks(mesh.view.vertices), 256, 0, gpu::stream()>>>(mesh.view, geometry.p,
+                                                                           seams.p, preserve_uv);
+@@ -1617,9 +1661,10 @@ struct GpuActionState::Impl {
+                 canonical.p, original_offsets.p, original_faces.p, trial_positions.p,
+                 trial_normals.p, trial_uv.p, trial_colors.p, trial_tangents.p, packed_uv,
+                 &state.p->invalid_placement);
++            check(gpu::memset(slots.p, 255, slots.n * sizeof(uint32_t)));
+             validate_placement<<<blocks(face_capacity), 256, 0, gpu::stream()>>>(
+                 mesh.view, state.p, remap.p, keep.p, trial_positions.p, trial_uv.p,
+-                &state.p->invalid_placement, preserve_uv);
++                &state.p->invalid_placement, preserve_uv, geometry.p, slots.p, hash_capacity);
+         }
+         build_precision(trial_bits, &state.p->invalid_placement);
+         check(cudaGetLastError());
+@@ -2056,9 +2101,10 @@ std::vector<DeviceMeshView> GpuActionState::trial_batch(Action action,
+             p.geometry.p, p.canonical.p, p.original_offsets.p, p.original_faces.p, slot.positions.p,
+             slot.normals.p, slot.uv.p, slot.colors.p, slot.tangents.p, p.packed_uv,
+             &slot.status.p->invalid);
++        check(gpu::memset(p.slots.p, 255, p.slots.n * sizeof(uint32_t)));
+         validate_placement<<<blocks(p.face_capacity), 256, 0, gpu::stream()>>>(
+             p.mesh.view, p.state.p, p.remap.p, p.keep.p, slot.positions.p, slot.uv.p,
+-            &slot.status.p->invalid, p.preserve_uv);
++            &slot.status.p->invalid, p.preserve_uv, p.geometry.p, p.slots.p, p.hash_capacity);
+         p.build_precision(slot.bits, &slot.status.p->invalid);
+         auto view = p.mesh.view;
+         view.exact_position_bits = slot.bits.p;
+diff --git a/src/neural/audit_measurement.hpp b/src/neural/audit_measurement.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..d50d4fd849d27ea39729ac153694af0724c5b549
+--- /dev/null
++++ b/src/neural/audit_measurement.hpp
+@@ -0,0 +1,18 @@
++#pragma once
++#include <blitz/evaluate.hpp>
++#include <cmath>
++
++namespace blitz::neural {
++// A witnessed distance failure may be infinite (for example, an empty render
++// against a nonempty reference). Invalid diagnostics never establish a verdict.
++inline bool audit_measurement_nonfinite(const Measurement& m) {
++    return std::isnan(m.error) || std::isnan(m.coverage) || std::isnan(m.coverage_upper) ||
++           !std::isfinite(m.changed_area) || !std::isfinite(m.normal_degrees) ||
++           (m.passed && (!std::isfinite(m.error) || !std::isfinite(m.coverage) ||
++                         !std::isfinite(m.coverage_upper)));
++}
++inline bool audit_measurement_passed(const Measurement& m) {
++    return m.complete && m.passed && !m.cancelled && !m.resource_limited &&
++           !audit_measurement_nonfinite(m);
++}
++} // namespace blitz::neural
+diff --git a/src/neural/generate.cpp b/src/neural/generate.cpp
+index b1d28acc3a1c58b0cb8343b61b48b635de36b417..ad91bf27edf93a2462496b3032794b789aa7af93 100644
+--- a/src/neural/generate.cpp
++++ b/src/neural/generate.cpp
+@@ -2,6 +2,7 @@
+ #include "neural/action.hpp"
+ #include "neural/action_cache.hpp"
+ #include "neural/action_gpu.hpp"
++#include "neural/audit_measurement.hpp"
+ #include "neural/internal.hpp"
+ #include "neural/memory.hpp"
+ #include "neural/quantization.hpp"
+@@ -428,19 +429,13 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
+                            close(cpu.normal_degrees, gpu.normal_degrees));
+             bool stopped = output.cancelled || cpu.cancelled || gpu.cancelled ||
+                            (s.cancelled && s.cancelled());
+-            auto invalid = [](const Measurement& m) {
+-                return std::isnan(m.error) || std::isnan(m.coverage) ||
+-                       std::isnan(m.coverage_upper) || !std::isfinite(m.changed_area) ||
+-                       !std::isfinite(m.normal_degrees) ||
+-                       (m.passed && (!std::isfinite(m.error) || !std::isfinite(m.coverage) ||
+-                                     !std::isfinite(m.coverage_upper)));
+-            };
+-            bool nonfinite = invalid(output) ||
+-                             (options.confirmation == NeuralConfirmation::Compare && invalid(cpu));
++            bool nonfinite = neural::audit_measurement_nonfinite(output) ||
++                             (options.confirmation == NeuralConfirmation::Compare &&
++                              neural::audit_measurement_nonfinite(cpu));
+             bool resource =
+                 output.resource_limited ||
+                 (options.confirmation == NeuralConfirmation::Compare && cpu.resource_limited);
+-            if (!stopped && !nonfinite && agrees && output.complete && output.passed)
++            if (!stopped && !resource && !nonfinite && agrees && output.complete && output.passed)
+                 return true;
+             NeuralConfirmationReason reason;
+             if (stopped) {
+diff --git a/src/neural/teardown_trace.hpp b/src/neural/teardown_trace.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..8869c707f76da006155e6c4bf235ceae173c455c
+--- /dev/null
++++ b/src/neural/teardown_trace.hpp
+@@ -0,0 +1,60 @@
++#pragma once
++#include <cerrno>
++#include <chrono>
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++#include <functional>
++#include <thread>
++#ifdef __linux__
++#include <sys/prctl.h>
++#endif
++
++namespace blitz::neural {
++// Called only by the explicitly requested diagnostic benchmark/test entrypoints.
++// This independent opt-in lets a sibling debugger collect stacks under Yama;
++// container seccomp/capability restrictions may still reject the request.
++inline bool allow_debugger_attach() noexcept {
++    const char* enabled = std::getenv("BLITZ_ALLOW_DEBUGGER_ATTACH");
++    if (!enabled || std::strcmp(enabled, "1"))
++        return true;
++#ifdef __linux__
++    const bool permitted = prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0) == 0;
++    const int error = permitted ? 0 : errno;
++#else
++    const bool permitted = false;
++    const int error = ENOSYS;
++#endif
++    std::fprintf(stderr, "debugger_attach requested=true permitted=%s errno=%d\n",
++                 permitted ? "true" : "false", error);
++    std::fflush(stderr);
++    return permitted;
++}
++// Opt-in diagnostics only. One stderr record brackets each native teardown
++// call; no synchronization or resource lifetime changes are introduced.
++inline void teardown_trace(const char* stage, const void* owner, const char* boundary) noexcept {
++    const char* enabled = std::getenv("BLITZ_TEARDOWN_TRACE");
++    if (!enabled || !*enabled || *enabled == '0')
++        return;
++    const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
++                         std::chrono::steady_clock::now().time_since_epoch())
++                         .count();
++    std::fprintf(stderr, "teardown us=%lld thread=%zu owner=%p stage=%s %s\n",
++                 static_cast<long long>(now),
++                 std::hash<std::thread::id>{}(std::this_thread::get_id()), owner, stage, boundary);
++    std::fflush(stderr);
++}
++template <class Work>
++void teardown_call(const char* stage, const void* owner, Work&& work) noexcept {
++    teardown_trace(stage, owner, "begin");
++    work();
++    teardown_trace(stage, owner, "end");
++}
++struct TeardownEnd {
++    const char* stage;
++    const void* owner;
++    ~TeardownEnd() {
++        teardown_trace(stage, owner, "end");
++    }
++};
++} // namespace blitz::neural
+diff --git a/training/placement_teacher.hpp b/training/placement_teacher.hpp
+index 8483f587b3696348c214652ee89d5c2ed771a304..4a4eed2fd2145d9e63c06b60f513c5089687945e 100644
+--- a/training/placement_teacher.hpp
++++ b/training/placement_teacher.hpp
+@@ -7,6 +7,7 @@
+ #include "training/json.hpp"
+ #include "training/packing.hpp"
+ #include "training/teacher_labels.hpp"
++#include "training/teacher_seed.hpp"
+ #include "training/training_cache.hpp"
+ #include <iostream>
+ namespace blitz::neural::training {
+@@ -157,6 +158,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+         {"quantization", "fixed mesh bounds; grid placements"},
+         {"schema", architecture},
+         {"teacher_version", 5},
++        {"seed_admission_version", 1},
+         {"raster", raster_name(options.raster_backend)},
+         {"vertex_storage", storage_name(options.draw_storage())},
+         {"metric_kind", sparse ? "threshold bounds; exact committed states" : "exact"},
+@@ -172,6 +174,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+         {"previous_steps", previous_steps},
+         {"source_limit", source_limit},
+         {"adjacent_limit", adjacent_limit},
++        {"packing_admission_limit", std::min(source_limit, adjacent_limit)},
+         {"area_limit", e.max_changed_area},
+         {"views", {6, 2}},
+         {"view_seed", e.views.rotation_seed},
+@@ -200,7 +203,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+     auto packing_start = std::chrono::steady_clock::now();
+     auto destination = e;
+     destination.screen_size = pixels;
+-    auto baseline = repair_packing(source, options, e, repair_budget, prepared_view,
++    auto packing = teacher_packing_settings(e, adjacent.limit);
++    auto baseline = repair_packing(source, options, packing, repair_budget, prepared_view,
+                                    previous_steps ? &destination : nullptr);
+     write_json(output / "packing.json", baseline.diagnostics.is_null()
+                                             ? json{{"initial", measurement_json(baseline.initial)},
+@@ -238,8 +242,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+         write_json(output / "index.json", index);
+         return {false, std::move(data), index};
+     }
+-    // Seeds are proposals, never targets. Every seed passes the unchanged
+-    // original-source audit; a rejected seed remains visible and uses LOD0.
++    // Seeds are proposals, never targets. Every seed passes source, current
++    // adjacent and destination audits; a rejected seed visibly retains LOD0.
+     const auto seed_start = std::chrono::steady_clock::now();
+     if (!std::isfinite(retained) || retained <= 0 || retained > 1)
+         throw std::invalid_argument("episode retained fraction");
+@@ -268,14 +272,15 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+         try {
+             auto proposed = std::make_unique<GpuActionState>(candidate.view(), options, true,
+                                                              &quantization, source);
+-            auto measured = audit.evaluate(source, proposed->view(), bounds, e, &stats);
+-            auto d = previous_steps
+-                         ? audit.evaluate(source, proposed->view(), bounds, destination, &stats)
+-                         : measured;
+-            seed_result["audit"] = measurement_json(measured);
+-            seed_result["destination"] = measurement_json(d);
+-            if (measured.complete && measured.passed && d.complete && d.passed &&
+-                candidate.view().triangles() <= source.triangles()) {
++            auto measured = audit_teacher_seed(
++                e, adjacent.limit, previous_steps ? &destination : nullptr,
++                [&](const EvalSettings& settings) {
++                    return audit.evaluate(source, proposed->view(), bounds, settings, &stats);
++                });
++            seed_result["audit"] = measurement_json(measured.source);
++            seed_result["adjacent"] = measurement_json(measured.adjacent);
++            seed_result["destination"] = measurement_json(measured.destination);
++            if (measured.passed() && candidate.view().triangles() <= source.triangles()) {
+                 prepared_state = std::move(proposed);
+                 baseline.mesh = std::move(candidate);
+                 seed_result["accepted"] = true;
+@@ -300,16 +305,16 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+     if (rollout_trials) {
+         const auto rollout_start = std::chrono::steady_clock::now();
+         auto gate = [&](DeviceMeshView candidate) {
+-            auto a = audit.evaluate(source, candidate, bounds, e, &stats);
+-            auto b = e.limit == adjacent.limit
+-                         ? a
+-                         : audit.evaluate(source, candidate, bounds, adjacent, &stats);
+-            auto d =
+-                previous_steps ? audit.evaluate(source, candidate, bounds, destination, &stats) : a;
+-            if (!action_audit_known(a, e) || !action_audit_known(b, adjacent) ||
+-                !action_audit_known(d, destination))
++            auto measured = audit_teacher_seed(
++                e, adjacent.limit, previous_steps ? &destination : nullptr,
++                [&](const EvalSettings& settings) {
++                    return audit.evaluate(source, candidate, bounds, settings, &stats);
++                });
++            if (!action_audit_known(measured.source, e) ||
++                !action_audit_known(measured.adjacent, adjacent) ||
++                !action_audit_known(measured.destination, destination))
+                 unknown = true;
+-            return a.complete && a.passed && b.complete && b.passed && d.complete && d.passed;
++            return measured.passed();
+         };
+         ActionStats rollout;
+         const auto initial_faces = state.view().faces;
+@@ -703,9 +708,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+          b = !emitted && e.limit == adjacent.limit
+                  ? a
+                  : audit.evaluate(previous_view, final, bounds, adjacent, &stats);
++    const bool reference_confirmed = audit_measurement_passed(a) && audit_measurement_passed(b);
+     bool complete = !cancel() && !unknown &&
+-                    (data.states() == states + previous_steps || exhausted) && a.complete &&
+-                    a.passed && b.complete && b.passed;
++                    (data.states() == states + previous_steps || exhausted) && reference_confirmed;
+     final_audit_seconds =
+         std::chrono::duration<double>(std::chrono::steady_clock::now() - final_audit_start).count();
+     const auto output_start = std::chrono::steady_clock::now();
+@@ -755,7 +760,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
+                   {"accepted", accepted},
+                   {"source_triangles", source.triangles()},
+                   {"teacher_triangles", final.faces},
+-                  {"reference_confirmed", a.complete && a.passed && b.complete && b.passed},
++                  {"reference_confirmed", reference_confirmed},
+                   {"requested_condition_available", !previous_steps || emitted},
+                   {"preceding_lod_emitted", emitted},
+                   {"previous_triangles", previous_view.triangles()},
+diff --git a/training/teacher_seed.hpp b/training/teacher_seed.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..923649e3ebb2a88cdc6c4ea0f18fc289288e3818
+--- /dev/null
++++ b/training/teacher_seed.hpp
+@@ -0,0 +1,33 @@
++#pragma once
++#include "neural/audit_measurement.hpp"
++
++namespace blitz::neural::training {
++// Before a predecessor is emitted, both source and adjacent audits compare
++// against the original source with the same cameras and quality settings.
++inline EvalSettings teacher_packing_settings(EvalSettings source, double adjacent_limit) {
++    source.limit = std::min(source.limit, adjacent_limit);
++    return source;
++}
++struct TeacherSeedAudit {
++    Measurement source, adjacent, destination;
++    bool passed() const {
++        for (const auto* m : {&source, &adjacent, &destination})
++            if (!audit_measurement_passed(*m))
++                return false;
++        return true;
++    }
++};
++// The callback always compares the same exact working representation to the
++// original source. A loaded episode has no exemption from the current limits.
++template <class Evaluate>
++TeacherSeedAudit audit_teacher_seed(const EvalSettings& source, double adjacent_limit,
++                                    const EvalSettings* destination, Evaluate&& evaluate) {
++    TeacherSeedAudit result;
++    result.source = evaluate(source);
++    auto adjacent = source;
++    adjacent.limit = adjacent_limit;
++    result.adjacent = adjacent_limit == source.limit ? result.source : evaluate(adjacent);
++    result.destination = destination ? evaluate(*destination) : result.source;
++    return result;
++}
++} // namespace blitz::neural::training
+diff --git a/training/worker_retirement.hpp b/training/worker_retirement.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..661f77b504257f4fec5396cfbeb96e7f9f9df428
+--- /dev/null
++++ b/training/worker_retirement.hpp
+@@ -0,0 +1,81 @@
++#pragma once
++#include "neural/teardown_trace.hpp"
++#include <cassert>
++#include <condition_variable>
++#include <cstdint>
++#include <mutex>
++#include <span>
++#include <stdexcept>
++#include <thread>
++#include <vector>
++
++namespace blitz::neural::training {
++// One owner controls up to three resident workers. All workers park while their
++// native resources are still alive. Joining the permitted OS thread also waits
++// for driver thread-local cleanup, which runs after C++ resource destructors.
++// The owner must not hold the work-queue mutex while joining.
++class WorkerRetirement {
++    std::mutex mutex_;
++    std::condition_variable changed_;
++    uint8_t parked_{};
++    uint8_t permitted_{3};
++
++  public:
++    void park(uint8_t worker) {
++        assert(worker < 3);
++        teardown_trace("worker.retirement", &worker, "begin");
++        std::unique_lock lock(mutex_);
++        parked_ |= uint8_t(1u << worker);
++        changed_.notify_all();
++        changed_.wait(lock, [&] { return permitted_ == worker; });
++        teardown_trace("worker.retirement", &worker, "end");
++    }
++    // IDs are the span indices. Non-joinable entries are ignored, including on
++    // repeated shutdown. This object serves one set of threads, not a new pool.
++    void join(std::span<std::thread> threads) {
++        assert(threads.size() <= 3);
++        uint8_t pending = 0;
++        for (size_t i = 0; i < threads.size(); ++i)
++            if (threads[i].joinable())
++                pending |= uint8_t(1u << i);
++        if (!pending)
++            return;
++        {
++            std::unique_lock lock(mutex_);
++            changed_.wait(lock, [&] { return (parked_ & pending) == pending; });
++        }
++        for (uint8_t i = 0; i < threads.size(); ++i)
++            if (pending & uint8_t(1u << i)) {
++                {
++                    std::lock_guard lock(mutex_);
++                    permitted_ = i;
++                }
++                changed_.notify_all();
++                teardown_trace("worker.join", &threads[i], "begin");
++                threads[i].join();
++                teardown_trace("worker.join", &threads[i], "end");
++            }
++    }
++};
++
++// Sequential readiness matters on failure: earlier initialized workers remain
++// idle while the newest thread's partial construction unwinds. Join that failed
++// thread through TLS cleanup before the caller retires the preceding workers.
++template <class Worker, class Ready>
++void start_worker_threads(std::vector<std::thread>& threads, uint8_t count, Worker worker,
++                          Ready wait_ready) {
++    if (!threads.empty() || count < 1 || count > 3)
++        throw std::invalid_argument("teacher worker count outside 1..3 or pool already started");
++    threads.reserve(count);
++    for (uint8_t i = 0; i < count; ++i) {
++        threads.emplace_back([worker, i] { worker(i); });
++        try {
++            wait_ready();
++        } catch (...) {
++            threads.back().join();
++            threads.pop_back();
++            throw;
++        }
++    }
++}
++} // namespace blitz::neural::training
+diff --git a/training/workers.hpp b/training/workers.hpp
+index f5c332ae4c592fe6843eb470b15f2a183aa56a9d..dafba17acace3208bc97ac9ad5fa965effb9bf59 100644
+--- a/training/workers.hpp
++++ b/training/workers.hpp
+@@ -1,6 +1,7 @@
+ #pragma once
+ #include "neural/timeline.hpp"
+ #include "training/placement_teacher.hpp"
++#include "training/worker_retirement.hpp"
+ #include <condition_variable>
+ #include <deque>
+ #include <thread>
+@@ -29,15 +30,16 @@ class TeacherWorkers {
+     MemoryBudget& budget_;
+     uint32_t width_, architecture_;
+     std::vector<std::thread> threads_;
++    WorkerRetirement retirement_;
+     std::mutex mutex_;
+     std::condition_variable changed_;
+     std::deque<TeacherJob> queue_;
+     std::map<uint32_t, TeacherResult> ready_;
+     size_t in_flight_{};
+-    uint32_t ready_workers_{};
++    uint8_t ready_workers_{};
+     bool stop_{};
+     std::atomic<bool> cancelled_{};
+-    std::exception_ptr startup_error_;
++    std::exception_ptr worker_error_;
+     const float* weights_{};
+     size_t weight_count_{};
+     cudaEvent_t policy_ready_{};
+@@ -48,6 +50,14 @@ class TeacherWorkers {
+                             std::chrono::steady_clock::now() - origin_)
+                             .count());
+     }
++    void report_worker_error() {
++        {
++            std::lock_guard lock(mutex_);
++            if (!worker_error_)
++                worker_error_ = std::current_exception();
++        }
++        changed_.notify_all();
++    }
+     void worker(uint8_t worker_id) {
+         try {
+             gpu::check(cudaSetDevice(options_.device));
+@@ -65,130 +75,145 @@ class TeacherWorkers {
+             }
+             changed_.notify_all();
+             uint64_t installed = 0;
+-            for (;;) {
+-                TeacherJob job;
+-                uint64_t wave;
+-                {
+-                    std::unique_lock lock(mutex_);
+-                    changed_.wait(lock, [&] { return stop_ || !queue_.empty(); });
+-                    if (stop_)
+-                        break;
+-                    job = std::move(queue_.front());
+-                    queue_.pop_front();
+-                    wave = wave_;
+-                }
+-                Timeline range(("teacher-" + std::to_string(job.id)).c_str());
+-                TeacherResult done;
+-                done.job = job;
+-                done.worker = worker_id;
+-                done.wave = wave;
+-                done.started_ns = timestamp();
+-                auto start = std::chrono::steady_clock::now();
+-                cudaEvent_t begin{}, end{};
+-                try {
+-                    if (installed != wave) {
+-                        gpu::check(cudaStreamWaitEvent(stream.value, policy_ready_));
+-                        policy.refresh_device(weights_, weight_count_);
+-                        installed = wave;
++            try {
++                for (;;) {
++                    TeacherJob job;
++                    uint64_t wave;
++                    {
++                        std::unique_lock lock(mutex_);
++                        changed_.wait(lock, [&] { return stop_ || !queue_.empty(); });
++                        if (stop_)
++                            break;
++                        job = std::move(queue_.front());
++                        queue_.pop_front();
++                        wave = wave_;
+                     }
+-                    gpu::check(cudaEventCreate(&begin));
+-                    gpu::check(cudaEventCreate(&end));
+-                    gpu::check(cudaEventRecord(begin, stream.value));
+-                    auto cancel = job.request.cancelled;
+-                    job.request.cancelled = [&, cancel] {
+-                        return cancelled_ || (cancel && cancel());
+-                    };
+-                    bool recovered = false;
+-                    if (!job.allow_recovery && fs::exists(job.directory))
+-                        throw std::invalid_argument("fresh teacher job directory already exists");
+-                    if (fs::exists(job.directory / "index.json")) {
+-                        auto index = read_json(job.directory / "index.json"),
+-                             contract = read_json(job.directory / "contract.json");
+-                        if (index.at("complete") == true &&
+-                            index.at("reference_confirmed") == true &&
+-                            contract.at("policy_payload_sha256") == job.request.policy_sha256 &&
+-                            contract.at("seed") == job.request.seed &&
+-                            contract.at("states_requested") == job.request.states &&
+-                            contract.at("pixels") == job.request.pixels &&
+-                            contract.at("asset").at("id") == job.asset &&
+-                            contract.at("binary_sha256") == job.request.cache->binary_hash &&
+-                            contract.at("schema") == job.request.architecture &&
+-                            contract.at("source_limit") == job.request.source_limit &&
+-                            contract.at("adjacent_limit") == job.request.adjacent_limit &&
+-                            contract.at("previous_steps") == job.request.previous_steps &&
+-                            contract.at("preserve_uv") == job.request.preserve_uv &&
+-                            contract.at("policy_action_candidates") ==
+-                                job.request.policy_candidates &&
+-                            contract.at("policy_rollout_trials") ==
+-                                job.request.policy_rollout_trials &&
+-                            contract.at("previous_pixels") ==
+-                                (job.request.previous_steps
+-                                     ? (job.request.previous_pixels
+-                                            ? job.request.previous_pixels
+-                                            : std::min(512., job.request.pixels * 2))
+-                                     : job.request.pixels) &&
+-                            contract.at("pool") == job.request.pool &&
+-                            contract.at("training_profile") ==
+-                                training_profile_name(job.request.profile) &&
+-                            contract.at("episode").at("target_retained") == job.request.retained &&
+-                            contract.at("episode").at("kind") ==
+-                                (job.request.policy_rollout_trials ? "audited_policy_rollout"
+-                                 : job.request.simplifier          ? "audited_simplifier"
+-                                 : job.request.episode.empty()     ? "source"
+-                                                               : "audited_teacher_trajectory") &&
+-                            contract.at("episode").at("parent_sha256") ==
+-                                (job.request.episode.empty() ? ""
+-                                                             : file_sha256(job.request.episode))) {
+-                            if (index.at("contract_sha256") !=
+-                                    file_sha256(job.directory / "contract.json") ||
+-                                index.at("sha256") != file_sha256(job.directory / "actions.bin") ||
+-                                index.at("episode_sha256") !=
+-                                    file_sha256(job.directory / "episode.bin"))
+-                                throw std::invalid_argument(
+-                                    "completed teacher recovery payload changed");
+-                            done.result = {true, load_actions(job.directory / "actions.bin"), index,
+-                                           load_compact_actions(job.directory / "actions.bin")};
+-                            recovered = true;
++                    Timeline range(("teacher-" + std::to_string(job.id)).c_str());
++                    TeacherResult done;
++                    done.job = job;
++                    done.worker = worker_id;
++                    done.wave = wave;
++                    done.started_ns = timestamp();
++                    auto start = std::chrono::steady_clock::now();
++                    cudaEvent_t begin{}, end{};
++                    try {
++                        if (installed != wave) {
++                            gpu::check(cudaStreamWaitEvent(stream.value, policy_ready_));
++                            policy.refresh_device(weights_, weight_count_);
++                            installed = wave;
+                         }
+-                    }
+-                    if (!recovered) {
+-                        if (fs::exists(job.directory)) {
+-                            auto evidence = job.directory;
+-                            evidence +=
+-                                ".unpublished-" +
+-                                std::to_string(
+-                                    std::chrono::steady_clock::now().time_since_epoch().count());
+-                            fs::rename(job.directory, evidence);
++                        gpu::check(cudaEventCreate(&begin));
++                        gpu::check(cudaEventCreate(&end));
++                        gpu::check(cudaEventRecord(begin, stream.value));
++                        auto cancel = job.request.cancelled;
++                        job.request.cancelled = [&, cancel] {
++                            return cancelled_ || (cancel && cancel());
++                        };
++                        bool recovered = false;
++                        if (!job.allow_recovery && fs::exists(job.directory))
++                            throw std::invalid_argument(
++                                "fresh teacher job directory already exists");
++                        if (fs::exists(job.directory / "index.json")) {
++                            auto index = read_json(job.directory / "index.json"),
++                                 contract = read_json(job.directory / "contract.json");
++                            if (index.at("complete") == true &&
++                                index.at("reference_confirmed") == true &&
++                                contract.at("policy_payload_sha256") == job.request.policy_sha256 &&
++                                contract.at("seed") == job.request.seed &&
++                                contract.at("states_requested") == job.request.states &&
++                                contract.at("pixels") == job.request.pixels &&
++                                contract.at("asset").at("id") == job.asset &&
++                                contract.at("binary_sha256") == job.request.cache->binary_hash &&
++                                contract.at("schema") == job.request.architecture &&
++                                contract.at("source_limit") == job.request.source_limit &&
++                                contract.at("adjacent_limit") == job.request.adjacent_limit &&
++                                contract.at("previous_steps") == job.request.previous_steps &&
++                                contract.at("preserve_uv") == job.request.preserve_uv &&
++                                contract.at("policy_action_candidates") ==
++                                    job.request.policy_candidates &&
++                                contract.at("policy_rollout_trials") ==
++                                    job.request.policy_rollout_trials &&
++                                contract.at("previous_pixels") ==
++                                    (job.request.previous_steps
++                                         ? (job.request.previous_pixels
++                                                ? job.request.previous_pixels
++                                                : std::min(512., job.request.pixels * 2))
++                                         : job.request.pixels) &&
++                                contract.at("pool") == job.request.pool &&
++                                contract.at("training_profile") ==
++                                    training_profile_name(job.request.profile) &&
++                                contract.at("episode").at("target_retained") ==
++                                    job.request.retained &&
++                                contract.at("episode").at("kind") ==
++                                    (job.request.policy_rollout_trials ? "audited_policy_rollout"
++                                     : job.request.simplifier          ? "audited_simplifier"
++                                     : job.request.episode.empty()
++                                         ? "source"
++                                         : "audited_teacher_trajectory") &&
++                                contract.at("episode").at("parent_sha256") ==
++                                    (job.request.episode.empty()
++                                         ? ""
++                                         : file_sha256(job.request.episode))) {
++                                if (index.at("contract_sha256") !=
++                                        file_sha256(job.directory / "contract.json") ||
++                                    index.at("sha256") !=
++                                        file_sha256(job.directory / "actions.bin") ||
++                                    index.at("episode_sha256") !=
++                                        file_sha256(job.directory / "episode.bin"))
++                                    throw std::invalid_argument(
++                                        "completed teacher recovery payload changed");
++                                done.result = {true, load_actions(job.directory / "actions.bin"),
++                                               index,
++                                               load_compact_actions(job.directory / "actions.bin")};
++                                recovered = true;
++                            }
+                         }
+-                        done.result = prepare_placements(job.asset, job.directory, job.request,
+-                                                         options_, &policy);
++                        if (!recovered) {
++                            if (fs::exists(job.directory)) {
++                                auto evidence = job.directory;
++                                evidence += ".unpublished-" +
++                                            std::to_string(std::chrono::steady_clock::now()
++                                                               .time_since_epoch()
++                                                               .count());
++                                fs::rename(job.directory, evidence);
++                            }
++                            done.result = prepare_placements(job.asset, job.directory, job.request,
++                                                             options_, &policy);
++                        }
++                        done.recovered = recovered;
++                        gpu::check(cudaEventRecord(end, stream.value));
++                        gpu::check(cudaEventSynchronize(end));
++                        float ms;
++                        gpu::check(cudaEventElapsedTime(&ms, begin, end));
++                        done.device_seconds = ms / 1000.;
++                    } catch (...) {
++                        done.error = std::current_exception();
+                     }
+-                    done.recovered = recovered;
+-                    gpu::check(cudaEventRecord(end, stream.value));
+-                    gpu::check(cudaEventSynchronize(end));
+-                    float ms;
+-                    gpu::check(cudaEventElapsedTime(&ms, begin, end));
+-                    done.device_seconds = ms / 1000.;
+-                } catch (...) {
+-                    done.error = std::current_exception();
+-                }
+-                if (begin)
+-                    cudaEventDestroy(begin);
+-                if (end)
+-                    cudaEventDestroy(end);
+-                done.seconds =
+-                    std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+-                done.completed_ns = timestamp();
+-                {
+-                    std::lock_guard lock(mutex_);
+-                    ready_.emplace(job.id, std::move(done));
++                    if (begin)
++                        cudaEventDestroy(begin);
++                    if (end)
++                        cudaEventDestroy(end);
++                    done.seconds =
++                        std::chrono::duration<double>(std::chrono::steady_clock::now() - start)
++                            .count();
++                    done.completed_ns = timestamp();
++                    {
++                        std::lock_guard lock(mutex_);
++                        ready_.emplace(job.id, std::move(done));
++                    }
++                    changed_.notify_all();
+                 }
+-                changed_.notify_all();
++            } catch (...) {
++                report_worker_error();
+             }
++            try {
++                gpu::check(cudaStreamSynchronize(stream.value));
++            } catch (...) {
++                report_worker_error();
++            }
++            retirement_.park(worker_id);
+         } catch (...) {
+-            std::lock_guard lock(mutex_);
+-            startup_error_ = std::current_exception();
+-            changed_.notify_all();
++            report_worker_error();
+         }
+     }
+ 
+@@ -199,8 +224,9 @@ class TeacherWorkers {
+         if (count < 1 || count > 3)
+             throw std::invalid_argument("teacher worker count outside 1..3");
+         try {
+-            for (uint32_t i = 0; i < count; ++i)
+-                threads_.emplace_back([this, i] { worker(uint8_t(i)); });
++            start_worker_threads(
++                threads_, uint8_t(count), [this](uint8_t i) { worker(i); },
++                [this] { wait_ready(); });
+         } catch (...) {
+             shutdown();
+             throw;
+@@ -211,9 +237,9 @@ class TeacherWorkers {
+     }
+     void wait_ready() {
+         std::unique_lock lock(mutex_);
+-        changed_.wait(lock, [&] { return startup_error_ || ready_workers_ == threads_.size(); });
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        changed_.wait(lock, [&] { return worker_error_ || ready_workers_ == threads_.size(); });
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+     }
+     void shutdown() {
+         cancelled_ = true;
+@@ -223,9 +249,7 @@ class TeacherWorkers {
+             queue_.clear();
+         }
+         changed_.notify_all();
+-        for (auto& t : threads_)
+-            if (t.joinable())
+-                t.join();
++        retirement_.join(threads_);
+     }
+     void wave(const float* weights, size_t count, cudaEvent_t ready) {
+         std::lock_guard lock(mutex_);
+@@ -238,8 +262,8 @@ class TeacherWorkers {
+     }
+     void submit(TeacherJob job) {
+         std::lock_guard lock(mutex_);
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+         if (!wave_ || in_flight_ >= threads_.size() * 2)
+             throw std::length_error("teacher queue capacity");
+         ++in_flight_;
+@@ -249,9 +273,9 @@ class TeacherWorkers {
+     }
+     TeacherResult take(uint32_t id) {
+         std::unique_lock lock(mutex_);
+-        changed_.wait(lock, [&] { return startup_error_ || ready_.contains(id); });
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        changed_.wait(lock, [&] { return worker_error_ || ready_.contains(id); });
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+         auto node = ready_.extract(id);
+         node.mapped().consumed_ns = timestamp();
+         --in_flight_;

@@ -377,7 +377,11 @@ test('frozen optimization ICD choice is explicit and rejects unknown selections'
 });
 
 test('only named baseline corrections are accepted and missing provenance blocks native work', async (t) => {
-  for (const baseline_overlay of ['worker-join-v1', 'worker-join-seed-v2'])
+  for (const baseline_overlay of [
+    'worker-join-v1',
+    'worker-join-seed-v2',
+    'worker-join-correctness-v3',
+  ])
     assert.equal(
       validateOptimizationRequest({ ...request(), baseline_overlay }).baseline_overlay,
       baseline_overlay,

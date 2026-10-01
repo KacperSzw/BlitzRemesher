@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "worker-join-correctness-v3",
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "original_tree": "dc3fa2f6f40b499663ab3fe11a2ab32e4d29a813",
+  "modified_tree": "8806fa1dbf0f2ac5368edc215ecf2ba2a45157d0",
+  "patch_sha256": "26662e02123da6708f905c1ba8aeb51397d5c0234e93febe0b9c186784c14cb8",
+  "files": [
+    {
+      "path": "src/neural/action.cpp",
+      "before_sha256": "999611adff5713c33dd2dce9a20d39a876b7838542a77ca4804cd0a8f587e0d8",
+      "after_sha256": "22334043c50a39918cb3662ff2da3a8cc32c91df6df88d8c4873b70d3bdc6e38"
+    },
+    {
+      "path": "src/neural/action_gpu.cu",
+      "before_sha256": "b5652019ef0754285e548afa92aabad1effb58b684391c743f9f96d27834ba30",
+      "after_sha256": "7346d883518d6aa8a3ce2bc1dc32911986ac81c002273300220b40a42939a280"
+    },
+    {
+      "path": "src/neural/audit_measurement.hpp",
+      "before_sha256": null,
+      "after_sha256": "f0817aa51db77e845c9956520a13db369e4db6c5bdeaa24fd688753a54d0d210"
+    },
+    {
+      "path": "src/neural/generate.cpp",
+      "before_sha256": "8a5549c77b57115eb762df96a450e80348b5891ed27f722208ca63f2f3d7c5fe",
+      "after_sha256": "7a4a1b726ab7089be1e264fd2527c7bbee31616499973e116bccfdbef7498ab1"
+    },
+    {
+      "path": "src/neural/teardown_trace.hpp",
+      "before_sha256": null,
+      "after_sha256": "fd2e3f81e015ca10fa7c4268c82a3ab76b5c103fd1be13310ac4d5065a9199f0"
+    },
+    {
+      "path": "training/placement_teacher.hpp",
+      "before_sha256": "663e8055fd1415bf95ce66a22345f56f88bd73ef047a92c19d444db97f3e7fa4",
+      "after_sha256": "919284156dafcdcd21409901e28776e9d1468bfd0965bb7a1b32cb3bdda8ce01"
+    },
+    {
+      "path": "training/teacher_seed.hpp",
+      "before_sha256": null,
+      "after_sha256": "d30edccd46cc36091ec1afc49608b3c26bd192c8097b57472366cc63b72a4c35"
+    },
+    {
+      "path": "training/worker_retirement.hpp",
+      "before_sha256": null,
+      "after_sha256": "8669dc640830061a960dbbb27536b8c3954f02ef3747accfd600d9741eb08174"
+    },
+    {
+      "path": "training/workers.hpp",
+      "before_sha256": "2626881c7cc25a482fc16ede72a918f7e2b6530380ea366f3ae11ce81ad8ed92",
+      "after_sha256": "3857aff573143bb377aed5361fcec34fe82007b89bc98b50edd6f6d34773adb5"
+    }
+  ]
+}

@@ -27,8 +27,13 @@ function fixture(t, overlay = 'worker-join-v1') {
   fs.mkdirSync(checkout);
   git(checkout, 'init');
   const original = { 'training/workers.hpp': 'original teacher body\n' };
-  if (overlay === 'worker-join-seed-v2')
+  if (overlay !== 'worker-join-v1')
     original['training/placement_teacher.hpp'] = 'original seed admission\n';
+  if (overlay === 'worker-join-correctness-v3') {
+    original['src/neural/action.cpp'] = 'original action executor and audit predicate\n';
+    original['src/neural/action_gpu.cu'] = 'original GPU placement admission\n';
+    original['src/neural/generate.cpp'] = 'original final confirmation\n';
+  }
   for (const [file, data] of Object.entries(original)) write(checkout + '/' + file, data);
   write(checkout + '/unrelated.txt', 'unchanged\n');
   git(checkout, 'add', '.');
@@ -49,9 +54,15 @@ function fixture(t, overlay = 'worker-join-v1') {
     'training/worker_retirement.hpp': 'shared retirement helper\n',
     'src/neural/teardown_trace.hpp': 'shared trace helper\n',
   };
-  if (overlay === 'worker-join-seed-v2') {
+  if (overlay !== 'worker-join-v1') {
     contents['training/placement_teacher.hpp'] = 'corrected seed admission\n';
     contents['training/teacher_seed.hpp'] = 'shared source adjacent destination admission\n';
+  }
+  if (overlay === 'worker-join-correctness-v3') {
+    contents['src/neural/action.cpp'] = 'corrected action executor and audit predicate\n';
+    contents['src/neural/action_gpu.cu'] = 'corrected GPU placement admission\n';
+    contents['src/neural/generate.cpp'] = 'corrected final confirmation\n';
+    contents['src/neural/audit_measurement.hpp'] = 'shared measurement validity predicate\n';
   }
   for (const [file, data] of Object.entries(contents)) {
     write(checkout + '/' + file, data);
@@ -135,7 +146,7 @@ test('unmodified baseline remains explicitly separate from a requested overlay',
   );
 });
 
-for (const overlay of ['worker-join-v1', 'worker-join-seed-v2'])
+for (const overlay of ['worker-join-v1', 'worker-join-seed-v2', 'worker-join-correctness-v3'])
   for (const failure of [
     'dirty',
     'source-revision',
@@ -253,6 +264,57 @@ test('seed gate mismatch and renamed lifecycle-only definitions cannot provision
   assert.throws(() => prepareBaselineOverlay(renamed), /Invalid fixed baseline/);
   assert.equal(git(renamed.checkout, 'status', '--porcelain'), '');
   assert.equal(fs.existsSync(renamed.output), false);
+});
+
+test('native-correctness overlay preserves serial implementation freedom but pins all shared predicates', (t) => {
+  const f = fixture(t, 'worker-join-correctness-v3');
+  for (const file of [
+    'training/placement_teacher.hpp',
+    'src/neural/action.cpp',
+    'src/neural/action_gpu.cu',
+    'src/neural/generate.cpp',
+  ])
+    write(
+      f.candidateRoot + '/' + file,
+      'optimized implementation with the same correctness contract\n',
+    );
+  const prepared = prepareBaselineOverlay(f);
+  assert.equal(prepared.overlay.id, 'worker-join-correctness-v3');
+  assert.match(prepared.label, /join-retirement and native-correctness overlay/);
+  assert.equal(prepared.overlay.files.length, 9);
+  const binary = f.root + '/binary';
+  fs.writeFileSync(binary, 'corrected historical serial baseline');
+  recordBaselineBinary(f.output, binary);
+  for (const file of [
+    'src/neural/audit_measurement.hpp',
+    'src/neural/teardown_trace.hpp',
+    'training/teacher_seed.hpp',
+    'training/worker_retirement.hpp',
+  ]) {
+    const target = f.candidateRoot + '/' + file;
+    const original = fs.readFileSync(target);
+    assert.equal(
+      verifyBaselineBuild({ ...f, evidenceFile: f.output, binary }).effective_tree,
+      f.definition.modified_tree,
+    );
+    fs.appendFileSync(target, 'different correctness contract\n');
+    assert.throws(
+      () => verifyBaselineBuild({ ...f, evidenceFile: f.output, binary }),
+      /shared header mismatch/,
+      file,
+    );
+    fs.writeFileSync(target, original);
+  }
+});
+
+test('legacy seed overlay cannot be renamed into the complete native-correctness allowlist', (t) => {
+  const f = fixture(t, 'worker-join-seed-v2');
+  f.request.baseline_overlay = 'worker-join-correctness-v3';
+  f.definition.id = 'worker-join-correctness-v3';
+  json(f.definitionPath, f.definition);
+  assert.throws(() => prepareBaselineOverlay(f), /Invalid fixed baseline/);
+  assert.equal(git(f.checkout, 'status', '--porcelain'), '');
+  assert.equal(fs.existsSync(f.output), false);
 });
 
 test('unknown overlay identifiers cannot select arbitrary definition files', (t) => {

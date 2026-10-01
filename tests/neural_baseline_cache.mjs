@@ -200,6 +200,29 @@ test('fresh source, indexed overlay and requested revision must agree independen
   }
 });
 
+test('a correctly restaged source correction cold-misses the old executable before environment inspection', async () => {
+  const f = fixture();
+  try {
+    await exportBaselineCache(f.options);
+    fs.writeFileSync(path.join(f.options.checkout, 'source.cpp'), 'int main(){return 2;}\n');
+    f.git('add', 'source.cpp');
+    const corrected = { ...f.proof, effective_tree: f.git('write-tree') };
+    assert.notEqual(corrected.effective_tree, f.proof.effective_tree);
+    write(f.options.evidenceFile, corrected);
+    const result = await restoreBaselineCache({
+      ...f.options,
+      inspect: async () => assert.fail('old source reached environment inspection'),
+    });
+    assert.equal(result.status, 'miss');
+    assert.match(result.reason, /Baseline source or overlay changed/);
+    assert.match(result.fallback, /build baseline/);
+    assert.deepEqual(fs.readFileSync(f.binary), f.original);
+    assert.deepEqual(read(f.options.evidenceFile), corrected);
+  } finally {
+    f.cleanup();
+  }
+});
+
 test('corruption and malformed paths produce visible build fallbacks with no partial restore', async () => {
   for (const change of [
     'missing',

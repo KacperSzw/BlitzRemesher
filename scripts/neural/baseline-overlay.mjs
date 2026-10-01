@@ -30,6 +30,24 @@ const overlays = {
     ],
     label: 'join-retirement and seed-admission overlay',
   },
+  'worker-join-correctness-v3': {
+    files: [
+      ...retirementFiles,
+      'src/neural/action.cpp',
+      'src/neural/action_gpu.cu',
+      'src/neural/audit_measurement.hpp',
+      'src/neural/generate.cpp',
+      'training/placement_teacher.hpp',
+      'training/teacher_seed.hpp',
+    ].sort(),
+    shared: [
+      'src/neural/audit_measurement.hpp',
+      'src/neural/teardown_trace.hpp',
+      'training/worker_retirement.hpp',
+      'training/teacher_seed.hpp',
+    ],
+    label: 'join-retirement and native-correctness overlay',
+  },
 };
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (file) => hash(fs.readFileSync(file));

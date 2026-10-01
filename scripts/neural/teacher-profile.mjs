@@ -65,6 +65,75 @@ function normalizedTeacherContract(contract, request) {
   return normalized;
 }
 
+export function validateRolloutOutcome(index, condition) {
+  const policy = index.seed?.policy,
+    outcome = policy?.outcome;
+  if (outcome === undefined) return;
+  const count = (value) => Number.isSafeInteger(value) && value >= 0;
+  const reasons = [
+    'target_reached',
+    'trial_budget',
+    'no_legal_actions',
+    'no_accepted_action',
+    'cancelled',
+  ];
+  if (
+    !outcome ||
+    !isDeepStrictEqual(Object.keys(outcome).sort(), [
+      'stop_reason',
+      'target_reached',
+      'target_triangles',
+      'version',
+    ]) ||
+    outcome.version !== 1 ||
+    !reasons.includes(outcome.stop_reason) ||
+    !count(index.source_triangles) ||
+    index.source_triangles === 0 ||
+    !Number.isFinite(condition.retained) ||
+    condition.retained <= 0 ||
+    condition.retained > 1 ||
+    !count(condition.policy_rollout_trials) ||
+    condition.policy_rollout_trials === 0 ||
+    index.seed.requested?.target_retained !== condition.retained ||
+    !count(policy.final_triangles) ||
+    policy.final_triangles === 0 ||
+    !count(policy.trials) ||
+    policy.trials > condition.policy_rollout_trials ||
+    typeof policy.complete !== 'boolean' ||
+    outcome.target_triangles !==
+      Math.max(1, Math.floor(index.source_triangles * condition.retained)) ||
+    outcome.target_reached !== policy.final_triangles <= outcome.target_triangles
+  )
+    throw new Error('invalid policy rollout outcome relationships');
+  if (
+    (outcome.stop_reason === 'cancelled' && policy.complete) ||
+    (outcome.stop_reason !== 'cancelled' &&
+      outcome.target_reached !== (outcome.stop_reason === 'target_reached')) ||
+    (outcome.stop_reason === 'trial_budget' && policy.trials !== condition.policy_rollout_trials) ||
+    (['no_legal_actions', 'no_accepted_action'].includes(outcome.stop_reason) &&
+      policy.trials >= condition.policy_rollout_trials)
+  )
+    throw new Error('inconsistent policy rollout stop reason');
+}
+
+function compatibleParity(baseline, optimized) {
+  // This additive diagnostic did not exist in the frozen baseline. Validation
+  // above checks its relationships; every pre-existing seed field remains strict.
+  const compatible = optimized.map((output, i) => {
+    if (
+      baseline[i]?.semantics.seed?.policy?.outcome !== undefined ||
+      output.semantics.seed?.policy?.outcome === undefined
+    )
+      return output;
+    const { outcome, ...policy } = output.semantics.seed.policy;
+    return {
+      ...output,
+      semantics: { ...output.semantics, seed: { ...output.semantics.seed, policy } },
+    };
+  });
+  return isDeepStrictEqual(baseline, compatible);
+}
+
 function parityTrajectory(folder) {
   const trajectory = read(path.join(folder, 'trajectory.json'));
   if (
@@ -287,6 +356,7 @@ export function validateTeacherRun(directory, request, binarySha256, comparison 
     )
       throw new Error('requested teacher condition was not exercised');
     const normalizedContract = normalizedTeacherContract(contract, request);
+    validateRolloutOutcome(index, c);
     outputs.push({
       phase: row.phase,
       condition,
@@ -528,10 +598,16 @@ export async function runTeacherProfile({
         if (verified.report.request_sha256 !== requestHashes[variant])
           throw new Error('resident request checksum mismatch');
         row.result = verified.report;
-        const key = comparison === 'strategy' ? variant : 'parity';
-        if (references[key] && !isDeepStrictEqual(verified.outputs, references[key]))
+        if (references[variant] && !isDeepStrictEqual(verified.outputs, references[variant]))
           throw new Error('teacher payload, episode or semantic outcomes differ');
-        references[key] ??= verified.outputs;
+        references[variant] ??= verified.outputs;
+        if (
+          comparison === 'parity' &&
+          references.baseline &&
+          references.optimized &&
+          !compatibleParity(references.baseline, references.optimized)
+        )
+          throw new Error('teacher payload, episode or semantic outcomes differ');
         if (comparison === 'strategy') {
           row.artifacts = verified.outputs;
           if (references.baseline && references.optimized) {

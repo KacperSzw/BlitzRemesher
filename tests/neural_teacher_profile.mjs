@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { runTeacherProfile } from '../scripts/neural/teacher-profile.mjs';
+import { runTeacherProfile, validateRolloutOutcome } from '../scripts/neural/teacher-profile.mjs';
 const hash = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value));
 function fixture() {
@@ -83,7 +83,7 @@ function fixture() {
   write(planPath, plan);
   return { root, binary, model, source, plan, planPath };
 }
-function nativeArtifacts(binary, args, changed = '', version = 5) {
+function nativeArtifacts(binary, args, changed = '', version = 5, amendIndex) {
   assert.equal(args[0], '--jobs');
   const request = JSON.parse(fs.readFileSync(args[1])),
     output = args[2];
@@ -171,7 +171,20 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
       source_audit: audit,
       adjacent_audit: audit,
       baseline: audit,
-      seed: { accepted: c.policy_rollout_trials > 0 },
+      seed: {
+        accepted: c.policy_rollout_trials > 0,
+        ...(c.policy_rollout_trials
+          ? {
+              requested: { kind: 'audited_policy_rollout', target_retained: c.retained },
+              policy: {
+                initial_triangles: 100,
+                final_triangles: 98,
+                trials: c.policy_rollout_trials,
+                complete: true,
+              },
+            }
+          : {}),
+      },
       timing_version: 2,
       seconds: 0.12,
       total_wall_seconds: 0.13,
@@ -188,6 +201,7 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
       --index.accepted;
       index.status = 'search_exhausted';
     }
+    amendIndex?.(index, c);
     write(folder + '/index.json', index);
     const trajectory = [
       {
@@ -470,6 +484,106 @@ test('resident parity permits only the documented exhaustive v5 to v6 contract t
       assert.equal(r.complete, !failure);
       assert.equal(r.speedup, failure ? null : 1);
       assert.equal(calls, failure ? 2 : 4);
+    } finally {
+      fs.rmSync(f.root, { recursive: true, force: true });
+    }
+  }
+});
+
+test('rollout outcomes validate target rounding, execution status and stop precedence independently', () => {
+  const make = (source, retained, final, trials, stop, complete = true) => ({
+    source_triangles: source,
+    seed: {
+      requested: { target_retained: retained },
+      policy: {
+        final_triangles: final,
+        trials,
+        complete,
+        outcome: {
+          version: 1,
+          stop_reason: stop,
+          target_triangles: Math.max(1, Math.floor(source * retained)),
+          target_reached: final <= Math.max(1, Math.floor(source * retained)),
+        },
+      },
+    },
+  });
+  for (const [source, retained, final, trials, stop, complete] of [
+    [101, 0.75, 98, 64, 'trial_budget', true],
+    [3, 0.5, 1, 2, 'target_reached', true],
+    [1, 0.1, 1, 0, 'target_reached', false], // A later cancellation does not rewrite execute's outcome.
+    [100, 0.5, 90, 0, 'no_legal_actions', true],
+    [100, 0.5, 90, 7, 'no_accepted_action', true],
+    [100, 0.5, 40, 64, 'cancelled', false], // Cancellation has priority over attainment.
+  ])
+    assert.doesNotThrow(() =>
+      validateRolloutOutcome(make(source, retained, final, trials, stop, complete), {
+        retained,
+        policy_rollout_trials: 64,
+      }),
+    );
+  for (const change of [
+    (i) => i.seed.policy.outcome.target_triangles++,
+    (i) => (i.seed.policy.outcome.target_reached = true),
+    (i) => (i.seed.policy.outcome.stop_reason = 'target_reached'),
+    (i) => (i.seed.policy.outcome.stop_reason = 'no_legal_actions'),
+    (i) => (i.seed.policy.outcome.stop_reason = 'cancelled'),
+    (i) => (i.seed.policy.outcome.stop_reason = 'resource_limit'),
+    (i) => (i.seed.policy.outcome.version = 2),
+    (i) => (i.seed.policy.outcome.unrecognized = true),
+    (i) => (i.seed.policy.trials = 63),
+    (i) => (i.seed.requested.target_retained = 0.5),
+  ]) {
+    const index = make(101, 0.75, 98, 64, 'trial_budget');
+    change(index);
+    assert.throws(
+      () => validateRolloutOutcome(index, { retained: 0.75, policy_rollout_trials: 64 }),
+      /rollout/,
+    );
+  }
+});
+
+test('rollout metadata is compatible only after validation and remains strict across repeats', async () => {
+  for (const failure of ['', 'target', 'legacy_field', 'repeat_missing', 'repeat_changed']) {
+    const f = fixture();
+    let calls = 0;
+    try {
+      const result = await runTeacherProfile({
+        baseline: f.binary,
+        optimized: f.binary,
+        model: f.model,
+        directory: f.root + '/out',
+        plan: f.planPath,
+        deadline: Date.now() + 200000,
+        execute: async (binary, args) => {
+          ++calls;
+          const optimized = calls === 2 || calls === 3;
+          nativeArtifacts(binary, args, '', optimized ? 6 : 5, (index, condition) => {
+            if (!index.seed.policy) return;
+            // Two valid exhaustion reasons allow the repeat test to fail for
+            // changed evidence, rather than failing relationship validation.
+            index.seed.policy.trials = 7;
+            if (!optimized || (failure === 'repeat_missing' && calls === 3)) return;
+            index.seed.policy.outcome = {
+              version: 1,
+              stop_reason:
+                failure === 'repeat_changed' && calls === 3
+                  ? 'no_accepted_action'
+                  : 'no_legal_actions',
+              target_triangles: Math.floor(index.source_triangles * condition.retained),
+              target_reached: false,
+            };
+            if (failure === 'target') index.seed.policy.outcome.target_triangles++;
+            if (failure === 'legacy_field') index.seed.policy.final_triangles--;
+          });
+          return { code: 0, signal: null, success: true };
+        },
+      });
+      assert.equal(result.complete, !failure, result.error);
+      assert.equal(result.speedup, failure ? null : 1);
+      assert.equal(calls, !failure ? 4 : failure.startsWith('repeat') ? 3 : 2);
+      if (!failure)
+        assert.equal(result.rows[1].result.jobs.at(-1).index.seed.policy.outcome.version, 1);
     } finally {
       fs.rmSync(f.root, { recursive: true, force: true });
     }

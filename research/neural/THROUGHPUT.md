@@ -407,3 +407,29 @@ round trips. Focused CTest and ASan/UBSan checks pass. The saved failure still
 produces identical labels and episodes across 1/4/8 lanes after this change.
 These host checks run during cache I/O, not as new kernels in the update loop.
 Additional raw evidence is in `evidence/packed-domain-local/neighbors`.
+
+The second remote gate (`runpod-packed-validation-02`, `b36f396`) passed on an
+L40S with driver 580.126.20: 32/32 CTest in 62.72 seconds, 16,384 continuation
+updates, zero action/Vulkan Compute Sanitizer errors, validation layers, and the
+saved failure at 1/4/8 lanes with identical labels and episodes. Eager-loading
+Vulkan instrumentation took 4.630 seconds. This was also a different provider
+and driver from the stalled attempt, so it does not isolate the stall's cause.
+
+Its adaptive soak completed the full 1,200-second learning window, producing
+240,512 updates and 30,006 fresh states and reaching condition 1,952 (beyond the
+former failure at 1,394). Failed conditions and coverage-quality failures are
+zero; the final coverage and optional attribute diagnostics completed. There
+were 73 valid empty conditions, and the next teacher shard was interrupted at
+the requested duration boundary. These remain visible in the report. Average
+throughput was 200.43 updates and 25.01 fresh states per learning second. The
+optimizer calls totaled 31.408 seconds; this is not a GPU timeline attribution
+of the concurrent pipeline. Source/reference limits remain unchanged, and the
+soak has no release-quality score.
+
+The 1.479 GB result archive and final checkpoint checksum were verified locally;
+compute and volume were deleted. The conservative rental cost was $0.718.
+`evidence/packed-domain-remote-02` contains the outcome, complete compressed
+report, CTest and memory-check logs. The two-hour retry bundle
+`runpod-expanded-pretraining-05` contains follow-up fixes at `716bb7c`; its
+startup repeats the remote contracts and full prepared-corpus/model preflight.
+At 07:28 UTC the retry is awaiting L40S capacity, with no new rental created.

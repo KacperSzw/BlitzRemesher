@@ -1,0 +1,123 @@
+{
+  "complete": true,
+  "ready_for_two_hour_retry": true,
+  "score": null,
+  "release_quality_proven": false,
+  "revision": "b36f396022a60346a2412fa8c20ed80e4fabf510",
+  "run_directory": "runs/neural/runpod-packed-validation-02",
+  "device": {
+    "name": "NVIDIA L40S",
+    "compute_capability": "8.9",
+    "memory_mib": 46068,
+    "driver": "580.126.20"
+  },
+  "collection": {
+    "verified": true,
+    "sha256": "5aa102cd6200e49802de0cb4ae6e3b0a8c730b9a7ce0588fca4bb1cd0b96e673",
+    "at": 1790839361319
+  },
+  "checkpoint": {
+    "step": 240512,
+    "fresh_states": 30006,
+    "next_condition": 1952,
+    "sha256": "1c82cfc95664e7cda70d5c0d5e969edca9e51f43dab1acd104e50131bf55e32b",
+    "verified": true
+  },
+  "soak": {
+    "learning_seconds": 1200,
+    "process_seconds": 1221.975150268,
+    "failed_conditions": 0,
+    "coverage_quality_failed": false,
+    "quality_failed": false,
+    "empty_conditions": 73,
+    "duration_interrupted_teacher": "shard-1952",
+    "updates_per_second": 200.42666666666668,
+    "fresh_states_per_second": 25.005
+  },
+  "phases": [
+    {
+      "log": "cancellation.log",
+      "seconds": 1.072,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "replay.log",
+      "seconds": 17.985,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "action-memcheck.log",
+      "seconds": 18.462,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "vulkan-memcheck.log",
+      "seconds": 4.63,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "vulkan-validation.log",
+      "seconds": 43.691,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "packed-replay-1.log",
+      "seconds": 1.539,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "packed-replay-4.log",
+      "seconds": 1.31,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "packed-replay-8.log",
+      "seconds": 1.361,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    {
+      "log": "packed-soak.log",
+      "seconds": 1223.603,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    }
+  ],
+  "compute_terminated": true,
+  "volume_deleted": true,
+  "conservative_cost_usd": 0.7179190166666667
+}

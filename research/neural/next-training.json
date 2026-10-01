@@ -1,7 +1,7 @@
 {
   "version": 1,
   "launch": true,
-  "readiness": "local regressions, CTest and sanitizer checks passed; remote saved-policy replay and 20-minute soak required before retry",
+  "readiness": "L40S replay, memory checks and 20-minute adaptive soak passed; local follow-up cache/process regressions passed; retry prepared and awaiting L40S availability",
   "duration_minutes": 120,
   "finalize_minutes": 10,
   "corpus": "research/neural/corpus-v2/corpus.json",
@@ -52,5 +52,8 @@
   "previous_run": "runs/neural/runpod-expanded-pretraining-02",
   "previous_outcome": "research/neural/evidence/packed-domain-failure/outcome.json",
   "packed_domain_gate": true,
-  "packed_domain_local_evidence": "research/neural/evidence/packed-domain-local"
+  "packed_domain_local_evidence": "research/neural/evidence/packed-domain-local",
+  "packed_domain_remote_evidence": "research/neural/evidence/packed-domain-remote-02",
+  "pending_run": "runs/neural/runpod-expanded-pretraining-05",
+  "prepared_revision": "716bb7c491ce232a51b9e1a6f3cfa4fc6fea52f1"
 }

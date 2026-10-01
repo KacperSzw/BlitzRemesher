@@ -5,6 +5,7 @@
 #include "neural/teardown_trace.hpp"
 #include "neural/vulkan.hpp"
 #include "neural/vulkan_cuda.hpp"
+#include "training/worker_retirement.hpp"
 #include <barrier>
 #include <future>
 #include <iostream>
@@ -469,7 +470,8 @@ static void mask_memory_contracts() {
 // Diagnostic-only stress: retain worker Vulkan sessions across geometry and
 // target churn, then make both workers begin normal resource destruction at the
 // same barrier. No action topology workspace or full corpus mesh is required.
-static void teardown_contracts(bool serial) {
+enum class Retirement { Concurrent, DestroySerial, JoinSerial };
+static void teardown_contracts(Retirement mode) {
     NeuralOptions options;
     options.memory_mib = 768;
     options.raster_backend = NeuralRasterBackend::Vulkan;
@@ -480,6 +482,8 @@ static void teardown_contracts(bool serial) {
     std::mutex retirement;
     for (uint32_t round = 0; round < 12; ++round) {
         std::barrier quiesced(2);
+        training::WorkerRetirement joined_retirement;
+        std::array<bool, 2> parked{};
         auto worker = [&](uint32_t id) {
             struct Arrival {
                 std::barrier<>& barrier;
@@ -573,14 +577,45 @@ static void teardown_contracts(bool serial) {
             quiesced.arrive_and_wait();
             teardown_trace("fixture.worker.quiesced", &id, "end");
             arrival.arrived = true;
-            if (serial)
+            if (mode == Retirement::DestroySerial)
                 retire.lock();
+            if (mode == Retirement::JoinSerial) {
+                parked[id] = true;
+                joined_retirement.park(uint8_t(id));
+            }
             teardown_trace("fixture.worker.resources", &id, "begin");
         };
-        auto first = std::async(std::launch::async, worker, 0),
-             second = std::async(std::launch::async, worker, 1);
-        first.get();
-        second.get();
+        if (mode == Retirement::JoinSerial) {
+            std::array<std::exception_ptr, 2> failures;
+            std::array<std::thread, 2> threads;
+            uint32_t created = 0;
+            try {
+                for (; created < threads.size(); ++created)
+                    threads[created] = std::thread([&, id = created] {
+                        try {
+                            worker(id);
+                        } catch (...) {
+                            failures[id] = std::current_exception();
+                            if (!parked[id])
+                                joined_retirement.park(uint8_t(id));
+                        }
+                    });
+            } catch (...) {
+                for (auto missing = created; missing < threads.size(); ++missing)
+                    quiesced.arrive_and_drop();
+                joined_retirement.join(threads);
+                throw;
+            }
+            joined_retirement.join(threads);
+            for (auto failure : failures)
+                if (failure)
+                    std::rethrow_exception(failure);
+        } else {
+            auto first = std::async(std::launch::async, worker, 0),
+                 second = std::async(std::launch::async, worker, 1);
+            first.get();
+            second.get();
+        }
         require(shared.live == 0 && shared.peak > 0 && shared.peak <= shared.limit,
                 "teardown fixture leaked or exceeded shared budget");
         std::cout << "teardown round " << round << " passed, peak=" << shared.peak.load()
@@ -593,13 +628,17 @@ int main(int argc, char** argv) {
         bool memory_boundaries = argc == 2 && std::string_view(argv[1]) == "--memcheck";
         bool teardown = argc == 2 && std::string_view(argv[1]) == "--teardown";
         bool serial_teardown = argc == 2 && std::string_view(argv[1]) == "--teardown-serial";
-        if (argc != 1 && !memory_boundaries && !teardown && !serial_teardown)
-            throw std::invalid_argument("expected --memcheck, --teardown or --teardown-serial");
+        bool joined_teardown = argc == 2 && std::string_view(argv[1]) == "--teardown-join";
+        if (argc != 1 && !memory_boundaries && !teardown && !serial_teardown && !joined_teardown)
+            throw std::invalid_argument(
+                "expected --memcheck, --teardown, --teardown-serial or --teardown-join");
         if (!neural_available())
             return 77;
-        if (teardown || serial_teardown) {
+        if (teardown || serial_teardown || joined_teardown) {
             require(allow_debugger_attach(), "explicit debugger attach request was rejected");
-            teardown_contracts(serial_teardown);
+            teardown_contracts(joined_teardown   ? Retirement::JoinSerial
+                               : serial_teardown ? Retirement::DestroySerial
+                                                 : Retirement::Concurrent);
             return 0;
         }
         NeuralOptions options;

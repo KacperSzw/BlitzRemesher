@@ -8,6 +8,7 @@
 #include "training/packing.hpp"
 #include "training/teacher_cancellation.hpp"
 #include "training/teacher_labels.hpp"
+#include "training/teacher_seed.hpp"
 #include "training/teacher_strategy.hpp"
 #include "training/training_cache.hpp"
 #include <iostream>
@@ -168,6 +169,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         {"quantization", "fixed mesh bounds; grid placements"},
         {"schema", architecture},
         {"teacher_version", 6},
+        {"seed_admission_version", 1},
         {"teacher_strategy", teacher_strategy_name(strategy)},
         {"raster", raster_name(options.raster_backend)},
         {"vertex_storage", storage_name(options.draw_storage())},
@@ -184,6 +186,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         {"previous_steps", previous_steps},
         {"source_limit", source_limit},
         {"adjacent_limit", adjacent_limit},
+        {"packing_admission_limit", std::min(source_limit, adjacent_limit)},
         {"area_limit", e.max_changed_area},
         {"views", {6, 2}},
         {"view_seed", e.views.rotation_seed},
@@ -212,7 +215,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     auto packing_start = std::chrono::steady_clock::now();
     auto destination = e;
     destination.screen_size = pixels;
-    auto baseline = repair_packing(source, options, e, repair_budget, prepared_view,
+    auto packing = teacher_packing_settings(e, adjacent.limit);
+    auto baseline = repair_packing(source, options, packing, repair_budget, prepared_view,
                                    previous_steps ? &destination : nullptr);
     write_json(output / "packing.json", baseline.diagnostics.is_null()
                                             ? json{{"initial", measurement_json(baseline.initial)},
@@ -250,8 +254,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         write_json(output / "index.json", index);
         return {false, std::move(data), index};
     }
-    // Seeds are proposals, never targets. Every seed passes the unchanged
-    // original-source audit; a rejected seed remains visible and uses LOD0.
+    // Seeds are proposals, never targets. Every seed passes source, current
+    // adjacent and destination audits; a rejected seed visibly retains LOD0.
     const auto seed_start = std::chrono::steady_clock::now();
     if (!std::isfinite(retained) || retained <= 0 || retained > 1)
         throw std::invalid_argument("episode retained fraction");
@@ -280,14 +284,15 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         try {
             auto proposed = std::make_unique<GpuActionState>(candidate.view(), options, true,
                                                              &quantization, source);
-            auto measured = audit.evaluate(source, proposed->view(), bounds, e, &stats);
-            auto d = previous_steps
-                         ? audit.evaluate(source, proposed->view(), bounds, destination, &stats)
-                         : measured;
-            seed_result["audit"] = measurement_json(measured);
-            seed_result["destination"] = measurement_json(d);
-            if (measured.complete && measured.passed && d.complete && d.passed &&
-                candidate.view().triangles() <= source.triangles()) {
+            auto measured = audit_teacher_seed(
+                e, adjacent.limit, previous_steps ? &destination : nullptr,
+                [&](const EvalSettings& settings) {
+                    return audit.evaluate(source, proposed->view(), bounds, settings, &stats);
+                });
+            seed_result["audit"] = measurement_json(measured.source);
+            seed_result["adjacent"] = measurement_json(measured.adjacent);
+            seed_result["destination"] = measurement_json(measured.destination);
+            if (measured.passed() && candidate.view().triangles() <= source.triangles()) {
                 prepared_state = std::move(proposed);
                 baseline.mesh = std::move(candidate);
                 seed_result["accepted"] = true;
@@ -312,19 +317,19 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     if (rollout_trials) {
         const auto rollout_start = std::chrono::steady_clock::now();
         auto gate = [&](DeviceMeshView candidate) {
-            Measurement a, b, d;
+            TeacherSeedAudit measured;
             audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
-                a = audit.evaluate(source, candidate, bounds, e, &stats);
-                b = e.limit == adjacent.limit
-                        ? a
-                        : audit.evaluate(source, candidate, bounds, adjacent, &stats);
-                d = previous_steps ? audit.evaluate(source, candidate, bounds, destination, &stats)
-                                   : a;
+                measured = audit_teacher_seed(
+                    e, adjacent.limit, previous_steps ? &destination : nullptr,
+                    [&](const EvalSettings& settings) {
+                        return audit.evaluate(source, candidate, bounds, settings, &stats);
+                    });
             });
-            if (!action_audit_known(a, e) || !action_audit_known(b, adjacent) ||
-                !action_audit_known(d, destination))
+            if (!action_audit_known(measured.source, e) ||
+                !action_audit_known(measured.adjacent, adjacent) ||
+                !action_audit_known(measured.destination, destination))
                 unknown = true;
-            return a.complete && a.passed && b.complete && b.passed && d.complete && d.passed;
+            return measured.passed();
         };
         ActionStats rollout;
         const auto initial_faces = state.view().faces;

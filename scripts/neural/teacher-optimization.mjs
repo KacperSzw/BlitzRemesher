@@ -3,7 +3,7 @@ import { auditTermination, compareAudits } from './quality-metrics.mjs';
 
 export const teacherOptimizationAuthorization = Object.freeze({
   id: 'teacher-optimization-2026-10-01',
-  cap_usd: 3.25,
+  cap_usd: 3.5,
 });
 export const teacherOptimizationMinutes = Object.freeze({
   setup: 20,

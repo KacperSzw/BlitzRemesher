@@ -99,10 +99,10 @@ again with the current gate before any adoption decision.
 ## Bounded remote execution
 
 Local contracts and a small warm comparison precede a rental. The separate user
-authorization is capped at $3.25 cumulatively, including failed attempts and storage
+authorization is capped at $3.50 cumulatively, including failed attempts and storage
 allowance. The user authorized extending the original $3 cap for the requested
-hour. After three terminated attempts, the conservative prior cost is $0.563930;
-another 232-minute A40 reservation plus $0.30 reserve totals $3.106597 rounded up.
+hour. After four terminated attempts, the conservative prior cost is $0.751511;
+another 232-minute A40 reservation plus $0.30 reserve totals $3.294178 rounded up.
 The original route reserves 140 minutes: 20 setup, 20 contracts and
 teacher comparisons, 42 paired learning, 50 quality and 8 collection. The explicit
 `teacher-optimization-a40-hour` route adds 60 minutes of capability learning,

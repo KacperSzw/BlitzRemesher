@@ -27,8 +27,87 @@ Mesh plane(unsigned n) {
     m.double_sided = {1};
     return m;
 }
+void action_stop_contracts() {
+    for (unsigned n : {5u, 7u}) {
+        auto mesh = plane(n);
+        uint32_t ranks = 0, gates = 0, polls = 0;
+        auto rank = [&](const ActionState&, std::span<const ActionRecord> rows) {
+            ++ranks;
+            return std::vector<float>(rows.size(), 0);
+        };
+        auto gate = [&](MeshView) {
+            ++gates;
+            return true;
+        };
+        auto cancel = [&] {
+            ++polls;
+            return true;
+        };
+        ActionStats stats;
+        auto reached = execute_actions(mesh.view(), {}, mesh.view().triangles(), 0, rank, gate,
+                                       &stats, cancel);
+        check(stats.stop_reason == NeuralActionStop::TargetReached && !stats.trials && !ranks &&
+                  !gates && !polls && same_mesh_data(reached.view(mesh.view()), mesh.view()),
+              "already-reached target did work or lost precedence over zero budget");
+        auto exhausted = execute_actions(mesh.view(), {}, 1, 0, rank, gate, &stats, cancel);
+        check(stats.stop_reason == NeuralActionStop::TrialBudget && !stats.trials && !ranks &&
+                  !gates && !polls && same_mesh_data(exhausted.view(mesh.view()), mesh.view()),
+              "zero trial budget did work or reported the wrong stop reason");
+        auto cancelled = execute_actions(mesh.view(), {}, 1, 4, rank, gate, &stats, cancel);
+        check(stats.stop_reason == NeuralActionStop::Cancelled && !stats.trials && !ranks &&
+                  !gates && polls == 1 && same_mesh_data(cancelled.view(mesh.view()), mesh.view()),
+              "immediate cancellation did work or reported the wrong stop reason");
+        polls = 0;
+        auto one_shot = execute_actions(mesh.view(), {}, 1, 4, rank, gate, &stats,
+                                        [&] { return ++polls == 3; });
+        check(stats.stop_reason == NeuralActionStop::Cancelled && !stats.trials && ranks == 1 &&
+                  !gates && polls == 3 && same_mesh_data(one_shot.view(mesh.view()), mesh.view()),
+              "one-shot cancellation resumed candidate execution");
+        ActionState state(mesh.view());
+        auto rows = state.actions({});
+        auto first = state.trial(rows.front().action);
+        auto target = first.view(mesh.view()).triangles();
+        auto accepted = execute_actions(mesh.view(), {}, target, 1, rank, gate, &stats);
+        check(stats.stop_reason == NeuralActionStop::TargetReached && stats.trials == 1 &&
+                  stats.accepted == 1 && accepted.data.indices == first.data.indices,
+              "accepted target did not take precedence over exhausted trial budget");
+        bool committed = false;
+        auto incumbent = execute_actions(
+            mesh.view(), {}, 1, 4, rank,
+            [&](MeshView) {
+                committed = true;
+                return true;
+            },
+            &stats, [&] { return committed; });
+        check(stats.stop_reason == NeuralActionStop::Cancelled && stats.trials == 1 &&
+                  stats.accepted == 1 && incumbent.data.indices == first.data.indices,
+              "cancellation lost a previously accepted incumbent");
+        auto rejected = execute_actions(
+            mesh.view(), {}, 1, uint32_t(rows.size() + 1), rank, [](MeshView) { return false; },
+            &stats);
+        check(stats.stop_reason == NeuralActionStop::NoAcceptedAction &&
+                  stats.trials == rows.size() && !stats.accepted &&
+                  same_mesh_data(rejected.view(mesh.view()), mesh.view()),
+              "fully rejected legal candidates were reported as budget or legality exhaustion");
+    }
+    Mesh tetra;
+    tetra.positions = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+    tetra.indices = {0, 2, 1, 0, 1, 3, 0, 3, 2, 1, 2, 3};
+    ActionStats stats;
+    auto unchanged = execute_actions(
+        tetra.view(), {}, 1, 2,
+        [](const ActionState&, std::span<const ActionRecord>) -> std::vector<float> {
+            throw std::runtime_error("ranked a state with no legal actions");
+        },
+        [](MeshView) -> bool { throw std::runtime_error("audited a state with no legal actions"); },
+        &stats);
+    check(stats.stop_reason == NeuralActionStop::NoLegalActions && !stats.trials && !stats.ranked &&
+              same_mesh_data(unchanged.view(tetra.view()), tetra.view()),
+          "state without legal actions reported the wrong stop reason");
+}
 int main() {
     try {
+        action_stop_contracts();
         auto cache_mesh = plane(5);
         cache_mesh.materials.resize(cache_mesh.view().triangles(), 0);
         auto memo_source = cache_mesh.view(), memo_candidate = memo_source;
@@ -198,13 +277,15 @@ int main() {
             };
             auto reduced =
                 execute_actions(m.view(), {}, 1, 4, rank, [](MeshView) { return true; }, &stats);
-            check(stats.accepted == 4 && calls == 4,
+            check(stats.accepted == 4 && calls == 4 &&
+                      stats.stop_reason == NeuralActionStop::TrialBudget,
                   "executor reused scores after changing topology");
             check(reduced.view(m.view()).triangles() < m.view().triangles(),
                   "executor did not reduce");
             auto rejected =
                 execute_actions(m.view(), {}, 1, 3, rank, [](MeshView) { return false; }, &stats);
             check(stats.trials == 3 && stats.accepted == 0 &&
+                      stats.stop_reason == NeuralActionStop::TrialBudget &&
                       same_mesh_data(rejected.view(m.view()), m.view()),
                   "rejected transaction changed incumbent or work budget");
             auto cancelled = execute_actions(

@@ -460,12 +460,16 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
     stats = {};
     ActionState state(input);
     target = std::max<size_t>(1, target);
+    bool stopped = false, no_legal_actions = false;
+    auto stop = [&] { return stopped = stopped || (cancel && cancel()); };
     while (state.view().triangles() > target && stats.trials < budget) {
-        if (cancel && cancel())
+        if (stop())
             break;
         auto actions = state.actions(c);
-        if (actions.empty())
+        if (actions.empty()) {
+            no_legal_actions = true;
             break;
+        }
         auto scores = rank(state, actions);
         stats.ranked += actions.size();
         if (scores.size() != actions.size())
@@ -479,7 +483,7 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
                          [&](auto a, auto b) { return scores[a] > scores[b]; });
         bool accepted = false;
         for (size_t position = 0; position < order.size() && stats.trials < budget && !accepted;) {
-            if (cancel && cancel())
+            if (stop())
                 break;
             auto batch = state.independent(actions, std::span(order).subspan(position), batch_size,
                                            state.view().triangles() - target);
@@ -487,7 +491,7 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
                 break;
             const auto first = batch.front();
             for (;;) {
-                if (stats.trials == budget || (cancel && cancel()))
+                if (stats.trials == budget || stop())
                     break;
                 auto candidate = state.trial(batch);
                 ++stats.trials;
@@ -511,6 +515,11 @@ Lod execute_actions(MeshView input, const std::array<float, conditions>& c, size
         if (!accepted)
             break;
     }
+    stats.stop_reason = stopped                              ? NeuralActionStop::Cancelled
+                        : state.view().triangles() <= target ? NeuralActionStop::TargetReached
+                        : stats.trials >= budget             ? NeuralActionStop::TrialBudget
+                        : no_legal_actions                   ? NeuralActionStop::NoLegalActions
+                                                             : NeuralActionStop::NoAcceptedAction;
     return state.lod();
 }
 } // namespace blitz::neural

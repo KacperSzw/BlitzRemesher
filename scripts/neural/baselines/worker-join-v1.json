@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "worker-join-v1",
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "original_tree": "dc3fa2f6f40b499663ab3fe11a2ab32e4d29a813",
+  "modified_tree": "351b6d59b2f3bcef1e374a2cba25fa05d7b161ab",
+  "patch_sha256": "ae9ae3f0479a73312bd0d56ee1798cef15bb7ac9d1b1a6594f94b04264af2988",
+  "files": [
+    {
+      "path": "training/workers.hpp",
+      "before_sha256": "2626881c7cc25a482fc16ede72a918f7e2b6530380ea366f3ae11ce81ad8ed92",
+      "after_sha256": "3857aff573143bb377aed5361fcec34fe82007b89bc98b50edd6f6d34773adb5"
+    },
+    {
+      "path": "training/worker_retirement.hpp",
+      "before_sha256": null,
+      "after_sha256": "8669dc640830061a960dbbb27536b8c3954f02ef3747accfd600d9741eb08174"
+    },
+    {
+      "path": "src/neural/teardown_trace.hpp",
+      "before_sha256": null,
+      "after_sha256": "fd2e3f81e015ca10fa7c4268c82a3ab76b5c103fd1be13310ac4d5065a9199f0"
+    }
+  ]
+}

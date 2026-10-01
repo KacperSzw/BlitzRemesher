@@ -9,6 +9,7 @@ import { runCoreValidation } from './core-validation-job.mjs';
 import { runTeacherProfile } from './teacher-profile.mjs';
 import { runNativeDebuggerPreflight } from './native-debugger-preflight.mjs';
 import { verifyNvidiaIcdSelection } from './nvidia-icd.mjs';
+import { verifyBaselineBuild } from './baseline-overlay.mjs';
 import {
   validateOptimizationRequest,
   optimizationCycleArguments,
@@ -34,6 +35,7 @@ export async function runTeacherOptimization({
   debuggerPreflight = runNativeDebuggerPreflight,
   teardownBinary = 'build/neural/blitz-neural-vulkan-tests',
   icdSelection,
+  baselineBuild,
   environment = process.env,
 }) {
   validateOptimizationRequest(request);
@@ -124,6 +126,17 @@ export async function runTeacherOptimization({
       digest(model) !== request.initialization_sha256
     )
       throw new Error('invalid experiment deadline or initializer checksum');
+    if (request.baseline_overlay !== undefined && !baselineBuild)
+      throw new Error('Requested baseline overlay needs verified build provenance');
+    if (baselineBuild) {
+      report.baseline_build = verifyBaselineBuild({
+        evidenceFile: baselineBuild,
+        binary: baseline,
+        request,
+        candidateRoot: process.cwd(),
+      });
+      persist();
+    }
     if (request.vulkan_icd !== undefined && !icdSelection)
       throw new Error('Requested NVIDIA ICD needs verified selection provenance');
     if (icdSelection) {
@@ -392,6 +405,7 @@ async function main() {
     request: read('/workspace/optimization/request.json'),
     model: '/workspace/optimization/model.blzn',
     icdSelection: '/workspace/results/nvidia-icd-selection.json',
+    baselineBuild: '/workspace/results/baseline-build.json',
     deadline,
     signal: cancellation.signal,
   });

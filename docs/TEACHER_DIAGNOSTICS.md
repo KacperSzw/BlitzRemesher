@@ -24,10 +24,10 @@ Two independent native opt-ins are used:
 - `BLITZ_TEARDOWN_TRACE=1` emits final teardown boundaries to stderr. It does
   not grant attachment permission or trace the measured warm work.
 
-The immutable baseline is started through the current executable's
+The baseline executable is started through the current executable's
 `--debugger-exec EXECUTABLE ARGS...` mode. Permission survives `execv`, while
 `/proc/self/exe`, the baseline binary digest and teacher contract still identify
-the original baseline. The profile records the launcher digest and diagnostic
+the selected baseline build. The profile records the launcher digest and diagnostic
 flags. Process wall ratios are reported as `diagnostic_process_wall_ratio`,
 since startup and teardown now include instrumentation.
 
@@ -108,3 +108,28 @@ manifest and checked-library hashes and the inherited loader setting before nati
 records them in its report, and pins the same selection for all stress,
 contract, baseline/candidate profile, learning and quality subprocesses. It does
 not change Vulkan implicit/explicit layers, teacher data, model or quality gates.
+
+## Lifecycle-matched baseline
+
+The frozen teacher request retains baseline revision `81fd926` and explicitly
+requests `baseline_overlay: "worker-join-v1"`. This is the historical teacher
+algorithm with the same owned-worker join retirement as the candidate, not the
+original unchanged baseline executable. The reviewed overlay changes only
+`training/workers.hpp`, adds the exact shared `training/worker_retirement.hpp`,
+and adds its `src/neural/teardown_trace.hpp` dependency. Teacher work, recovery
+conditions, labels and search strategy remain the historical implementation.
+
+Cloud preparation requires a clean checkout of the exact base commit. It checks
+the patch digest, its three-file allowlist, original file hashes, exact patch
+context, resulting file hashes and expected Git tree. Shared helper/header hashes
+must match the candidate. The preparation then records the newly built executable
+digest in `baseline-build.json`; the experiment verifies that identity before
+native work and carries the full provenance in its report. The original base
+commit/tree and overlaid source tree remain separate fields.
+
+An overlay is never inferred from a binary name or substituted after failure.
+Warm comparisons still require actual payload, episode and common-trajectory
+parity. Additive rollout outcome metadata is checked independently before its
+named object may be absent from legacy-baseline comparisons; repeats of each
+variant remain strict. No lifecycle or metadata compatibility changes the
+model, dataset, or full-chain quality acceptance requirements.

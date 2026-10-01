@@ -1,0 +1,522 @@
+diff --git a/src/neural/teardown_trace.hpp b/src/neural/teardown_trace.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..8869c707f76da006155e6c4bf235ceae173c455c
+--- /dev/null
++++ b/src/neural/teardown_trace.hpp
+@@ -0,0 +1,60 @@
++#pragma once
++#include <cerrno>
++#include <chrono>
++#include <cstdio>
++#include <cstdlib>
++#include <cstring>
++#include <functional>
++#include <thread>
++#ifdef __linux__
++#include <sys/prctl.h>
++#endif
++
++namespace blitz::neural {
++// Called only by the explicitly requested diagnostic benchmark/test entrypoints.
++// This independent opt-in lets a sibling debugger collect stacks under Yama;
++// container seccomp/capability restrictions may still reject the request.
++inline bool allow_debugger_attach() noexcept {
++    const char* enabled = std::getenv("BLITZ_ALLOW_DEBUGGER_ATTACH");
++    if (!enabled || std::strcmp(enabled, "1"))
++        return true;
++#ifdef __linux__
++    const bool permitted = prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0) == 0;
++    const int error = permitted ? 0 : errno;
++#else
++    const bool permitted = false;
++    const int error = ENOSYS;
++#endif
++    std::fprintf(stderr, "debugger_attach requested=true permitted=%s errno=%d\n",
++                 permitted ? "true" : "false", error);
++    std::fflush(stderr);
++    return permitted;
++}
++// Opt-in diagnostics only. One stderr record brackets each native teardown
++// call; no synchronization or resource lifetime changes are introduced.
++inline void teardown_trace(const char* stage, const void* owner, const char* boundary) noexcept {
++    const char* enabled = std::getenv("BLITZ_TEARDOWN_TRACE");
++    if (!enabled || !*enabled || *enabled == '0')
++        return;
++    const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
++                         std::chrono::steady_clock::now().time_since_epoch())
++                         .count();
++    std::fprintf(stderr, "teardown us=%lld thread=%zu owner=%p stage=%s %s\n",
++                 static_cast<long long>(now),
++                 std::hash<std::thread::id>{}(std::this_thread::get_id()), owner, stage, boundary);
++    std::fflush(stderr);
++}
++template <class Work>
++void teardown_call(const char* stage, const void* owner, Work&& work) noexcept {
++    teardown_trace(stage, owner, "begin");
++    work();
++    teardown_trace(stage, owner, "end");
++}
++struct TeardownEnd {
++    const char* stage;
++    const void* owner;
++    ~TeardownEnd() {
++        teardown_trace(stage, owner, "end");
++    }
++};
++} // namespace blitz::neural
+diff --git a/training/worker_retirement.hpp b/training/worker_retirement.hpp
+new file mode 100644
+index 0000000000000000000000000000000000000000..661f77b504257f4fec5396cfbeb96e7f9f9df428
+--- /dev/null
++++ b/training/worker_retirement.hpp
+@@ -0,0 +1,81 @@
++#pragma once
++#include "neural/teardown_trace.hpp"
++#include <cassert>
++#include <condition_variable>
++#include <cstdint>
++#include <mutex>
++#include <span>
++#include <stdexcept>
++#include <thread>
++#include <vector>
++
++namespace blitz::neural::training {
++// One owner controls up to three resident workers. All workers park while their
++// native resources are still alive. Joining the permitted OS thread also waits
++// for driver thread-local cleanup, which runs after C++ resource destructors.
++// The owner must not hold the work-queue mutex while joining.
++class WorkerRetirement {
++    std::mutex mutex_;
++    std::condition_variable changed_;
++    uint8_t parked_{};
++    uint8_t permitted_{3};
++
++  public:
++    void park(uint8_t worker) {
++        assert(worker < 3);
++        teardown_trace("worker.retirement", &worker, "begin");
++        std::unique_lock lock(mutex_);
++        parked_ |= uint8_t(1u << worker);
++        changed_.notify_all();
++        changed_.wait(lock, [&] { return permitted_ == worker; });
++        teardown_trace("worker.retirement", &worker, "end");
++    }
++    // IDs are the span indices. Non-joinable entries are ignored, including on
++    // repeated shutdown. This object serves one set of threads, not a new pool.
++    void join(std::span<std::thread> threads) {
++        assert(threads.size() <= 3);
++        uint8_t pending = 0;
++        for (size_t i = 0; i < threads.size(); ++i)
++            if (threads[i].joinable())
++                pending |= uint8_t(1u << i);
++        if (!pending)
++            return;
++        {
++            std::unique_lock lock(mutex_);
++            changed_.wait(lock, [&] { return (parked_ & pending) == pending; });
++        }
++        for (uint8_t i = 0; i < threads.size(); ++i)
++            if (pending & uint8_t(1u << i)) {
++                {
++                    std::lock_guard lock(mutex_);
++                    permitted_ = i;
++                }
++                changed_.notify_all();
++                teardown_trace("worker.join", &threads[i], "begin");
++                threads[i].join();
++                teardown_trace("worker.join", &threads[i], "end");
++            }
++    }
++};
++
++// Sequential readiness matters on failure: earlier initialized workers remain
++// idle while the newest thread's partial construction unwinds. Join that failed
++// thread through TLS cleanup before the caller retires the preceding workers.
++template <class Worker, class Ready>
++void start_worker_threads(std::vector<std::thread>& threads, uint8_t count, Worker worker,
++                          Ready wait_ready) {
++    if (!threads.empty() || count < 1 || count > 3)
++        throw std::invalid_argument("teacher worker count outside 1..3 or pool already started");
++    threads.reserve(count);
++    for (uint8_t i = 0; i < count; ++i) {
++        threads.emplace_back([worker, i] { worker(i); });
++        try {
++            wait_ready();
++        } catch (...) {
++            threads.back().join();
++            threads.pop_back();
++            throw;
++        }
++    }
++}
++} // namespace blitz::neural::training
+diff --git a/training/workers.hpp b/training/workers.hpp
+index f5c332ae4c592fe6843eb470b15f2a183aa56a9d..dafba17acace3208bc97ac9ad5fa965effb9bf59 100644
+--- a/training/workers.hpp
++++ b/training/workers.hpp
+@@ -1,6 +1,7 @@
+ #pragma once
+ #include "neural/timeline.hpp"
+ #include "training/placement_teacher.hpp"
++#include "training/worker_retirement.hpp"
+ #include <condition_variable>
+ #include <deque>
+ #include <thread>
+@@ -29,15 +30,16 @@ class TeacherWorkers {
+     MemoryBudget& budget_;
+     uint32_t width_, architecture_;
+     std::vector<std::thread> threads_;
++    WorkerRetirement retirement_;
+     std::mutex mutex_;
+     std::condition_variable changed_;
+     std::deque<TeacherJob> queue_;
+     std::map<uint32_t, TeacherResult> ready_;
+     size_t in_flight_{};
+-    uint32_t ready_workers_{};
++    uint8_t ready_workers_{};
+     bool stop_{};
+     std::atomic<bool> cancelled_{};
+-    std::exception_ptr startup_error_;
++    std::exception_ptr worker_error_;
+     const float* weights_{};
+     size_t weight_count_{};
+     cudaEvent_t policy_ready_{};
+@@ -48,6 +50,14 @@ class TeacherWorkers {
+                             std::chrono::steady_clock::now() - origin_)
+                             .count());
+     }
++    void report_worker_error() {
++        {
++            std::lock_guard lock(mutex_);
++            if (!worker_error_)
++                worker_error_ = std::current_exception();
++        }
++        changed_.notify_all();
++    }
+     void worker(uint8_t worker_id) {
+         try {
+             gpu::check(cudaSetDevice(options_.device));
+@@ -65,130 +75,145 @@ class TeacherWorkers {
+             }
+             changed_.notify_all();
+             uint64_t installed = 0;
+-            for (;;) {
+-                TeacherJob job;
+-                uint64_t wave;
+-                {
+-                    std::unique_lock lock(mutex_);
+-                    changed_.wait(lock, [&] { return stop_ || !queue_.empty(); });
+-                    if (stop_)
+-                        break;
+-                    job = std::move(queue_.front());
+-                    queue_.pop_front();
+-                    wave = wave_;
+-                }
+-                Timeline range(("teacher-" + std::to_string(job.id)).c_str());
+-                TeacherResult done;
+-                done.job = job;
+-                done.worker = worker_id;
+-                done.wave = wave;
+-                done.started_ns = timestamp();
+-                auto start = std::chrono::steady_clock::now();
+-                cudaEvent_t begin{}, end{};
+-                try {
+-                    if (installed != wave) {
+-                        gpu::check(cudaStreamWaitEvent(stream.value, policy_ready_));
+-                        policy.refresh_device(weights_, weight_count_);
+-                        installed = wave;
++            try {
++                for (;;) {
++                    TeacherJob job;
++                    uint64_t wave;
++                    {
++                        std::unique_lock lock(mutex_);
++                        changed_.wait(lock, [&] { return stop_ || !queue_.empty(); });
++                        if (stop_)
++                            break;
++                        job = std::move(queue_.front());
++                        queue_.pop_front();
++                        wave = wave_;
+                     }
+-                    gpu::check(cudaEventCreate(&begin));
+-                    gpu::check(cudaEventCreate(&end));
+-                    gpu::check(cudaEventRecord(begin, stream.value));
+-                    auto cancel = job.request.cancelled;
+-                    job.request.cancelled = [&, cancel] {
+-                        return cancelled_ || (cancel && cancel());
+-                    };
+-                    bool recovered = false;
+-                    if (!job.allow_recovery && fs::exists(job.directory))
+-                        throw std::invalid_argument("fresh teacher job directory already exists");
+-                    if (fs::exists(job.directory / "index.json")) {
+-                        auto index = read_json(job.directory / "index.json"),
+-                             contract = read_json(job.directory / "contract.json");
+-                        if (index.at("complete") == true &&
+-                            index.at("reference_confirmed") == true &&
+-                            contract.at("policy_payload_sha256") == job.request.policy_sha256 &&
+-                            contract.at("seed") == job.request.seed &&
+-                            contract.at("states_requested") == job.request.states &&
+-                            contract.at("pixels") == job.request.pixels &&
+-                            contract.at("asset").at("id") == job.asset &&
+-                            contract.at("binary_sha256") == job.request.cache->binary_hash &&
+-                            contract.at("schema") == job.request.architecture &&
+-                            contract.at("source_limit") == job.request.source_limit &&
+-                            contract.at("adjacent_limit") == job.request.adjacent_limit &&
+-                            contract.at("previous_steps") == job.request.previous_steps &&
+-                            contract.at("preserve_uv") == job.request.preserve_uv &&
+-                            contract.at("policy_action_candidates") ==
+-                                job.request.policy_candidates &&
+-                            contract.at("policy_rollout_trials") ==
+-                                job.request.policy_rollout_trials &&
+-                            contract.at("previous_pixels") ==
+-                                (job.request.previous_steps
+-                                     ? (job.request.previous_pixels
+-                                            ? job.request.previous_pixels
+-                                            : std::min(512., job.request.pixels * 2))
+-                                     : job.request.pixels) &&
+-                            contract.at("pool") == job.request.pool &&
+-                            contract.at("training_profile") ==
+-                                training_profile_name(job.request.profile) &&
+-                            contract.at("episode").at("target_retained") == job.request.retained &&
+-                            contract.at("episode").at("kind") ==
+-                                (job.request.policy_rollout_trials ? "audited_policy_rollout"
+-                                 : job.request.simplifier          ? "audited_simplifier"
+-                                 : job.request.episode.empty()     ? "source"
+-                                                               : "audited_teacher_trajectory") &&
+-                            contract.at("episode").at("parent_sha256") ==
+-                                (job.request.episode.empty() ? ""
+-                                                             : file_sha256(job.request.episode))) {
+-                            if (index.at("contract_sha256") !=
+-                                    file_sha256(job.directory / "contract.json") ||
+-                                index.at("sha256") != file_sha256(job.directory / "actions.bin") ||
+-                                index.at("episode_sha256") !=
+-                                    file_sha256(job.directory / "episode.bin"))
+-                                throw std::invalid_argument(
+-                                    "completed teacher recovery payload changed");
+-                            done.result = {true, load_actions(job.directory / "actions.bin"), index,
+-                                           load_compact_actions(job.directory / "actions.bin")};
+-                            recovered = true;
++                    Timeline range(("teacher-" + std::to_string(job.id)).c_str());
++                    TeacherResult done;
++                    done.job = job;
++                    done.worker = worker_id;
++                    done.wave = wave;
++                    done.started_ns = timestamp();
++                    auto start = std::chrono::steady_clock::now();
++                    cudaEvent_t begin{}, end{};
++                    try {
++                        if (installed != wave) {
++                            gpu::check(cudaStreamWaitEvent(stream.value, policy_ready_));
++                            policy.refresh_device(weights_, weight_count_);
++                            installed = wave;
+                         }
+-                    }
+-                    if (!recovered) {
+-                        if (fs::exists(job.directory)) {
+-                            auto evidence = job.directory;
+-                            evidence +=
+-                                ".unpublished-" +
+-                                std::to_string(
+-                                    std::chrono::steady_clock::now().time_since_epoch().count());
+-                            fs::rename(job.directory, evidence);
++                        gpu::check(cudaEventCreate(&begin));
++                        gpu::check(cudaEventCreate(&end));
++                        gpu::check(cudaEventRecord(begin, stream.value));
++                        auto cancel = job.request.cancelled;
++                        job.request.cancelled = [&, cancel] {
++                            return cancelled_ || (cancel && cancel());
++                        };
++                        bool recovered = false;
++                        if (!job.allow_recovery && fs::exists(job.directory))
++                            throw std::invalid_argument(
++                                "fresh teacher job directory already exists");
++                        if (fs::exists(job.directory / "index.json")) {
++                            auto index = read_json(job.directory / "index.json"),
++                                 contract = read_json(job.directory / "contract.json");
++                            if (index.at("complete") == true &&
++                                index.at("reference_confirmed") == true &&
++                                contract.at("policy_payload_sha256") == job.request.policy_sha256 &&
++                                contract.at("seed") == job.request.seed &&
++                                contract.at("states_requested") == job.request.states &&
++                                contract.at("pixels") == job.request.pixels &&
++                                contract.at("asset").at("id") == job.asset &&
++                                contract.at("binary_sha256") == job.request.cache->binary_hash &&
++                                contract.at("schema") == job.request.architecture &&
++                                contract.at("source_limit") == job.request.source_limit &&
++                                contract.at("adjacent_limit") == job.request.adjacent_limit &&
++                                contract.at("previous_steps") == job.request.previous_steps &&
++                                contract.at("preserve_uv") == job.request.preserve_uv &&
++                                contract.at("policy_action_candidates") ==
++                                    job.request.policy_candidates &&
++                                contract.at("policy_rollout_trials") ==
++                                    job.request.policy_rollout_trials &&
++                                contract.at("previous_pixels") ==
++                                    (job.request.previous_steps
++                                         ? (job.request.previous_pixels
++                                                ? job.request.previous_pixels
++                                                : std::min(512., job.request.pixels * 2))
++                                         : job.request.pixels) &&
++                                contract.at("pool") == job.request.pool &&
++                                contract.at("training_profile") ==
++                                    training_profile_name(job.request.profile) &&
++                                contract.at("episode").at("target_retained") ==
++                                    job.request.retained &&
++                                contract.at("episode").at("kind") ==
++                                    (job.request.policy_rollout_trials ? "audited_policy_rollout"
++                                     : job.request.simplifier          ? "audited_simplifier"
++                                     : job.request.episode.empty()
++                                         ? "source"
++                                         : "audited_teacher_trajectory") &&
++                                contract.at("episode").at("parent_sha256") ==
++                                    (job.request.episode.empty()
++                                         ? ""
++                                         : file_sha256(job.request.episode))) {
++                                if (index.at("contract_sha256") !=
++                                        file_sha256(job.directory / "contract.json") ||
++                                    index.at("sha256") !=
++                                        file_sha256(job.directory / "actions.bin") ||
++                                    index.at("episode_sha256") !=
++                                        file_sha256(job.directory / "episode.bin"))
++                                    throw std::invalid_argument(
++                                        "completed teacher recovery payload changed");
++                                done.result = {true, load_actions(job.directory / "actions.bin"),
++                                               index,
++                                               load_compact_actions(job.directory / "actions.bin")};
++                                recovered = true;
++                            }
+                         }
+-                        done.result = prepare_placements(job.asset, job.directory, job.request,
+-                                                         options_, &policy);
++                        if (!recovered) {
++                            if (fs::exists(job.directory)) {
++                                auto evidence = job.directory;
++                                evidence += ".unpublished-" +
++                                            std::to_string(std::chrono::steady_clock::now()
++                                                               .time_since_epoch()
++                                                               .count());
++                                fs::rename(job.directory, evidence);
++                            }
++                            done.result = prepare_placements(job.asset, job.directory, job.request,
++                                                             options_, &policy);
++                        }
++                        done.recovered = recovered;
++                        gpu::check(cudaEventRecord(end, stream.value));
++                        gpu::check(cudaEventSynchronize(end));
++                        float ms;
++                        gpu::check(cudaEventElapsedTime(&ms, begin, end));
++                        done.device_seconds = ms / 1000.;
++                    } catch (...) {
++                        done.error = std::current_exception();
+                     }
+-                    done.recovered = recovered;
+-                    gpu::check(cudaEventRecord(end, stream.value));
+-                    gpu::check(cudaEventSynchronize(end));
+-                    float ms;
+-                    gpu::check(cudaEventElapsedTime(&ms, begin, end));
+-                    done.device_seconds = ms / 1000.;
+-                } catch (...) {
+-                    done.error = std::current_exception();
+-                }
+-                if (begin)
+-                    cudaEventDestroy(begin);
+-                if (end)
+-                    cudaEventDestroy(end);
+-                done.seconds =
+-                    std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+-                done.completed_ns = timestamp();
+-                {
+-                    std::lock_guard lock(mutex_);
+-                    ready_.emplace(job.id, std::move(done));
++                    if (begin)
++                        cudaEventDestroy(begin);
++                    if (end)
++                        cudaEventDestroy(end);
++                    done.seconds =
++                        std::chrono::duration<double>(std::chrono::steady_clock::now() - start)
++                            .count();
++                    done.completed_ns = timestamp();
++                    {
++                        std::lock_guard lock(mutex_);
++                        ready_.emplace(job.id, std::move(done));
++                    }
++                    changed_.notify_all();
+                 }
+-                changed_.notify_all();
++            } catch (...) {
++                report_worker_error();
+             }
++            try {
++                gpu::check(cudaStreamSynchronize(stream.value));
++            } catch (...) {
++                report_worker_error();
++            }
++            retirement_.park(worker_id);
+         } catch (...) {
+-            std::lock_guard lock(mutex_);
+-            startup_error_ = std::current_exception();
+-            changed_.notify_all();
++            report_worker_error();
+         }
+     }
+ 
+@@ -199,8 +224,9 @@ class TeacherWorkers {
+         if (count < 1 || count > 3)
+             throw std::invalid_argument("teacher worker count outside 1..3");
+         try {
+-            for (uint32_t i = 0; i < count; ++i)
+-                threads_.emplace_back([this, i] { worker(uint8_t(i)); });
++            start_worker_threads(
++                threads_, uint8_t(count), [this](uint8_t i) { worker(i); },
++                [this] { wait_ready(); });
+         } catch (...) {
+             shutdown();
+             throw;
+@@ -211,9 +237,9 @@ class TeacherWorkers {
+     }
+     void wait_ready() {
+         std::unique_lock lock(mutex_);
+-        changed_.wait(lock, [&] { return startup_error_ || ready_workers_ == threads_.size(); });
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        changed_.wait(lock, [&] { return worker_error_ || ready_workers_ == threads_.size(); });
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+     }
+     void shutdown() {
+         cancelled_ = true;
+@@ -223,9 +249,7 @@ class TeacherWorkers {
+             queue_.clear();
+         }
+         changed_.notify_all();
+-        for (auto& t : threads_)
+-            if (t.joinable())
+-                t.join();
++        retirement_.join(threads_);
+     }
+     void wave(const float* weights, size_t count, cudaEvent_t ready) {
+         std::lock_guard lock(mutex_);
+@@ -238,8 +262,8 @@ class TeacherWorkers {
+     }
+     void submit(TeacherJob job) {
+         std::lock_guard lock(mutex_);
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+         if (!wave_ || in_flight_ >= threads_.size() * 2)
+             throw std::length_error("teacher queue capacity");
+         ++in_flight_;
+@@ -249,9 +273,9 @@ class TeacherWorkers {
+     }
+     TeacherResult take(uint32_t id) {
+         std::unique_lock lock(mutex_);
+-        changed_.wait(lock, [&] { return startup_error_ || ready_.contains(id); });
+-        if (startup_error_)
+-            std::rethrow_exception(startup_error_);
++        changed_.wait(lock, [&] { return worker_error_ || ready_.contains(id); });
++        if (worker_error_)
++            std::rethrow_exception(worker_error_);
+         auto node = ready_.extract(id);
+         node.mapped().consumed_ns = timestamp();
+         --in_flight_;

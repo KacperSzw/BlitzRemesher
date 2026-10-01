@@ -351,6 +351,29 @@ test('frozen optimization ICD choice is explicit and rejects unknown selections'
     );
 });
 
+test('only the named lifecycle overlay is accepted and missing provenance blocks native work', async (t) => {
+  assert.equal(
+    validateOptimizationRequest({ ...request(), baseline_overlay: 'worker-join-v1' })
+      .baseline_overlay,
+    'worker-join-v1',
+  );
+  for (const baseline_overlay of ['arbitrary-patch', true, null])
+    assert.throws(
+      () => validateOptimizationRequest({ ...request(), baseline_overlay }),
+      /invalid frozen/,
+    );
+  const options = experiment(t);
+  options.request.baseline_overlay = 'worker-join-v1';
+  const report = await runTeacherOptimization({
+    ...options,
+    contracts: async () => assert.fail('missing baseline provenance must block native work'),
+    execute: async () => assert.fail('missing baseline provenance must block native work'),
+  });
+  assert.equal(report.complete, false);
+  assert.equal(report.training_started, false);
+  assert.match(report.error, /baseline overlay needs verified build provenance/);
+});
+
 test('an explicit ICD request requires matching provenance and a clean loader environment', async (t) => {
   for (const invalid of ['missing', 'wrong-backend', 'wrong-path', 'legacy-override']) {
     const options = experiment(t),

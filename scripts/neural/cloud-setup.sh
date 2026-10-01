@@ -97,11 +97,13 @@ console.log(validateOptimizationRequest(JSON.parse(fs.readFileSync('/workspace/o
 JS
 )
   git worktree add --detach /workspace/baseline "$blitz_baseline"
+  node scripts/neural/baseline-overlay.mjs prepare /workspace/baseline /workspace/optimization/request.json /workspace/results/baseline-build.json
   cmake -S /workspace/baseline -B /workspace/baseline/build/neural -G Ninja \
     -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_VULKAN=ON \
     -DBLITZ_NEURAL_TRAIN=OFF -DBLITZ_ACQUISITION=OFF \
     -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch"
   cmake --build /workspace/baseline/build/neural --target blitz-neural-placement-prepare -j2
+  node scripts/neural/baseline-overlay.mjs record /workspace/results/baseline-build.json /workspace/baseline/build/neural/blitz-neural-placement-prepare
   sha256sum /workspace/baseline/build/neural/blitz-neural-placement-prepare > /workspace/results/baseline-binary.sha256
   printf '%s\n' "$blitz_baseline" > /workspace/results/baseline-revision
 fi

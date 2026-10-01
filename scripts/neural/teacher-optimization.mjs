@@ -94,7 +94,8 @@ export function validateOptimizationRequest(request) {
     request.finalize_minutes !== 2 ||
     (request.timeout_diagnostics !== undefined &&
       typeof request.timeout_diagnostics !== 'boolean') ||
-    (request.vulkan_icd !== undefined && !['glx', 'egl'].includes(request.vulkan_icd))
+    (request.vulkan_icd !== undefined && !['glx', 'egl'].includes(request.vulkan_icd)) ||
+    (request.baseline_overlay !== undefined && request.baseline_overlay !== 'worker-join-v1')
   )
     throw new Error('invalid frozen teacher optimization request');
   return request;

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "launch": true,
-  "readiness": "Two-hour retry running after all 32 CTest contracts, action/Vulkan memory checks, saved-policy replay, full 100-condition preflight and 80 model-audit rows passed",
+  "launch": false,
+  "readiness": "Stopped by user after checkpoint and full artifacts were verified locally; rental and volume removed. Historical configuration retained as an initialization/control artifact. See next-experiment.json for the unlaunched replacement.",
   "duration_minutes": 120,
   "finalize_minutes": 10,
   "corpus": "research/neural/corpus-v2/corpus.json",
@@ -62,7 +62,8 @@
     "maximum_new_rentals": 1,
     "launched_at_utc": "2026-10-01T07:32:15.439Z"
   },
-  "active_run": "runs/neural/runpod-expanded-pretraining-05",
   "learning_started_at_utc": "2026-10-01T07:50:27.114Z",
-  "estimated_learning_end_utc": "2026-10-01T09:50:27.114Z"
+  "estimated_learning_end_utc": "2026-10-01T09:50:27.114Z",
+  "stopped_evidence": "research/neural/evidence/stopped-pretraining-05/record.json",
+  "stopped_run": "runs/neural/runpod-expanded-pretraining-05"
 }

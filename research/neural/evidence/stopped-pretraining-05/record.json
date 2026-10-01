@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "status": "stopped_by_user",
+  "complete": false,
+  "score": null,
+  "reason": "User approved preserving artifacts and ending the old rental before neural curriculum/model refactor.",
+  "checkpoint": "checkpoints/step-423168",
+  "checkpoint_sha256": "f0d9b2f554f83e2ee3e59bf4c6b6435ea1d69b37505fbc5369b3e45c98f4d34a",
+  "archive": {
+    "verified": true,
+    "sha256": "20397aa7d3ef5c2080d531613c062f668004b94bf80fa9aee8d8a2f925b3f1b8",
+    "at": 1790843615287
+  },
+  "cleanup": {
+    "checked_at": "2026-10-01T08:34:55.434Z",
+    "compute_absent": true,
+    "volume_absent": true
+  },
+  "verification": {
+    "fp64": {
+      "finite": true,
+      "max_abs": 0.0000028464954278106802,
+      "max_relative": 0.00010733961978173834,
+      "rms": 3.4284711662057514e-7,
+      "same_shape": true,
+      "worst_index": 168
+    }
+  },
+  "learning_elapsed_ms": 2076534,
+  "initialization_only": true,
+  "steps": 423168,
+  "model_sha256": "529292a4e8730951014ec8696ff623626d8eb9fe1b59fd4e8c343623e05e8661"
+}

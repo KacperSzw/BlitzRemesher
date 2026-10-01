@@ -1,20 +1,58 @@
-# Neural LOD path
+# Neural LOD research
 
-The current GPU implementation adds authoritative Vulkan audits, sparse threshold
-queries and a persistent placement-policy learning process. The frozen local
-FP32 control pass is 2.90× faster. Packed draw storage is the hardware default;
-its stricter quantization-inclusive audits can stop an infeasible teacher shard.
-See [the implementation and timing graph](GPU-REFACTOR.md) for measured evidence,
-remaining costs, build/run commands and the bounded remote validation.
+The current placement policy is an independent-action MLP: 128 inputs, two
+64-wide hidden layers and 12 outputs for ranking, two teacher-feasibility
+auxiliaries, position displacement and two wedge-normal displacements. Architecture
+v3 is the existing placement format. The v4 format adds explicit UV-preservation
+conditioning without changing those dimensions; old models retain their original
+feature meanings and strict UV behavior. The auxiliary heads are not calibrated
+acceptance probabilities. Source and preceding-LOD audits decide whether actual
+proposed geometry is usable.
 
-**Current implementation:** architecture 2 learns directed, current-state endpoint
-actions. Three cloud seeds passed the one-mesh proof at two checkpoints. A
-two-mesh smoke shows 6.94% mean triangle reduction versus 1.43% for constant
-ranking; full-pilot superiority remains unproven. See [V2.md](V2.md) for the
-current staged implementation, bounded cloud continuation and
-[committed model evidence](evidence/action-v2/README.md). No local training runs.
+The neural path is the primary product direction: triangle reduction across the
+whole configurable LOD chain, with coverage first and optional normal/attribute
+preservation. Classical methods supply teachers and comparison controls. The
+runtime supports source and predecessor proposal origins, fixed source quantization
+bounds and Vulkan audits. Packed storage consumes the existing visual budget.
+Implementation and training health do not establish output quality; the historical
+small smoke budgets cannot establish full-pilot or release superiority.
 
-## Retained v1 documentation
+Current entry points:
+
+- [Architecture and contracts](../../docs/NEURAL.md): runtime, training, ownership,
+  dependency boundaries and evidence limits.
+- [Prepared next experiment](next-experiment.json) and [curriculum](next-curriculum.json):
+  v4, width 64, multiple screen sizes, audited predecessor states and independent
+  limits. `launch` is **false**; this configuration does not start a training run.
+- [Stopped pretraining record](evidence/stopped-pretraining-05/record.json): final
+  checkpoint at step 423,168, verified full archive and confirmed rental cleanup.
+  The user stopped this run; it is incomplete and has no aggregate quality score.
+- [Development budget diagnostic](quality-budget.json) and
+  [frozen pilot budget diagnostic](quality-budget-pilot.json): bounded audit-only
+  configurations for `scripts/neural/budget-quality.mjs`. Neither is a release score.
+- [Scoring protocol](../PROTOCOL.md): complete all-LOD, category-balanced comparisons,
+  fixed visual/work contracts and release-only held-out assets.
+- [GPU implementation measurements](GPU-REFACTOR.md) and
+  [compact storage contracts](COMPACT-PIPELINE.md): workload-specific evidence and
+  known representation limits, not a guarantee of model quality.
+
+Live orchestration is in `scripts/neural/`; this directory retains configurations,
+manifests and evidence. Rental bundles contain their own frozen scripts and source;
+the collected bundle preserves the stopped run's original inputs.
+
+## Historical v2 evidence
+
+Architecture v2 learns directed, current-state endpoint actions. Three cloud seeds
+passed its one-mesh proof at two checkpoints. Its two-mesh smoke reported 6.94%
+mean triangle reduction versus 1.43% for constant ranking; these historical results
+do not establish current full-pilot superiority. See [the v2 implementation](V2.md)
+and [committed model evidence](evidence/action-v2/README.md).
+
+## Historical v1 documentation
+
+The remaining sections preserve the v1 graph-network experiment and its original
+commands/status. They describe that historical revision, including paths and
+budgets, rather than the current v3/v4 policy or authorization to launch training.
 
 Status, 2026-09-29: local training is stopped. The audit failure
 is fixed and the saved 25,000-update model completes the eight-asset pilot, with
@@ -50,7 +88,7 @@ The diagnostic counts geometry before depth testing, not shader execution.
 UV coordinates/charts are preserved at retained endpoints; distortion is
 reported by the existing manifest. Texture images and normal maps are unscored.
 
-## Build
+### Archived v1 build
 
 The default portable build retains explicit unavailable neural entry points.
 CUDA 12+, cuBLAS and OpenSSL enable inference. LibTorch is a training-only
@@ -84,7 +122,7 @@ functions without changing ABI-4 descriptor layouts. Returned LOD views borrow
 source vertex streams; model lifetime need not extend past generation. Concurrent
 calls own separate workspaces; each call's memory cap is independent.
 
-## First experiment
+### Archived first experiment
 
 `training-manifest.json` records 66 development assets. Six additional assets
 were excluded because their source families overlap the eight development pilot
@@ -128,7 +166,7 @@ executable, schema or optimizer settings. Completed audit rows resume only with
 matching hashes. The ten-hour limit includes preparation/training/audits after
 implementation and compilation; it is a budget, not a claimed required duration.
 
-## Sustained GPU training
+### Archived sustained GPU training
 
 The measured RTX 2080 configuration in `sustained.json` uses 64 patches/update,
 4096 core vertices/patch, two preparation workers and four bounded pinned-host

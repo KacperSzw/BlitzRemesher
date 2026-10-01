@@ -1,0 +1,228 @@
+// Bounded remote validation only. This never starts a two-hour training run.
+import fs from 'node:fs';
+import { spawn } from 'node:child_process';
+import { read, write } from './artifacts.mjs';
+const [setup, latest, minutes] = process.argv.slice(2).map(Number),
+  started = Date.now(),
+  root = '/workspace/results/hardware-validation';
+if (![setup, latest, minutes].every(Number.isFinite) || started >= setup || minutes !== 10)
+  throw new Error('Invalid hardware validation deadline');
+const deadline = Math.min(latest, started + minutes * 60000);
+fs.mkdirSync(root, { recursive: true });
+write('/workspace/results/setup-complete.json', {
+  at: started,
+  training_minutes: minutes,
+  training_deadline_ms: deadline,
+});
+let active,
+  cancelled = false;
+for (const signal of ['SIGINT', 'SIGTERM'])
+  process.on(signal, () => {
+    cancelled = true;
+    active?.kill('SIGTERM');
+  });
+const report = { complete: false, score: null, started, deadline, phases: [] };
+async function execute(
+  name,
+  args,
+  log,
+  { validation = false, maximum = 120000, allowFailure = false } = {},
+) {
+  if (cancelled || Date.now() + 5000 >= deadline)
+    throw new Error('Validation deadline or cancellation');
+  const fd = fs.openSync(root + '/' + log, 'w'),
+    begin = Date.now(),
+    child = spawn(name, args, {
+      stdio: ['ignore', fd, fd],
+      env: {
+        ...process.env,
+        ...(validation ? { VK_INSTANCE_LAYERS: 'VK_LAYER_KHRONOS_validation' } : {}),
+      },
+    });
+  active = child;
+  let hard;
+  const timer = setTimeout(
+    () => {
+      child.kill('SIGTERM');
+      hard = setTimeout(() => child.kill('SIGKILL'), 5000);
+    },
+    Math.min(maximum, deadline - Date.now() - 5000),
+  );
+  try {
+    const code = await new Promise((resolve, reject) => {
+      child.once('error', reject);
+      child.once('close', resolve);
+    });
+    report.phases.push({ name, args, log, code, seconds: (Date.now() - begin) / 1000 });
+    if (code !== 0 && !(allowFailure && [1, 2].includes(code)))
+      throw new Error(name + ' failed: ' + code);
+    if (
+      validation &&
+      /Validation Error|VUID-|SYNC-HAZARD|was not found/.test(
+        fs.readFileSync(root + '/' + log, 'utf8'),
+      )
+    )
+      throw new Error('Vulkan validation reported an error or missing layer');
+  } finally {
+    clearTimeout(timer);
+    clearTimeout(hard);
+    fs.closeSync(fd);
+    active = undefined;
+    write(root + '/report.json', report);
+  }
+}
+try {
+  await execute('build/neural/blitz-neural-vulkan-tests', [], 'vulkan-validation.log', {
+    validation: true,
+  });
+  await execute(
+    '/usr/local/cuda/bin/compute-sanitizer',
+    ['--tool', 'memcheck', '--error-exitcode', '1', 'build/neural/blitz-neural-predicate-tests'],
+    'predicate-memcheck.log',
+  );
+  await execute(
+    '/usr/local/cuda/bin/compute-sanitizer',
+    ['--tool', 'memcheck', '--error-exitcode', '1', 'build/neural/blitz-neural-vulkan-tests'],
+    'vulkan-memcheck.log',
+  );
+  await execute(
+    '/usr/local/cuda/bin/compute-sanitizer',
+    [
+      '--tool',
+      'memcheck',
+      '--error-exitcode',
+      '1',
+      'build/neural/blitz-neural-diagnostics',
+      '--check',
+    ],
+    'resident-memcheck.log',
+  );
+  await execute(
+    'build/neural/blitz-neural-hardware-profile',
+    ['ph_painted_wooden_bench', root + '/raster.json', '128'],
+    'raster.log',
+  );
+  await execute(
+    'build/neural/blitz-neural-pilot-prepare',
+    [root + '/packed-pilot', '16384'],
+    'packed-pilot.log',
+    { maximum: 190000, allowFailure: true },
+  );
+  report.packed_pilot = read(root + '/packed-pilot/report.json');
+  await execute(
+    'build/neural/blitz-neural-cycle',
+    [
+      root + '/packed-cycle',
+      '--states',
+      '2',
+      '--updates',
+      '512',
+      '--minutes',
+      '2',
+      '--gpu-memory-mib',
+      '16384',
+      '--candidate-batch',
+      '2',
+      '--update-backend',
+      'fused',
+    ],
+    'packed-cycle.log',
+    { maximum: 130000, allowFailure: true },
+  );
+  report.packed_cycle = fs.existsSync(root + '/packed-cycle/report.json')
+    ? read(root + '/packed-cycle/report.json')
+    : null;
+  report.packed_cycle_complete = report.packed_cycle?.complete === true;
+  if (!report.packed_cycle && fs.existsSync(root + '/packed-cycle/failure.json'))
+    report.packed_cycle_failure = read(root + '/packed-cycle/failure.json');
+  await execute(
+    'build/neural/blitz-neural-placement-prepare',
+    [
+      'ph_sweet_potato',
+      root + '/packed-potato',
+      '--raster-backend',
+      'vulkan',
+      '--audit-mode',
+      'sparse',
+      '--states',
+      '2',
+      '--pool',
+      '4',
+      '--pixels',
+      '64',
+      '--minutes',
+      '1',
+    ],
+    'packed-potato.log',
+  );
+  report.packed_potato = read(root + '/packed-potato/index.json');
+  if (!report.packed_potato.complete) throw new Error('Packed positive pilot did not complete');
+  await execute(
+    'build/neural/blitz-neural-cycle',
+    [
+      root + '/cycle',
+      '--states',
+      '2',
+      '--updates',
+      '512',
+      '--minutes',
+      '3',
+      '--vertex-storage',
+      'fp32',
+      '--gpu-memory-mib',
+      '16384',
+      '--candidate-batch',
+      '2',
+      '--update-backend',
+      'fused',
+    ],
+    'cycle.log',
+    { maximum: 190000 },
+  );
+  report.cycle = read(root + '/cycle/latest.json');
+  if (!report.cycle.complete) throw new Error('Incomplete remote learning cycle');
+  await execute(
+    'build/neural/blitz-neural-diagnostics',
+    [
+      '--benchmark-update',
+      root + '/cycle/data/shard-0',
+      root + '/update-benchmark.json',
+      root + '/cycle/' + report.cycle.checkpoint + '/model.blzn',
+    ],
+    'update-benchmark.log',
+  );
+  report.update_benchmark = read(root + '/update-benchmark.json');
+  await execute(
+    'build/neural/blitz-neural-action-train',
+    ['--replay', root + '/cycle/' + report.cycle.checkpoint, root + '/replay.json'],
+    'replay.log',
+  );
+  report.replay = read(root + '/replay.json');
+  if (!report.replay.passed) throw new Error('Remote checkpoint replay failed');
+  await execute(
+    'build/neural/blitz-neural-action-train',
+    [
+      '--replay',
+      'research/neural/evidence/hardware-local/replay',
+      root + '/cross-device-replay.json',
+    ],
+    'cross-device-replay.log',
+  );
+  report.cross_device_replay = read(root + '/cross-device-replay.json');
+  if (!report.cross_device_replay.passed)
+    throw new Error('Local checkpoint failed cross-device replay');
+  report.ready_for_two_hour_packed_cycle =
+    report.packed_cycle_complete && report.packed_pilot.complete;
+  report.complete = true;
+} catch (error) {
+  report.error = String(error);
+  process.exitCode = 1;
+} finally {
+  report.finished = Date.now();
+  write(root + '/report.json', report);
+  write('/workspace/results/job.json', {
+    code: process.exitCode ?? 0,
+    experiment: 'hardware-validation',
+    result: root + '/report.json',
+  });
+}

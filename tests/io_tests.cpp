@@ -1,5 +1,5 @@
 #include "blitz/io.hpp"
-#include "../tools/neural_audit_settings.hpp"
+#include "../tools/neural/audit_settings.hpp"
 #include <fstream>
 #include <iostream>
 #include <bit>
@@ -96,6 +96,23 @@ int main() {
                 visual["gpu_memory_mib"]=bad;throws([&]{model_audit_settings(visual,options);});
             }
         }
+        for(uint32_t trials:{1u,37u,65536u})for(uint8_t batch:{uint8_t(1),uint8_t(19),uint8_t(64)}) {
+            NeuralOptions options;auto visual=nlohmann::json{{"profile","coverage"},{"max_changed_area",.25}};
+            auto input=visual;input["action_trials"]=trials;input["action_batch"]=batch;
+            CHECK(settings_json(model_audit_settings(input,options))==settings_json(settings_json(visual)));
+            CHECK(options.action_trials==trials&&options.action_batch==batch);
+            CHECK(input.contains("action_trials")&&input.contains("action_batch"));
+        }
+        for(const auto& key:{"action_trials","action_batch"})for(auto bad:{nlohmann::json(0),nlohmann::json(-1),nlohmann::json(1.5),nlohmann::json("8"),nlohmann::json(65537)}) {
+            NeuralOptions options;throws([&]{model_audit_settings(nlohmann::json{{key,bad}},options);});
+        }
+        {NeuralOptions options;throws([&]{model_audit_settings(nlohmann::json{{"action_batch",65}},options);});}
+        for(auto origin:{NeuralOrigin::Source,NeuralOrigin::Previous,NeuralOrigin::Both})for(bool preserve:{false,true}) {
+            NeuralOptions options;auto visual=model_audit_settings(nlohmann::json{{"neural_origin",origin_name(origin)},{"preserve_uv",preserve}},options);
+            CHECK(options.origin==origin&&options.preserve_uv==preserve&&settings_json(visual)==settings_json(Settings{}));
+        }
+        {NeuralOptions options;throws([&]{model_audit_settings(nlohmann::json{{"neural_origin","typo"}},options);});
+            throws([&]{model_audit_settings(nlohmann::json{{"preserve_uv",1}},options);});}
         CHECK(!config.contains("output")&&!config.contains("chain"));
         throws([&]{settings_json(nlohmann::json{{"output","reuse"}});});
         auto legacy=settings_json(nlohmann::json{{"output","reuse"},{"chain","progressive"}},true);

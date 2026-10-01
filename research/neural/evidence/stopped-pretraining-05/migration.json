@@ -1,0 +1,28 @@
+{
+  "destination_schema": 4,
+  "difference": {
+    "finite": true,
+    "max_abs": 2.3668333870574543e-7,
+    "max_relative": 0.0000023956077199355955,
+    "rms": 1.4224252487478186e-8,
+    "same_shape": true,
+    "worst_index": 168
+  },
+  "native": {
+    "finite": true,
+    "max_abs": 0.0000034425418755645865,
+    "max_relative": 0.00010733961978173834,
+    "rms": 3.5745858042915227e-7,
+    "same_shape": true,
+    "worst_index": 168
+  },
+  "passed": true,
+  "probe_sha256": "34d8f86f6f0a666d15eab69ee9548d1ab2ddaf2e596512457a01689452439d39",
+  "rows": 32,
+  "source_schema": 3,
+  "source_sha256": "529292a4e8730951014ec8696ff623626d8eb9fe1b59fd4e8c343623e05e8661",
+  "threshold": 0.0002,
+  "output_sha256": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+  "initialization_only": true,
+  "training_started": false
+}

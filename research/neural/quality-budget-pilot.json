@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "manifest": "research/neural/prepared-pilot/selection.json",
+  "settings": "research/neural/refactor-smoke.json",
+  "profile": "coverage",
+  "action_batch": 16,
+  "trial_budgets": [8, 32, 128, 512, 2048, 8192, 32768, 65536],
+  "rankings": ["constant", "learned", "shuffled"],
+  "maximum_minutes": 50,
+  "stop_when_uncensored": true,
+  "score_eligible": false
+}

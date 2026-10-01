@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "review_date": "2026-10-01",
+  "primary_objective": "Minimize each audited LOD triangle count under configurable source and adjacent pixel limits, levels and last pixel size; optional appearance and UV requirements.",
+  "review": {
+    "policy": {
+      "architecture": 3,
+      "inputs": 128,
+      "hidden": [
+        64,
+        64
+      ],
+      "outputs": 12,
+      "parameters": 13196,
+      "limitation": "Independent-action MLP; auxiliary teacher feasibility is not calibrated acceptance confidence."
+    },
+    "quality": {
+      "historical_smoke_removal_ceiling_per_direct_level": 256,
+      "initial_final_retained_ratio": 0.982740768661,
+      "best_possible_retained_ratio_under_smoke_cap": 0.982603337913,
+      "width_gate_invalid_for_smoke": true,
+      "limitations": [
+        "Training scale/adjacent-state mismatch",
+        "Geometric/random candidate selection differs from deployment",
+        "Arbitrary single winner among equivalent actions",
+        "No demonstrated full-pilot superiority"
+      ]
+    },
+    "performance": {
+      "prior_completed_soak_seconds": 1221.975,
+      "learner_wait_seconds": 1140.814,
+      "learner_wait_percent": 93.36,
+      "optimizer_seconds": 31.408,
+      "optimizer_wall_percent": 2.57,
+      "interpretation": "Workers overlap; learner waiting does not prove GPU idleness."
+    }
+  },
+  "implemented": [
+    "Source/predecessor/both proposal origins with bounded shared candidate budgets and owned parent storage",
+    "Per-proposal termination reasons separate work caps from exhausted proposals",
+    "UV-conditioned version4 with gated legacy migration and retained best-effort attributes",
+    "Mixed policy teacher candidates and actual audited policy rollouts",
+    "Multiple confirmed equivalent preferred actions with unknown results masked",
+    "Multiple scales and unequal source/adjacent limits with explicit unavailable predecessor accounting",
+    "Forensic preservation before numerical checkpoint rejection",
+    "Shared settings validation and scoped immutable audit references",
+    "Component dependency split and runtime/training/tool/script directories",
+    "All-LOD/category balanced matched measurements with visible failure and incompleteness"
+  ],
+  "deferred": [
+    "Final training",
+    "Wider or graph architectures without a meaningful fixed-budget pilot signal",
+    "Claims of output improvement or release generalization",
+    "All-view or globally optimal guarantees"
+  ],
+  "stopped_training": "../stopped-pretraining-05/record.json",
+  "launch": false,
+  "score": null
+}

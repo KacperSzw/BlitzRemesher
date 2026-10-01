@@ -1,0 +1,5411 @@
+{
+  "version": 2,
+  "source_selection": "research/neural/corpus-v2/training.json",
+  "source_selection_sha256": "319e01264bbb23cf6cc3d702e40c4b3f2f366234af71263cf56e8451eb0fe1ce",
+  "source_groups": 100,
+  "profile": "coverage",
+  "max_changed_area": 0.5,
+  "condition_order": "scale-major; asset ID ascending; alternating UV mode by asset and scale",
+  "conditions": [
+    {
+      "asset": "ph_american_football",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 512,
+      "previous_steps": 0,
+      "previous_pixels": 0,
+      "source_limit": 3,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_american_football",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 256,
+      "previous_steps": 8,
+      "previous_pixels": 512,
+      "source_limit": 3,
+      "adjacent_limit": 2,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_american_football",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 128,
+      "previous_steps": 8,
+      "previous_pixels": 256,
+      "source_limit": 3.5,
+      "adjacent_limit": 2.25,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_american_football",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 64,
+      "previous_steps": 8,
+      "previous_pixels": 128,
+      "source_limit": 4,
+      "adjacent_limit": 2.5,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_american_football",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 32,
+      "previous_steps": 8,
+      "previous_pixels": 64,
+      "source_limit": 4.5,
+      "adjacent_limit": 2.75,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_american_football",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_antique_katana_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bananas",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_bark_debris_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_bolt_cutters_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_boulder_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_brass_goblets",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cardboard_box_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ceiling_fan",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_ceramic_vase_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_cabinet",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_chinese_chandelier",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_chinese_commode",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_cigarette_case",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_classic_laptop",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coast_land_rocks_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_coast_line_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_coffee_table_round_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_CoffeeCart_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_concrete_cat_statue",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_crowbar_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dead_tree_trunk",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_dry_branches_medium_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_dry_quiver_leaf",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fancy_picture_frame_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_fir_sapling",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_fire_hydrant",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_flower_gazania",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_folding_wooden_stool",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_apple_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_avocado_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_lime_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_food_pears_asian_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_food_pomegranate_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_GothicCabinet_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_horse_head",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_ladder_sectioned_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_lambis_shell",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lemon",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_life_jacket",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lightbulb_led",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_long_life_food",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_lubricant_spray",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_medical_box",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_metal_trash_can",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modern_ceiling_lamp_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_modular_airduct_circular_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_modular_industrial_pipes_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_mountainside",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_multi_cleaner_5_litre",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_namaqualand_boulder_06",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_namaqualand_rocks_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_outdoor_table_chair_set_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_overhead_crane",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pachira_aquatica_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_painted_wooden_bench",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_pine_roots",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_planter_pot_clay",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plastic_bottle_gallon",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_plastic_crate_03",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_plunger",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_pot_enamel_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_potted_plant_04",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_propane_tank",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_propane_torch",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_quiver_tree_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_rusted_hacksaw",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_screwdriver",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_screwdrivers_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_seeding_tray_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_side_table_tall_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_single_root",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_small_lpg_tank",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_small_wooden_table_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_Sofa_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_steel_frame_shelves_03",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_strawberry_chocolate_cake",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_sweet_potato",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_treasure_chest",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_tree_stump_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_utility_box_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_axe_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_cutting_board",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_display_shelves_01",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_handle_saber",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_picnic_table",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_wooden_spoon",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_wooden_stool_02",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "ph_worn_metal_rack",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "ph_yellow_onion",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_060947f2-4cb8-4f3b-98d7-61a7254842b0",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f1ec6af-193f-4969-9185-dc5dd587239d",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_1f3700e8-6d01-4488-8ab9-ea14031ef641",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_1f7d20f0-6b3f-4780-b754-91c2f9f91602",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_341c96cd-f967-4540-8ed1-d3fc56d31f12",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_4313ff92-0816-476e-aa74-46f296f10074",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_b8360103-172b-4ab2-a6ac-ab7ee9786876",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    },
+    {
+      "asset": "si_3d_package_ce850625-2cf1-4c6f-9086-0d5845d9a664",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": false
+    },
+    {
+      "asset": "si_3d_package_ff607e3c-3d88-4422-a246-3976aa4839dc",
+      "pixels": 16,
+      "previous_steps": 8,
+      "previous_pixels": 32,
+      "source_limit": 5,
+      "adjacent_limit": 3,
+      "preserve_uv": true
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 #include "blitz/remesher.hpp"
-#include "neural_internal.hpp"
+#include "neural/internal.hpp"
 #include <bit>
 #include <numeric>
 #include <stdexcept>

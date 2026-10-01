@@ -1,4 +1,5 @@
 #include "blitz/evaluate.hpp"
+#include "evaluation_settings.hpp"
 #include "coverage.hpp"
 #include "timing.hpp"
 #include "metric_angle.hpp"
@@ -281,14 +282,8 @@ template<class R> void measure_view(Measurement& current,MeshView reference,Mesh
 bool packed_coverage_enabled() {return true;}
 static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s,detail::CoverageCache* cache=nullptr,uint8_t reference_id=0,bool audit=false) {
     Measurement result;result.supersample=s.supersample;
-    if(!(s.screen_size>0)||!std::isfinite(s.screen_size)||!(b.radius>0)||!std::isfinite(b.radius)||!finite(b.center)||unsigned(s.profile)>2
-      ||!(s.limit>=0)||!std::isfinite(s.limit)||!s.supersample||s.max_supersample<s.supersample||s.max_supersample>32
-      ||!std::isfinite(s.weights.normal)||!std::isfinite(s.weights.color)||!std::isfinite(s.weights.material)
-      ||s.weights.normal<0||s.weights.color<0||s.weights.material<0
-      ||s.weights.normal>1e12||s.weights.color>1e12||s.weights.material>1e12
-      ||!std::isfinite(s.max_changed_area)||s.max_changed_area<0||s.max_changed_area>1)throw std::invalid_argument("invalid evaluation settings");
+    detail::validate_evaluation_settings(b,s);
     auto views=cameras(b,s.screen_size,s.views);
-    if(views.empty())throw std::invalid_argument("at least one camera required");
     if(identical(reference,candidate))return result;
     for(uint32_t v=0;v<views.size();++v) {
         if(s.cancelled&&s.cancelled()){result.complete=false;result.passed=false;return result;}

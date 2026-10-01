@@ -5,7 +5,19 @@ CLI, independent evaluator and reproducible research harness. Original code is
 MIT OR Apache-2.0. Skinning, morphs, alpha textures, texture-image scoring and
 engine-specific plugins are deferred.
 
-Production uses automatic hybrid generation. Both source and predecessor inputs,
+The primary product direction is a standalone neural generator that minimizes
+triangles at each scheduled LOD within the configured source and adjacent visual
+limits. Level count, minimum screen size and both error policies are configurable.
+Coverage is the first training objective; normal and attribute auditing are
+selectable. Neural quality configurations use zero triangle overhead. Time and
+resident bytes remain diagnostics and secondary choices after the visual and
+triangle objectives. Minutes of offline work are acceptable when they improve
+audited output. Classical reducers can supply teachers and independent controls;
+the neural runtime does not require a classical simplifier to produce proposals.
+These objectives describe bounded audited search, not a global optimum.
+
+Classical compatibility path: automatic hybrid generation remains supported.
+Both source and predecessor inputs,
 and both endpoint and repositioning reductions, propose audited candidates.
 The selected complete chain minimizes packed resident vertex/index bytes while
 each scheduled LOD uses at most floor(reference_triangles*(1+overhead)) triangles.
@@ -42,8 +54,14 @@ sqrt(pixel_distance^2+(normal_weight*angle)^2+
 color_weight^2*linear_rgb_distance^2+material_weight^2*(id_mismatch)).
 Profiles are coverage, coverage+normals, and coverage+normals+attributes.
 Defaults: 1 pixel per 10 degrees, color weight 4, material mismatch weight 4.
-Weights are configurable curves, including zero. UV charts are preserved and
-distortion is reported; opaque texture images and normal maps are not scored.
+Weights are configurable curves, including zero. The classical path and neural
+v1-v3 models preserve UV charts and report distortion. Neural v4 policies encode
+the separately configurable `preserve_uv` condition. It defaults to on; turning
+it off removes UV-specific seam/foldover restrictions while retaining available
+UVs and tangents on a best-effort basis. It does not remove geometric legality or
+enabled visual gates, and it does not discard supplied source attributes. Reuse
+still preserves the referenced source bytes. Opaque texture images and normal
+maps are not scored in either mode.
 
 Cameras are derived only from source bounds. Search: 42 orthographic and 12
 perspective; intermediate: 162+32; audit: separately rotated 642+64. FOV=60 deg.
@@ -81,8 +99,8 @@ recorded explicitly without inventing a predecessor.
 Representation failures yield no training labels; an unconfirmed final chain
 remains an explicit failed diagnostic. Packing does not relax visual limits.
 
-Quality preset allows 64 candidate evaluations/level, fast eight. Automatic search
-reserves half the bounded beam for triangles and fills the rest by resident bytes,
+The classical quality preset allows 64 candidate evaluations/level, fast eight.
+Its automatic search reserves half the bounded beam for triangles and fills the rest by resident bytes,
 with an exact source fallback. Counts
 must not increase with level. Cancellation returns a validated incumbent with
 an explicit completion status. Benchmarks use deterministic work budgets.
@@ -92,8 +110,24 @@ triangle count with link-condition rejections, it tries at most one additional
 topology-relaxed proposal per LOD. This work is in addition to `candidate_budget`
 and is counted in `candidate_evaluations` and `topology_fallback_proposals`.
 The candidate must pass the same source and adjacent pixel and area audits.
-The reducer still checks face orientation, UV foldovers and attribute/material
-locks, but it does not guarantee manifold topology or prevent new intersections.
+The classical reducer still checks face orientation, UV foldovers and
+attribute/material locks, but it does not guarantee manifold topology or prevent
+new intersections.
+
+Neural action policies can propose from source, preceding emitted LOD, or both.
+Origins share the same total candidate budget in a matched comparison. Each
+proposal's action trials and batch size are explicit execution settings, recorded
+separately from visual limits. Predecessor inputs retain their own compact index
+domain and ownership; feature normalization and quantization stay in the original
+source domain. Every accepted proposal still passes source and adjacent audits.
+Record target completion, exhausted legal/acceptable actions, infeasible seeds,
+trial caps, cancellation and resource failures separately. A work cap or failed
+seed is not evidence of visual exhaustion. Keep all scheduled LODs and unreduced
+fallbacks in quality comparisons; show per-level regressions as well as the
+category-balanced chain aggregate. Incomplete comparisons have no score.
+Cancelled packed generation retains a fully confirmed chain if available;
+otherwise it returns only unchanged LOD0 with Cancelled status. An unaudited
+scheduled raw-source chain is not a valid packed fallback.
 
 Public C ABI: strided borrowed streams, versioned descriptors, explicit status,
 opaque result ownership, read-only views and destruction inside the library.
@@ -144,7 +178,7 @@ without an extra cancellation poll. Charged bytes include retained vector and
 entry capacities, including overlapping entry arrays during growth; ordinary
 evaluator scratch and allocator bookkeeping are outside the cache allowance.
 The cache preserves view order, refinement, float distances and acceptance.
-Public standalone evaluation is uncached. Production has one
+Public standalone evaluation is uncached. The classical path has one
 precision path: float32 geometry, double quadric storage/arithmetic/solving,
 and double candidate costs. Float quadric/cost variants are archived research.
 UNORM16 positions are excluded from the production CPU reducer following the

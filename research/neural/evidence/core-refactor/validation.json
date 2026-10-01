@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "date": "2026-10-01",
+  "phase": "neural refactor before integration with updated main",
+  "cpu_ctest": {
+    "passed": 22,
+    "total": 22
+  },
+  "asan_ubsan_ctest": {
+    "passed": 21,
+    "total": 21
+  },
+  "cuda_vulkan_training_ctest": {
+    "passed": 35,
+    "total": 35
+  },
+  "node_contracts": {
+    "passed": 66,
+    "total": 66
+  },
+  "external_installed_consumers": {
+    "passed": 2,
+    "total": 2,
+    "disabled_dependencies": [
+      "Torch",
+      "CURL",
+      "LibArchive",
+      "nlohmann_json",
+      "OpenSSL",
+      "CUDAToolkit",
+      "Vulkan"
+    ]
+  },
+  "compute_sanitizer": {
+    "action_errors": 0,
+    "vulkan_errors": 0
+  },
+  "vulkan_validation": {
+    "errors": 0,
+    "warnings": "Existing shader outputs are unused for some attachment profiles; log retained."
+  },
+  "device": "NVIDIA GeForce RTX 2080, 8 GiB",
+  "new_gpu_rentals": 0,
+  "final_training_started": false,
+  "quality_score": null,
+  "limitations": [
+    "Deterministic engineering validation; no full-pilot or generalization claim",
+    "Audited finite views are not an all-view guarantee"
+  ],
+  "additional_cloud_path_contracts": {
+    "passed": 20,
+    "total": 20
+  }
+}

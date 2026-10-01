@@ -3,11 +3,18 @@
 ## User requirements
 
 Build a reusable C++20 library for game-engine import pipelines that generates
-configurable LOD chains for static, opaque meshes.
-Minimize triangles within audited screen-space error limits against the previous LOD and source, using selectable coverage, normal, and attribute quality profiles.
-Automatically choose vertex storage and reduction strategy within the configured
-triangle/memory tradeoff;
-measure bake time and improve results through reproducible comparisons.
+configurable neural LOD chains for static, opaque meshes. The neural generator
+must work independently; classical reducers remain teacher and comparison tools,
+with their existing public behavior preserved for compatibility.
+Minimize triangles at each scheduled LOD within audited screen-space error limits
+against both the previous emitted LOD and immutable source. Make level count,
+minimum screen size and source/transition limits configurable. Start with coverage;
+normal/attribute preservation is optional. UV preservation is separately selectable
+for v4 policies; disabling it retains best-effort attribute data.
+Use zero triangle overhead for neural quality comparisons. Memory and bake time
+are secondary measurements and never compensate for a failed visual gate. Offline
+quality may justify minutes of work; improve efficiency through reproducible
+comparisons rather than reducing the accepted quality contract.
 
 Audited views are not an all-view or optimality guarantee. Read docs/SPEC.md
 for behavior and research/PROTOCOL.md before changing scores or comparisons.

@@ -6,7 +6,82 @@ static void require(bool value, const char* message) {
     if (!value)
         throw std::runtime_error(message);
 }
+static void proposal_budget_contract() {
+    Mesh source;
+    for (unsigned y = 0; y < 3; ++y)
+        for (unsigned x = 0; x < 3; ++x)
+            source.positions.push_back({float(x), float(y), 0});
+    for (uint32_t y = 0; y < 2; ++y)
+        for (uint32_t x = 0; x < 2; ++x) {
+            const uint32_t a = y * 3 + x;
+            source.indices.insert(source.indices.end(), {a, a + 1, a + 4, a, a + 4, a + 3});
+        }
+    Settings settings;
+    settings.levels = 4;
+    settings.base_pixels = 32;
+    settings.last_pixels = 8;
+    settings.profile = Profile::Coverage;
+    settings.triangle_overhead_bps = 0;
+    settings.beam_width = 1;
+    settings.research.trace = true;
+    detail::GenerationHooks hooks;
+    // This fixture tests search allocation; its synthetic evaluator makes no
+    // visual-quality claim. Only endpoint proposals can reduce the fixture.
+    hooks.evaluate = [](MeshView, MeshView, const Bounds&, const EvalSettings&) {
+        return Measurement{};
+    };
+    hooks.confirm = [](Result&) { return true; };
+    hooks.propose_guarded = [](MeshView input, MeshView, MeshView, const Bounds&,
+                               const ReduceSettings& rs, const EvalSettings&, const EvalSettings&,
+                               const EvalSettings&, const EvalSettings&) {
+        Lod proposal;
+        proposal.shared_vertices = rs.output == OutputMode::Reuse;
+        proposal.data = copy_mesh(input);
+        if (proposal.shared_vertices)
+            proposal.data.indices.resize(rs.target_triangles * 3);
+        return proposal;
+    };
+    for (uint16_t budget : {2, 4}) {
+        settings.candidate_budget = budget;
+        auto result = detail::generate_with_hooks(source.view(), settings, {}, &hooks);
+        require(result.status == Status::Complete && result.lods.size() == 4,
+                "bounded hook schedule incomplete");
+        if (budget == 2)
+            for (size_t level = 0; level < result.lods.size(); ++level)
+                require(result.lods[level].view(source.view()).triangles() == (8u >> level),
+                        "small proposal budget starved endpoint reduction at a later LOD");
+        require(result.lods.back().view(source.view()).triangles() == 1,
+                "extra proposal budget failed to reach the fixture's reduction bound");
+        for (uint8_t level = 1; level < 4; ++level) {
+            std::vector<ProposalTrace> proposals;
+            for (const auto& proposal : result.proposals)
+                if (proposal.level == level)
+                    proposals.push_back(proposal);
+            require(proposals.size() == budget, "hook proposal budget changed");
+            require(proposals[0].strategy != proposals[1].strategy,
+                    "first two proposals must cover both output modes");
+            require(level == 1 || proposals[0].origin != proposals[1].origin,
+                    "first two proposals must cover both distinct origins");
+        }
+    }
+    for (auto output : {OutputMode::Reuse, OutputMode::Rebuild})
+        for (auto chain : {ChainMode::Direct, ChainMode::Progressive, ChainMode::Hybrid}) {
+            settings.candidate_budget = 2;
+            settings.research.output = output;
+            settings.research.chain = chain;
+            auto result = detail::generate_with_hooks(source.view(), settings, {}, &hooks);
+            require(result.status == Status::Complete, "forced hook schedule incomplete");
+            for (const auto& proposal : result.proposals) {
+                require(proposal.strategy == (output == OutputMode::Reuse ? 4 : 5),
+                        "hook schedule ignored forced output mode");
+                if (chain != ChainMode::Hybrid)
+                    require(proposal.origin == (chain == ChainMode::Direct ? 0 : 1),
+                            "hook schedule ignored forced origin");
+            }
+        }
+}
 int main() try {
+    proposal_budget_contract();
     Mesh source;
     source.positions = {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}};
     source.indices = {0, 1, 2, 0, 2, 3};

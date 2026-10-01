@@ -525,35 +525,51 @@ SearchPass search_pass(MeshView source, const Settings& s, const Proposer& propo
         };
         std::vector<Trials> parent_trials;
         if (hooks) {
-            // Interleave origins within each parent. Independent priority cycles
-            // visit all four output/origin pairs even with one proposal per level.
-            std::array outputs{OutputMode::Rebuild, OutputMode::Reuse};
-            if (automatic && level % 2 == 0)
-                std::swap(outputs[0], outputs[1]);
-            const bool direct_first = level % 4 < 2;
-            for (auto output : outputs) {
+            // Each diagonal covers both outputs and both origins in two slots.
+            // Rotate first priority across levels, then visit further parents
+            // breadth-first so a small budget cannot all go to one strategy.
+            struct Strategy {
+                OutputMode output;
+                bool direct;
+            };
+            constexpr std::array<Strategy, 4> strategies{{{OutputMode::Rebuild, true},
+                                                          {OutputMode::Reuse, false},
+                                                          {OutputMode::Reuse, true},
+                                                          {OutputMode::Rebuild, false}}};
+            std::array<std::vector<Slot>, 4> grouped;
+            for (size_t strategy = 0; strategy < strategies.size(); ++strategy) {
+                const auto [output, direct] = strategies[strategy];
                 if (!automatic && output != *s.research.output)
                     continue;
-                for (auto& parent : beam)
-                    for (bool direct : {direct_first, !direct_first}) {
-                        if (automatic && !result.added_vertex_budget_bytes && beam.size() > 1 &&
-                            parent == source_path &&
-                            parent->lod.view(source).triangles() == source.triangles())
-                            continue;
-                        if (direct && s.research.chain == ChainMode::Progressive)
-                            continue;
-                        if (!direct && (s.research.chain == ChainMode::Direct ||
-                                        (s.research.chain == ChainMode::Hybrid &&
-                                         same_mesh_data(source, parent->lod.view(source)))))
-                            continue;
-                        if (automatic && std::any_of(slots.begin(), slots.end(), [&](auto& slot) {
-                                return slot.direct == direct && slot.output == output &&
-                                       same_mesh_data(slot.parent->lod.view(source),
-                                                      parent->lod.view(source));
-                            }))
-                            continue;
-                        slots.push_back({parent, direct, output, {}, {}, {}});
-                    }
+                auto& group = grouped[strategy];
+                for (auto& parent : beam) {
+                    if (automatic && !result.added_vertex_budget_bytes && beam.size() > 1 &&
+                        parent == source_path &&
+                        parent->lod.view(source).triangles() == source.triangles())
+                        continue;
+                    if (direct && s.research.chain == ChainMode::Progressive)
+                        continue;
+                    if (!direct && (s.research.chain == ChainMode::Direct ||
+                                    (s.research.chain == ChainMode::Hybrid &&
+                                     same_mesh_data(source, parent->lod.view(source)))))
+                        continue;
+                    if (automatic && std::any_of(group.begin(), group.end(), [&](auto& slot) {
+                            return same_mesh_data(slot.parent->lod.view(source),
+                                                  parent->lod.view(source));
+                        }))
+                        continue;
+                    group.push_back({parent, direct, output, {}, {}, {}});
+                }
+            }
+            for (size_t depth = 0;; ++depth) {
+                const auto before = slots.size();
+                for (unsigned member = 0; member < 4; ++member) {
+                    auto& group = grouped[((level - 1) & 3u) ^ member];
+                    if (depth < group.size())
+                        slots.push_back(std::move(group[depth]));
+                }
+                if (slots.size() == before)
+                    break;
             }
         } else {
             // Strategy-major traversal gives both placements/origins a turn even at small budgets.
@@ -710,10 +726,9 @@ SearchPass search_pass(MeshView source, const Settings& s, const Proposer& propo
                     detail::ScopedTime timer(s.performance ? &s.performance->reduction_ns
                                                            : nullptr);
                     if (hooks && hooks->propose_guarded)
-                        candidate = hooks->propose_guarded(input, source, parent->lod.view(source),
-                                                           result.reference_bounds, rs,
-                                                           audit_source, audit_adj, search_source,
-                                                           search_adj);
+                        candidate = hooks->propose_guarded(
+                            input, source, parent->lod.view(source), result.reference_bounds, rs,
+                            audit_source, audit_adj, search_source, search_adj);
                     else if (hooks)
                         candidate =
                             hooks->propose(input, rs, search_source, steps[level].transition);

@@ -64,7 +64,10 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         throw std::invalid_argument("choose a fresh placement dataset directory");
     fs::create_directories(output);
     auto load_start = std::chrono::steady_clock::now();
-    double proposals_seconds = 0, trial_seconds = 0, audit_seconds = 0, commit_seconds = 0;
+    double proposals_seconds = 0, trial_seconds = 0, audit_seconds = 0, commit_seconds = 0,
+           packing_seconds = 0, seed_seconds = 0, setup_seconds = 0, rollout_seconds = 0,
+           predecessor_seconds = 0, confirmation_seconds = 0, final_audit_seconds = 0,
+           output_seconds = 0;
     auto timed = [](double& total, auto&& fn) {
         auto t = std::chrono::steady_clock::now();
         auto value = fn();
@@ -95,11 +98,39 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     NeuralStats stats;
     ActionData data;
     data.architecture = architecture;
-    double load_seconds =
-        std::chrono::duration<double>(std::chrono::steady_clock::now() - load_start).count();
     auto start = std::chrono::steady_clock::now();
+    double load_seconds = std::chrono::duration<double>(start - load_start).count();
     auto seconds = [&] {
         return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    };
+    auto record_timings = [&](json& index) {
+        const auto now = std::chrono::steady_clock::now();
+        const double preparation = std::chrono::duration<double>(now - start).count();
+        index["seconds"] = preparation;
+        index["total_wall_seconds"] = std::chrono::duration<double>(now - load_start).count();
+        index["timing_version"] = 2;
+        // Disjoint host wall intervals, ending before the final index write and
+        // teardown. The packing breakdown is a subset, never an added phase.
+        index["timing_breakdown"] = {
+            {"packing_and_baseline_seconds", {{"seed_preparation_seconds", seed_seconds}}}};
+        index["timings"] = {
+            {"load_and_session_seconds", load_seconds},
+            {"packing_and_baseline_seconds", packing_seconds},
+            {"state_setup_seconds", setup_seconds},
+            {"policy_rollout_seconds", rollout_seconds},
+            {"predecessor_snapshot_and_audit_seconds", predecessor_seconds},
+            {"features_and_proposals_seconds", proposals_seconds},
+            {"candidate_build_seconds", trial_seconds},
+            {"candidate_audit_seconds", audit_seconds},
+            {"exact_confirmation_seconds", confirmation_seconds},
+            {"commit_seconds", commit_seconds},
+            {"final_audit_seconds", final_audit_seconds},
+            {"final_output_seconds", output_seconds},
+            {"other_preparation_seconds",
+             std::max(0., preparation - packing_seconds - setup_seconds - rollout_seconds -
+                              predecessor_seconds - proposals_seconds - trial_seconds -
+                              audit_seconds - confirmation_seconds - commit_seconds -
+                              final_audit_seconds - output_seconds)}};
     };
     auto cancel = [&] {
         return (request.cancelled && request.cancelled()) || seconds() > minutes * 60;
@@ -177,6 +208,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                                    {"trials", 0}}
                                             : baseline.diagnostics);
     if (!baseline.final.passed || !baseline.final.complete) {
+        packing_seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - packing_start).count();
+        const auto output_start = std::chrono::steady_clock::now();
         save_actions(output / "actions.bin", data, compact_data);
         json index = {{"schema", architecture},
                       {"complete", false},
@@ -197,12 +231,16 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                       {"seconds", seconds()},
                       {"training_started", false},
                       {"baseline", measurement_json(baseline.final)}};
-        write_json(output / "index.json", index);
         write_json(output / "trajectory.json", trace);
+        output_seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - output_start).count();
+        record_timings(index);
+        write_json(output / "index.json", index);
         return {false, std::move(data), index};
     }
     // Seeds are proposals, never targets. Every seed passes the unchanged
     // original-source audit; a rejected seed remains visible and uses LOD0.
+    const auto seed_start = std::chrono::steady_clock::now();
     if (!std::isfinite(retained) || retained <= 0 || retained > 1)
         throw std::invalid_argument("episode retained fraction");
     auto quantization = vertex_bounds(source);
@@ -248,16 +286,19 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     }
     seed_result["start_retained"] = double(baseline.mesh.view().triangles()) / source.triangles();
     write_json(output / "seed.json", seed_result);
-    double packing_seconds =
+    seed_seconds =
+        std::chrono::duration<double>(std::chrono::steady_clock::now() - seed_start).count();
+    packing_seconds =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - packing_start).count();
     auto state_start = std::chrono::steady_clock::now();
     if (!prepared_state)
         prepared_state = std::make_unique<GpuActionState>(baseline.mesh.view(), options, true,
                                                           &quantization, source);
     auto& state = *prepared_state;
-    double setup_seconds =
+    setup_seconds =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - state_start).count();
     if (rollout_trials) {
+        const auto rollout_start = std::chrono::steady_clock::now();
         auto gate = [&](DeviceMeshView candidate) {
             auto a = audit.evaluate(source, candidate, bounds, e, &stats);
             auto b = e.limit == adjacent.limit
@@ -295,6 +336,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         }
         seed_result["start_retained"] = double(state.view().faces) / source.triangles();
         write_json(output / "seed.json", seed_result);
+        rollout_seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - rollout_start).count();
     }
     struct TeacherAudit {
         bool known{}, passed{};
@@ -316,9 +359,13 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     };
     for (uint32_t step = 0; step < states + previous_steps && !unknown && !cancel(); ++step) {
         if (previous_steps && step == previous_steps) {
+            const auto predecessor_start = std::chrono::steady_clock::now();
             previous = state.snapshot();
             auto a = audit.evaluate(source, previous.data.view(), bounds, e, &stats),
                  d = audit.evaluate(source, previous.data.view(), bounds, destination, &stats);
+            predecessor_seconds +=
+                std::chrono::duration<double>(std::chrono::steady_clock::now() - predecessor_start)
+                    .count();
             if (!a.complete || !d.complete) {
                 unknown = true;
                 break;
@@ -568,6 +615,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
             trace.push_back(state_trace);
             break;
         }
+        const auto confirmation_start = std::chrono::steady_clock::now();
         std::vector<TeacherChoice> choices(actions.size());
         for (size_t i = 0; i < actions.size() && !cancel(); ++i) {
             auto& label = data.labels[first + i];
@@ -607,6 +655,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                             b.changed_area / adjacent.max_changed_area});
             choices[i] = {candidate.faces, margin, a.complete && b.complete};
         }
+        confirmation_seconds +=
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - confirmation_start)
+                .count();
         if (unknown || cancel()) {
             state_trace["complete"] = false;
             state_trace["exact_confirmation_incomplete"] = true;
@@ -646,6 +697,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                          .dump()
                   << std::endl;
     }
+    const auto final_audit_start = std::chrono::steady_clock::now();
     auto final = state.view();
     auto a = audit.evaluate(source, final, bounds, e, &stats),
          b = !emitted && e.limit == adjacent.limit
@@ -654,6 +706,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     bool complete = !cancel() && !unknown &&
                     (data.states() == states + previous_steps || exhausted) && a.complete &&
                     a.passed && b.complete && b.passed;
+    final_audit_seconds =
+        std::chrono::duration<double>(std::chrono::steady_clock::now() - final_audit_start).count();
+    const auto output_start = std::chrono::steady_clock::now();
     CompactActions encoded;
     if (compact_data) {
         encoded = compact_actions(data);
@@ -677,53 +732,43 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                        {"identical_adjacent_audits", reused_adjacent},
                                        {"pruned_candidates", pruned_queries},
                                        {"unbeatable_incumbent_skips", proven_losers}});
-    write_json(output / "index.json",
-               {{"schema", architecture},
-                {"status", complete   ? (previous_steps && !emitted ? "predecessor_unavailable"
-                                         : exhausted                ? "search_exhausted"
-                                                                    : "complete")
-                           : cancel() ? "cancelled"
-                           : (a.resource_limited || b.resource_limited || stats.resource_failures)
-                               ? "resource_failure"
-                           : unknown ? "unknown_audit"
-                                     : "final_audit_failed"},
-                {"baseline", measurement_json(baseline.final)},
-                {"source_audit", measurement_json(a)},
-                {"adjacent_audit", measurement_json(b)},
-                {"complete", complete},
-                {"asset", asset},
-                {"category", metadata.at("category")},
-                {"contract_sha256", file_sha256(output / "contract.json")},
-                {"path", "actions.bin"},
-                {"sha256", file_sha256(output / "actions.bin")},
-                {"states", data.states()},
-                {"queries", queries},
-                {"accepted", accepted},
-                {"source_triangles", source.triangles()},
-                {"teacher_triangles", final.faces},
-                {"reference_confirmed", a.complete && a.passed && b.complete && b.passed},
-                {"requested_condition_available", !previous_steps || emitted},
-                {"preceding_lod_emitted", emitted},
-                {"previous_triangles", previous_view.triangles()},
-                {"seconds", seconds()},
-                {"training_started", false},
-                {"timings",
-                 {{"load_and_session_seconds", load_seconds},
-                  {"packing_and_baseline_seconds", packing_seconds},
-                  {"state_setup_seconds", setup_seconds},
-                  {"features_and_proposals_seconds", proposals_seconds},
-                  {"candidate_build_seconds", trial_seconds},
-                  {"candidate_audit_seconds", audit_seconds},
-                  {"commit_seconds", commit_seconds},
-                  {"other_preparation_seconds",
-                   std::max(0., seconds() - packing_seconds - setup_seconds - proposals_seconds -
-                                    trial_seconds - audit_seconds - commit_seconds)}}},
-                {"audit", neural_json(stats)}});
-    auto index = read_json(output / "index.json");
+    json index = {{"schema", architecture},
+                  {"status", complete   ? (previous_steps && !emitted ? "predecessor_unavailable"
+                                           : exhausted                ? "search_exhausted"
+                                                                      : "complete")
+                             : cancel() ? "cancelled"
+                             : (a.resource_limited || b.resource_limited || stats.resource_failures)
+                                 ? "resource_failure"
+                             : unknown ? "unknown_audit"
+                                       : "final_audit_failed"},
+                  {"baseline", measurement_json(baseline.final)},
+                  {"source_audit", measurement_json(a)},
+                  {"adjacent_audit", measurement_json(b)},
+                  {"complete", complete},
+                  {"asset", asset},
+                  {"category", metadata.at("category")},
+                  {"contract_sha256", file_sha256(output / "contract.json")},
+                  {"path", "actions.bin"},
+                  {"sha256", file_sha256(output / "actions.bin")},
+                  {"states", data.states()},
+                  {"queries", queries},
+                  {"accepted", accepted},
+                  {"source_triangles", source.triangles()},
+                  {"teacher_triangles", final.faces},
+                  {"reference_confirmed", a.complete && a.passed && b.complete && b.passed},
+                  {"requested_condition_available", !previous_steps || emitted},
+                  {"preceding_lod_emitted", emitted},
+                  {"previous_triangles", previous_view.triangles()},
+                  {"seconds", seconds()},
+                  {"training_started", false},
+                  {"audit", neural_json(stats)}};
     index["seed"] = seed_result;
     index["invalid_candidates"] = invalid_candidates;
     if (complete)
         index["episode_sha256"] = file_sha256(output / "episode.bin");
+    output_seconds =
+        std::chrono::duration<double>(std::chrono::steady_clock::now() - output_start).count();
+    record_timings(index);
     write_json(output / "index.json", index);
     return {complete, std::move(data), std::move(index), std::move(encoded)};
 }

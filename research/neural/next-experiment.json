@@ -1,7 +1,7 @@
 {
   "version": 2,
   "launch": false,
-  "status": "Prepared experiment; local CPU/CUDA/Vulkan contracts passed. Requires matched development pilot evidence before any final training launch.",
+  "status": "Bounded v4 pilot recipe only; final training disabled. Requires current integration validation, teacher readiness and matched development evidence; no new training launched.",
   "objective": "Reduce complete audited LOD-chain triangle count; coverage first; record bytes and time separately",
   "architecture": 4,
   "hidden_width": 64,
@@ -11,7 +11,7 @@
   "validation_selection": "research/neural/corpus-v2/validation.json",
   "curriculum": "research/neural/next-curriculum.json",
   "curriculum_sha256": "8324e1557f6ad17a314f417f9982d50af676ca7eecdc9b525f4e030b70255593",
-  "initialization": "Explicit v3-to-v4 conversion using --migrate-policy with a collected exact input.pt probe; unchanged 2e-4 FP64/native gate; fresh optimizer",
+  "initialization": "Validated explicit v3-to-v4 migration with saved exact input.pt probe; unchanged 2e-4 FP64/native gate; load via --initialize with fresh optimizer",
   "states_per_episode": 16,
   "updates_per_shard": 128,
   "batch": 512,
@@ -52,6 +52,12 @@
     "width_changes": false
   },
   "cycle_arguments": [
+    "--initialize",
+    "runs/neural/v4-initialization/model.blzn",
+    "--duration-minutes",
+    "5",
+    "--finalize-minutes",
+    "2",
     "--architecture",
     "4",
     "--teacher-selection",
@@ -95,9 +101,28 @@
     "--corpus",
     "research/neural/corpus-v2/corpus.json",
     "--training-selection",
-    "research/neural/corpus-v2/training.json"
+    "research/neural/corpus-v2/training.json",
+    "--mask-only-coverage",
+    "on",
+    "--quality",
+    "on"
   ],
   "initialization_model": "runs/neural/v4-initialization/model.blzn",
   "initialization_proof": "research/neural/evidence/stopped-pretraining-05/migration.json",
-  "validation_evidence": "research/neural/evidence/core-refactor/validation.json"
+  "validation_evidence": "research/neural/evidence/core-refactor/validation.json",
+  "final_training": false,
+  "duration_minutes": 5,
+  "finalize_minutes": 2,
+  "process_deadline_seconds": 600,
+  "initialization_sha256": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+  "readiness_prerequisites": [
+    "Current integration CPU/sanitizer/CUDA/Vulkan/training contracts pass; pre-integration evidence alone is insufficient",
+    "Initializer and curriculum match their recorded SHA-256 values; all selected corpus files are present and verified",
+    "NVIDIA device, CUDA build architecture and Vulkan graphics exposure match; 16384 MiB library budget leaves driver/runtime headroom on an otherwise available GPU",
+    "Bounded teacher-only readiness completes with batch parity and no resource/unknown-label regression; test rollout64 and both UV modes on representative larger meshes separately",
+    "Use a fresh run directory and preserve contract, binary/config/model hashes, reports, failed conditions and checkpoint numerical-gate artifacts",
+    "Pilot duration completion is not full curriculum coverage; inspect available/unavailable conditions and screen/preservation/episode distributions",
+    "Final training remains disabled pending matched development full-chain quality/control evidence under frozen budgets"
+  ],
+  "launch_method": "Manual bounded cycle invocation after prerequisites; gpu-refactor cloud route remains historical v3 and does not consume this recipe"
 }

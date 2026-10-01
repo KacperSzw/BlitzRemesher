@@ -58,12 +58,20 @@ configuration and falls back to compilation on a mismatch. Broad package and
 CMake metadata checks deliberately allow conservative misses; changing an
 unrelated installed package can currently cause a rebuild.
 
-The current rental's baseline was also exported and validated by a separate
+The completed hour's baseline was also exported and validated by a separate
 CPU-only probe without changing its source, build files or executable. The
 corrected probe exported in 1,691 ms and validated in 1,543 ms; its downloaded
 archive is 1,936,211 bytes. This proves same-host verification, not a cache hit or
 speedup on a second Pod. `runs/neural/startup-prepare-01` successfully prepared
 and rechecked all 32 inputs, including that artifact, without starting a rental.
+
+The subsequent correctness fixes changed the comparison overlay to
+`worker-join-correctness-v3`. That collected v2 artifact is now incompatible:
+local admission rejects it, and remote restoration takes the build fallback
+before inspecting the environment. The fresh no-cache preparation at
+`runs/neural/baseline-correctness-v3-prepared` contains 30 verified inputs and
+freezes source `17294cb`; it has not been launched. A compatible Ubuntu v3
+artifact must be built before baseline reuse can benefit a future run.
 
 ## Remaining work and limits
 

@@ -1,0 +1,1999 @@
+{
+  "version": 1,
+  "kind": "Final local integration, corrected runtime quality, actual hour label/timing analysis and unlaunched baseline v3 preparation",
+  "source_revision": "17294cbe8dfeaf112b2ca7f57088e210ac5ad94f",
+  "files": [
+    {
+      "file": "baseline-v3/baseline-build.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/baseline-build.json",
+      "sha256": "1b13ff2e840064f4440c8c27f76930a58b57c372bba4ecbbbbe1b45c34e28aac",
+      "bytes": 1175,
+      "uncompressed_sha256": "f3ad6c5e8d37e5e21403d2a19c56c5ee9812616baa85d9f3cfe0b031039f2be4",
+      "uncompressed_bytes": 2935
+    },
+    {
+      "file": "baseline-v3/build.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/build.log",
+      "sha256": "c580e585be24e4e099a0ff057840e7b6a375714791174386a156c8d8b71390d3",
+      "bytes": 2065,
+      "uncompressed_sha256": "c786f0593bbb59d0485d5e66b153d4c80ab13af6e655c903a3007d3566cef45b",
+      "uncompressed_bytes": 10983
+    },
+    {
+      "file": "baseline-v3/configure.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/configure.log",
+      "sha256": "6f120d44a8c82bf902d2ac603376fcdd6d83da9e3ec6038864271a7abd5b3125",
+      "bytes": 841,
+      "uncompressed_sha256": "8d65cd7229a637a9cf16819ea7ca3d1fe14d97d43cf389da78d8818f4e90e9fb",
+      "uncompressed_bytes": 2010
+    },
+    {
+      "file": "baseline-v3/independent-verification.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/independent-verification.json",
+      "sha256": "57baf158c448422b85862320076c3c1d6b3a57d169583c4894a0624e2d3a15b9",
+      "bytes": 1478,
+      "uncompressed_sha256": "65cb470faf4cab1861c2d290c87327514eed0801016d20d8b89b542130910d66",
+      "uncompressed_bytes": 17425
+    },
+    {
+      "file": "baseline-v3/local-abba-context.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-abba-context.json",
+      "sha256": "5c246795e27fcaa312b6d3557eff1a4a5cac449df654e2d6a8d9fbdd1eb0c0f3",
+      "bytes": 842,
+      "uncompressed_sha256": "8a0641b7fbadc34289ddddfd95e9635a45c0d02775d9461f8bb0cc18101d0cf5",
+      "uncompressed_bytes": 2042
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/index.json",
+      "sha256": "ed329dd886d1858f088460c3fd16c2db7b2e2aebc8bff94a54573e17f5a9cdef",
+      "bytes": 1294,
+      "uncompressed_sha256": "837a1b97e49b882c9f57f4d26f9cb21aa727a34dcbd46095a1effb08bb00aced",
+      "uncompressed_bytes": 4086
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/contract.json",
+      "sha256": "4b4b510ab8a0bcb49ee47adfd5e8ce9321b6ccf67bb394cdd226bb5b660e00cd",
+      "bytes": 1619,
+      "uncompressed_sha256": "aab0e8b406cc9924c329acf4877c64f6180ee11073c3204c79eb8e30e327c798",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/index.json",
+      "sha256": "c818dc16d5718463a80615a6f2f97772a9750fcc727165059cd2541f5c196238",
+      "bytes": 1295,
+      "uncompressed_sha256": "edfcaefc2d5bdd05ad74c6f242cca9d9a5ac2a78d351cdc5da0aa5cb88100ef9",
+      "uncompressed_bytes": 4101
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/report.json",
+      "sha256": "6c7b700de17808355747ac3116701928294e35c74e53e24029d01598c137e0c7",
+      "bytes": 3352,
+      "uncompressed_sha256": "f400c8a8826a33e6f3c77f4c49c3f0ce5452186dec7cbebd9d2dd3a188fb9657",
+      "uncompressed_bytes": 25108
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/index.json",
+      "sha256": "cb87a996ba78bae232cf2aba6f2a981c0e40ff4b456afd285e29ca18c8269a0c",
+      "bytes": 1288,
+      "uncompressed_sha256": "d55594bb8c0a8bc6653a02ee27f44cde059a8318030babc45400a6bd21eb1629",
+      "uncompressed_bytes": 4074
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/index.json",
+      "sha256": "0eb64567ac65afc9338f3b087fc07e2b2158c1ef8fb0b776d908caaa03f92669",
+      "bytes": 1290,
+      "uncompressed_sha256": "81f6c25d45e71921dc6f7acbf760ebcbf3de210cbba45aaf6ef31b8f265c6b06",
+      "uncompressed_bytes": 4073
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/0-baseline.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/0-baseline.log",
+      "sha256": "6e54f841c69d95bedb09d54138c69eb2fb160ed29798f660fe6f5b3fed497e5b",
+      "bytes": 248,
+      "uncompressed_sha256": "3d69541d0cf07af81e7d29af8addbce360c51b528d3879be54e2a8b52ef144c5",
+      "uncompressed_bytes": 1042
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/index.json",
+      "sha256": "b87038f36463aed156554815be9828c878511e2c5c453430ac8abc9b5f852e14",
+      "bytes": 1299,
+      "uncompressed_sha256": "7b8835fbd9eab33f15255f95a0404031db66762b411e3c58c4371ff712de98ee",
+      "uncompressed_bytes": 4089
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/contract.json",
+      "sha256": "477a9dbeaf9e424ae93b586760bb798d2101a25fbb0bdb9de2035a586e8d100b",
+      "bytes": 1618,
+      "uncompressed_sha256": "48cf749fa35e9c232b932b0269419a112086c7b574e2e0985bef6d5e92001133",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/index.json",
+      "sha256": "563991b2b695b08974743638e69c0b88f6a031324743f5d6df94a5e39a03ded0",
+      "bytes": 1297,
+      "uncompressed_sha256": "be226ab26ef252f6362b489125086a1c2d401ae2cf61c67427996818c0ab670b",
+      "uncompressed_bytes": 4097
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/report.json",
+      "sha256": "082febfd53889644d6a6a593da7670115d45487f986a25b2114efcd0ef8efcfc",
+      "bytes": 3334,
+      "uncompressed_sha256": "bd445fac38d8e54ddd26670bd433b350bc37eeb0bb9a5fd1a2e0a0626bf79731",
+      "uncompressed_bytes": 25128
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/index.json",
+      "sha256": "349daff22e6c46c1c227078aeebfd84746c835b62731206a6158b65d7a0d7e72",
+      "bytes": 1288,
+      "uncompressed_sha256": "550b8526365afda2b2f76e1e1484e4f122453d3fda257574e91ed72e0133dac7",
+      "uncompressed_bytes": 4079
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/index.json",
+      "sha256": "0029e23877a56856d6b070e7d0fb67cb38b809ec73acf015514c69d2d5928648",
+      "bytes": 1297,
+      "uncompressed_sha256": "06f2a4a782ba3e02759ba85692165ce14c9cd730ff4784c8fcf968813faf6685",
+      "uncompressed_bytes": 4091
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/1-optimized.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/1-optimized.log",
+      "sha256": "007da251f22f2f083dda599acf63eb6d1ade5fe5fc954cebb2944257f7a161c4",
+      "bytes": 248,
+      "uncompressed_sha256": "7cd648d3b055665e1f371077448b6a4484ce3918ebb3032a8cfa8bbdcf43ff60",
+      "uncompressed_bytes": 1041
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/index.json",
+      "sha256": "f25e852fc831bdda7d130ebccfe9f2a72baed7f989a84a4d0160a02a8ac94998",
+      "bytes": 1293,
+      "uncompressed_sha256": "719560aa2b23c091689f179b4b25b45b26ec5b6f3bf88a5dea87dc4d414f639c",
+      "uncompressed_bytes": 4082
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/contract.json",
+      "sha256": "477a9dbeaf9e424ae93b586760bb798d2101a25fbb0bdb9de2035a586e8d100b",
+      "bytes": 1618,
+      "uncompressed_sha256": "48cf749fa35e9c232b932b0269419a112086c7b574e2e0985bef6d5e92001133",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/index.json",
+      "sha256": "f9f36b1529fcb2f91e20a7141a33f5ab948c51345aa7cbd338a6509543260dfa",
+      "bytes": 1300,
+      "uncompressed_sha256": "196c3974d37869abc6abfb9fb6346e103eab173151db49b9458da741667e466a",
+      "uncompressed_bytes": 4090
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/report.json",
+      "sha256": "cae38f57a35bb4fe0926abd9d4733afaa0d8ce7615791c0ea1f950b1477c69da",
+      "bytes": 3347,
+      "uncompressed_sha256": "e556c5906fc82f56cc602f96907070a4984bacd449eaf2a50ba2858ff8c79b74",
+      "uncompressed_bytes": 25139
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/index.json",
+      "sha256": "2e09fa73a404bcaf375830f7317f37f0d0d1055b45d0a05e764a82495f2a8827",
+      "bytes": 1295,
+      "uncompressed_sha256": "4fc6255b6ed3f3561942534c51eddb33a46c788b0851463547aeb3bd8fc5a81b",
+      "uncompressed_bytes": 4102
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/index.json",
+      "sha256": "d723bee8d19f4e241ef00d61ec38a55119c89a510f1f8e81672ba9aee3608496",
+      "bytes": 1295,
+      "uncompressed_sha256": "22001d9f5a025eb191bdedfeed680f3150f00d96f8fdd5892ae75022b19ad6df",
+      "uncompressed_bytes": 4090
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/2-optimized.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/2-optimized.log",
+      "sha256": "ead8506e478692eefa1cd26d17aed623a15e1effc0ed7de07c93126af829bc9f",
+      "bytes": 249,
+      "uncompressed_sha256": "4913d9e2fcd0596b238346baa2fd01828ea1c7d582bf04b97069728729cda0d9",
+      "uncompressed_bytes": 1045
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/index.json",
+      "sha256": "68ecb7c9fee2d720097e0ecbafd8cdc6e6a03eae6ea0921b542d2e48b263ada3",
+      "bytes": 1293,
+      "uncompressed_sha256": "023cd1b53b0fec898d0d4e2ae9058351e29c97252cd1b96c413744d409e67739",
+      "uncompressed_bytes": 4091
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/contract.json",
+      "sha256": "4b4b510ab8a0bcb49ee47adfd5e8ce9321b6ccf67bb394cdd226bb5b660e00cd",
+      "bytes": 1619,
+      "uncompressed_sha256": "aab0e8b406cc9924c329acf4877c64f6180ee11073c3204c79eb8e30e327c798",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/index.json",
+      "sha256": "9661a3fcacd5a7c0cfc2900f16625192bd0204771a21c9903427694fd67643dc",
+      "bytes": 1298,
+      "uncompressed_sha256": "06ce0d8ac948914677ea5a5abdfe9dc9ce58b4cfa148bd3863f4a7a02bf34a4c",
+      "uncompressed_bytes": 4097
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/report.json",
+      "sha256": "7ed0ba9bae09321a1b26245e9476a873f5487a800064fdb6343d27a8cfd5e746",
+      "bytes": 3351,
+      "uncompressed_sha256": "f821203623616f7d5fac3effb2cfbb1ee596f3adcb466da59050e26c0754df3d",
+      "uncompressed_bytes": 25121
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/index.json",
+      "sha256": "b9ac8f3a57060a87ca9b1d1313093eab5208fcafb566f53111328733ade187b1",
+      "bytes": 1291,
+      "uncompressed_sha256": "3565e087f8a4ebc190f4194e02065fce395032ddd731095e7f1b25dd77b5ed43",
+      "uncompressed_bytes": 4083
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/contract.json",
+      "sha256": "ab860e463b88f7190aaea6fe115a3ee2b235d7375b725599069b7bd71c6103eb",
+      "bytes": 1614,
+      "uncompressed_sha256": "7fb30e4f6cff4ddce515c310c24c73e0574039aad361768c4d299279c571b06a",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/index.json",
+      "sha256": "5e968aaca359c50566df9fba1815a526eddcb770f1a318c02b6e8acc929953d8",
+      "bytes": 1290,
+      "uncompressed_sha256": "b3b1515150751724de106b141d33c47dcbec860c430e67ebf4e40d592bc97e39",
+      "uncompressed_bytes": 4082
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/3-baseline.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/3-baseline.log",
+      "sha256": "b01b798d47e3a9227260615fe92a59c08c0ba684ddd5cdbfe87ee24833d7d5d4",
+      "bytes": 245,
+      "uncompressed_sha256": "a6a65e5d876fd43d4993351564cc3760bd5ff4e7f063bb9e6ebfe054b5de55fb",
+      "uncompressed_bytes": 1041
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/report.json",
+      "sha256": "7c1d745c254f4f79e60a4ece4cf9ae106fc88c9e1fda5c318d655df482796368",
+      "bytes": 7498,
+      "uncompressed_sha256": "b71bab3e81ca814118f824115459680c09ab8767b0555e66f28f98087cbc0a31",
+      "uncompressed_bytes": 126009
+    },
+    {
+      "file": "baseline-v3/local-guard-overhead/request.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-guard-overhead/request.json",
+      "sha256": "f514c3588ff29632d09c60c086076f6622e4dc6b5703f709ce8ca7f63217113c",
+      "bytes": 624,
+      "uncompressed_sha256": "8eb74c8d9fcd0e9715e4a3ca9445261204d27724b3e417ade1be5a9400c45de3",
+      "uncompressed_bytes": 1416
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/index.json",
+      "sha256": "91e59153b123193bd033921d3132719d3df0732bdc17c069b24bdcb9748ab049",
+      "bytes": 1299,
+      "uncompressed_sha256": "32c49e2ddbd0c200b46851ac36ad04a2771ac8bb62c1aea579c83cf44b6c4cd9",
+      "uncompressed_bytes": 4091
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-2/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/contract.json",
+      "sha256": "38622caed8ea056db473aee21575c3edda2c39a674be2d80bf0d8a40057e7c9c",
+      "bytes": 1600,
+      "uncompressed_sha256": "54d7e80c779163c596c1f1f1563263a57d28eece3f2137b757bb9af7d5610ff8",
+      "uncompressed_bytes": 4869
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/index.json",
+      "sha256": "898959eb080e736fab3a0a2ae10f525c540f9da485777464e759b55e151b60b3",
+      "bytes": 1301,
+      "uncompressed_sha256": "ab03a847dc0525eb6d8624262afbab1d47465b765226554fc00178fa2550bec1",
+      "uncompressed_bytes": 4097
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/measured-3/trajectory.json",
+      "sha256": "f847a774a2322a7dc96cfd5263e6dea86981828905fc1e26da7e88419b74863b",
+      "bytes": 1184,
+      "uncompressed_sha256": "b0ec7cbbf196bf18f50a822117ac7c402c7a298935e45e7affc278217bbbce82",
+      "uncompressed_bytes": 32049
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/report.json",
+      "sha256": "65c2144e3b444efffc34d1a38ddbb198cdb89670311f64dcd6c86026afd76fd9",
+      "bytes": 3349,
+      "uncompressed_sha256": "2ffc8825c6d771028bdd21a40574d9f099bfd4ee3005de0dcb3cb11656584db0",
+      "uncompressed_bytes": 25136
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/index.json",
+      "sha256": "1e913f249c0150bb2c64a7784d696aed59c2135aaeb3db70d231ef7f64a7bc3c",
+      "bytes": 1298,
+      "uncompressed_sha256": "6b26df0cdcd9468c58d0747d6aee5ce3bafaa130d3e55efd55cfe0e11ad5870d",
+      "uncompressed_bytes": 4081
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-0/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/index.json",
+      "sha256": "744c79d8e8112fffa6ce46d5ae56a7c935b3a75397037e9d55a7349e9b72acc7",
+      "bytes": 1296,
+      "uncompressed_sha256": "4e155943b405cd92d9a0e110eace0db8f6bbf0da1fcf7673bc080827e0463c95",
+      "uncompressed_bytes": 4091
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline/warmup-1/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/0-baseline.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/0-baseline.log",
+      "sha256": "9277092ae2f99eb7197a16fdc355e385e9e66bd3e40bf8e7b7461113c00df14a",
+      "bytes": 247,
+      "uncompressed_sha256": "ab07458956698447e7a0ffa4884a108e442435b758a7db0c9ba7d36df3a90646",
+      "uncompressed_bytes": 1040
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/index.json",
+      "sha256": "5b36305d90b383e33ffa653d59b8c24042cfb0188c1a6ec40ce246f10fea8427",
+      "bytes": 1296,
+      "uncompressed_sha256": "a380e853b5ced2f6151c89fa909aaf173ad88b7380b65e1233b8ba2a531aa3fd",
+      "uncompressed_bytes": 4084
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/contract.json",
+      "sha256": "477a9dbeaf9e424ae93b586760bb798d2101a25fbb0bdb9de2035a586e8d100b",
+      "bytes": 1618,
+      "uncompressed_sha256": "48cf749fa35e9c232b932b0269419a112086c7b574e2e0985bef6d5e92001133",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/index.json",
+      "sha256": "a52e3483c5748684e9af2877c0b9c529e803ad337d155f3744dfdb4bab77c731",
+      "bytes": 1297,
+      "uncompressed_sha256": "d1546c53c7265cfd87a204bcf05f5cb0fdded72f757be0950686179b17c3d450",
+      "uncompressed_bytes": 4088
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/report.json",
+      "sha256": "d8dc1fdd390181a42fca0f9e3afce3ada6fb9b8feb560acee55d9d4edae1c266",
+      "bytes": 3357,
+      "uncompressed_sha256": "a103aa56b142eb7ac7540b0b6613a19848f473bc79592a664f64e96457af82a2",
+      "uncompressed_bytes": 25116
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/index.json",
+      "sha256": "1f0b8403cd7ac0563f5a0649f5cae72241670e592f06b3e8b84ef2c9350e4faa",
+      "bytes": 1298,
+      "uncompressed_sha256": "76f94b6f3fca34cad88a3ecbdf57d1bceb8e2900a88d810d77258a6d7f738f22",
+      "uncompressed_bytes": 4083
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/index.json",
+      "sha256": "698513daf883409fcad05b6e66d4806b55abddfba32ab4c223b2f7d96892557c",
+      "bytes": 1289,
+      "uncompressed_sha256": "38c0e3a3ffdf89959bc27bdb93b80df03ace54bd13ec20f9d2a9b58f671815da",
+      "uncompressed_bytes": 4085
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/1-optimized.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/1-optimized.log",
+      "sha256": "b2a997151b44c0a355aa6cd28ed2712892d748ab7f72672f117e44c6ab3bf949",
+      "bytes": 253,
+      "uncompressed_sha256": "2cff91be6d4542f9d1aebdf972468173f229a8010b541cd7ba1102e1a5b34256",
+      "uncompressed_bytes": 1044
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/index.json",
+      "sha256": "d54a672af00f0c18abf272d14be4f8bea4544c7d94661ee9dd79f7fbcf7b0049",
+      "bytes": 1296,
+      "uncompressed_sha256": "4a7431436f18ea51fb502bff39acda9f598f9499501bee5affa690923a2dbdc5",
+      "uncompressed_bytes": 4100
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-2/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/contract.json",
+      "sha256": "477a9dbeaf9e424ae93b586760bb798d2101a25fbb0bdb9de2035a586e8d100b",
+      "bytes": 1618,
+      "uncompressed_sha256": "48cf749fa35e9c232b932b0269419a112086c7b574e2e0985bef6d5e92001133",
+      "uncompressed_bytes": 4905
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/index.json",
+      "sha256": "e28d9904ceaf60a4885a50c01513ba920c1e87d345425619e726a604532d4596",
+      "bytes": 1293,
+      "uncompressed_sha256": "678aba29791f19820a5f8c9db78e7fd0defa9e81eeefa89718b40d8680877d0c",
+      "uncompressed_bytes": 4083
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/measured-3/trajectory.json",
+      "sha256": "4d8619f29dd7dfdb66d706d987119da9f4ec05130aa303ef7ae1039d5dd052b6",
+      "bytes": 1309,
+      "uncompressed_sha256": "8956eaa5db6de33f1178e2e9a03627fa3c16e0fa8e91ffd37404b017bb045aa2",
+      "uncompressed_bytes": 33587
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/report.json",
+      "sha256": "8bded758e879e7ecba9c9cfb5464825048d886ab1f415cf440aebe610e4d870e",
+      "bytes": 3346,
+      "uncompressed_sha256": "657d882bebc998e7db14b5e2095befe2f762d93b938bf9d7da7c71b2ab943a1f",
+      "uncompressed_bytes": 25143
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/index.json",
+      "sha256": "860915017174757ccea2e1b7f9987f4de16cda700767c033a6f616cdc6bee03a",
+      "bytes": 1298,
+      "uncompressed_sha256": "579d6d59295b36d1c4c87b8c8fe7f8b356690a0b372d73218b18777a13fe9567",
+      "uncompressed_bytes": 4099
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-0/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/contract.json",
+      "sha256": "d0b92eca30157c96c4dc435f78665493bf94fb9df705afceba6dd545f16c46ad",
+      "bytes": 1616,
+      "uncompressed_sha256": "7f49ce7bedea19421e60b9c4409ecb9898a10193a496526c90dd9b704ad2cc15",
+      "uncompressed_bytes": 4697
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/index.json",
+      "sha256": "ddd21bc89a5f3d4b7a863cdcb0fb47f6dc69cf83c4e18af29ef19d891cc012d1",
+      "bytes": 1293,
+      "uncompressed_sha256": "e1cee0a6f2990ac437771f4754fa2ba1d45f65a8c2dff760e76a9f85e72ce610",
+      "uncompressed_bytes": 4090
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized/warmup-1/trajectory.json",
+      "sha256": "4a7af0623f234bdf8f51cbf38a3365931fe08032946bfdb48a719b90259f8115",
+      "bytes": 1010,
+      "uncompressed_sha256": "f1819ba3560e58a1264562677f56f7d81a0789a6998de2237e3bbc2db82dd0c1",
+      "uncompressed_bytes": 22865
+    },
+    {
+      "file": "baseline-v3/local-parity/2-optimized.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/2-optimized.log",
+      "sha256": "455320ce1312c02db311deeec69fd62865629a42d5f2e617a8cccb4161ca04b0",
+      "bytes": 251,
+      "uncompressed_sha256": "327ccfc274e227d0582a9486ab386b2dbdc31df337c6401dc6a764d2de221b9f",
+      "uncompressed_bytes": 1044
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/index.json",
+      "sha256": "e564ad6f5e90ad2c2a808e36217e6ee9364bbd95e38814a4e167d31cd165499c",
+      "bytes": 1298,
+      "uncompressed_sha256": "3bbc79c0e4f24cf6b7848f298a9fc96b0c3edc9d06d8a7e636bfa2e928548dd7",
+      "uncompressed_bytes": 4088
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-2/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-2/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/contract.json",
+      "sha256": "38622caed8ea056db473aee21575c3edda2c39a674be2d80bf0d8a40057e7c9c",
+      "bytes": 1600,
+      "uncompressed_sha256": "54d7e80c779163c596c1f1f1563263a57d28eece3f2137b757bb9af7d5610ff8",
+      "uncompressed_bytes": 4869
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/index.json",
+      "sha256": "57e72427c58cf1000c8245b78494f76099d9a02d5f4b910a7d57a1d522b20ce1",
+      "bytes": 1304,
+      "uncompressed_sha256": "a282f02a613f53421ebb689830ccf999ef0cee58bb72fe432f0fceca6ccc405e",
+      "uncompressed_bytes": 4103
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/packing.json",
+      "sha256": "fa690a582741d60a565aea06ab50e10e600ca6019382af7bb27b9b7106b96c09",
+      "bytes": 276,
+      "uncompressed_sha256": "d90209cc92db9058e8c4850f27f622271289e87110f6a17d21d787ccac70b729",
+      "uncompressed_bytes": 830
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/reuse.json",
+      "sha256": "20f9001dfde5de79b3e8d6fec754eb04241183f570da24b708494368501b1f61",
+      "bytes": 119,
+      "uncompressed_sha256": "66395a8a5f41fc1d7bf80bc26519619fb9d702c2ad1598131f637a9e09bde97e",
+      "uncompressed_bytes": 128
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/measured-3/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/measured-3/trajectory.json",
+      "sha256": "f847a774a2322a7dc96cfd5263e6dea86981828905fc1e26da7e88419b74863b",
+      "bytes": 1184,
+      "uncompressed_sha256": "b0ec7cbbf196bf18f50a822117ac7c402c7a298935e45e7affc278217bbbce82",
+      "uncompressed_bytes": 32049
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/report.json",
+      "sha256": "6c9c9cc8c06b58886e503022f40412117013aa20106cc6c2880f4df6fd7a5275",
+      "bytes": 3357,
+      "uncompressed_sha256": "54d4b7cdb2b2e7b64121d5432532164c4622433b61e17286f4ab50d97702e64c",
+      "uncompressed_bytes": 25141
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/index.json",
+      "sha256": "7e4cd24e60af8ec16e46a73e5f2ecca6b85268d7f4882014c24c8894f20d0d1c",
+      "bytes": 1300,
+      "uncompressed_sha256": "713052623dd448c6c02a1e447740021f4d0cb5a62d47b1fe9ec0d992a65b7f24",
+      "uncompressed_bytes": 4098
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-0/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-0/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/contract.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/contract.json",
+      "sha256": "1e066ba875ab69e0e08a9e6220c06dd55d11ec554792ab3a234b5ddf6dea6cd3",
+      "bytes": 1596,
+      "uncompressed_sha256": "bd117539f37f17c0f3e699d3f2188fce8be9819584f0fdb8f527ee4ca43727a7",
+      "uncompressed_bytes": 4661
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/index.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/index.json",
+      "sha256": "b9d034c07803d44e3d26d0d1bf2abf9a7d3462bfba2aa0a245e955e7c951d35a",
+      "bytes": 1292,
+      "uncompressed_sha256": "5a60ed8ae8876bfdad9ede283366b43d10ba5ad30e587f34104dd3917c617b3e",
+      "uncompressed_bytes": 4080
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/packing.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/packing.json",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275,
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "uncompressed_bytes": 828
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/reuse.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/reuse.json",
+      "sha256": "b4040176d0f1fcc2ffd675e9c3ad8eaadf38e25b84fd100c7c0c86d06dc169a8",
+      "bytes": 118,
+      "uncompressed_sha256": "e08b39d50239053ae0dc8e40debe118615d6347edffbdfe1f7b0f136daacd4d9",
+      "uncompressed_bytes": 129
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/seed.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/seed.json",
+      "sha256": "66a9803e963c52a4d00a719480799a7289d87caf5ddc6556dc3547f1684bb7cd",
+      "bytes": 117,
+      "uncompressed_sha256": "0d13dde667ac8a29084ca17d613ecade79919030e5797176334bc17a1b4831b8",
+      "uncompressed_bytes": 145
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline/warmup-1/trajectory.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline/warmup-1/trajectory.json",
+      "sha256": "0abf8ed5c10cd090a9bcf0d4117c954188d43c58e840b6e7303ed68c760c3e5e",
+      "bytes": 902,
+      "uncompressed_sha256": "75e413b6bdf20dc8613a9c16b1f0e85d03725020d1d692817933e2b61a57778d",
+      "uncompressed_bytes": 21333
+    },
+    {
+      "file": "baseline-v3/local-parity/3-baseline.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/3-baseline.log",
+      "sha256": "a486698fc258aa5c7eddae325bb93659a2a8382e2fa72d2623f35790831370c5",
+      "bytes": 249,
+      "uncompressed_sha256": "f3ae2e99132759690b81d4cd94312cf220441d09d1ae3f8f996283f835b5c57d",
+      "uncompressed_bytes": 1043
+    },
+    {
+      "file": "baseline-v3/local-parity/report.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/report.json",
+      "sha256": "2f0f20e6f121e116f6a0d63370116c02e97a2bd57c48363f085f41abb688fb7e",
+      "bytes": 7645,
+      "uncompressed_sha256": "9bb42f269acbafa2031f490d8c088c8cf461db1fa4f3fdb69ff8872ba98c1e33",
+      "uncompressed_bytes": 126008
+    },
+    {
+      "file": "baseline-v3/local-parity/request.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-parity/request.json",
+      "sha256": "f514c3588ff29632d09c60c086076f6622e4dc6b5703f709ce8ca7f63217113c",
+      "bytes": 624,
+      "uncompressed_sha256": "8eb74c8d9fcd0e9715e4a3ca9445261204d27724b3e417ade1be5a9400c45de3",
+      "uncompressed_bytes": 1416
+    },
+    {
+      "file": "baseline-v3/local-summary.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/local-summary.json",
+      "sha256": "09f0d9025c88c2fa0f319e4e68eca4be78e3fde07c6e2487740d28d24bfc7155",
+      "bytes": 1986,
+      "uncompressed_sha256": "60b6cbb6d8ca2c43d85dccdaed8af01b9f497d3be4c66a8ec846389e658a45d7",
+      "uncompressed_bytes": 8485
+    },
+    {
+      "file": "baseline-v3/node-tests.log.gz",
+      "source": "runs/neural/baseline-correctness-v3/node-tests.log",
+      "sha256": "ecf4b8dfa61562cbc6455739ee4d449e88ca90d050fa8e10313c10da15a15bb6",
+      "bytes": 2385,
+      "uncompressed_sha256": "861b6ea7f21904dcf74d74f150a7fda4853e22dde3283bc4ac7fdcf2bdeb7c41",
+      "uncompressed_bytes": 6682
+    },
+    {
+      "file": "baseline-v3/prepared-inputs.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/prepared-inputs.json",
+      "sha256": "8f1110725c08b10d8da78efce2308c71adcdd1d965ede591b174a0d05e7162b9",
+      "bytes": 1899,
+      "uncompressed_sha256": "74aaf167da531c4e59f2b81feb5a0ab9500d86747cbe2a4b35257110879539ba",
+      "uncompressed_bytes": 5822
+    },
+    {
+      "file": "baseline-v3/teacher-plan.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/teacher-plan.json",
+      "sha256": "3794a11fa91090925ca5ec004415b914f0ec8f77013736b9aeb447471a77c1a9",
+      "bytes": 592,
+      "uncompressed_sha256": "d0927769558f698f76df0e7aa44cc7de471eb6df967f5bab6b87cb4d1a298665",
+      "uncompressed_bytes": 1373
+    },
+    {
+      "file": "baseline-v3/validation.json.gz",
+      "source": "runs/neural/baseline-correctness-v3/validation.json",
+      "sha256": "1b10326a056dabb9e6a6e49df1e16f1d770669231877412978230f6722cf0575",
+      "bytes": 1450,
+      "uncompressed_sha256": "1ec7dc565c4d6b8ea39b6d7e096adb8d3f2dc82bdafa520fe685cf3e53f975d4",
+      "uncompressed_bytes": 3070
+    },
+    {
+      "file": "corrected-quality/audit/final.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/audit/final.json",
+      "sha256": "28d241bce2a8293146ba6e2a992bfa448ccf825501189a377782a9fa8f6a2776",
+      "bytes": 6138,
+      "uncompressed_sha256": "88d9a8d77f456eafabd778fcb2ba789333228d88491908dc5b36aa94f1fb5db3",
+      "uncompressed_bytes": 70377
+    },
+    {
+      "file": "corrected-quality/audit/final.log.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/audit/final.log",
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uncompressed_bytes": 0
+    },
+    {
+      "file": "corrected-quality/audit/initial.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/audit/initial.json",
+      "sha256": "cbac7cd34d3566e91f19b4703918d7e18b970af47f287b966117ebc716afda76",
+      "bytes": 6377,
+      "uncompressed_sha256": "7ca2394bf44fc94083f9244742b5f8a3b501c527a59e692804060f9e8b213b75",
+      "uncompressed_bytes": 71461
+    },
+    {
+      "file": "corrected-quality/audit/initial.log.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/audit/initial.log",
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20,
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uncompressed_bytes": 0
+    },
+    {
+      "file": "corrected-quality/audit/report.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/audit/report.json",
+      "sha256": "3c484b3d11c8adfb33106fa0f4c60a8ce59e50169fa5d03df79b81eece2876c7",
+      "bytes": 13561,
+      "uncompressed_sha256": "be625bc9f3b1899f28ff86c3288c26747d2d6a6862a9726a79d769a1ecb4f8f3",
+      "uncompressed_bytes": 181606
+    },
+    {
+      "file": "corrected-quality/context.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/context.json",
+      "sha256": "ab0d0462606b6e8e5e84ec3c3cb17dcc197456fdd0aa7571a70cae916a5c173b",
+      "bytes": 436,
+      "uncompressed_sha256": "620145fac992afd532625e8d525389ae248629106dc2ff388eb6eda743183c2a",
+      "uncompressed_bytes": 668
+    },
+    {
+      "file": "corrected-quality/corrected-summary.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/corrected-summary.json",
+      "sha256": "506928bcd1d7825208dbd1e8b3de60df1a7dd6a7f8d47bba342222e3369c6196",
+      "bytes": 4556,
+      "uncompressed_sha256": "2b5100dbea651c5db9208f6ebee454ed8b6fdd583dc6d7df48a55fcdab6529f0",
+      "uncompressed_bytes": 47358
+    },
+    {
+      "file": "corrected-quality/verify-corrected.mjs.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/verify-corrected.mjs",
+      "sha256": "f3e9797818986a502a365416af4dbac19f57c11da36b4161368e8ca6c5eabd27",
+      "bytes": 2936,
+      "uncompressed_sha256": "35705c7d0beff84aab18efb461e84b09dc8fc23dab90341239311b7bf0f4f79e",
+      "uncompressed_bytes": 8051
+    },
+    {
+      "file": "corrected-quality/workspace/research/neural/action-diagnostic.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/workspace/research/neural/action-diagnostic.json",
+      "sha256": "2779f85c8c3faa143861672c42639bb156a7abd1207c4ce5c7e4b3ca7cdd636e",
+      "bytes": 903,
+      "uncompressed_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+      "uncompressed_bytes": 3059
+    },
+    {
+      "file": "corrected-quality/workspace/research/neural/teacher-capability-quality.json.gz",
+      "source": "runs/neural/teacher-optimization-06/corrected-quality-local/workspace/research/neural/teacher-capability-quality.json",
+      "sha256": "afc6195bc3978d515cd54cd052809cbfddb9e747d5f45bb2e8db334ac41ca5fc",
+      "bytes": 379,
+      "uncompressed_sha256": "e0dbde7aca020189c76109b1151ad8e5fc45558ea0a01c5aadbbc0ab01c570fe",
+      "uncompressed_bytes": 753
+    },
+    {
+      "file": "hour-analysis/final-teacher-label-analysis.json.gz",
+      "source": "runs/neural/teacher-optimization-06/final-teacher-label-analysis.json",
+      "sha256": "b8ff9c4b7f5bf3004262cb94c231cb4eccb463b6cd2d4d3d60903e907af2235b",
+      "bytes": 278041,
+      "uncompressed_sha256": "851fac6ee5e4bea40d575fc9b38bc51cecc7ab5a6f4ebc5cc751a8ad8dbf12a4",
+      "uncompressed_bytes": 1048769
+    },
+    {
+      "file": "hour-analysis/final-timing-summary.json.gz",
+      "source": "runs/neural/teacher-optimization-06/final-timing-summary.json",
+      "sha256": "24b5842e2938d272232b84461880ad667a1de9985c3816a4b5bbf614818db112",
+      "bytes": 449,
+      "uncompressed_sha256": "753067de97230d1b8acb63c62e17673e643d7126efad7425e5c3faed2e3d7646",
+      "uncompressed_bytes": 990
+    },
+    {
+      "file": "hour-analysis/final-analysis-verification.json.gz",
+      "source": "runs/neural/teacher-optimization-06/final-analysis-verification.json",
+      "sha256": "318e318143245e2343cf5046856a31e40e12b6b260cc8fd860ecc9474b9309a2",
+      "bytes": 408,
+      "uncompressed_sha256": "49b68da97709ca5b9ae6133329db3f8f4bd21a10aefdb459ce2f423790645003",
+      "uncompressed_bytes": 647
+    },
+    {
+      "file": "validation/integration-build.log.gz",
+      "source": "/tmp/blitz-correctness-integration-build.log",
+      "sha256": "e4475faea1974f11c3c19f46c6e2136d3c7db06f04f8e18c09dbe7ab975d322d",
+      "bytes": 1523,
+      "uncompressed_sha256": "0b1378e6eca7a584092afdecfd075221face77fdf61253290da9b8d53b80ac03",
+      "uncompressed_bytes": 12904
+    },
+    {
+      "file": "validation/all-targets.log.gz",
+      "source": "/tmp/blitz-correctness-all-targets.log",
+      "sha256": "1f77a00b4b123c9321ca1268e3dbaf2808f6e3a47052e3599c91e9149a50326c",
+      "bytes": 381,
+      "uncompressed_sha256": "c1f0eb06e1868327a7142d108c3277a912bec126d2c1d3b61541a10a15c94955",
+      "uncompressed_bytes": 1586
+    },
+    {
+      "file": "validation/final-ctest.log.gz",
+      "source": "/tmp/blitz-correctness-final-ctest.log",
+      "sha256": "339cbc72f1ffddc646f7a18e048c2046382e5c08872758655b75e1c33a6383a8",
+      "bytes": 1237,
+      "uncompressed_sha256": "a54fa87d94b0987b9810b482f1145cb25f7dd1b1e8788a5fba0da6c884eda552",
+      "uncompressed_bytes": 6602
+    },
+    {
+      "file": "validation/final-ctest.xml.gz",
+      "source": "/tmp/blitz-correctness-final-ctest.xml",
+      "sha256": "08669c890098df13c57c980ae12419f0ead900caf96b2ae8aada9e98d1ea4346",
+      "bytes": 7163,
+      "uncompressed_sha256": "92a0cebbb5c9d1542ec22790ea484193fdd9c11d338928f9e1fd239c3aec1d55",
+      "uncompressed_bytes": 26331
+    },
+    {
+      "file": "verification/verify-final-integration.mjs.gz",
+      "source": "/tmp/blitz-verify-final-integration.mjs",
+      "sha256": "7835f7ba023a8408232e20314ddede8e1327e39e11eb6f880d855f53456763c4",
+      "bytes": 1616,
+      "uncompressed_sha256": "af18fd41f99e2cd3b6e4e9ca3abb0835699faef211f49b1ddb70e681174ea73b",
+      "uncompressed_bytes": 4265
+    },
+    {
+      "file": "verification/verify-hour-analysis.mjs.gz",
+      "source": "/tmp/blitz-verify-hour-analysis.mjs",
+      "sha256": "4180306ec5ab34b35f4d857f55be13932bd7161d6465dfa7efa7342b102f66ab",
+      "bytes": 1169,
+      "uncompressed_sha256": "719010f6849aa3a15297707dceb5fe426b51208cb3b28366e8ec01132069bbf1",
+      "uncompressed_bytes": 3341
+    },
+    {
+      "file": "preparation/prepared.json.gz",
+      "source": "runs/neural/baseline-correctness-v3-prepared/prepared.json",
+      "sha256": "fb53b1da99ac2e0a9e4e16b85049b577e3f4796b5d777da0d4366949183e72c2",
+      "bytes": 505,
+      "uncompressed_sha256": "dd976fa9bfb1cf6aaa659bafb682a32fe46e3e7368496e855625e5bbf250594a",
+      "uncompressed_bytes": 924
+    },
+    {
+      "file": "verification/run-correctness-abba.mjs.gz",
+      "source": "/tmp/blitz-run-correctness-abba.mjs",
+      "sha256": "1f5789972883487ea4bb791e66758a3aace6bd841866f65918de3ae9f6c21cf5",
+      "bytes": 1173,
+      "uncompressed_sha256": "9c84f3e6377172c8289588de4ec181f5784810ff0f7c3a16b90a26b7ad5b4ade",
+      "uncompressed_bytes": 2582
+    },
+    {
+      "file": "prophet/loss-source.txt.gz",
+      "source": "/tmp/blitz-prophet-loss.txt",
+      "sha256": "20b9763827ad2b216c9b2e990b94694cb898775bd7e5cde26c006e4a5c9d02cb",
+      "bytes": 32384,
+      "uncompressed_sha256": "f5a6a6a0e0e85de3e6293e8408393f9f2c4a378bca5f16af549d82c4e5087703",
+      "uncompressed_bytes": 145401
+    },
+    {
+      "file": "prophet/loss-source-manifest.json.gz",
+      "source": "/tmp/blitz-prophet-loss.txt.json",
+      "sha256": "bfb75a88beb8ba1a6f5e20f89f8f7f689aeeda1015b29e3213b29324b04d8437",
+      "bytes": 721,
+      "uncompressed_sha256": "6da15f76d06274a4988546ebe56ac327fc0db5de56c74762ea02a1b4252dece2",
+      "uncompressed_bytes": 1737
+    },
+    {
+      "file": "prophet/gates-source.txt.gz",
+      "source": "/tmp/blitz-prophet-gates.txt",
+      "sha256": "1ab7caf15b74b153eac31466539f6ea1ac183468ab7bd466bdcc4978c77d8649",
+      "bytes": 61336,
+      "uncompressed_sha256": "f7b4accbbc3584104b330e963cac1c068c76c4447ca13edc72ef6ab50d247469",
+      "uncompressed_bytes": 265153
+    },
+    {
+      "file": "prophet/gates-source-manifest.json.gz",
+      "source": "/tmp/blitz-prophet-gates.txt.json",
+      "sha256": "1d31b101024ac96a4b15ef9e63d51ca34e4a9e3fecce1630677314b090f34c17",
+      "bytes": 794,
+      "uncompressed_sha256": "1dc0dd86148a339118e8d273f5aa71d3ec0fd77d1cf63cc0aa327cc10b29e079",
+      "uncompressed_bytes": 1862
+    },
+    {
+      "file": "prophet/ownership-source.txt.gz",
+      "source": "/tmp/blitz-prophet-ownership.txt",
+      "sha256": "5a5d50d1b0303439bf5c364d18aaff65d3adb44c2d728ed6b79fb5b8614b172b",
+      "bytes": 35224,
+      "uncompressed_sha256": "90c821d0163aedec9af7465efa78e69c4c98dd4728bee2511a8cad22b57af716",
+      "uncompressed_bytes": 163208
+    },
+    {
+      "file": "prophet/ownership-source-manifest.json.gz",
+      "source": "/tmp/blitz-prophet-ownership.txt.json",
+      "sha256": "e0f7ad913e2f7ea619ba9427b4b4a65224b06d2c33687033fb111cbac810bc7b",
+      "bytes": 660,
+      "uncompressed_sha256": "dc972044a2f130034de45fdba0f9500466d8dc915e7915c30233c60740253aaa",
+      "uncompressed_bytes": 1596
+    }
+  ]
+}

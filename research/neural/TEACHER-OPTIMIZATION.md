@@ -1,5 +1,128 @@
 # Teacher generation experiment — 2026-10-01
 
+## Current result and training readiness
+
+The requested continuous hour completed at frozen source `2246b91`: **413,184
+updates, 53,260 fresh states and 3,600,000 ms of learning**. Its final checkpoint
+passed numerical verification. The 3,468,751,232-byte collection was checksummed
+before terminating the rental at 15:36:54 UTC. Independent provider readback at
+15:37:54 UTC found zero Pods and zero network volumes. Conservative cumulative
+cost for these attempts is $1.5963 against the $3.50 cap, not a billing receipt.
+See the [hour and cleanup evidence](evidence/teacher-optimization/remote-hour-413184/README.md).
+
+The user's subsequent local-first instruction deferred the remaining paid
+comparisons after that hour. The experiment supervisor's cancelled post-hour
+comparison is preserved as incomplete; it does not invalidate the completed
+hour or establish a remote teacher speedup. No further rental is running.
+
+**The quality gate is still failed.** Local coverage-only diagnostics used the
+same two development assets, initializer, settings, cameras and 64-trial budgets:
+
+| Learned ranking | Initializer LOD1/2/3 | Final hour LOD1/2/3 |
+| --- | --- | --- |
+| Painted shelves | 518 / 259 / 247 | 514 / 257 / 251 |
+| Moon rock | 1862 / 932 / 930 | 2274 / 1138 / 1134 |
+
+Both chains reduce triangle counts with LOD, but the final rock has 21.94% more
+triangles at LOD3 than the initializer. All 48 emitted source/adjacent measurements
+across both checkpoints and both ranking controls passed. Many proposals hit
+their work cap; this is neither visual exhaustion nor a full-protocol SCORE.
+The corrected runtime reproduced every non-timing output and counter exactly.
+Normal/shading quality, the full development pilot and held-out quality remain
+unverified. Constant ranking still uses each checkpoint's predicted placements;
+it is not an independent classical baseline.
+
+There is a concrete supervision mismatch: preferred edge labels describe the
+teacher's selected audited placement, while runtime executes the network's own
+continuous placement. Ranking and pass predictions are therefore not labels for
+the precise action executed. The [fixed-state diagnostic](evidence/teacher-optimization/action-quality-diagnostic/README.md)
+crosses both checkpoints' rankings and placements on identical geometry. It
+observed both a formerly admissible edge becoming inadmissible with the new
+placement and a newly top-ranked edge failing under either placement. This
+supports investigating both heads without assigning whole-chain causality.
+
+Independent analysis of all 3,228 consumed shards found 31,824 of 53,260 states
+(59.75%) with four preferred edges out of four queried edges. These states have
+no preferred/nonpreferred pair for the ranking loss. This is a lower bound on
+absent ranking supervision, not zero total learning: placement, pass and shared
+backbone updates still apply. Honest ties must not be broken arbitrarily.
+
+Before another paid training run, the next local experiment should separate
+oracle placement targets from rank/pass targets audited at a frozen policy's
+actual placements. Freeze the placement function, including shared features,
+while checking whether ranking learns those outcomes. Compare the fixed-state
+probe and matched LOD chains, retain failed/unknown audits and trial-cap stops,
+then broaden only after a local signal. This semantic objective correction is
+**not implemented by the robustness fixes below**. More optimizer updates are
+not yet evidence that the network will improve.
+
+## Remaining performance and code issues
+
+The completed hour spent **3,496.04 seconds (97.11%) waiting for teacher data**;
+optimizer updates took 83.55 seconds. The earlier 93.36% and current 97.11% are
+different workloads and do not establish a comparative regression. Teacher
+generation remains the dominant bottleneck. Improving accelerator matmul alone
+cannot solve this run's utilization problem. Raster reuse has local parity
+evidence, but the representative isolated remote throughput comparison remains
+incomplete; the exhaustive strategy remains selected.
+
+The new GPU placement-coincidence guard reuses existing storage. Its mixed hash
+avoids a reproduced integer-grid collision pathology, but costs about 39% on a
+small pure-trial microbenchmark. A separate two-condition local teacher ABBA
+measured approximately 3.20% more warm time after all admission corrections,
+with identical labels and common trajectories. Shared GPU/CPU load makes these
+diagnostic timings, not accepted performance ratios. The constructor retains
+the old position hash; its grid collision pattern warrants a bounded profiling
+experiment before further optimization. No end-to-end teacher cost has been
+attributed to that constructor yet. See [guard evidence](evidence/teacher-optimization/action-admission/README.md).
+
+The runtime, optional GPU backends, training target, tools and JS orchestration
+already have separate directories and CMake modules. LibTorch does not enter
+the installed runtime target. Readability is still uneven: `evaluate.cu` and
+`action_gpu.cu` exceed 2,000 lines, and `placement_teacher.hpp` combines proposal
+selection, auditing and serialization in roughly 940 lines. The next objective
+change should extract those responsibilities with explicit borrowed-view
+lifetimes and owned scratch, rather than introduce another parallel teacher
+implementation. Existing comparison overlays remain frozen evidence, not
+production dependency layers.
+
+## Review fixes and validation
+
+Attached-source Prophet reviews plus direct local inspection identified and
+reproduced six correctness cases:
+
+- Nonfinite/negative loss coefficients now fail at the host boundary, including
+  direct CUDA launch wrappers; valid zero coefficients remain supported.
+- A checkpoint with negative Adam second moments is rejected before resuming.
+- GPU placements cannot create inconsistent coincidences across live geometry
+  classes while leaving cached class IDs stale.
+- Initial exact-position exceptions obey the referenced-vertex precision cap,
+  including UV welding and unreferenced flags.
+- CPU action execution reports the actual stop reason and latches cancellation.
+- Teacher seeds, final admission and runtime confirmation consistently reject
+  incomplete, resource-limited or invalid numerical audit diagnostics. A known
+  infinite-distance failure remains a legitimate negative observation.
+
+These invalid-input regressions do not prove those inputs occurred during the
+hour or explain away its quality result. Focused GPU memchecks reported zero
+errors, relevant CPU ASan/UBSan contracts passed, and the rebuilt integrated
+local suite passed **53/53 CTests with no skips**. The earlier frozen remote
+source passed 50/50 CTests, Vulkan validation and both memchecks. The subsequent
+fixes have local validation; they have not run on a fresh remote host.
+
+The reviewed comparison baseline is now `worker-join-correctness-v3`, preserving
+the original serial teacher while sharing the admission fixes. Two local ABBA
+comparisons completed all eight processes and 32 jobs with identical actual
+payloads and common trajectories. The old v2 cache correctly misses. A fresh
+**unlaunched** no-cache bundle is prepared at
+`runs/neural/baseline-correctness-v3-prepared`, frozen at `17294cb`; all 30 input
+files and the 167,402,987-byte archive were independently verified. Mechanical
+preparation does not satisfy the failed quality gate or authorize a new rental.
+See [final integration evidence](evidence/teacher-optimization/final-integration/README.md)
+and [startup work](REMOTE-STARTUP.md).
+
+## Original hypothesis and chronological evidence
+
 The prior resident soak spent 93.36% of learner wall time waiting for fresh data.
 This work targets teacher audits and proposal search. Increasing replay updates
 or timing repeated process startup would not establish better teacher throughput.

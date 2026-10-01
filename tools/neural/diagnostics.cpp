@@ -5,6 +5,7 @@
 #include "tools/neural/resident_tests.hpp"
 #include "tools/neural/storage_proof.hpp"
 #include "tools/neural/update_benchmark.hpp"
+#include "training/policy_ranking.hpp"
 #include <iostream>
 
 using namespace blitz;
@@ -16,6 +17,19 @@ int main(int argc, char** argv) {
         torch::set_num_threads(1);
         if (argc == 4 && std::string_view(argv[1]) == "--diagnose-checkpoint") {
             diagnose_checkpoint(argv[2], argv[3]);
+            return 0;
+        }
+        if (argc == 6 && std::string_view(argv[1]) == "--blend-ranking") {
+            if (fs::exists(argv[5]))
+                throw std::invalid_argument("choose a fresh blended policy output");
+            const double fraction = json::parse(argv[4]).get<double>();
+            auto blended = blend_ranking(load_weights(argv[2]), load_weights(argv[3]), fraction);
+            blended.provenance = json({{"recipe", "ranking-blend-v1"},
+                                       {"fraction", fraction},
+                                       {"initial_sha256", file_sha256(argv[2])},
+                                       {"trained_sha256", file_sha256(argv[3])}})
+                                     .dump();
+            save_weights(argv[5], blended);
             return 0;
         }
         if (!torch::cuda::is_available())
@@ -99,6 +113,7 @@ int main(int argc, char** argv) {
             "blitz-neural-diagnostics: --check | --check-checkpoint | --check-schema | "
             "--check-width N | --diagnose-checkpoint CHECKPOINT OUTPUT | --audit-model MANIFEST "
             "MODEL SETTINGS OUTPUT | --migrate-policy MODEL PROBE OUTPUT REPORT | "
+            "--blend-ranking INITIAL TRAINED FRACTION OUTPUT | "
             "--audit-actions MANIFEST INITIAL FINAL SETTINGS OUTPUT | "
             "--compare-storage SHARDS OUTPUT MODEL | --benchmark-update SHARDS OUTPUT MODEL | "
             "--replay-checkpoint RUN OUTPUT UPDATES");

@@ -22,6 +22,11 @@ export async function runPolicyRanking(configPath, directory) {
   if (fs.existsSync(directory)) throw Error('Choose a fresh policy-ranking experiment directory');
   if (config.version !== 1 || !config.training_assets.length || !config.seeds.length)
     throw Error('Invalid policy-ranking experiment configuration');
+  if (
+    config.rank_fraction !== undefined &&
+    (!Number.isFinite(config.rank_fraction) || config.rank_fraction < 0 || config.rank_fraction > 1)
+  )
+    throw Error('Ranking adjustment fraction must be within [0,1]');
   const teacher = config.runtime_teacher
     ? 'build/neural/blitz-neural-policy-prepare'
     : 'build/neural/blitz-neural-placement-prepare';
@@ -336,9 +341,27 @@ export async function runPolicyRanking(configPath, directory) {
         latest.model_sha256 !== hash(path.join(output, latest.model))
       )
         throw Error('Invalid rank checkpoint');
-      report.training.push({ seed, latest });
+      const trained = { seed, latest };
+      report.training.push(trained);
       persist();
-      models.push({ name: 'seed-' + seed, path: path.join(output, latest.model) });
+      let model = path.join(output, latest.model);
+      if (config.rank_fraction !== undefined) {
+        const blended = path.join(output, 'ranking-blend.blzn');
+        await run(
+          'blend-' + seed,
+          diagnostic,
+          ['--blend-ranking', config.initial_model, model, String(config.rank_fraction), blended],
+          30000,
+        );
+        model = blended;
+        trained.evaluated_model = {
+          path: model,
+          sha256: hash(model),
+          rank_fraction: config.rank_fraction,
+        };
+        persist();
+      }
+      models.push({ name: 'seed-' + seed, path: model });
     }
     for (const preserve of [true, false]) {
       const settings = {

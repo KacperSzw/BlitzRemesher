@@ -67,6 +67,53 @@ void policy_label_contracts() {
     rejects([&] { ranking_pairs(oversized); }, "oversized rank pool accepted");
     apply_policy_rank_masks({}, {});
 }
+void ranking_blend_contracts() {
+    using namespace blitz::neural::training;
+    for (uint32_t width : {64u, 128u}) {
+        WeightsData initial;
+        initial.architecture = conditioned_placement_schema;
+        initial.hidden_width = width;
+        initial.values.assign(policy_weights(initial.architecture, width), .25f);
+        auto trained = initial;
+        const auto row = size_t(width) * (129 + width + 1);
+        const auto bias = row + size_t(width) * 12;
+        for (uint32_t i = 0; i < width; ++i)
+            trained.values[row + i] += 8;
+        trained.values[bias] -= 4;
+        for (double fraction : {0., .25, .75, 1.}) {
+            const auto blended = blend_ranking(initial, trained, fraction);
+            for (size_t i = 0; i < initial.values.size(); ++i) {
+                const float expected = i == bias                     ? float(.25 - 4 * fraction)
+                                       : i >= row && i < row + width ? float(.25 + 8 * fraction)
+                                                                     : .25f;
+                check(blended.values[i] == expected, "blend changed the actor or wrong rank row");
+            }
+            check(initial.values[row] == .25f && trained.values[row] == 8.25f,
+                  "ranking blend mutated an input");
+        }
+        auto rejected = [&](const WeightsData& candidate, double fraction) {
+            try {
+                blend_ranking(initial, candidate, fraction);
+            } catch (const std::invalid_argument&) {
+                return true;
+            }
+            return false;
+        };
+        check(rejected(trained, -.1) && rejected(trained, 1.1) && rejected(trained, NAN),
+              "invalid ranking blend fraction accepted");
+        trained.values[0] += 1;
+        check(rejected(trained, .25), "ranking blend hid a changed trunk");
+        trained = initial;
+        trained.values[bias + 1] += 1;
+        check(rejected(trained, .25), "ranking blend hid a changed auxiliary output");
+        trained = initial;
+        trained.values[row] = INFINITY;
+        check(rejected(trained, .25), "ranking blend accepted nonfinite weights");
+        trained = initial;
+        trained.values.pop_back();
+        check(rejected(trained, .25), "ranking blend accepted a malformed model");
+    }
+}
 Mesh plane(unsigned n) {
     Mesh m;
     for (unsigned y = 0; y < n; ++y)
@@ -165,6 +212,7 @@ int main() {
     try {
         action_stop_contracts();
         policy_label_contracts();
+        ranking_blend_contracts();
         auto cache_mesh = plane(5);
         cache_mesh.materials.resize(cache_mesh.view().triangles(), 0);
         auto memo_source = cache_mesh.view(), memo_candidate = memo_source;

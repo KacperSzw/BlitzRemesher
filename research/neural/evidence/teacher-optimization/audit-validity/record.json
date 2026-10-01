@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "scope": "Synthetic invalid audit measurements; CPU regression evidence only",
+  "before_revision": "e4613db58584e21937dcb4d82b768de3594b9658",
+  "fix_commit": "276c83c2f479cda22e10268cbadba5fac760efa5",
+  "regression_test_revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+  "source_provenance": "Archived source bytes reconstructed from exact Git versions after original testing",
+  "source_files": [
+    {
+      "path": "cmake/Tests.cmake",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "9a805ffc8e32ead33e1586ad88a7b98eff44f17cf582bfa35f8c36f04ad8095a"
+    },
+    {
+      "path": "src/neural/action.cpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "22334043c50a39918cb3662ff2da3a8cc32c91df6df88d8c4873b70d3bdc6e38"
+    },
+    {
+      "path": "src/neural/audit_measurement.hpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "f0817aa51db77e845c9956520a13db369e4db6c5bdeaa24fd688753a54d0d210"
+    },
+    {
+      "path": "src/neural/generate.cpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "7a4a1b726ab7089be1e264fd2527c7bbee31616499973e116bccfdbef7498ab1"
+    },
+    {
+      "path": "tests/neural_action.cpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "6ab1fca59fb96b2ad234043957a29042b568558f4baf65a27c556474cfd8dc4c"
+    },
+    {
+      "path": "tests/neural_teacher_seed.cpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "68c70d25b9d672d438b3b570875b657a695200ebf02afd4dcfbdbc60a8812618"
+    },
+    {
+      "path": "training/placement_teacher.hpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "cd813ec28de33e7e87bef2ed7e45f292c01154476be562a2ea407d241f421666"
+    },
+    {
+      "path": "training/teacher_seed.hpp",
+      "revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "sha256": "d30edccd46cc36091ec1afc49608b3c26bd192c8097b57472366cc63b72a4c35"
+    }
+  ],
+  "reproduction": {
+    "before": {
+      "command": "/nix/store/5ivvhzl37ci5sfdmyxc62s0yq56gs0gf-clang-wrapper-21.1.8/bin/clang++ -std=c++20 -I. -Iinclude tests/neural_teacher_seed.cpp -o runs/neural/measurement-validity-local-01/seed-before",
+      "execution": "runs/neural/measurement-validity-local-01/seed-before > runs/neural/measurement-validity-local-01/before.log 2>&1",
+      "exit_code": 1,
+      "diagnostic": "unknown seed audit became an accepted initial state"
+    },
+    "after": {
+      "command": "/nix/store/5ivvhzl37ci5sfdmyxc62s0yq56gs0gf-clang-wrapper-21.1.8/bin/clang++ -std=c++20 -I. -Isrc -Iinclude tests/neural_teacher_seed.cpp -o runs/neural/measurement-validity-local-01/seed-after",
+      "execution": "runs/neural/measurement-validity-local-01/seed-after > runs/neural/measurement-validity-local-01/after.log 2>&1",
+      "exit_code": 0,
+      "diagnostic": "teacher seed admission contracts passed"
+    },
+    "working_directory": "/home/kacper/Projects/BlitzRemesher-neural",
+    "executables": [
+      {
+        "path": "runs/neural/measurement-validity-local-01/seed-before",
+        "sha256": "2479ef37f6263d463f63283f9b6d0728d7e10a3153d9e4fb348ca9678d4c7534",
+        "bytes": 36416,
+        "archived": false
+      },
+      {
+        "path": "runs/neural/measurement-validity-local-01/seed-after",
+        "sha256": "da73e637ccc8dfc0951ceed7f27abb043ddf8293691009a12c913f7882988205",
+        "bytes": 36624,
+        "archived": false
+      }
+    ]
+  },
+  "validation": {
+    "tests": ["neural-teacher-seed-contracts", "neural-action-contracts"],
+    "release": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "asan_ubsan": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "gpu_execution": false,
+  "training_started": false,
+  "current_training_run_affected": null,
+  "current_training_run_affected_interpretation": "Not established by synthetic measurements.",
+  "quality_proven": false,
+  "performance_claim": false
+}

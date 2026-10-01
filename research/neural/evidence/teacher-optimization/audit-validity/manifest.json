@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "f9838615c81b54749ccfff3d13dbd68201ab93aedbd97a5f7edd35bd344f3aa7",
+      "bytes": 2670
+    },
+    {
+      "path": "record.json",
+      "sha256": "8b9ea2915ab3dfa6ad2863dec43d6c5b652a681b052916b399f1e67d1aeca594",
+      "bytes": 4042
+    },
+    {
+      "path": "before.log",
+      "source_path": "runs/neural/measurement-validity-local-01/before.log",
+      "source_sha256": "e14a398f5e51606dbee7a2690530c71f55a36257ddc0e7adeb62f2db6316cf1e",
+      "source_bytes": 52,
+      "sha256": "e14a398f5e51606dbee7a2690530c71f55a36257ddc0e7adeb62f2db6316cf1e",
+      "bytes": 52
+    },
+    {
+      "path": "after.log",
+      "source_path": "runs/neural/measurement-validity-local-01/after.log",
+      "source_sha256": "ea21962dc06497641ac17c86b8260a71ef85631ce8ec4ec4732bb36f6bacbc8f",
+      "source_bytes": 40,
+      "sha256": "ea21962dc06497641ac17c86b8260a71ef85631ce8ec4ec4732bb36f6bacbc8f",
+      "bytes": 40
+    },
+    {
+      "path": "cpu-build.log",
+      "source_path": "runs/neural/measurement-validity-local-01/cpu-build.log",
+      "source_sha256": "aba8c845691299c0e5576ab596a957c79aadfd0cc1bb955839eb0d5d5d61bd4c",
+      "source_bytes": 148,
+      "sha256": "aba8c845691299c0e5576ab596a957c79aadfd0cc1bb955839eb0d5d5d61bd4c",
+      "bytes": 148
+    },
+    {
+      "path": "cpu-ctest.log",
+      "source_path": "runs/neural/measurement-validity-local-01/cpu-ctest.log",
+      "source_sha256": "6afa2ee48439b136f40172aeb8272cc1f9d131a2e7e58813039d7dd2abfd34d4",
+      "source_bytes": 369,
+      "sha256": "6afa2ee48439b136f40172aeb8272cc1f9d131a2e7e58813039d7dd2abfd34d4",
+      "bytes": 369
+    },
+    {
+      "path": "sanitize-build.log",
+      "source_path": "runs/neural/measurement-validity-local-01/sanitize-build.log",
+      "source_sha256": "aba8c845691299c0e5576ab596a957c79aadfd0cc1bb955839eb0d5d5d61bd4c",
+      "source_bytes": 148,
+      "sha256": "aba8c845691299c0e5576ab596a957c79aadfd0cc1bb955839eb0d5d5d61bd4c",
+      "bytes": 148
+    },
+    {
+      "path": "sanitize-ctest.log",
+      "source_path": "runs/neural/measurement-validity-local-01/sanitize-ctest.log",
+      "source_sha256": "7eeb1ce533f0b60f8b9ae4ba12b7f8d85efbcec2a6d48b04a15eae07ff9ce7ff",
+      "source_bytes": 374,
+      "sha256": "7eeb1ce533f0b60f8b9ae4ba12b7f8d85efbcec2a6d48b04a15eae07ff9ce7ff",
+      "bytes": 374
+    },
+    {
+      "path": "reproduction/before/teacher_seed.hpp",
+      "source_revision": "e4613db58584e21937dcb4d82b768de3594b9658",
+      "source_path": "training/teacher_seed.hpp",
+      "source_sha256": "ed4e1ba3b418a372d3ef0d9748c6c92519ae007abe236cb3d048332ff4235b9a",
+      "source_bytes": 1511,
+      "reconstructed_from_git": true,
+      "sha256": "ed4e1ba3b418a372d3ef0d9748c6c92519ae007abe236cb3d048332ff4235b9a",
+      "bytes": 1511
+    },
+    {
+      "path": "reproduction/neural_teacher_seed.cpp",
+      "source_revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "source_path": "tests/neural_teacher_seed.cpp",
+      "source_sha256": "68c70d25b9d672d438b3b570875b657a695200ebf02afd4dcfbdbc60a8812618",
+      "source_bytes": 5361,
+      "reconstructed_from_git": true,
+      "sha256": "68c70d25b9d672d438b3b570875b657a695200ebf02afd4dcfbdbc60a8812618",
+      "bytes": 5361
+    },
+    {
+      "path": "reproduction/after/teacher_seed.hpp",
+      "source_revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "source_path": "training/teacher_seed.hpp",
+      "source_sha256": "d30edccd46cc36091ec1afc49608b3c26bd192c8097b57472366cc63b72a4c35",
+      "source_bytes": 1406,
+      "reconstructed_from_git": true,
+      "sha256": "d30edccd46cc36091ec1afc49608b3c26bd192c8097b57472366cc63b72a4c35",
+      "bytes": 1406
+    },
+    {
+      "path": "reproduction/after/audit_measurement.hpp",
+      "source_revision": "276c83c2f479cda22e10268cbadba5fac760efa5",
+      "source_path": "src/neural/audit_measurement.hpp",
+      "source_sha256": "f0817aa51db77e845c9956520a13db369e4db6c5bdeaa24fd688753a54d0d210",
+      "source_bytes": 840,
+      "reconstructed_from_git": true,
+      "sha256": "f0817aa51db77e845c9956520a13db369e4db6c5bdeaa24fd688753a54d0d210",
+      "bytes": 840
+    }
+  ]
+}

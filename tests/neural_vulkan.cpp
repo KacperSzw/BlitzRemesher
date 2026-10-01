@@ -2,11 +2,13 @@
 #include "neural/cuda.cuh"
 #include "neural/internal.hpp"
 #include "neural/raster_pixel.cuh"
+#include "neural/teardown_trace.hpp"
 #include "neural/vulkan.hpp"
 #include "neural/vulkan_cuda.hpp"
 #include <barrier>
 #include <future>
 #include <iostream>
+#include <mutex>
 using namespace blitz;
 using namespace blitz::neural;
 static void require(bool value, const char* message) {
@@ -464,13 +466,142 @@ static void mask_memory_contracts() {
                     mask[i].covered == ((bits[i / 32] >> (i % 32)) & 1) && !mask[i].visible,
                 "instrumented mask/full coverage differs");
 }
+// Diagnostic-only stress: retain worker Vulkan sessions across geometry and
+// target churn, then make both workers begin normal resource destruction at the
+// same barrier. No action topology workspace or full corpus mesh is required.
+static void teardown_contracts(bool serial) {
+    NeuralOptions options;
+    options.memory_mib = 768;
+    options.raster_backend = NeuralRasterBackend::Vulkan;
+    options.vertex_storage = NeuralVertexStorage::Packed;
+    options.mask_only_coverage = true;
+    options.view_batch = 4;
+    MemoryBudget shared{size_t(options.memory_mib) << 20, 0, 0, 0};
+    std::mutex retirement;
+    for (uint32_t round = 0; round < 12; ++round) {
+        std::barrier quiesced(2);
+        auto worker = [&](uint32_t id) {
+            struct Arrival {
+                std::barrier<>& barrier;
+                bool arrived{};
+                ~Arrival() {
+                    if (!arrived)
+                        barrier.arrive_and_drop();
+                }
+            } arrival{quiesced};
+            // A diagnostic control only: when selected, keep the lock through
+            // normal native teardown, after both streams have quiesced.
+            std::unique_lock retire(retirement, std::defer_lock);
+            TeardownEnd resources_end{"fixture.worker.resources", &id};
+            gpu::StreamScope stream;
+            MemoryScope memory(shared);
+            TeardownEnd session_end{"fixture.worker.session", &id};
+            AuditSession session(options);
+            WeightsData weights;
+            weights.architecture = conditioned_placement_schema;
+            weights.hidden_width = 64;
+            weights.values.resize(policy_weights(weights.architecture, weights.hidden_width));
+            TeardownEnd policy_end{"fixture.worker.policy", &id};
+            ActionCuda policy(weights, options, 1024);
+            {
+                for (uint32_t job = 0; job < 3; ++job) {
+                    Mesh mesh;
+                    const uint32_t width = std::array{16u, 256u, 768u}[(job + id + round) % 3];
+                    for (uint32_t y = 0; y < width; ++y)
+                        for (uint32_t x = 0; x < width; ++x)
+                            mesh.positions.push_back(
+                                {float(x) / (width - 1), float(y) / (width - 1), 0});
+                    for (uint32_t y = 0; y + 1 < width; ++y)
+                        for (uint32_t x = 0; x + 1 < width; ++x) {
+                            const auto at = y * width + x;
+                            mesh.indices.insert(mesh.indices.end(), {at, at + 1, at + width, at + 1,
+                                                                     at + width + 1, at + width});
+                        }
+                    mesh.double_sided = {1};
+                    auto previous = mesh;
+                    previous.indices.resize(previous.indices.size() - 6);
+                    const auto box = bounds(mesh.view());
+                    gpu::Device device(options);
+                    auto positions = gpu::upload_stream(device, mesh.view().positions);
+                    gpu::Buffer<uint32_t> indices(device, mesh.indices.size());
+                    gpu::Buffer<uint8_t> sided(device, mesh.double_sided.size());
+                    indices.upload(mesh.indices);
+                    sided.upload(mesh.double_sided);
+                    DeviceMeshView candidate{};
+                    candidate.positions = positions.p;
+                    candidate.indices = indices.p;
+                    candidate.double_sided = sided.p;
+                    candidate.vertices = uint32_t(mesh.positions.size());
+                    candidate.faces = uint32_t(mesh.view().triangles());
+                    candidate.sided_count = 1;
+                    candidate.identity = (1ull << 62) + round * 32 + id * 12 + job * 4;
+                    std::array<DeviceMeshView, 4> lanes;
+                    for (size_t lane = 0; lane < lanes.size(); ++lane) {
+                        lanes[lane] = candidate;
+                        lanes[lane].identity += lane;
+                    }
+                    AuditCuda audit(options, mesh.view());
+                    audit.bind_reference(previous.view());
+                    EvalSettings settings;
+                    settings.profile = Profile::Coverage;
+                    settings.views = {4, 0, 817};
+                    settings.limit = 3;
+                    settings.max_changed_area = .2;
+                    settings.supersample = settings.max_supersample = 4;
+                    for (double screen : {64., 256., 128., 64.}) {
+                        settings.screen_size = screen;
+                        audit.with_candidate_rasters(lanes, [&] {
+                            const auto source =
+                                audit.certify_candidates(mesh.view(), lanes, box, settings);
+                            auto adjacent = settings;
+                            adjacent.limit = 2;
+                            const auto prior =
+                                audit.certify_candidates(previous.view(), lanes, box, adjacent);
+                            for (size_t lane = 0; lane < lanes.size(); ++lane)
+                                require(source[lane].valid && prior[lane].valid &&
+                                            !source[lane].value.resource_limited &&
+                                            !prior[lane].value.resource_limited &&
+                                            !source[lane].value.cancelled &&
+                                            !prior[lane].value.cancelled,
+                                        "teardown fixture audit incomplete");
+                        });
+                    }
+                }
+                gpu::check(cudaStreamSynchronize(stream.value));
+            }
+            teardown_trace("fixture.worker.quiesced", &id, "begin");
+            quiesced.arrive_and_wait();
+            teardown_trace("fixture.worker.quiesced", &id, "end");
+            arrival.arrived = true;
+            if (serial)
+                retire.lock();
+            teardown_trace("fixture.worker.resources", &id, "begin");
+        };
+        auto first = std::async(std::launch::async, worker, 0),
+             second = std::async(std::launch::async, worker, 1);
+        first.get();
+        second.get();
+        require(shared.live == 0 && shared.peak > 0 && shared.peak <= shared.limit,
+                "teardown fixture leaked or exceeded shared budget");
+        std::cout << "teardown round " << round << " passed, peak=" << shared.peak.load()
+                  << " bytes\n"
+                  << std::flush;
+    }
+}
 int main(int argc, char** argv) {
     try {
         bool memory_boundaries = argc == 2 && std::string_view(argv[1]) == "--memcheck";
-        if (argc != 1 && !memory_boundaries)
-            throw std::invalid_argument("expected optional --memcheck");
+        bool teardown = argc == 2 && std::string_view(argv[1]) == "--teardown";
+        bool serial_teardown = argc == 2 && std::string_view(argv[1]) == "--teardown-serial";
+        if (argc != 1 && !memory_boundaries && !teardown && !serial_teardown)
+            throw std::invalid_argument("expected --memcheck, --teardown or --teardown-serial");
         if (!neural_available())
             return 77;
+        if (teardown || serial_teardown) {
+            require(allow_debugger_attach(), "explicit debugger attach request was rejected");
+            teardown_contracts(serial_teardown);
+            return 0;
+        }
         NeuralOptions options;
         options.memory_mib = 512;
         options.raster_backend = NeuralRasterBackend::Vulkan;

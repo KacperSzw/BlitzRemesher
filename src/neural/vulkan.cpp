@@ -1,6 +1,7 @@
 #include "neural/vulkan.hpp"
 #include "neural/cuda.cuh"
 #include "neural/memory.hpp"
+#include "neural/teardown_trace.hpp"
 #include "neural/vulkan_cuda.hpp"
 #include "neural_coverage_frag.inc"
 #include "neural_coverage_vert.inc"
@@ -51,6 +52,7 @@ struct VulkanRaster::Impl {
     uint64_t serial{};
     VkFence completion{};
     bool submitted{};
+    bool retiring{};
     VkPhysicalDeviceMemoryProperties memory{};
     VkPhysicalDeviceProperties properties{};
     PFN_vkGetMemoryFdKHR get_memory_fd{};
@@ -429,15 +431,25 @@ struct VulkanRaster::Impl {
         vkDestroyShaderModule(device, fs, nullptr);
         return pipelines[index];
     }
+    template <class Work>
+    void retire_call(const char* stage, const void* owner, Work&& work) noexcept {
+        if (retiring)
+            teardown_call(stage, owner, work);
+        else
+            work();
+    }
     void drop(Geometry& g) {
         if (g.cuda)
-            cudaFree(g.cuda);
+            retire_call("geometry.cudaFree", &g, [&] { cudaFree(g.cuda); });
         if (g.external)
-            cudaDestroyExternalMemory(g.external);
+            retire_call("geometry.cudaDestroyExternalMemory", &g,
+                        [&] { cudaDestroyExternalMemory(g.external); });
         if (g.buffer)
-            vkDestroyBuffer(device, g.buffer, nullptr);
+            retire_call("geometry.vkDestroyBuffer", &g,
+                        [&] { vkDestroyBuffer(device, g.buffer, nullptr); });
         if (g.memory)
-            vkFreeMemory(device, g.memory, nullptr);
+            retire_call("geometry.vkFreeMemory", &g,
+                        [&] { vkFreeMemory(device, g.memory, nullptr); });
         unaccount(g.bytes);
         auto set = g.set;
         g = {};
@@ -445,17 +457,23 @@ struct VulkanRaster::Impl {
     }
     void drop(Target& t) {
         if (t.surface)
-            cudaDestroySurfaceObject(t.surface);
+            retire_call("target.cudaDestroySurfaceObject", &t,
+                        [&] { cudaDestroySurfaceObject(t.surface); });
         if (t.mip)
-            cudaFreeMipmappedArray(t.mip);
+            retire_call("target.cudaFreeMipmappedArray", &t,
+                        [&] { cudaFreeMipmappedArray(t.mip); });
         if (t.external)
-            cudaDestroyExternalMemory(t.external);
+            retire_call("target.cudaDestroyExternalMemory", &t,
+                        [&] { cudaDestroyExternalMemory(t.external); });
         if (t.view)
-            vkDestroyImageView(device, t.view, nullptr);
+            retire_call("target.vkDestroyImageView", &t,
+                        [&] { vkDestroyImageView(device, t.view, nullptr); });
         if (t.image)
-            vkDestroyImage(device, t.image, nullptr);
+            retire_call("target.vkDestroyImage", &t,
+                        [&] { vkDestroyImage(device, t.image, nullptr); });
         if (t.memory)
-            vkFreeMemory(device, t.memory, nullptr);
+            retire_call("target.vkFreeMemory", &t,
+                        [&] { vkFreeMemory(device, t.memory, nullptr); });
         unaccount(t.bytes);
         t = {};
     }
@@ -1000,39 +1018,53 @@ struct VulkanRaster::Impl {
         }
     }
     void destroy() noexcept {
+        retiring = true;
+        teardown_trace("vulkan.destroy", this, "begin");
         if (device) {
-            cudaStreamSynchronize(gpu::stream());
-            vkDeviceWaitIdle(device);
+            retire_call("vulkan.cudaStreamSynchronize", this,
+                        [&] { cudaStreamSynchronize(gpu::stream()); });
+            retire_call("vulkan.vkDeviceWaitIdle", this, [&] { vkDeviceWaitIdle(device); });
             for (auto event : events)
                 if (event)
-                    cudaEventDestroy(event);
+                    retire_call("vulkan.cudaEventDestroy", this, [&] { cudaEventDestroy(event); });
             if (queries)
-                vkDestroyQueryPool(device, queries, nullptr);
+                retire_call("vulkan.vkDestroyQueryPool", this,
+                            [&] { vkDestroyQueryPool(device, queries, nullptr); });
             for (auto& g : geometries)
                 drop(g);
             for (auto& t : targets)
                 release_targets(t);
             for (auto p : pipelines)
                 if (p)
-                    vkDestroyPipeline(device, p, nullptr);
+                    retire_call("vulkan.vkDestroyPipeline", this,
+                                [&] { vkDestroyPipeline(device, p, nullptr); });
             if (pipeline_layout)
-                vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
+                retire_call("vulkan.vkDestroyPipelineLayout", this,
+                            [&] { vkDestroyPipelineLayout(device, pipeline_layout, nullptr); });
             if (descriptors)
-                vkDestroyDescriptorPool(device, descriptors, nullptr);
+                retire_call("vulkan.vkDestroyDescriptorPool", this,
+                            [&] { vkDestroyDescriptorPool(device, descriptors, nullptr); });
             if (set_layout)
-                vkDestroyDescriptorSetLayout(device, set_layout, nullptr);
+                retire_call("vulkan.vkDestroyDescriptorSetLayout", this,
+                            [&] { vkDestroyDescriptorSetLayout(device, set_layout, nullptr); });
             if (commands)
-                vkDestroyCommandPool(device, commands, nullptr);
+                retire_call("vulkan.vkDestroyCommandPool", this,
+                            [&] { vkDestroyCommandPool(device, commands, nullptr); });
             if (cuda_semaphore)
-                cudaDestroyExternalSemaphore(cuda_semaphore);
+                retire_call("vulkan.cudaDestroyExternalSemaphore", this,
+                            [&] { cudaDestroyExternalSemaphore(cuda_semaphore); });
             if (semaphore)
-                vkDestroySemaphore(device, semaphore, nullptr);
+                retire_call("vulkan.vkDestroySemaphore", this,
+                            [&] { vkDestroySemaphore(device, semaphore, nullptr); });
             if (completion)
-                vkDestroyFence(device, completion, nullptr);
-            vkDestroyDevice(device, nullptr);
+                retire_call("vulkan.vkDestroyFence", this,
+                            [&] { vkDestroyFence(device, completion, nullptr); });
+            retire_call("vulkan.vkDestroyDevice", this, [&] { vkDestroyDevice(device, nullptr); });
         }
         if (instance)
-            vkDestroyInstance(instance, nullptr);
+            retire_call("vulkan.vkDestroyInstance", this,
+                        [&] { vkDestroyInstance(instance, nullptr); });
+        teardown_trace("vulkan.destroy", this, "end");
     }
 };
 VulkanRaster::VulkanRaster(const NeuralOptions& o, bool timings, MemoryBudget* budget)

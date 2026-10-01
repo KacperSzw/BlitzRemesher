@@ -5,6 +5,9 @@
 #include "training/placement_teacher.hpp"
 #include <csignal>
 #include <iostream>
+#ifdef __linux__
+#include <unistd.h>
+#endif
 using namespace blitz;
 using namespace blitz::neural;
 using namespace blitz::neural::training;
@@ -14,6 +17,35 @@ static void stop(int) {
 }
 int main(int argc, char** argv) {
     try {
+        if (argc > 1 && std::string_view(argv[1]) == "--debugger-exec") {
+            if (argc < 3)
+                throw std::invalid_argument(
+                    "blitz-neural-placement-prepare --debugger-exec EXECUTABLE [ARGS...]");
+            const char* enabled = std::getenv("BLITZ_ALLOW_DEBUGGER_ATTACH");
+            if (!enabled || std::strcmp(enabled, "1"))
+                throw std::invalid_argument("debugger exec requires explicit attach opt-in");
+            if (!allow_debugger_attach())
+                throw std::runtime_error("explicit debugger attach request was rejected");
+#ifdef __linux__
+            execv(argv[2], argv + 2);
+            const int error = errno;
+            throw std::runtime_error(std::string("debugger exec failed: ") + std::strerror(error));
+#else
+            throw std::runtime_error("debugger exec requires Linux");
+#endif
+        }
+        if (argc > 1 && std::string_view(argv[1]) == "--debugger-probe") {
+            if (argc != 2)
+                throw std::invalid_argument("blitz-neural-placement-prepare --debugger-probe");
+            if (!allow_debugger_attach())
+                throw std::runtime_error("explicit debugger attach request was rejected");
+            std::signal(SIGINT, stop);
+            std::signal(SIGTERM, stop);
+            std::cout << "debugger-probe ready" << std::endl;
+            while (!stopped)
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            return 0;
+        }
         if (argc > 1 && std::string_view(argv[1]) == "--jobs") {
             if (argc != 4)
                 throw std::invalid_argument("blitz-neural-placement-prepare --jobs JSON OUTPUT");

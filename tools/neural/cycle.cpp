@@ -19,6 +19,8 @@ static double seconds(std::chrono::steady_clock::time_point t) {
 }
 int main(int argc, char** argv) {
     try {
+        if (!allow_debugger_attach())
+            throw std::runtime_error("explicit debugger attach request was rejected");
         ieee_fp32();
         torch::set_num_threads(1);
         if (!torch::cuda::is_available())

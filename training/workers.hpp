@@ -1,4 +1,5 @@
 #pragma once
+#include "neural/teardown_trace.hpp"
 #include "neural/timeline.hpp"
 #include "training/placement_teacher.hpp"
 #include <condition_variable>
@@ -51,13 +52,16 @@ class TeacherWorkers {
     void worker(uint8_t worker_id) {
         try {
             gpu::check(cudaSetDevice(options_.device));
+            TeardownEnd resources_end{"worker.resources", &worker_id};
             gpu::StreamScope stream;
             MemoryScope memory(budget_);
+            TeardownEnd session_end{"worker.session", &worker_id};
             AuditSession session(options_);
             WeightsData shape;
             shape.architecture = architecture_;
             shape.hidden_width = width_;
             shape.values.resize(policy_weights(shape.architecture, width_));
+            TeardownEnd policy_end{"worker.policy", &worker_id};
             ActionCuda policy(shape, options_, 1024);
             {
                 std::lock_guard lock(mutex_);
@@ -187,6 +191,7 @@ class TeacherWorkers {
                 }
                 changed_.notify_all();
             }
+            teardown_trace("worker.resources", &worker_id, "begin");
         } catch (...) {
             std::lock_guard lock(mutex_);
             startup_error_ = std::current_exception();
@@ -218,6 +223,7 @@ class TeacherWorkers {
             std::rethrow_exception(startup_error_);
     }
     void shutdown() {
+        teardown_trace("workers.shutdown", this, "begin");
         cancelled_ = true;
         {
             std::lock_guard lock(mutex_);
@@ -226,8 +232,12 @@ class TeacherWorkers {
         }
         changed_.notify_all();
         for (auto& t : threads_)
-            if (t.joinable())
+            if (t.joinable()) {
+                teardown_trace("worker.join", &t, "begin");
                 t.join();
+                teardown_trace("worker.join", &t, "end");
+            }
+        teardown_trace("workers.shutdown", this, "end");
     }
     void wave(const float* weights, size_t count, cudaEvent_t ready) {
         std::lock_guard lock(mutex_);

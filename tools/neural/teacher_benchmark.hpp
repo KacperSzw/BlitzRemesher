@@ -26,6 +26,8 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
                    {"optimizer_updates", 0}, {"score", nullptr},  {"jobs", json::array()},
                    {"waves", json::array()}};
     try {
+        if (!allow_debugger_attach())
+            throw std::runtime_error("explicit debugger attach request was rejected");
         auto plan = read_json(plan_path);
         const std::set<std::string> fields = {"version",
                                               "architecture",
@@ -259,10 +261,15 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
                 for (uint32_t first = 0; first < conditions.size(); first += count * 2)
                     wave(false, pass, first,
                          uint32_t(std::min<size_t>(count * 2, conditions.size() - first)));
+            teardown_trace("benchmark.workers", &workers, "begin");
             workers.shutdown();
+            teardown_trace("benchmark.workers", &workers, "end");
+            teardown_trace("benchmark.stream_sync", &workers, "begin");
             gpu::check(cudaStreamSynchronize(gpu::stream()));
+            teardown_trace("benchmark.stream_sync", &workers, "end");
             report["gpu_peak_bytes"] = memory.budget.peak.load();
         }
+        teardown_trace("benchmark.resources", &report, "end");
         report["cache"] = cache.stats();
         report["complete"] = !cancelled();
         if (!report["complete"].get<bool>())

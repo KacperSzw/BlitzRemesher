@@ -32,8 +32,13 @@ flags. Process wall ratios are reported as `diagnostic_process_wall_ratio`,
 since startup and teardown now include instrumentation.
 
 After successful attachment preflight, the remote runner executes the candidate
-Vulkan test's `--teardown` mode four times, with 12 rounds per process and a
-45-second workload budget per process. The report records the fixture binary
+Vulkan test's `--teardown-join` mode four times, with 12 rounds per process and a
+45-second workload budget per process. This mode uses the production helper
+that retires library-owned teacher workers through their `join` boundary. The
+trace pattern is on/off/off/on; attachment permission stays enabled in all four
+processes, and the two untraced processes explicitly set `BLITZ_TEARDOWN_TRACE=0`
+so inherited settings cannot enable tracing. Tracing can change race timing.
+The report records the retirement mode, native arguments, trace settings and fixture binary
 SHA-256 before the first launch and distinguishes requested rounds from rounds
 in fully completed processes (`completed_full_run_rounds`). A failed process may
 have further completed rounds visible in its flushed log. Each capture and
@@ -42,6 +47,11 @@ termination allowance remains inside the existing
 minutes, bounded by the same teacher deadline; stress time does not consume
 their separate five-minute allowance. Any failed stress process stops the run.
 The same timeout capture is enabled for resident benchmarks and paired cycles.
+
+The original concurrent `--teardown` control has reproduced a hang with both EGL
+and GLX, including an untraced local GLX run. It remains a diagnostic control,
+not the acceptance fixture for the owned-worker retirement change. Join retirement
+does not establish that arbitrary caller-owned `AuditSession` threads are fixed.
 
 On a timeout, the target remains alive while a separate debugger process group
 runs `thread apply all bt 32`. Arguments, locals, auto-loaded scripts and

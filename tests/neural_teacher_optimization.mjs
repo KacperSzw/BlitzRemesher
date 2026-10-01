@@ -415,7 +415,7 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
   const report = await runTeacherOptimization({
     ...options,
     icdSelection: fixture.file,
-    environment: fixture.environment,
+    environment: { ...fixture.environment, BLITZ_TEARDOWN_TRACE: '1' },
     now: () => clock,
     debuggerPreflight: async () => {
       clock += 6000;
@@ -449,7 +449,8 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
       assert.equal(config.timeoutDiagnostic.maximum, 5000);
       if (calls.length <= 4) {
         assert.equal(command, options.teardownBinary);
-        assert.deepEqual(args, ['--teardown']);
+        assert.deepEqual(args, ['--teardown-join']);
+        assert.equal(config.env.BLITZ_TEARDOWN_TRACE, ['1', '0', '0', '1'][calls.length - 1]);
         assert.equal(config.maximum, 45000);
         const saved = JSON.parse(fs.readFileSync(options.directory + '/report.json'));
         assert.equal(
@@ -457,6 +458,9 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
           createHash('sha256').update(fs.readFileSync(command)).digest('hex'),
         );
         assert.equal(saved.teardown_stress.requested_rounds, 48);
+        assert.equal(saved.teardown_stress.retirement_mode, 'join');
+        assert.deepEqual(saved.teardown_stress.fixture_arguments, args);
+        assert.deepEqual(saved.teardown_stress.teardown_trace_by_run, [true, false, false, true]);
         assert.equal(saved.teardown_stress.completed_runs, calls.length - 1);
         assert.equal(saved.vulkan_icd.selected_sha256, fixture.provenance.selected_sha256);
         assert.equal(saved.vulkan_icd.VK_DRIVER_FILES, config.env.VK_DRIVER_FILES);
@@ -464,6 +468,7 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
         return { success: true, code: 0, signal: null };
       }
       assert.equal(command, 'build/neural/blitz-neural-cycle');
+      assert.equal(config.env.BLITZ_TEARDOWN_TRACE, '1');
       assert.equal(config.maximum + config.grace, 7 * 60000);
       return {
         success: false,
@@ -478,6 +483,11 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
   assert.equal(report.complete, false);
   assert.equal(report.training_started, true);
   assert.equal(report.teardown_stress.completed_full_run_rounds, 48);
+  assert.deepEqual(
+    report.phases.slice(0, 4).map((p) => p.teardown_trace),
+    [true, false, false, true],
+  );
+  assert.ok(report.phases.every((p) => p.debugger_attach_requested));
   assert.equal(report.phases.at(-1).diagnostic.captured, true);
 });
 

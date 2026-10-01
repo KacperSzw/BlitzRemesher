@@ -73,7 +73,7 @@ export async function runTeacherOptimization({
     delete env.VK_ICD_FILENAMES;
     return execute(command, args, { ...options, env });
   };
-  async function run(command, args, name, end, capture) {
+  async function run(command, args, name, end, capture, teardownTrace = true) {
     if (signal?.aborted || now() >= end) throw new Error(name + ': deadline/cancellation');
     const log = directory + '/' + name + '.log',
       fd = fs.openSync(log, 'w');
@@ -88,12 +88,22 @@ export async function runTeacherOptimization({
         stdio: ['ignore', fd, fd],
         ...(capture
           ? {
-              env: { ...environment, BLITZ_TEARDOWN_TRACE: '1', BLITZ_ALLOW_DEBUGGER_ATTACH: '1' },
+              env: {
+                ...environment,
+                BLITZ_TEARDOWN_TRACE: teardownTrace ? '1' : '0',
+                BLITZ_ALLOW_DEBUGGER_ATTACH: '1',
+              },
               timeoutDiagnostic: { ...capture, output: directory + '/' + name + '.threads.log' },
             }
           : {}),
       });
-      report.phases.push({ name, command, args, ...result });
+      report.phases.push({
+        name,
+        command,
+        args,
+        ...(capture ? { teardown_trace: teardownTrace, debugger_attach_requested: true } : {}),
+        ...result,
+      });
       if (
         !result.success ||
         result.code !== 0 ||
@@ -149,6 +159,9 @@ export async function runTeacherOptimization({
       report.teardown_stress = {
         binary: teardownBinary,
         binary_sha256: digest(teardownBinary),
+        retirement_mode: 'join',
+        fixture_arguments: ['--teardown-join'],
+        teardown_trace_by_run: [true, false, false, true],
         requested_runs: 4,
         rounds_per_run: 12,
         requested_rounds: 48,
@@ -159,10 +172,11 @@ export async function runTeacherOptimization({
       for (let repeat = 0; repeat < report.teardown_stress.requested_runs; repeat++) {
         await run(
           teardownBinary,
-          ['--teardown'],
+          report.teardown_stress.fixture_arguments,
           'teardown-stress-' + (repeat + 1),
           Math.min(now() + 45000 + timeoutDiagnostics.maximum + 1000, teacherEnd),
           timeoutDiagnostics,
+          report.teardown_stress.teardown_trace_by_run[repeat],
         );
         report.teardown_stress.completed_runs++;
         report.teardown_stress.completed_full_run_rounds += report.teardown_stress.rounds_per_run;

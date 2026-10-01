@@ -1,7 +1,7 @@
 {
   "version": 1,
   "launch": true,
-  "readiness": "L40S replay, memory checks and 20-minute adaptive soak passed; local follow-up cache/process regressions passed; retry prepared and awaiting L40S availability",
+  "readiness": "Two-hour retry running after all 32 CTest contracts, action/Vulkan memory checks, saved-policy replay, full 100-condition preflight and 80 model-audit rows passed",
   "duration_minutes": 120,
   "finalize_minutes": 10,
   "corpus": "research/neural/corpus-v2/corpus.json",
@@ -46,7 +46,7 @@
   "update_backend": "fused",
   "configuration_reason": "Two workers/four lanes passed sustained learning and remained among the fastest configurations in both remote matrices. Small differences between four and eight lanes do not establish the best schedule for the expanded corpus.",
   "initialization": "Verified saved initializer 9152bb42cb807a2e91fe3217ab6dc3bbcf11be12618bcd706acf71a8e3fff185; fresh Adam state; previous interrupted checkpoint audited separately.",
-  "validation_evidence": "research/neural/evidence/throughput-remote/training-launch",
+  "validation_evidence": "research/neural/evidence/packed-training-launch",
   "final_validation": "Compare exact starting and final models on all 20 validation groups with identical bounded generation budgets; no release holdout.",
   "network_volume_gb": 80,
   "previous_run": "runs/neural/runpod-expanded-pretraining-02",
@@ -54,12 +54,15 @@
   "packed_domain_gate": true,
   "packed_domain_local_evidence": "research/neural/evidence/packed-domain-local",
   "packed_domain_remote_evidence": "research/neural/evidence/packed-domain-remote-02",
-  "pending_run": "runs/neural/runpod-expanded-pretraining-05",
   "prepared_revision": "716bb7c491ce232a51b9e1a6f3cfa4fc6fea52f1",
   "capacity_wait": {
     "unit": "blitz-await-packed-training-05.service",
-    "status": "runs/neural/runpod-expanded-pretraining-05/launch-wait.json",
+    "status": "launched",
     "deadline_utc": "2026-10-01T07:51:09.331Z",
-    "maximum_new_rentals": 1
-  }
+    "maximum_new_rentals": 1,
+    "launched_at_utc": "2026-10-01T07:32:15.439Z"
+  },
+  "active_run": "runs/neural/runpod-expanded-pretraining-05",
+  "learning_started_at_utc": "2026-10-01T07:50:27.114Z",
+  "estimated_learning_end_utc": "2026-10-01T09:50:27.114Z"
 }

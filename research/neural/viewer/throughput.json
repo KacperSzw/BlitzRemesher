@@ -4,7 +4,7 @@
     "research/neural/evidence/throughput-local/matrix.json",
     "runs/neural/runpod-pipeline-validation-03/collected/results/pipeline-validation/matrix/report.json",
     "runs/neural/runpod-pipeline-validation-03/collected/results/pipeline-validation",
-    "research/neural/evidence/packed-domain-failure/status.json"
+    "research/neural/evidence/packed-training-launch/status.json"
   ],
   "rows": [
     {
@@ -711,8 +711,8 @@
     "other": 1.6826163699999848
   },
   "launch": {
-    "captured_at": "2026-09-30T21:29:59.162Z",
-    "status": "failed",
+    "captured_at": "2026-10-01T07:52:05.068Z",
+    "status": "running",
     "complete": false,
     "score": null,
     "validation_passed": true,
@@ -766,69 +766,47 @@
         "--initialize",
         "/workspace/initial-model.blzn"
       ],
-      "started": 1790803078386,
+      "started": 1790841027114,
       "optimizer_processes": 1
     },
     "checkpoint": {
-      "path": "checkpoints/step-160256",
-      "step": 160256,
-      "fresh_states": 20014,
-      "learning_elapsed_ms": 669858,
-      "sha256": "a745b009563ecc30345e7cd05859f663c83817fd9c57c95571972c6548cec9f2",
-      "verified": true
+      "step": 11392,
+      "fresh_states": 1424,
+      "condition": 92,
+      "learning_elapsed_ms": 60478,
+      "failed_conditions": 0,
+      "empty_conditions": 4,
+      "coverage_quality_failed": false,
+      "path": "checkpoints/step-11392",
+      "journal_sha256": "1c5f99e4194e13a4f19c7eadd8915b149fd7c719dd9e5a99ac2902d38dd65835",
+      "actual_sha256": "1c5f99e4194e13a4f19c7eadd8915b149fd7c719dd9e5a99ac2902d38dd65835",
+      "verified": true,
+      "index": {
+        "checkpoint_sha256": "1c5f99e4194e13a4f19c7eadd8915b149fd7c719dd9e5a99ac2902d38dd65835",
+        "complete": true,
+        "files": {
+          "checkpoint.pt": "1c5f99e4194e13a4f19c7eadd8915b149fd7c719dd9e5a99ac2902d38dd65835",
+          "expected.pt": "f25ff7ec806cfad139a4fda2e51b87bd3ade8b9e6d6778a0a88483a36d0168f9",
+          "input.pt": "09fff2ed62dac9b17783512a42dacfb6af69fc059b7af554bfc3db8803c2cfb4",
+          "model.blzn": "5aafe715d4c328b5c525150cbb3a08aec19a95a7377115652e767ad165a6ea9d",
+          "verification.json": "f3023ae4fb2e57da73b7863f0ae3ef9cc59a7100a66e767a05b77f21b18b6f1b"
+        },
+        "model_sha256": "5aafe715d4c328b5c525150cbb3a08aec19a95a7377115652e767ad165a6ea9d",
+        "step": 11392
+      }
     },
     "gpu": {
-      "samples": 270,
-      "mean_activity": 76.47777777777777,
-      "peak_activity": 95,
-      "peak_memory_mib": 2988,
-      "mean_power_w": 129.16925925925923
+      "samples": 98,
+      "mean_activity": 62.55102040816327,
+      "peak_activity": 93,
+      "peak_memory_mib": 2774,
+      "mean_power_w": 112.76255102040815
     },
-    "revision": "a587c33169e02e7de59e064edd85b7b56516e899",
-    "run_directory": "runs/neural/runpod-expanded-pretraining-02",
-    "estimated_learning_end_utc": "2026-09-30T23:17:58.386Z",
+    "revision": "716bb7c491ce232a51b9e1a6f3cfa4fc6fea52f1",
+    "run_directory": "runs/neural/runpod-expanded-pretraining-05",
+    "estimated_learning_end_utc": "2026-10-01T09:50:27.114Z",
     "storage": {
-      "requested_at": 1790803257477,
-      "volume_id": "uciupcs8j0",
-      "old_size_gb": 20,
-      "new_size_gb": 80,
-      "reason": "Selected 100-mesh pass produced 281 MiB of retained training evidence in 64 s; two-hour data plus final archive exceed the original 20 GB volume.",
-      "incremental_cost_reserved_usd": 0.1,
-      "reserve_source": "Existing $1 storage/collection reserve inside the approved $10 grant",
-      "pricing_source": "https://docs.runpod.io/storage/network-volumes",
-      "verified": true,
-      "verified_at": 1790803258125,
-      "size_gb": 80
-    },
-    "outcome": {
-      "complete": false,
-      "score": null,
-      "run": "runs/neural/runpod-expanded-pretraining-02",
-      "revision": "a587c33169e02e7de59e064edd85b7b56516e899",
-      "started_utc": "2026-09-30T21:17:58.386Z",
-      "failed_utc": "2026-09-30T21:29:59.162Z",
-      "elapsed_learning_wall_seconds": 720.776,
-      "error": "packed draw requires finite fixed bounds, UVs in [-8,8] and exact positions within the referenced-vertex cap",
-      "failed_shard": 1394,
-      "asset": "ph_wooden_display_shelves_01",
-      "policy_sha256": "15ece25176a46faf70be86457dacf7e339b5df960563e5b5cbef9da401eee8ab",
-      "checkpoint": {
-        "path": "checkpoints/step-160256",
-        "step": 160256,
-        "fresh_states": 20014,
-        "learning_elapsed_ms": 669858,
-        "sha256": "a745b009563ecc30345e7cd05859f663c83817fd9c57c95571972c6548cec9f2",
-        "verified": true
-      },
-      "collection": {
-        "verified": true,
-        "sha256": "efc20ac8b880c20f0d97cc5d3f80027e1234577167dba8c1d22a91132b3f5177",
-        "at": 1790804033752
-      },
-      "compute_terminated": true,
-      "volume_deleted": true
-    },
-    "error": "packed draw requires finite fixed bounds, UVs in [-8,8] and exact positions within the referenced-vertex cap",
-    "resources_released": true
+      "network_volume_gb": 80
+    }
   }
 }

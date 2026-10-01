@@ -439,3 +439,26 @@ total-budget gates, and stops attempting launch as soon as durable rental state
 exists. A successful launch transfers ownership to the existing controller and
 independent cleanup watchdog. `runpod-expanded-pretraining-05/launch-wait.json`
 records its live status. No capacity by the deadline means no new rental.
+
+Capacity returned on the second check. Retry `runpod-expanded-pretraining-05`
+was allocated at 07:32:15 UTC in EU-NL-1 for $1.09/hour. It runs `716bb7c` on an
+L40S with driver 580.159.04 and an 80 GB volume. The existing $10 grant still
+covers the maximum rental; no additional increase was needed. Remote 32/32
+CTest passed in 64.50 seconds, both memory checks reported zero errors, and
+renderer/optimizer parity and the saved-failure replay passed. The full
+100-condition preparation completed 1,536 states and 12,288 updates in 79.589
+seconds, with zero failed and four valid empty conditions. Both the starting
+and previous models completed all 40 audit rows each on the 20 validation groups.
+
+The full two-hour learning clock started at **07:50:27 UTC**, with an estimated
+end at **09:50:27 UTC (11:50 Warsaw)** before final audits and collection. Its
+first checkpoint is checksum-verified at 11,392 updates and 1,424 fresh states
+after 60.478 learning seconds; failed conditions and coverage failures are zero.
+FP64 export verification is finite and shape-matched, with maximum absolute
+difference 5.476e-6. Early GPU activity averaged 62.55%, peaking at 93%, over
+98 one-second samples; this is active time, not percentage of peak compute.
+Training is running, and final results are pending. Stable preflight reports,
+launch arguments, checkpoint verification and the measured architecture diagram
+are in `evidence/packed-training-launch`. The controller will collect and verify
+the final archive, then delete compute and volume; an independent watchdog owns
+the rental deadline.

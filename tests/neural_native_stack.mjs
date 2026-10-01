@@ -137,6 +137,30 @@ test('permission denial and a missing debugger cannot masquerade as captured sta
   assert.equal(missing.captured, false);
 });
 
+test('Ubuntu Yama denial advice survives its clobbered errno without classifying unrelated errors', async (t) => {
+  const root = fixture(t);
+  // Actual Ubuntu 15.1 output for a non-dumpable target as UID0 without
+  // CAP_SYS_PTRACE. The specific advice precedes the misleading errno text.
+  const ubuntuDenial =
+    'Could not attach to process.  If your uid matches the uid of the target\n' +
+    'process, check the setting of /proc/sys/kernel/yama/ptrace_scope, or try\n' +
+    'again as the root user.  For more details, see /etc/sysctl.d/10-ptrace.conf\n' +
+    'ptrace: Inappropriate ioctl for device.\nThe program is not being run.\n';
+  for (const [name, output, denied] of [
+    ['ubuntu', ubuntuDenial, true],
+    ['unrelated', 'ptrace: Inappropriate ioctl for device.\n', false],
+    ['exited', 'Could not attach to process.\nptrace: No such process.\n', false],
+  ]) {
+    const result = await captureNativeStacks(process.pid, {
+      debuggerCommand: debuggerScript(root, `console.error(${JSON.stringify(output)});`),
+      maximum: 1000,
+      output: root + '/' + name + '.log',
+    });
+    assert.equal(result.ptrace_denied, denied, name);
+    assert.equal(result.captured, false, name);
+  }
+});
+
 test('capture must fit the existing process termination budget', async (t) => {
   const root = fixture(t);
   await assert.rejects(
@@ -250,7 +274,12 @@ test('host gdb captures native pthread stacks, preserves attach permission acros
     });
     assert.equal(result.diagnostic.captured, expected, JSON.stringify(result));
     if (expected) assert.match(fs.readFileSync(output, 'utf8'), /worker_wait/);
-    else assert.equal(result.diagnostic.ptrace_denied, true);
+    else
+      assert.equal(
+        result.diagnostic.ptrace_denied,
+        true,
+        JSON.stringify({ process: result, debugger_output: fs.readFileSync(output, 'utf8') }),
+      );
     await assertStopped([result.diagnostic.pid]);
   }
 });

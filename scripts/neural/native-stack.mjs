@@ -123,8 +123,14 @@ export async function captureNativeStacks(pid, options) {
     text = bytes.toString('utf8');
   result.output_sha256 = createHash('sha256').update(bytes).digest('hex');
   result.output_bytes = bytes.length;
+  // Ubuntu GDB 15.1 can clobber errno while printing its Yama denial advice,
+  // leaving "Inappropriate ioctl for device" in the following ptrace error.
+  // Recognize that specific permission warning, not arbitrary attach failures.
   result.ptrace_denied =
     /ptrace: (Operation not permitted|Permission denied)|Could not attach.*[Pp]ermission/.test(
+      text,
+    ) ||
+    /Could not attach to process\.\s+If your uid matches the uid of the target\s+process, check the setting of \/proc\/sys\/kernel\/yama\/ptrace_scope\b/.test(
       text,
     );
   result.threads = (text.match(/^Thread\s+\d+\b/gm) ?? []).length;

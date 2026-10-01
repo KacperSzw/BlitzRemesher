@@ -1,5 +1,6 @@
 #pragma once
 #include "training/update.hpp"
+#include <limits>
 #include <sstream>
 
 namespace blitz::neural::training {
@@ -10,9 +11,102 @@ inline void update_contracts() {
     };
     auto gpu = torch::TensorOptions().device(torch::kCUDA).dtype(torch::kFloat32);
     torch::manual_seed(413);
+    auto rejects = [&](auto&& call, const char* reason) {
+        bool rejected = false;
+        try {
+            call();
+        } catch (const std::invalid_argument&) {
+            rejected = true;
+        }
+        check(rejected, reason);
+    };
+    // Each public host entry must reject invalid scalar settings before any
+    // device access. Null buffers deliberately make a missed launch guard fail.
+    auto parameter = torch::ones({2}, gpu).requires_grad_();
+    auto rejects_settings = [&](UpdateSettings settings) {
+        rejects([&] { DeviceAdam optimizer({parameter}, settings); },
+                "optimizer accepted invalid update settings");
+        rejects(
+            [&] {
+                loss_update(nullptr, nullptr, nullptr, nullptr, nullptr, 1, 2, settings,
+                            c10::cuda::getCurrentCUDAStream());
+            },
+            "action loss accepted invalid update settings");
+        rejects(
+            [&] {
+                placement_loss_update(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                      1, 2, settings, c10::cuda::getCurrentCUDAStream());
+            },
+            "placement loss accepted invalid update settings");
+        rejects(
+            [&] {
+                adam_update(nullptr, 1, 2, nullptr, nullptr, settings,
+                            c10::cuda::getCurrentCUDAStream());
+            },
+            "Adam launch accepted invalid update settings");
+    };
+    for (auto field :
+         {&UpdateSettings::margin, &UpdateSettings::auxiliary, &UpdateSettings::penalty,
+          &UpdateSettings::lr, &UpdateSettings::decay, &UpdateSettings::max_norm})
+        for (float value :
+             {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(),
+              -std::numeric_limits<float>::infinity(), -.25f}) {
+            UpdateSettings settings;
+            settings.*field = value;
+            rejects_settings(settings);
+        }
+    for (auto field : {&UpdateSettings::lr, &UpdateSettings::max_norm}) {
+        UpdateSettings settings;
+        settings.*field = 0;
+        rejects_settings(settings);
+    }
+    for (auto field : {&UpdateSettings::lr, &UpdateSettings::decay}) {
+        UpdateSettings settings;
+        settings.*field = 1.25f;
+        rejects_settings(settings);
+    }
+    check(!parameter.grad().defined(), "rejected settings mutated optimizer parameters");
+    for (auto settings :
+         {UpdateSettings{0, 0, 0, 1, 0, .25f}, UpdateSettings{2, 3, 4, .125f, 1, 2}}) {
+        DeviceAdam valid({parameter}, settings);
+        valid.update();
+        check(valid.state().step == 1 && torch::isfinite(parameter).all().item<bool>(),
+              "valid scalar boundary settings failed");
+    }
+    // A finite negative second moment is corrupt too: sqrt(v) would silently
+    // write NaN parameters while the update counter advances. Zero remains valid.
+    for (float value :
+         {-1.f, -std::numeric_limits<float>::min(), std::numeric_limits<float>::quiet_NaN(),
+          std::numeric_limits<float>::infinity(), 0.f, .125f}) {
+        DeviceAdam source(
+            {torch::ones({3}, gpu).requires_grad_(), torch::ones({2}, gpu).requires_grad_()});
+        source.variance.back()[1].fill_(value);
+        torch::serialize::OutputArchive saved;
+        source.save(saved);
+        std::stringstream bytes;
+        saved.save_to(bytes);
+        torch::serialize::InputArchive loaded;
+        loaded.load_from(bytes, torch::Device(torch::kCUDA));
+        DeviceAdam restored(
+            {torch::ones({3}, gpu).requires_grad_(), torch::ones({2}, gpu).requires_grad_()});
+        if (!std::isfinite(value) || value < 0) {
+            rejects([&] { restored.load(loaded); }, "corrupt saved Adam variance was accepted");
+            check(restored.state().step == 0 && restored.parameters.back().eq(1).all().item<bool>(),
+                  "corrupt checkpoint changed weights or advanced an update");
+        } else {
+            restored.load(loaded);
+            check(restored.variance.back()[1].item<float>() == value,
+                  "valid saved Adam variance changed on load");
+            restored.update();
+            check(restored.state().step == 1 &&
+                      torch::isfinite(restored.parameters.back()).all().item<bool>(),
+                  "valid saved Adam variance failed its first update");
+        }
+    }
     // Compare the fused loss with autograd at several test-owned weights,
     // including no preferred choices and entirely unknown/padded states.
-    for (auto config : {UpdateSettings{.75f, .3f, .002f}, UpdateSettings{2.25f, 0, 0}}) {
+    for (auto config :
+         {UpdateSettings{.75f, .3f, .002f}, UpdateSettings{2.25f, 0, 0}, UpdateSettings{0, 0, 0}}) {
         auto labels = torch::tensor({15, 15, 11, 8, 8, 11, 0, 0, 0, 0, 0, 0}, torch::kUInt8)
                           .view({3, 4})
                           .to(torch::kCUDA);
@@ -35,7 +129,8 @@ inline void update_contracts() {
               "fused action loss gradient differs from reference");
         check(gradient[2].abs().sum().item<float>() == 0, "unknown actions acquired a gradient");
     }
-    for (auto config : {UpdateSettings{.8f, .2f, .001f}, UpdateSettings{1.7f, .4f, 0}}) {
+    for (auto config :
+         {UpdateSettings{.8f, .2f, .001f}, UpdateSettings{1.7f, .4f, 0}, UpdateSettings{0, 0, 0}}) {
         auto labels = torch::tensor({255, 59, 8, 16, 9, 25, 24, 0}, torch::kUInt8)
                           .view({2, 4})
                           .to(torch::kCUDA);

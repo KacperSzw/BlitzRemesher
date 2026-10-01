@@ -65,12 +65,11 @@ class DeviceAdam {
         : parameters(std::move(values)), settings(config) {
         if (parameters.empty())
             throw std::invalid_argument("optimizer has no parameters");
+        validate_update_settings(settings);
         auto device = parameters.front().device();
         std::vector<AdamParameter> table;
-        if (!device.is_cuda() || !std::isfinite(settings.lr) || settings.lr <= 0 ||
-            settings.lr > 1 || !std::isfinite(settings.decay) || settings.decay < 0 ||
-            settings.decay > 1 || !std::isfinite(settings.max_norm) || settings.max_norm <= 0)
-            throw std::invalid_argument("invalid device optimizer settings");
+        if (!device.is_cuda())
+            throw std::invalid_argument("device optimizer requires CUDA parameters");
         for (auto& p : parameters) {
             if (p.device() != device || p.scalar_type() != torch::kFloat32 || !p.is_contiguous() ||
                 uint64_t(total) + p.numel() > UINT32_MAX)
@@ -171,6 +170,9 @@ class DeviceAdam {
             for (auto& p : *group)
                 if (!torch::isfinite(p).all().item<bool>())
                     throw std::invalid_argument("nonfinite optimizer checkpoint");
+        for (auto& p : variance)
+            if (p.lt(0).any().item<bool>())
+                throw std::invalid_argument("negative optimizer checkpoint variance");
     }
 };
 class ActionUpdate {

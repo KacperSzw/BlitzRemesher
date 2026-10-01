@@ -1,8 +1,10 @@
 #pragma once
 #include "training/compact.hpp"
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <cuda_runtime_api.h>
+#include <stdexcept>
 
 namespace blitz::neural::training {
 // Ranges address category -> asset -> nonempty progress bin -> state arrays.
@@ -44,6 +46,17 @@ struct AdamParameter {
 struct UpdateSettings {
     float margin{1}, auxiliary{.25f}, penalty{1e-4f}, lr{.001f}, decay{.0001f}, max_norm{1};
 };
+// Zero loss weights and a zero ranking margin are valid. Check scalars on the
+// host before capture or a direct launch; NaN can otherwise bypass hinge tests.
+inline void validate_update_settings(const UpdateSettings& settings) {
+    if (!std::isfinite(settings.margin) || settings.margin < 0 ||
+        !std::isfinite(settings.auxiliary) || settings.auxiliary < 0 ||
+        !std::isfinite(settings.penalty) || settings.penalty < 0 || !std::isfinite(settings.lr) ||
+        settings.lr <= 0 || settings.lr > 1 || !std::isfinite(settings.decay) ||
+        settings.decay < 0 || settings.decay > 1 || !std::isfinite(settings.max_norm) ||
+        settings.max_norm <= 0)
+        throw std::invalid_argument("invalid device update settings");
+}
 enum class UpdateBackend : uint8_t { Reference, Fused };
 // V3 features, versioned hidden width. Every pointer borrows stable tensor storage through graph
 // replay.

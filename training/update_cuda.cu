@@ -419,6 +419,7 @@ void expand_actions(const float* x, const uint32_t* flags, const float* conditio
 void loss_update(const float* y, const uint8_t* labels, float* gradient, float* losses,
                  UpdateState* state, uint32_t batch, uint32_t pool, UpdateSettings settings,
                  cudaStream_t stream) {
+    validate_update_settings(settings);
     denominators<<<1, 256, 0, stream>>>(labels, state, batch, pool);
     loss_gradient<<<batch, 32, 0, stream>>>(y, labels, gradient, losses, state, pool, settings);
     sum_loss<<<1, 256, 0, stream>>>(losses, state, batch);
@@ -427,6 +428,7 @@ void placement_loss_update(const float* y, const uint8_t* labels, const float* t
                            const uint32_t* ids, float* gradient, float* losses, UpdateState* state,
                            uint32_t batch, uint32_t pool, UpdateSettings settings,
                            cudaStream_t stream) {
+    validate_update_settings(settings);
     placement_denominators<<<1, 256, 0, stream>>>(labels, state, batch, pool);
     placement_gradient<<<batch, 32, 0, stream>>>(y, labels, targets, ids, gradient, losses, state,
                                                  pool, settings);
@@ -434,6 +436,7 @@ void placement_loss_update(const float* y, const uint8_t* labels, const float* t
 }
 void adam_update(const AdamParameter* parameters, uint32_t count, uint32_t total, float* partial,
                  UpdateState* state, UpdateSettings settings, cudaStream_t stream) {
+    validate_update_settings(settings);
     uint32_t parts = (total + 255) / 256;
     norm_parts<<<parts, 256, 0, stream>>>(parameters, count, total, partial, state);
     norm_finish<<<1, 256, 0, stream>>>(partial, parts, state, settings);

@@ -7,6 +7,7 @@ export const coreValidationProfiles = Object.freeze([
   'hardware-validation-ada16',
   'hardware-validation-ada',
   'hardware-validation-l40s',
+  'hardware-validation-a40',
 ]);
 export function coreValidationBudget({ states = [], rate, now = Date.now(), minutes = 35 }) {
   if (!Number.isFinite(rate) || rate <= 0 || rate > 1.1 || minutes !== 35 || !Number.isFinite(now))

@@ -136,7 +136,7 @@ async function prepare() {
       deployment.collection_minutes !== 5)
   )
     throw new Error(
-      'Core tests require hardware-validation-ada16, hardware-validation-ada or hardware-validation-l40s (20+10+5 minutes)',
+      'Core tests require one of ' + coreValidationProfiles.join(', ') + ' (20+10+5 minutes)',
     );
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const stage = dir + '/input';

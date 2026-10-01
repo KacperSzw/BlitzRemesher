@@ -85,7 +85,7 @@ machine. Start with fresh Adam state; coverage initialization cannot use
 
 Build and test the integrated source on the intended NVIDIA device. The CUDA
 architecture must match that device: the tested local RTX 2080 uses 75; the
-repository's Ada profiles use 89 and its Blackwell profiles use 120. Blackwell
+repository's A40 profile uses 86, Ada profiles use 89 and Blackwell profiles use 120. Blackwell
 profiles require the repository's CUDA 12.9 and driver checks. Use the pinned
 [LibTorch archive checksum](../research/neural/libtorch.sha256), expose the NVIDIA
 Vulkan graphics driver, and verify both CUDA and Vulkan tests. For example, in

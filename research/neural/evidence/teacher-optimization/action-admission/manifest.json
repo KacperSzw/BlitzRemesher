@@ -1,0 +1,286 @@
+{
+  "version": 1,
+  "kind": "Local GPU action representation admission regressions",
+  "files": [
+    {
+      "file": "logs/coincidence-before.log.gz",
+      "source": "/tmp/blitz-action-coincidence-before.log",
+      "uncompressed_sha256": "3e9e1118e460a48f6eacb12c755e6dc498d64f8319967b702d53d58ca876d105",
+      "uncompressed_bytes": 70,
+      "sha256": "db780f34706e497fcf09aa9cbf96654468f8ecf89be3d38ba4d14cacdec319f5",
+      "bytes": 86
+    },
+    {
+      "file": "logs/precision-before.log.gz",
+      "source": "/tmp/blitz-action-precision-before.log",
+      "uncompressed_sha256": "14468cc1bbeb2398afcaa9658b3565bd886f2cc1832705d39352a63e10d959a1",
+      "uncompressed_bytes": 59,
+      "sha256": "1e102616d5afe66a8c1524e1f431b6800d66f0268c16e99d5b57fe6f725308a1",
+      "bytes": 77
+    },
+    {
+      "file": "logs/precision-after.log.gz",
+      "source": "/tmp/blitz-action-precision-after.log",
+      "uncompressed_sha256": "2a3827913950b3a796b123f9b07d1f294b695ab1a072621fa51551f286c559cb",
+      "uncompressed_bytes": 38,
+      "sha256": "bdf69882fb599cc3d92f7933f1d91a49854d5c3943e86803dfbe94460b7974be",
+      "bytes": 54
+    },
+    {
+      "file": "logs/coincidence-after.log.gz",
+      "source": "/tmp/blitz-action-coincidence-after.log",
+      "uncompressed_sha256": "2a3827913950b3a796b123f9b07d1f294b695ab1a072621fa51551f286c559cb",
+      "uncompressed_bytes": 38,
+      "sha256": "bdf69882fb599cc3d92f7933f1d91a49854d5c3943e86803dfbe94460b7974be",
+      "bytes": 54
+    },
+    {
+      "file": "logs/timing-before.log.gz",
+      "source": "/tmp/blitz-action-timing-before.log",
+      "uncompressed_sha256": "464d2c877bcf6297508c04c7622c680507c867cb60db9bcdc7c7f09acc60365f",
+      "uncompressed_bytes": 194,
+      "sha256": "aec7a1ea4b0e574b8d6a096f0be8c8aa387a6f650e39dc80c9337dc5299b13e4",
+      "bytes": 137
+    },
+    {
+      "file": "logs/before-build.log.gz",
+      "source": "/tmp/blitz-action-admission-before-build.log",
+      "uncompressed_sha256": "74d3b9cc49347316fdce072db1004f9495bcc3432a050a4d93e460bb5a6eface",
+      "uncompressed_bytes": 616,
+      "sha256": "dd8e9434082968a1900a30d551934cf388793df85306aea9faffde78a5a3a6b9",
+      "bytes": 301
+    },
+    {
+      "file": "logs/timing-build.log.gz",
+      "source": "/tmp/blitz-action-admission-timing-build.log",
+      "uncompressed_sha256": "8f00fe8a8566fa9a10eb4df02dd8494f52b9c738d0f2cd785d180e94353e547f",
+      "uncompressed_bytes": 363,
+      "sha256": "c36f05522cb14795828af59aa8559d82f485d36f152a15099ad0f0ea0055e07e",
+      "bytes": 217
+    },
+    {
+      "file": "logs/after-build.log.gz",
+      "source": "/tmp/blitz-action-admission-after-build.log",
+      "uncompressed_sha256": "25b754ef5bc25c1bcee17e92a4fa2ba0ef2738708c257087370a11a38ac290d0",
+      "uncompressed_bytes": 367,
+      "sha256": "d274baabe16d8e98712e6cd4a86a167e7a5405a4dd1efb0a0050c32243bb02a9",
+      "bytes": 228
+    },
+    {
+      "file": "logs/ctest.log.gz",
+      "source": "/tmp/blitz-action-admission-ctest.log",
+      "uncompressed_sha256": "ff4f4a7bb5cf6ab79694d901cb2f5997c05c75be999e8da47e244f5d4463a00a",
+      "uncompressed_bytes": 334,
+      "sha256": "cd58d6a62a40d831858496395d87ed0f06f07b117cf436ed0902d75884594f86",
+      "bytes": 212
+    },
+    {
+      "file": "logs/memcheck.log.gz",
+      "source": "/tmp/blitz-action-admission-memcheck.log",
+      "uncompressed_sha256": "b48736a1ebfc7ca76f8928156835cc64e3b88953bb0dbed87c6c0c5c99742690",
+      "uncompressed_bytes": 162,
+      "sha256": "8afc23a05b6763db6ee321d8d54943cbad84595571f492728ea9d4ee5ff8e62c",
+      "bytes": 155
+    },
+    {
+      "file": "logs/mixed-build.log.gz",
+      "source": "/tmp/blitz-action-admission-mixed-build.log",
+      "uncompressed_sha256": "1265d5faff75245e50c79048e0adcab60d1e2e389754fdeae3a7947a35ac47c6",
+      "uncompressed_bytes": 266,
+      "sha256": "71cf7e22d6900825e543167162bf65d18cf6a08d822b6abee0d065e4c5498b9e",
+      "bytes": 205
+    },
+    {
+      "file": "logs/final-build.log.gz",
+      "source": "/tmp/blitz-action-admission-final-build.log",
+      "uncompressed_sha256": "af0d45fbffbd82b6af3139918c2312a307cbb078e484355851575a5df6327c38",
+      "uncompressed_bytes": 232,
+      "sha256": "adac8fc66be4abf4fa3e19aef1bb40427c55c95a20590d5d02d5c3e67e8f9e7a",
+      "bytes": 179
+    },
+    {
+      "file": "logs/final-ctest.log.gz",
+      "source": "/tmp/blitz-action-admission-final-ctest.log",
+      "uncompressed_sha256": "1c6532b4eae70a0bc0c6f9fc730b9924a04474af671cf32b1064852db2e5d20b",
+      "uncompressed_bytes": 334,
+      "sha256": "2a2ec0e192fffb2035d8334531c4a81cc8d5a397769affc4f2bf1f9adead55d0",
+      "bytes": 213
+    },
+    {
+      "file": "logs/final-memcheck.log.gz",
+      "source": "/tmp/blitz-action-admission-final-memcheck.log",
+      "uncompressed_sha256": "b48736a1ebfc7ca76f8928156835cc64e3b88953bb0dbed87c6c0c5c99742690",
+      "uncompressed_bytes": 162,
+      "sha256": "8afc23a05b6763db6ee321d8d54943cbad84595571f492728ea9d4ee5ff8e62c",
+      "bytes": 155
+    },
+    {
+      "file": "timing/timing-0-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-0-before.log",
+      "uncompressed_sha256": "e03b22a5b50c809e3c507258a8a5e758047bc38c6bc72332340152c32a56a753",
+      "uncompressed_bytes": 193,
+      "sha256": "cc91d2eac763b5e34437fe2c8723dbc938396e9ff674ab73169709b112f216da",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-1-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-1-after.log",
+      "uncompressed_sha256": "67de123b124a3a8afe5889476a4e8328d57d31f87b35386b1c2b6103342c694c",
+      "uncompressed_bytes": 189,
+      "sha256": "0b68b101d189921bb97737c64a5eb9faaadbebe46b8fb8aa2be6f2dc4ce9817a",
+      "bytes": 137
+    },
+    {
+      "file": "timing/timing-2-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-2-after.log",
+      "uncompressed_sha256": "b17952dfd656fc88b1b6ff958bec75647d968e8f977bb3af18f3bd60d8d73ff1",
+      "uncompressed_bytes": 188,
+      "sha256": "01f068b06a7d9d5fdd4866a4685e7d2920ce187e6b805c0b8b4422e309936084",
+      "bytes": 137
+    },
+    {
+      "file": "timing/timing-3-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-3-before.log",
+      "uncompressed_sha256": "1e8e3b6ad6c84916578530ca3b56039d079377204b635ace12a0b68538d7483c",
+      "uncompressed_bytes": 193,
+      "sha256": "a4ce41be5b9d21506f51cdaf5d51a974cf4af654587864f559c98d6ccf2dfb79",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-4-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-4-before.log",
+      "uncompressed_sha256": "9314decdf6cb5568e3c444cbeffae5903424c55011bc6d600b52576dc805301d",
+      "uncompressed_bytes": 193,
+      "sha256": "bf26ef5aec382892b7c60a2348b5cd2acd2d3b42774e51831543842c3ec112cc",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-5-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-5-after.log",
+      "uncompressed_sha256": "185194ec9ad724701bf45fe244ba2cb040d9e372af287ec2134e83933440b24c",
+      "uncompressed_bytes": 189,
+      "sha256": "3db9bc5699b14ba7314862c773ea2c6412170c0138460f0c9c9b864d491cf756",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-6-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-6-after.log",
+      "uncompressed_sha256": "90050664860ca08aebb207938cae581934c9201e560fb64703a06ea93fe3a217",
+      "uncompressed_bytes": 189,
+      "sha256": "db2be215938bcf15e116615336a71b548b393c3473ff4d11118ed608f5712796",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-7-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-7-before.log",
+      "uncompressed_sha256": "daac4e8117b628a242abe147a8d185a262120b05d2d330d6c4f61450b7444c39",
+      "uncompressed_bytes": 194,
+      "sha256": "5e16bde1aaf5000f830f031aac484a1fe7f5df63d92367eab392f6b7fd2b5c5b",
+      "bytes": 137
+    },
+    {
+      "file": "timing/timing-mixed-0-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-0-before.log",
+      "uncompressed_sha256": "2aea509f5660f053496baa3ca4f7c1699a798f31a728a81f6adc4a208479e00f",
+      "uncompressed_bytes": 193,
+      "sha256": "ba2f8e27231d962266e2102f1c673cddfecbde818b86f4a2989e4a177349c460",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-1-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-1-after.log",
+      "uncompressed_sha256": "e653e3d3f859296e625cc695c559c0ba3d1c848feb2e2b7fa1d65cfb11ad63e9",
+      "uncompressed_bytes": 193,
+      "sha256": "59439366bebc1f45b1fbe02e1337a97534581d4c7f2bc9db00e217badf1b0b5d",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-2-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-2-after.log",
+      "uncompressed_sha256": "5279f1a713809dda75d4ca0ba7d8f9ed8579d5d510cda8e1317d5256bfe8da50",
+      "uncompressed_bytes": 193,
+      "sha256": "c2f64169aab0cc33e9e28c2834861d76ca3b6461755265b7010bd92853b6ca6c",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-3-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-3-before.log",
+      "uncompressed_sha256": "88e4ae9336bfaacf392967c0842e3ab61c34bb72546ac0090aa32aae9e0b8d2d",
+      "uncompressed_bytes": 193,
+      "sha256": "facefd87a0e85eb184e0cb0355a9e96819a2f761e81a5fe2729c2fcfd950cd28",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-4-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-4-before.log",
+      "uncompressed_sha256": "5f16ac81d6e90306b8f422c0065548dfb3523badd45aadd64dc763257a0356ea",
+      "uncompressed_bytes": 194,
+      "sha256": "68290b033d22017599b84347652041c1e849692b93db748c49ddbd22ee18a194",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-5-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-5-after.log",
+      "uncompressed_sha256": "5cee485e79f73f940aa986752612f3a2d11be672387d60f16ee74309178c664c",
+      "uncompressed_bytes": 193,
+      "sha256": "5d0c7d93c539bcdfdc478040abdd52903ba28bc711bcf33b7aa22fc3f1361a9d",
+      "bytes": 139
+    },
+    {
+      "file": "timing/timing-mixed-6-after.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-6-after.log",
+      "uncompressed_sha256": "1964de3e58d55d40fdc2d7fa4beb4617ee9ab60ca04cebad1834163b4d94be37",
+      "uncompressed_bytes": 193,
+      "sha256": "b98ed74e69b19955f1c10a15a97b5041f6ee1a9cc9e259e184e9881c760d8c5e",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed-7-before.log.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed-7-before.log",
+      "uncompressed_sha256": "1b1549a4e6554426582ca46710af86dfc07e7ebb2524a53fbc6864b8504a97dd",
+      "uncompressed_bytes": 194,
+      "sha256": "f3e3629003d834215a7dfc35c9046efa9b7a2cdb9550f449b88e2461afbbbb1a",
+      "bytes": 138
+    },
+    {
+      "file": "timing/timing-mixed.json.gz",
+      "source": "runs/neural/action-admission-local-01/timing-mixed.json",
+      "uncompressed_sha256": "6b0aec619b3b8c3b9a62a9533dc03b8cbf75d92d78bf02d667069df7c7c5693f",
+      "uncompressed_bytes": 5087,
+      "sha256": "a70fb3f0547dd89294854d62ccdcccb30d61947f372005a566d8ac866f71eb44",
+      "bytes": 662
+    },
+    {
+      "file": "timing/timing-unmixed.json.gz",
+      "source": "runs/neural/action-admission-local-01/timing-unmixed.json",
+      "uncompressed_sha256": "da4604ee624669c8cd785fb3bae406867c208a282954fbeaad6bbba5be9ebef5",
+      "uncompressed_bytes": 4926,
+      "sha256": "f155d18499de08ae1bcf8eecfc7e97b492977fa113edb70fcdaf6c7721424d85",
+      "bytes": 618
+    },
+    {
+      "file": "change.patch.gz",
+      "source": "runs/neural/action-admission-local-01/change.patch",
+      "uncompressed_sha256": "153dc89c125da5a1625b3be5246ef7c72df4cebd301b8511cccd8ba550d0c302",
+      "uncompressed_bytes": 16381,
+      "sha256": "87ca6a5da4d3fceb8b879cf14fbdfe0da91b0a15086adb260f8e0d7dec774399",
+      "bytes": 4610
+    },
+    {
+      "file": "validation-dirty.txt.gz",
+      "source": "runs/neural/action-admission-local-01/validation-dirty.txt",
+      "uncompressed_sha256": "4018a8dac94f206b5e960b85bc9a566bbc3fc8449ca8062689d6d8d13c864035",
+      "uncompressed_bytes": 420,
+      "sha256": "4276eb44506f818d4d60e7cdb78b1aa6c869b576694c45ca8dc109d3033a1e0a",
+      "bytes": 178
+    },
+    {
+      "file": "validation-base.txt.gz",
+      "source": "runs/neural/action-admission-local-01/validation-base.txt",
+      "uncompressed_sha256": "78072e8aac78d56e8343ec425b4d3a371c91e3f74f9969bb6bbe239a8aa57ea1",
+      "uncompressed_bytes": 41,
+      "sha256": "437c2ff7577b5ba7721dd8cba8135780cf75be342ceed126e97e2f5c612c872a",
+      "bytes": 59
+    }
+  ]
+}

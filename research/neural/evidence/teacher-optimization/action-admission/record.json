@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "kind": "Local GPU action representation admission regressions",
+  "code_commit": "39b2de7f11579ae18a0c6105e97f5b5312af9e9f",
+  "tested_before_commit": true,
+  "exact_committed_source_verified": true,
+  "source_files": [
+    {
+      "path": "src/neural/action_gpu.cu",
+      "sha256": "7346d883518d6aa8a3ce2bc1dc32911986ac81c002273300220b40a42939a280"
+    },
+    {
+      "path": "tests/neural_action_gpu.cpp",
+      "sha256": "82b425fbef0c1e04c9f2bda29a1961a62cdbae944b13614eb31de1a876515db9"
+    }
+  ],
+  "before_runtime_source_sha256": "b5652019ef0754285e548afa92aabad1effb58b684391c743f9f96d27834ba30",
+  "before_runtime_source_git_blob": "b473b3f9add1d0805e9ba0695ae66beb5aab9e70",
+  "final_contract_binary_sha256": "53f66a88591ad7dc9efbbdb5059027141af34b8fc78988537b08f80980dff5f6",
+  "before_contract_and_timing_binary_sha256": "fe6df63a748b219dd281ed5073ae1fd43619fb644180598aaebb75f46ea2c0b1",
+  "unmixed_contract_and_timing_binary_sha256": "0db4f7b9986d14a5aaf50332862b252d97103b4139cb3bb03c824ac48fa6f82e",
+  "hardware": {
+    "gpu": "NVIDIA GeForce RTX 2080",
+    "driver": "595.71.05",
+    "memory_mib": 8192,
+    "workstation": "shared; unrelated GUI applications preserved"
+  },
+  "reproductions": [
+    {
+      "selector": "--placement-coincidence",
+      "exit_code_before": 1,
+      "continued_legal_actions_before": 12,
+      "reconstructed_legal_actions_before": 4,
+      "exit_code_after": 0
+    },
+    {
+      "selector": "--initial-precision",
+      "exit_code_before": 1,
+      "referenced_vertices": 100,
+      "exact_vertices": 6,
+      "cap_basis_points": 500,
+      "exit_code_after": 0
+    }
+  ],
+  "validation": {
+    "affected_target": "blitz-neural-action-gpu-tests",
+    "build_exit_code": 0,
+    "ctest": {
+      "name": "neural-action-gpu-contracts",
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 1.48,
+      "exit_code": 0
+    },
+    "compute_sanitizer": {
+      "tool": "memcheck",
+      "exit_code": 0,
+      "errors": 0
+    },
+    "independent_read_only_review": "quality_review found no concrete blocker"
+  },
+  "contracts": [
+    "Float32 and packed positions with an explicit source quantization domain",
+    "Initial 5/100 exact cap inclusive; 6/100 rejected at 500 bps and accepted at 600 bps",
+    "Unreferenced exact bits ignored; unreferenced capacity does not dilute denominator",
+    "UV-welded referenced-ID denominator checked after canonicalization",
+    "Supplied mesh bytes immutable",
+    "New distinct live geometry class coincidence rejected, including signed-zero equality",
+    "Existing geometry-class seam wedges permitted by full suite",
+    "Discarded source position permitted",
+    "Batch candidate validity isolated per lane",
+    "Rejected commit leaves incumbent unchanged",
+    "Accepted placement preserves complete directed endpoint-position action inventory after snapshot reconstruction"
+  ],
+  "timing": {
+    "authority": "local_shared_microbenchmark",
+    "isolated": false,
+    "teacher_throughput_claim": false,
+    "workload": {
+      "vertices": 4225,
+      "faces": 8192,
+      "iterations": 64,
+      "warmups": 4,
+      "batches": [1, 4],
+      "operation": "Repeat same legal endpoint trial; no commit, audit or training"
+    },
+    "first_unmixed_guard": {
+      "baseline_serial": {
+        "seconds": [0.00282706, 0.00288099, 0.0033505, 0.0169092],
+        "median_seconds": 0.003115745
+      },
+      "candidate_serial": {
+        "seconds": [0.638871, 0.663373, 0.67241, 0.683185],
+        "median_seconds": 0.6678915
+      },
+      "baseline_batch4": {
+        "seconds": [0.00628996, 0.00632015, 0.00740723, 0.0205812],
+        "median_seconds": 0.00686369
+      },
+      "candidate_batch4": {
+        "seconds": [2.58444, 2.60825, 2.61397, 2.61657],
+        "median_seconds": 2.61111
+      },
+      "interpretation": "Rejected implementation: masked low float bits clustered integer-grid positions in one bucket."
+    },
+    "final_mixed_guard": {
+      "baseline_serial": {
+        "seconds": [0.00290362, 0.00291925, 0.00369914, 0.00375059],
+        "median_seconds": 0.003309195
+      },
+      "candidate_serial": {
+        "seconds": [0.00428163, 0.00446953, 0.00472863, 0.00513915],
+        "median_seconds": 0.00459908
+      },
+      "baseline_batch4": {
+        "seconds": [0.00737585, 0.00769774, 0.0199701, 0.0264001],
+        "median_seconds": 0.01383392
+      },
+      "candidate_batch4": {
+        "seconds": [0.0124415, 0.0124647, 0.0125586, 0.0136643],
+        "median_seconds": 0.01251165
+      },
+      "interpretation": "Serial median adds 1.29 ms per 64 trials (~39%). Batch4 baseline range is noisy; no throughput ratio claimed."
+    },
+    "added_work": {
+      "workspace_bytes": 0,
+      "per_trial_clear": "4 * next_power_of_two(2 * allocated_vertices) bytes, reusing existing slots; 65,536 bytes for this fixture",
+      "per_trial_hashing": "Three insert/probes per surviving face within existing placement-validation kernel; expected linear work with mixed hash, not a worst-case complexity guarantee",
+      "initial_cap": "One referenced-index bitmap pass and reduction only when an exact bitmap exists; existing scratch bits preserve supplied/reset bytes"
+    },
+    "remaining": "Original constructor hash unchanged and still has integer-grid low-bit clustering. No end-to-end teacher timing or quality comparison was run."
+  },
+  "score": null,
+  "quality_proven": false,
+  "training_run": false,
+  "remote_actions": false
+}

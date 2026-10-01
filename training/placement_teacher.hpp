@@ -7,6 +7,7 @@
 #include "training/json.hpp"
 #include "training/packing.hpp"
 #include "training/teacher_labels.hpp"
+#include "training/teacher_strategy.hpp"
 #include "training/training_cache.hpp"
 #include <iostream>
 namespace blitz::neural::training {
@@ -28,6 +29,7 @@ struct PlacementRequest {
     uint32_t architecture{placement_schema}, policy_rollout_trials{};
     bool policy_candidates{}, preserve_uv{true};
     double previous_pixels{};
+    TeacherStrategy strategy{TeacherStrategy::Exhaustive};
 };
 struct PlacementResult {
     bool complete;
@@ -42,9 +44,15 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     const auto& [states, pool, previous_steps, seed, pixels, minutes, source_limit, adjacent_limit,
                  sparse, policy_hash, cancelled, compact_data, repair_budget, corpus, selection,
                  mesh_cache, profile, cache, episode, retained, simplifier, architecture,
-                 rollout_trials, policy_candidates, preserve_uv, previous_pixels] = request;
+                 rollout_trials, policy_candidates, preserve_uv, previous_pixels, strategy] =
+        request;
     auto options = base_options;
     options.preserve_uv = preserve_uv;
+    const bool core_first = strategy == TeacherStrategy::CoverageCoreFirst;
+    teacher_strategy_name(strategy);
+    if (core_first &&
+        (architecture != conditioned_placement_schema || profile != Profile::Coverage))
+        throw std::invalid_argument("coverage-core-first requires v4 coverage teaching");
     if ((rollout_trials && (!episode.empty() || simplifier)) ||
         !is_placement_schema(architecture) ||
         (!preserve_uv && architecture != conditioned_placement_schema) ||
@@ -156,7 +164,8 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         {"repair_budget", repair_budget},
         {"quantization", "fixed mesh bounds; grid placements"},
         {"schema", architecture},
-        {"teacher_version", 5},
+        {"teacher_version", 6},
+        {"teacher_strategy", teacher_strategy_name(strategy)},
         {"raster", raster_name(options.raster_backend)},
         {"vertex_storage", storage_name(options.draw_storage())},
         {"metric_kind", sparse ? "threshold bounds; exact committed states" : "exact"},
@@ -300,12 +309,15 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     if (rollout_trials) {
         const auto rollout_start = std::chrono::steady_clock::now();
         auto gate = [&](DeviceMeshView candidate) {
-            auto a = audit.evaluate(source, candidate, bounds, e, &stats);
-            auto b = e.limit == adjacent.limit
-                         ? a
-                         : audit.evaluate(source, candidate, bounds, adjacent, &stats);
-            auto d =
-                previous_steps ? audit.evaluate(source, candidate, bounds, destination, &stats) : a;
+            Measurement a, b, d;
+            audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                a = audit.evaluate(source, candidate, bounds, e, &stats);
+                b = e.limit == adjacent.limit
+                        ? a
+                        : audit.evaluate(source, candidate, bounds, adjacent, &stats);
+                d = previous_steps ? audit.evaluate(source, candidate, bounds, destination, &stats)
+                                   : a;
+            });
             if (!action_audit_known(a, e) || !action_audit_known(b, adjacent) ||
                 !action_audit_known(d, destination))
                 unknown = true;
@@ -357,6 +369,48 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         });
         return TeacherAudit{action_audit_known(m, config), m.passed, m.error, m.changed_area};
     };
+    struct Confirmation {
+        Measurement source, adjacent;
+        TeacherChoice choice;
+        bool known{}, passed{};
+        uint8_t label() const {
+            return uint8_t(SourceKnown | AdjacentKnown | (source.passed ? PlacementSourcePass : 0) |
+                           (adjacent.passed ? PlacementAdjacentPass : 0));
+        }
+    };
+    auto confirm = [&](Action action, const GpuActionState::Proposal& proposal) {
+        return timed(confirmation_seconds, [&] {
+            DeviceMeshView candidate;
+            if (!state.trial(action, proposal.placement, candidate))
+                throw std::runtime_error("teacher finalist became invalid");
+            Confirmation result;
+            audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                result.source = audit.evaluate(source, candidate, bounds, e, &stats);
+                result.adjacent =
+                    !emitted && e.limit == adjacent.limit
+                        ? result.source
+                        : audit.evaluate(previous_view, candidate, bounds, adjacent, &stats);
+                result.known = action_audit_known(result.source, e) &&
+                               action_audit_known(result.adjacent, adjacent);
+                result.passed = result.source.passed && result.adjacent.passed;
+                // A predecessor also has to remain valid at the destination scale.
+                if (result.known && result.passed && previous_steps && !emitted) {
+                    auto d = audit.evaluate(source, candidate, bounds, destination, &stats);
+                    result.known = action_audit_known(d, destination);
+                    result.passed = d.passed;
+                }
+            });
+            if (result.known && result.passed) {
+                const auto& a = result.source;
+                const auto& b = result.adjacent;
+                const double margin = std::max({a.error / e.limit, b.error / adjacent.limit,
+                                                a.changed_area / e.max_changed_area,
+                                                b.changed_area / adjacent.max_changed_area});
+                result.choice = {candidate.faces, margin, a.complete && b.complete};
+            }
+            return result;
+        });
+    };
     for (uint32_t step = 0; step < states + previous_steps && !unknown && !cancel(); ++step) {
         if (previous_steps && step == previous_steps) {
             const auto predecessor_start = std::chrono::steady_clock::now();
@@ -393,6 +447,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         size_t first = data.labels.size();
         std::vector<GpuActionState::Proposal> winners;
         std::vector<Action> actions;
+        std::vector<TeacherChoice> core_choices;
         json state_trace = {{"revision", step},
                             {"triangles", state.view().faces},
                             {"previous_triangles", previous_view.triangles()},
@@ -405,6 +460,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
             uint8_t best_label = 0;
             double best = INFINITY;
             GpuActionState::Proposal winner{};
+            TeacherChoice confirmed_choice{};
             auto alternatives = timed(proposals_seconds, [&] {
                 return state.teacher_proposals(row.action, profile != Profile::Coverage);
             });
@@ -412,22 +468,34 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                 TeacherAudit source, adjacent;
                 uint32_t faces{};
                 bool valid{}, pruned{};
+                uint8_t label{};
+                double margin{INFINITY};
             };
             std::array<Query, 21> evaluated{};
             std::array<bool, 21> ready{};
-            auto batch_candidates = [&](size_t first) {
-                size_t count =
-                    std::min<size_t>(options.candidate_batch, alternatives.size() - first);
+            uint32_t queried_mask = 0;
+            static_assert(sizeof(Placement) == 9 * sizeof(float));
+            auto same_placement = [&](size_t a, size_t b) {
+                return !std::memcmp(&alternatives[a].placement, &alternatives[b].placement,
+                                    sizeof(Placement));
+            };
+            auto batch_candidates = [&](std::span<const size_t> pending, double cutoff) {
+                size_t count = std::min<size_t>(options.candidate_batch, pending.size());
                 for (;;) {
                     std::vector<GpuActionState::Proposal> proposals;
                     std::vector<size_t> ids;
-                    for (size_t i = first; i < first + count; ++i) {
-                        size_t prior = 0;
-                        while (prior < i &&
-                               std::memcmp(&alternatives[i].placement,
-                                           &alternatives[prior].placement, sizeof(Placement)))
-                            ++prior;
-                        if (prior == i) {
+                    for (size_t lane = 0; lane < count; ++lane) {
+                        const auto i = pending[lane];
+                        bool duplicate = false;
+                        for (size_t prior = 0; prior < alternatives.size(); ++prior)
+                            if ((core_first ? ready[prior] : prior < i) &&
+                                same_placement(i, prior)) {
+                                duplicate = true;
+                                break;
+                            }
+                        for (auto prior : ids)
+                            duplicate |= same_placement(i, prior);
+                        if (!duplicate) {
                             ids.push_back(i);
                             proposals.push_back(alternatives[i]);
                         }
@@ -438,32 +506,36 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                         auto views = timed(trial_seconds, [&] {
                             return state.trial_batch(row.action, proposals);
                         });
-                        double cutoff = found && (best_label & 27) == 27 ? best : INFINITY;
-                        auto a = timed(audit_seconds, [&] {
-                            Timeline range("candidate-audit");
-                            return audit.certify_candidates(source, views, bounds, e, &stats,
-                                                            cutoff);
-                        });
-                        std::vector<CandidateAudit> b = a;
-                        if (emitted || e.limit != adjacent.limit) {
-                            std::vector<DeviceMeshView> active;
-                            std::vector<size_t> lanes;
-                            for (size_t i = 0; i < views.size(); ++i)
-                                if (a[i].valid && !a[i].pruned) {
-                                    active.push_back(views[i]);
-                                    lanes.push_back(i);
+                        std::vector<CandidateAudit> a, b;
+                        audit.with_candidate_rasters(views, [&] {
+                            a = timed(audit_seconds, [&] {
+                                Timeline range("candidate-audit");
+                                return audit.certify_candidates(source, views, bounds, e, &stats,
+                                                                cutoff);
+                            });
+                            b = a;
+                            if (emitted || e.limit != adjacent.limit) {
+                                std::vector<DeviceMeshView> active;
+                                std::vector<size_t> lanes;
+                                for (size_t i = 0; i < views.size(); ++i)
+                                    if (a[i].valid && !a[i].pruned) {
+                                        active.push_back(views[i]);
+                                        lanes.push_back(i);
+                                    }
+                                if (!active.empty()) {
+                                    auto values = timed(audit_seconds, [&] {
+                                        return audit.certify_candidates(previous_view, active,
+                                                                        bounds, adjacent, &stats,
+                                                                        cutoff);
+                                    });
+                                    for (size_t i = 0; i < lanes.size(); ++i)
+                                        b[lanes[i]] = values[i];
                                 }
-                            if (!active.empty()) {
-                                auto values = timed(audit_seconds, [&] {
-                                    return audit.certify_candidates(previous_view, active, bounds,
-                                                                    adjacent, &stats, cutoff);
+                            } else
+                                reused_adjacent += std::count_if(a.begin(), a.end(), [](auto& x) {
+                                    return x.valid && !x.pruned;
                                 });
-                                for (size_t i = 0; i < lanes.size(); ++i)
-                                    b[lanes[i]] = values[i];
-                            }
-                        } else
-                            reused_adjacent += std::count_if(
-                                a.begin(), a.end(), [](auto& x) { return x.valid && !x.pruned; });
+                        });
                         auto value = [](const CandidateAudit& x) {
                             return TeacherAudit{x.value.verdict != AuditVerdict::Unknown,
                                                 x.value.verdict == AuditVerdict::Pass,
@@ -473,6 +545,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                             evaluated[ids[i]] = {value(a[i]), value(b[i]), a[i].faces, a[i].valid,
                                                  a[i].pruned || b[i].pruned};
                             ready[ids[i]] = true;
+                            queried_mask |= 1u << ids[i];
                         }
                         ++stats.candidate_batches;
                         stats.candidate_batch_proposals += proposals.size();
@@ -484,32 +557,25 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                     }
                 }
             };
-            static_assert(sizeof(Placement) == 9 * sizeof(float));
-            for (size_t index = 0; index < alternatives.size() && !cancel(); ++index) {
-                // The topology/triangle count is identical for every placement
-                // of this edge. Coverage-area bounds are nonnegative, and ties
-                // keep the first proposal. A certified zero is unbeatable.
-                if (sparse && found && (best_label & 27) == 27 && best == 0) {
-                    proven_losers += alternatives.size() - index;
-                    break;
-                }
+            auto evaluate_candidate = [&](size_t index, double cutoff,
+                                          std::span<const size_t> pending) -> Query& {
+                queried_mask |= 1u << index;
                 auto& proposal = alternatives[index];
                 auto& q = evaluated[index];
                 size_t prior = 0;
-                while (prior < index &&
-                       std::memcmp(&proposal.placement, &alternatives[prior].placement,
-                                   sizeof(Placement)))
+                while (prior < alternatives.size() &&
+                       (!(core_first ? ready[prior] && prior != index : prior < index) ||
+                        !same_placement(index, prior)))
                     ++prior;
-                if (prior < index) {
+                if (prior < alternatives.size()) {
                     q = evaluated[prior];
                     ++reused_queries;
                 } else {
                     if (!ready[index] && index && sparse &&
                         options.raster_backend == NeuralRasterBackend::Vulkan &&
                         options.candidate_batch > 1)
-                        batch_candidates(index);
+                        batch_candidates(pending, cutoff);
                     if (ready[index]) {
-                        double cutoff = found && (best_label & 27) == 27 ? best : INFINITY;
                         if (std::isfinite(cutoff) &&
                             ((e.max_changed_area > 0 &&
                               q.source.changed_area / e.max_changed_area >= cutoff) ||
@@ -523,25 +589,28 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                         });
                         if (q.valid) {
                             q.faces = candidate.faces;
-                            double cutoff = found && (best_label & 27) == 27 ? best : INFINITY;
-                            q.source = query(source, candidate, e, cutoff,
-                                             std::isfinite(cutoff) ? &q.pruned : nullptr);
-                            if (!q.pruned) {
-                                if (!emitted && e.limit == adjacent.limit) {
-                                    q.adjacent = q.source;
-                                    ++reused_adjacent;
-                                } else
-                                    q.adjacent = query(previous_view, candidate, adjacent, cutoff,
-                                                       std::isfinite(cutoff) ? &q.pruned : nullptr);
-                            }
+                            audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                                q.source = query(source, candidate, e, cutoff,
+                                                 std::isfinite(cutoff) ? &q.pruned : nullptr);
+                                if (!q.pruned) {
+                                    if (!emitted && e.limit == adjacent.limit) {
+                                        q.adjacent = q.source;
+                                        ++reused_adjacent;
+                                    } else
+                                        q.adjacent =
+                                            query(previous_view, candidate, adjacent, cutoff,
+                                                  std::isfinite(cutoff) ? &q.pruned : nullptr);
+                                }
+                            });
                         }
                     }
                 }
+                ready[index] = true;
                 if (!q.valid) {
                     ++invalid_candidates;
                     state_trace["invalid_candidates"] =
                         state_trace.value("invalid_candidates", 0u) + 1;
-                    continue;
+                    return q;
                 }
                 auto& a = q.source;
                 auto& b = q.adjacent;
@@ -554,38 +623,133 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                                       {"known_mask", 0},
                                                       {"pruned_by_incumbent", true},
                                                       {"faces", q.faces}});
-                    continue;
+                    return q;
                 }
                 bool ka = a.known, kb = b.known;
-                uint8_t label = uint8_t((ka ? SourceKnown : 0) | (kb ? AdjacentKnown : 0) |
-                                        (ka && a.passed ? PlacementSourcePass : 0) |
-                                        (kb && b.passed ? PlacementAdjacentPass : 0));
-                bool safe = (label & 27) == 27;
-                double margin = std::max({a.error / e.limit, b.error / adjacent.limit,
-                                          a.changed_area / e.max_changed_area,
-                                          b.changed_area / adjacent.max_changed_area});
-                if (sparse && safe)
-                    margin = std::max(a.changed_area / e.max_changed_area,
-                                      b.changed_area / adjacent.max_changed_area);
-                if (!std::isfinite(margin))
-                    margin = INFINITY;
+                q.label = uint8_t((ka ? SourceKnown : 0) | (kb ? AdjacentKnown : 0) |
+                                  (ka && a.passed ? PlacementSourcePass : 0) |
+                                  (kb && b.passed ? PlacementAdjacentPass : 0));
+                q.margin = std::max({a.error / e.limit, b.error / adjacent.limit,
+                                     a.changed_area / e.max_changed_area,
+                                     b.changed_area / adjacent.max_changed_area});
+                if (sparse && (q.label & 27) == 27)
+                    q.margin = std::max(a.changed_area / e.max_changed_area,
+                                        b.changed_area / adjacent.max_changed_area);
+                if (!std::isfinite(q.margin))
+                    q.margin = INFINITY;
                 state_trace["queries"].push_back({{"from", row.action.from},
                                                   {"to", row.action.to},
                                                   {"candidate", index},
-                                                  {"known_mask", label},
+                                                  {"known_mask", q.label},
                                                   {"source_error", a.error},
                                                   {"adjacent_error", b.error},
                                                   {"faces", q.faces}});
-                if (!found || (safe && ((best_label & 3) != 3)) ||
-                    (safe == ((best_label & 3) == 3) && margin < best)) {
-                    found = true;
-                    winner = proposal;
-                    best_label = label;
-                    best = margin;
-                }
-                if (!ka || !kb) {
+                if (!ka || !kb)
                     unknown = true;
-                    break;
+                return q;
+            };
+            if (!core_first) {
+                std::array<size_t, 21> order{};
+                for (size_t i = 0; i < alternatives.size(); ++i)
+                    order[i] = i;
+                for (size_t index = 0; index < alternatives.size() && !cancel(); ++index) {
+                    // Identical topology and nonnegative coverage-area bounds
+                    // make the first certified zero unbeatable for this edge.
+                    if (sparse && found && (best_label & 27) == 27 && best == 0) {
+                        proven_losers += alternatives.size() - index;
+                        break;
+                    }
+                    const double cutoff = found && (best_label & 27) == 27 ? best : INFINITY;
+                    const auto& q = evaluate_candidate(
+                        index, cutoff,
+                        std::span(order).subspan(index, alternatives.size() - index));
+                    if (!q.valid || q.pruned)
+                        continue;
+                    const bool safe = (q.label & 27) == 27;
+                    if (!found || (safe && ((best_label & 3) != 3)) ||
+                        (safe == ((best_label & 3) == 3) && q.margin < best)) {
+                        found = true;
+                        winner = alternatives[index];
+                        best_label = q.label;
+                        best = q.margin;
+                    }
+                    if (unknown)
+                        break;
+                }
+                state_trace["candidate_search"].push_back({{"from", row.action.from},
+                                                           {"to", row.action.to},
+                                                           {"queried_mask", queried_mask}});
+            } else {
+                CoverageTeacherSearch search(alternatives.size());
+                std::optional<uint8_t> selected, last_rejected;
+                uint8_t rejected_label = 0;
+                while (!unknown && !cancel()) {
+                    while (auto index = search.next()) {
+                        std::array<size_t, 11> pending{};
+                        size_t count = 0;
+                        for (auto id : CoverageTeacherSearch::order)
+                            if (search.pending() & (1u << id))
+                                pending[count++] = id;
+                        auto& q = evaluate_candidate(*index, sparse ? search.cutoff() : INFINITY,
+                                                     std::span(pending).first(count));
+                        search.observe(*index,
+                                       {q.margin, q.valid, q.source.known && q.adjacent.known,
+                                        (q.label & 27) == 27, q.pruned});
+                        if (unknown || cancel())
+                            break;
+                    }
+                    if (unknown || cancel())
+                        break;
+                    selected = search.best();
+                    if (!selected || !search.safe(*selected)) {
+                        if (search.expand())
+                            continue;
+                        break;
+                    }
+                    const auto result = confirm(row.action, alternatives[*selected]);
+                    unknown = !result.known || (result.passed && !result.choice.confirmed);
+                    state_trace["confirmations"].push_back(
+                        {{"from", row.action.from},
+                         {"to", row.action.to},
+                         {"candidate", *selected},
+                         {"known", !unknown},
+                         {"passed", result.passed && !unknown},
+                         {"source_passed", result.source.passed},
+                         {"adjacent_passed", result.adjacent.passed}});
+                    if (unknown || cancel())
+                        break;
+                    if (result.passed) {
+                        confirmed_choice = result.choice;
+                        break;
+                    }
+                    last_rejected = selected;
+                    rejected_label = result.label();
+                    const auto invalidated = search.reject(*selected);
+                    selected.reset();
+                    for (size_t i = 0; i < alternatives.size(); ++i)
+                        if (invalidated & (1u << i)) {
+                            evaluated[i] = {};
+                            ready[i] = false;
+                        }
+                    // Batch lanes may have been prefetched but not consumed
+                    // after a zero bound. Their prunes have the same dependency.
+                    for (size_t i = 0; i < alternatives.size(); ++i)
+                        if (evaluated[i].pruned) {
+                            evaluated[i] = {};
+                            ready[i] = false;
+                        }
+                }
+                state_trace["candidate_search"].push_back(
+                    {{"from", row.action.from},
+                     {"to", row.action.to},
+                     {"queried_mask", queried_mask},
+                     {"exact_rejected_mask", search.rejected()},
+                     {"expanded", search.expanded()}});
+                if (selected || last_rejected) {
+                    found = true;
+                    const auto index = selected ? *selected : *last_rejected;
+                    winner = alternatives[index];
+                    best_label = selected ? evaluated[index].label : rejected_label;
                 }
             }
             if (found) {
@@ -602,6 +766,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                     data.targets.push_back((best_label & (32u << (j / 3))) ? winner.target[j] : 0);
                 actions.push_back(row.action);
                 winners.push_back(winner);
+                core_choices.push_back(confirmed_choice);
             }
             if (unknown || cancel())
                 break;
@@ -615,49 +780,24 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
             trace.push_back(state_trace);
             break;
         }
-        const auto confirmation_start = std::chrono::steady_clock::now();
-        std::vector<TeacherChoice> choices(actions.size());
-        for (size_t i = 0; i < actions.size() && !cancel(); ++i) {
+        std::vector<TeacherChoice> choices =
+            core_first ? core_choices : std::vector<TeacherChoice>(actions.size());
+        for (size_t i = 0; !core_first && i < actions.size() && !cancel(); ++i) {
             auto& label = data.labels[first + i];
             if ((label & 27) != 27)
                 continue;
-            DeviceMeshView candidate;
-            if (!state.trial(actions[i], winners[i].placement, candidate))
-                throw std::runtime_error("teacher finalist became invalid");
-            auto a = audit.evaluate(source, candidate, bounds, e, &stats);
-            auto b = !emitted && e.limit == adjacent.limit
-                         ? a
-                         : audit.evaluate(previous_view, candidate, bounds, adjacent, &stats);
-            const bool source_known = action_audit_known(a, e),
-                       adjacent_known = action_audit_known(b, adjacent);
-            if (!source_known || !adjacent_known) {
+            const auto result = confirm(actions[i], winners[i]);
+            if (!result.known) {
                 unknown = true;
                 break;
             }
-            if (!a.passed || !b.passed) {
-                label = uint8_t(SourceKnown | AdjacentKnown | (a.passed ? PlacementSourcePass : 0) |
-                                (b.passed ? PlacementAdjacentPass : 0));
+            if (!result.source.passed || !result.adjacent.passed) {
+                label = result.label();
                 std::fill_n(data.targets.begin() + (first + i) * 9, 9, 0.f);
                 continue;
             }
-            // A predecessor also has to remain valid at the destination scale.
-            if (previous_steps && !emitted) {
-                auto d = audit.evaluate(source, candidate, bounds, destination, &stats);
-                if (!action_audit_known(d, destination)) {
-                    unknown = true;
-                    break;
-                }
-                if (!d.passed)
-                    continue;
-            }
-            const double margin = std::max({a.error / e.limit, b.error / adjacent.limit,
-                                            a.changed_area / e.max_changed_area,
-                                            b.changed_area / adjacent.max_changed_area});
-            choices[i] = {candidate.faces, margin, a.complete && b.complete};
+            choices[i] = result.choice;
         }
-        confirmation_seconds +=
-            std::chrono::duration<double>(std::chrono::steady_clock::now() - confirmation_start)
-                .count();
         if (unknown || cancel()) {
             state_trace["complete"] = false;
             state_trace["exact_confirmation_incomplete"] = true;
@@ -699,10 +839,13 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     }
     const auto final_audit_start = std::chrono::steady_clock::now();
     auto final = state.view();
-    auto a = audit.evaluate(source, final, bounds, e, &stats),
-         b = !emitted && e.limit == adjacent.limit
-                 ? a
-                 : audit.evaluate(previous_view, final, bounds, adjacent, &stats);
+    Measurement a, b;
+    audit.with_candidate_rasters(std::span{&final, 1}, [&] {
+        a = audit.evaluate(source, final, bounds, e, &stats);
+        b = !emitted && e.limit == adjacent.limit
+                ? a
+                : audit.evaluate(previous_view, final, bounds, adjacent, &stats);
+    });
     bool complete = !cancel() && !unknown &&
                     (data.states() == states + previous_steps || exhausted) && a.complete &&
                     a.passed && b.complete && b.passed;

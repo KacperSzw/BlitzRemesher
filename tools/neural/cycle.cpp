@@ -33,7 +33,8 @@ int main(int argc, char** argv) {
                 "[--view-batch 1..4] [--direct-targets on|off] [--candidate-batch 1|2|4|8] "
                 "[--update-backend reference|fused] [--duration-minutes 1..120] "
                 "[--finalize-minutes N] [--architecture 3|4] [--teacher-selection "
-                "geometric-random|policy-mixed] [--policy-rollout-trials 0..4096]");
+                "geometric-random|policy-mixed] [--policy-rollout-trials 0..4096] "
+                "[--teacher-strategy exhaustive|coverage-core-first]");
         fs::path run = argv[1], initialize, warmstart,
                  curriculum = "research/neural/resident-curriculum.json", checkpoint_scratch,
                  corpus = "research/corpus.json",
@@ -54,11 +55,16 @@ int main(int argc, char** argv) {
                  policy_rollout_trials = 0;
         bool episode_seeds = false, simplifier_seeds = true, frozen_teacher = false,
              policy_candidates = false;
+        TeacherStrategy teacher_strategy = TeacherStrategy::Exhaustive;
         for (int i = 2; i < argc; i += 2) {
             if (i + 1 == argc)
                 throw std::invalid_argument("missing cycle option");
             std::string_view key = argv[i];
             auto* value = argv[i + 1];
+            if (key == "--teacher-strategy") {
+                teacher_strategy = teacher_strategy_option(value);
+                continue;
+            }
             if (key == "--architecture") {
                 architecture = neural_unsigned(value);
                 if (!is_placement_schema(architecture))
@@ -206,6 +212,9 @@ int main(int argc, char** argv) {
             !checkpoint_seconds || checkpoint_seconds > 3600 || host_cache_mib < 128 ||
             host_cache_mib > 8192)
             throw std::invalid_argument("pipeline settings outside bounded contract");
+        if (teacher_strategy == TeacherStrategy::CoverageCoreFirst &&
+            (architecture != conditioned_placement_schema || profile != Profile::Coverage))
+            throw std::invalid_argument("coverage-core-first requires v4 coverage teaching");
         if (duration_minutes > 120 ||
             (duration_minutes && (!finalize_minutes || finalize_minutes > 30)))
             throw std::invalid_argument("invalid learning/finalization budgets");
@@ -233,7 +242,7 @@ int main(int argc, char** argv) {
         auto work_stopped = [&] { return cancelled() || time.finishing(now_ms()); };
         const auto conditions = training_conditions(read_json(curriculum), architecture);
         json contract = {
-            {"version", 8},
+            {"version", 9},
             {"corpus_sha256", file_sha256(corpus)},
             {"curriculum_sha256", file_sha256(curriculum)},
             {"data_storage",
@@ -261,6 +270,7 @@ int main(int argc, char** argv) {
         contract["architecture"] = architecture;
         contract["policy_rollout_trials"] = policy_rollout_trials;
         contract["policy_action_candidates"] = policy_candidates;
+        contract["teacher_strategy"] = teacher_strategy_name(teacher_strategy);
         contract["workers"] = workers;
         contract["queue_per_worker"] = 2;
         contract["hidden_width"] = hidden_width;
@@ -457,6 +467,7 @@ int main(int argc, char** argv) {
                 job.directory = run / "data" / job.name;
                 auto& request = job.request;
                 request.architecture = architecture;
+                request.strategy = teacher_strategy;
                 request.policy_candidates = policy_candidates;
                 request.source_limit = descriptor.at("source_limit");
                 request.adjacent_limit = descriptor.at("adjacent_limit");

@@ -1,4 +1,8 @@
 if(BUILD_TESTING)
+  add_executable(blitz-neural-teacher-strategy-tests tests/neural_teacher_strategy.cpp)
+  target_include_directories(blitz-neural-teacher-strategy-tests PRIVATE .)
+  target_compile_features(blitz-neural-teacher-strategy-tests PRIVATE cxx_std_20)
+  add_test(NAME neural-teacher-strategy-contracts COMMAND blitz-neural-teacher-strategy-tests)
   add_executable(blitz-neural-chain-tests tests/neural_chain.cpp)
   target_include_directories(blitz-neural-chain-tests PRIVATE src)
   target_link_libraries(blitz-neural-chain-tests PRIVATE blitzremesher)

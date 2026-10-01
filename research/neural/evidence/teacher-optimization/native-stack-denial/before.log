@@ -1,0 +1,36 @@
+✔ normal bounded processes never start the optional debugger (28.51319ms)
+✔ timeout captures before graceful termination and still reports failure (360.368876ms)
+✔ debugger timeout kills its process group (403.467439ms)
+✔ debugger cancellation kills its process group (53.685707ms)
+✔ permission denial and a missing debugger cannot masquerade as captured stacks (29.706508ms)
+✔ capture must fit the existing process termination budget (0.795677ms)
+✔ captured frames cannot qualify a probe that crashes instead of exiting cleanly (13.152379ms)
+✖ host gdb captures native pthread stacks, preserves attach permission across exec, and reports denial (2525.035386ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3471.222796
+
+✖ failing tests:
+
+test at ../../../../tmp/blitz-native-stack-before/tests/neural_native_stack.mjs:214:1
+✖ host gdb captures native pthread stacks, preserves attach permission across exec, and reports denial (2525.035386ms)
+  AssertionError [ERR_ASSERTION]: {"process":{"code":0,"signal":null,"timed_out":true,"cancelled":false,"success":false,"diagnostic":{"attempted":true,"captured":false,"pid":551495,"command":"/tmp/blitz-gdb15/run-gdb","output":"/tmp/blitz-native-stack-GM4Dew/denied.log","maximum_ms":4000,"timed_out":false,"cancelled":false,"code":0,"signal":null,"output_sha256":"af38f5a281bad7ecfc6a408a262f3b3df2d4aa63b395bb9440722f7afe086844","output_bytes":291,"ptrace_denied":false,"threads":0,"frames":0}},"debugger_output":"Could not attach to process.  If your uid matches the uid of the target\nprocess, check the setting of /proc/sys/kernel/yama/ptrace_scope, or try\nagain as the root user.  For more details, see /etc/sysctl.d/10-ptrace.conf\nptrace: Inappropriate ioctl for device.\nThe program is not being run.\n"}
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tmp/blitz-native-stack-before/tests/neural_native_stack.mjs:253:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

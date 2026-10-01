@@ -244,3 +244,12 @@ result. The verified archive and retarget history are retained, and provider
 readback at 13:20:59 UTC confirmed zero Pods and volumes. Full-rental conservative
 cost adds $0.2459791278, bringing the three attempts to $0.5639294889. Correcting
 the failed tests and retrying the requested work remain pending.
+
+The native-stack denial failure was reproduced locally with the exact Ubuntu GDB
+15.1 package as UID0 without CAP_SYS_PTRACE. Its explicit Yama permission advice
+was followed by a misleading errno; the parser missed that advice. Fix `959f248`
+recognizes the specific warning and preserves all positive stack-capture gates.
+The [checksummed CPU reproduction](evidence/teacher-optimization/native-stack-denial/README.md)
+records the old 7/8 failure and corrected 9/9 result, package and source hashes,
+raw debugger output and commands. This does not replace the failed remote result
+or establish a training or quality result.

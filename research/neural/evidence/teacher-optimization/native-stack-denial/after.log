@@ -1,0 +1,17 @@
+✔ normal bounded processes never start the optional debugger (31.67654ms)
+✔ timeout captures before graceful termination and still reports failure (355.47617ms)
+✔ debugger timeout kills its process group (404.246326ms)
+✔ debugger cancellation kills its process group (52.223921ms)
+✔ permission denial and a missing debugger cannot masquerade as captured stacks (34.376778ms)
+✔ Ubuntu Yama denial advice survives its clobbered errno without classifying unrelated errors (86.873562ms)
+✔ capture must fit the existing process termination budget (0.76535ms)
+✔ captured frames cannot qualify a probe that crashes instead of exiting cleanly (6.635814ms)
+✔ host gdb captures native pthread stacks, preserves attach permission across exec, and reports denial (2533.573244ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3571.445514

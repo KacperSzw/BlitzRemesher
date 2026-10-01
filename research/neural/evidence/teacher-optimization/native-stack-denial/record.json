@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "scope": "Local CPU-only reproduction of Ubuntu GDB denial classification",
+  "before_revision": "cc706ea1dabfe646b1764e7db6df21f2605df141",
+  "after_revision": "959f248e19f62169603a82674367c757eccb3a29",
+  "gpu_used": false,
+  "provider_actions": false,
+  "training_started": false,
+  "debugger": {
+    "version": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1",
+    "package_url": "https://archive.ubuntu.com/ubuntu/pool/main/g/gdb/gdb_15.1-1ubuntu1~24.04.1_amd64.deb",
+    "package_sha256": "7069c23ce3bc350646498e6607749c568f5c403b0db2204310a94baff3d85745",
+    "binary_sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6",
+    "dependency_package_url": "https://archive.ubuntu.com/ubuntu/pool/main/b/babeltrace/libbabeltrace1_1.5.11-3build3_amd64.deb",
+    "dependency_package_sha256": "30f0b9fbe68115d7b50d478458e4d830695bce579529b52c7827720da9c0c2df",
+    "host_libraries": "Existing pinned Nix libraries recorded in gdb-wrapper-environment.json; the Ubuntu debugger executable was not modified."
+  },
+  "execution": {
+    "credentials": "Local UID0 with CAP_SYS_PTRACE removed from the capability bounding set using setpriv; permission changes apply only to these child test processes.",
+    "command": "nix develop .#neural --command sh -c 'sudo -n env PATH=\"$PATH\" BLITZ_TEST_NATIVE_GDB=/tmp/blitz-gdb15/run-gdb /run/current-system/sw/bin/setpriv --bounding-set=-sys_ptrace node --test tests/neural_native_stack.mjs'",
+    "before_test_path": "/tmp/blitz-native-stack-before/tests/neural_native_stack.mjs",
+    "before_reproduction_test_sha256": "0ad89dfb4b8241f1f87d67cfd12b11d30211929ea7d35d586c5ca802d7bfa8c5",
+    "before_diagnostic_only_change": "Add the process result and raw GDB output to the failing assertion message. Assertion and production behavior are unchanged.",
+    "root_system_configuration_changed": false
+  },
+  "before": {
+    "tests": 8,
+    "passed": 7,
+    "failed": 1,
+    "skipped": 0,
+    "positive_preflight_and_exec_passed": true,
+    "failure": "Expected ptrace_denied=true; precise Ubuntu Yama advice was followed by ptrace: Inappropriate ioctl for device.",
+    "raw_debugger_sha256": "af38f5a281bad7ecfc6a408a262f3b3df2d4aa63b395bb9440722f7afe086844"
+  },
+  "after": {
+    "tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "positive_stack_requirements_unchanged": true
+  },
+  "source_files": [
+    {
+      "path": "scripts/neural/native-stack.mjs",
+      "before_sha256": "c35c582000ee3fb1f56439e13f10a49cbadf66b729af9b719d6cb34fc04190a3",
+      "after_sha256": "96a7b503b0a1b64a86665ba94216e3773c27c2de82161dbee83b30a5861493e0"
+    },
+    {
+      "path": "tests/neural_native_stack.mjs",
+      "before_sha256": "6106db1db3023bc5f0c8e15283fcf7b446f9285261aa80852a007b18efb96e90",
+      "after_sha256": "0cda8c150eeb15e4c02510ba8720df7e5d00628111eb2ab50ce41e3448006ef9"
+    }
+  ]
+}

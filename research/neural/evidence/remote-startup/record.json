@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source": "3efe7899a618702ff1b2bb86ec6b541eca8a22b1",
+  "running_source_unchanged": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+  "compression": {
+    "command": "gzip -1 -c runs/neural/teacher-optimization-06/input.tar",
+    "seconds": 3.558,
+    "input_bytes": 204922880,
+    "output_bytes": 153652083,
+    "input_sha256": "4e66a998d38fbb87b529bb4a801ecd4640694f21259f6f2acc63013da1bec0f3",
+    "output_sha256": "55320d0317e96bc879be897cd16b3a490eb0bf553eed3da2aa971212f8a15b3e",
+    "decompressed_sha256": "4e66a998d38fbb87b529bb4a801ecd4640694f21259f6f2acc63013da1bec0f3"
+  },
+  "cache_probe": {
+    "archive": "runs/neural/teacher-optimization-06/startup-cache-v2.tar.gz",
+    "archive_bytes": 1936211,
+    "archive_sha256": "28dd2a9356a28ceac7cff7702c1d75a073191e53cfca9feb0d4c04261cbace49",
+    "probe_source_sha256": "b4341d1bdb4b8fdd7f91cbb535aa766b62711a1a2268dfc30b31986c7c07694f",
+    "cross_pod_hit_measured": false,
+    "baseline_executable_changed": false
+  },
+  "validation": {
+    "initial_ctest_passed": 6,
+    "hostname_followup_ctest_passed": 2,
+    "cache_overlay_contracts_passed": 29,
+    "native_behavior_changed": false,
+    "new_sanitizer_run": false,
+    "sanitizer_scope": "Build/orchestration change only; existing native sanitizer gates retained."
+  },
+  "limitations": [
+    "Ninja step counts are not elapsed-time savings.",
+    "Compression measured on exactly the same archived inputs, not different source revisions.",
+    "Cache export/validation used existing Ubuntu environment without rebuilding or executing native/GPU code.",
+    "No second Pod, fresh-Pod cache hit, or end-to-end startup speedup was measured.",
+    "Artifact payload and full prepared input remain in ignored local run directories; this evidence records their hashes.",
+    "Prophet research completed; repository indexing was unavailable and attached-source review transport failed."
+  ]
+}

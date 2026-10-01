@@ -98,6 +98,11 @@ again with the current gate before any adoption decision.
 
 ## Bounded remote execution
 
+New bundles use the [remote startup improvements](REMOTE-STARTUP.md): compressed
+uploads, bounded build concurrency, required test/tool targets and optional
+verified baseline reuse. These preserve the experiment's validation order and
+absolute rental deadlines.
+
 Local contracts and a small warm comparison precede a rental. The separate user
 authorization is capped at $3.50 cumulatively, including failed attempts and storage
 allowance. The user authorized extending the original $3 cap for the requested

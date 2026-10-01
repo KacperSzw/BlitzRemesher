@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "source": "runs/neural/startup-measurements.json",
+      "path": "prior-startup.json",
+      "bytes": 12335,
+      "sha256": "473369aec33ffbbe72fbc5e67fa6dbb4af3044a1e0a2821b7d38d2a085d679d5"
+    },
+    {
+      "source": "runs/neural/setup-build-config/validation.json",
+      "path": "build/validation.json",
+      "bytes": 300,
+      "sha256": "b4f5dbca2b155f5a2ab1b885fa3b255f7c62c2a8e2009024753bf7f667d5ba88"
+    },
+    {
+      "source": "runs/neural/setup-build-config/cloud-build-targets.json",
+      "path": "build/targets.json",
+      "bytes": 3639,
+      "sha256": "0cf917fa6c8d35c5a374c716627c85ec6813fccf572f176ba75bd65e0feffd78"
+    },
+    {
+      "source": "runs/neural/teacher-optimization-06/startup-cache-v2/validation.json",
+      "path": "cache/validation.json",
+      "bytes": 998,
+      "sha256": "919b086624605798076bc09beb8bad21624ec6c8ac12135821326e3de8e82e0c"
+    },
+    {
+      "source": "runs/neural/teacher-optimization-06/startup-cache-v2/cache/manifest.json",
+      "path": "cache/manifest.json.gz",
+      "bytes": 14911,
+      "sha256": "7008e940f401a7e008283e7975af67dc9aff9d49f09082cb3020919e0fe89d42",
+      "uncompressed_sha256": "cdfec3a4d8cb0f22b428cee57728650ddcbb91b3ea98a8a408b772d3bd1c9842"
+    },
+    {
+      "source": "runs/neural/teacher-optimization-06/startup-cache-v2/local-inspection.json",
+      "path": "cache/local-inspection.json",
+      "bytes": 2258,
+      "sha256": "fd3ff540c5bdcd086de97951943399e958c9ffb11c86e0aa151188c04de646bd"
+    },
+    {
+      "source": "runs/neural/startup-prepare-01/prepared.json",
+      "path": "prepare/prepared.json",
+      "bytes": 1169,
+      "sha256": "9f34b0c1253abd6773de4c8607da5645f2ee54a728529051b5cc16bedd98890d"
+    },
+    {
+      "source": "runs/neural/startup-prepare-01/validation.json",
+      "path": "prepare/validation.json",
+      "bytes": 502,
+      "sha256": "e14c96f7082ca1136afbb51b036adf68078f177041f94eec1d371ae6c3ad46f8"
+    },
+    {
+      "source": "/tmp/blitz-startup-ctest.log",
+      "path": "tests/ctest.log.gz",
+      "bytes": 339,
+      "sha256": "55a029a575356c34122e15dc2d7570264df8bab004b5a60c6d2aef4b63ea4942",
+      "uncompressed_sha256": "437475a1c916cb9544ba4443d8381b4b69b53b5992b0e7db2dd83af7a8886cd6"
+    },
+    {
+      "source": "/tmp/blitz-startup-ctest.xml",
+      "path": "tests/ctest.xml.gz",
+      "bytes": 2622,
+      "sha256": "7b9d392d24cd69981a3cb2191a89a3d5fdcde69a4832288672602e2f3686ce50",
+      "uncompressed_sha256": "0a72dd0c0e724a30513e2734387aa5e9ceb11e4c3af7516ef420f52baa6be7c1"
+    },
+    {
+      "source": "/tmp/blitz-startup-final-ctest.log",
+      "path": "tests/hostname-followup.log.gz",
+      "bytes": 241,
+      "sha256": "3c4e38dd240d3234fd64f74e3569bd629850c1db191ceb10698ea47b2dc08293",
+      "uncompressed_sha256": "5045daed17cda7828299451a0aa92354f67253698d0b65f93387bcde8bc9d6db"
+    },
+    {
+      "source": "/tmp/blitz-startup-final-ctest.xml",
+      "path": "tests/hostname-followup.xml.gz",
+      "bytes": 1356,
+      "sha256": "445c3f503cfe905a5b96e1b7413ce865e7987f2a45645922b920dfdfcb162d39",
+      "uncompressed_sha256": "f7ff9a0e2120848be39c0b1f1fe8f23623265241090a188d269557cb11984151"
+    },
+    {
+      "source": "/tmp/blitz-baseline-cache-tests.log",
+      "path": "tests/cache-overlay.log.gz",
+      "bytes": 1036,
+      "sha256": "9cc97035f8d1e98d4b75881763287f28f515d00d3529accce6c6f0a3afd4e678",
+      "uncompressed_sha256": "65671144b4413e2be4db6768a41a402213522385734a8c0e3c34445383ab9973"
+    },
+    {
+      "source": "runs/neural/setup-build-config/all.dry-run.txt",
+      "path": "build/all.dry-run.txt.gz",
+      "bytes": 1704,
+      "sha256": "34d966cce2f23a68feb5770d2a1157345af2602eb10dd4afc234e6b3ca6a1a1c",
+      "uncompressed_sha256": "e32452896b71ab3e18bbdcde843892164cee64d0046bd229d58b70a34f6dc96d"
+    },
+    {
+      "source": "runs/neural/setup-build-config/blitz-neural-cloud-validation.dry-run.txt",
+      "path": "build/blitz-neural-cloud-validation.dry-run.txt.gz",
+      "bytes": 1319,
+      "sha256": "06dc1946adfbe38fdb023b73166130ee65f8815b569521c44d39f48cb56a6b72",
+      "uncompressed_sha256": "b1066b586a12bcf211211aac259eddb55daf546e1a6482186bff98b568afe771"
+    }
+  ]
+}

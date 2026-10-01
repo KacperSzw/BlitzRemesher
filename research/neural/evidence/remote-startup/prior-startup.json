@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "observed_at": "2026-10-01T14:59:43.810Z",
+  "purpose": "Prior startup evidence for future setup changes; no remote/GPU/learning action performed.",
+  "clock_caveats": [
+    "Run05 intermediate boundaries use second-resolution mtimes preserved by the collected tar archive, not explicit per-stage timers. Millisecond differences involving these boundaries must not imply millisecond stage accuracy.",
+    "Rental/setup/learning ledger times are wall-clock controller/native observations. No clock synchronization bound was measured between machines.",
+    "Pre-marker time includes provider provisioning, image availability, SSH readiness, source upload/restore and any controller/user retarget delay. These components cannot be separated from these artifacts.",
+    "Deployment-to-baseline includes LibTorch download, verification and extraction plus baseline configure/build/provenance. Baseline-to-setup includes candidate configure/build and final dependency/provenance checks. Do not present either as pure compilation time.",
+    "All measurements precede the new startup scheduling/cache implementation. They establish no remote startup speedup."
+  ],
+  "runs": {
+    "05": {
+      "revision": "959f248e19f62169603a82674367c757eccb3a29",
+      "ledger": {
+        "path": "runs/neural/teacher-optimization-05/rental.json",
+        "sha256_at_observation": "86f52460cf60a0c38b16e02e3f08fd90decc85c8a0285dc413a2fbf4bf3ecfe7",
+        "mutable": false,
+        "fields": {
+          "started_at": 1790861469768,
+          "validation_started_at": 1790862270735,
+          "training_started_at": 1790862495919
+        }
+      },
+      "prepared": {
+        "path": "runs/neural/teacher-optimization-05/prepared.json",
+        "sha256": "606c9c2ead1203058d0337e4ec4dda04f64d6e08cbddae1199e4a8a01e167408",
+        "bytes": 890,
+        "mtime_ms": 1790861452085.3767,
+        "mtime_utc": "2026-10-01T13:30:52.085Z"
+      },
+      "input_archive": {
+        "path": "runs/neural/teacher-optimization-05/input.tar",
+        "bytes": 204584960,
+        "sha256": "87903165a7b93f27b8640bc04ed191fb5a8817e30094bdc931a8eaca6662a65d",
+        "matches_prepared": true,
+        "format": "uncompressed tar"
+      },
+      "source_bundle": {
+        "archive": "runs/neural/teacher-optimization-05/input.tar",
+        "member": "./source.bundle",
+        "bytes": 108886928,
+        "sha256": "bb0393f62689d56a2534f085a25425fa64fa0ac15a998eb6248728f4d3676ffd",
+        "fraction_of_input_bytes": 0.5322332980879924,
+        "percent_of_input_bytes": 53.22332980879924
+      },
+      "durations_seconds": {
+        "rental_to_setup": 800.967,
+        "setup_to_learning": 225.184,
+        "rental_to_learning": 1026.151
+      },
+      "boundaries": [
+        {
+          "name": "rental_start",
+          "timestamp_ms": 1790861469768,
+          "timestamp_utc": "2026-10-01T13:31:09.768Z",
+          "source": "runs/neural/teacher-optimization-05/rental.json",
+          "field": "started_at"
+        },
+        {
+          "name": "cuda_version_output",
+          "timestamp_ms": 1790861787000,
+          "timestamp_utc": "2026-10-01T13:36:27.000Z",
+          "source": "runs/neural/teacher-optimization-05/collected/results/cuda-toolkit.txt",
+          "field": "archive-preserved mtime"
+        },
+        {
+          "name": "device_verification_record",
+          "timestamp_ms": 1790861802000,
+          "timestamp_utc": "2026-10-01T13:36:42.000Z",
+          "source": "runs/neural/teacher-optimization-05/collected/results/deployment.json",
+          "field": "archive-preserved mtime"
+        },
+        {
+          "name": "baseline_binary_provenance",
+          "timestamp_ms": 1790861995000,
+          "timestamp_utc": "2026-10-01T13:39:55.000Z",
+          "source": "runs/neural/teacher-optimization-05/collected/results/baseline-build.json",
+          "field": "archive-preserved mtime"
+        },
+        {
+          "name": "setup_complete",
+          "timestamp_ms": 1790862270735,
+          "timestamp_utc": "2026-10-01T13:44:30.735Z",
+          "source": "runs/neural/teacher-optimization-05/collected/results/setup-complete.json",
+          "field": "at"
+        },
+        {
+          "name": "capability_learning_start",
+          "timestamp_ms": 1790862495919,
+          "timestamp_utc": "2026-10-01T13:48:15.919Z",
+          "source": "runs/neural/teacher-optimization-05/rental.json",
+          "field": "training_started_at"
+        }
+      ],
+      "coarse_intervals": [
+        {
+          "name": "rental_to_cuda_version_output",
+          "start_boundary": "rental_start",
+          "end_boundary": "cuda_version_output",
+          "elapsed_seconds": 317.232,
+          "contains_mtime_boundary": true
+        },
+        {
+          "name": "cuda_version_output_to_device_record",
+          "start_boundary": "cuda_version_output",
+          "end_boundary": "device_verification_record",
+          "elapsed_seconds": 15,
+          "contains_mtime_boundary": true
+        },
+        {
+          "name": "device_record_to_baseline_record",
+          "start_boundary": "device_verification_record",
+          "end_boundary": "baseline_binary_provenance",
+          "elapsed_seconds": 193,
+          "contains_mtime_boundary": true
+        },
+        {
+          "name": "baseline_record_to_setup_complete",
+          "start_boundary": "baseline_binary_provenance",
+          "end_boundary": "setup_complete",
+          "elapsed_seconds": 275.735,
+          "contains_mtime_boundary": true
+        },
+        {
+          "name": "setup_complete_to_capability_learning",
+          "start_boundary": "setup_complete",
+          "end_boundary": "capability_learning_start",
+          "elapsed_seconds": 225.184,
+          "contains_mtime_boundary": false
+        }
+      ],
+      "artifacts": {
+        "cuda-toolkit.txt": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/cuda-toolkit.txt",
+          "sha256": "77d7ef23109cd2437a8b9cf5efbc4e89996b816276077edb86143ee04f6d5269",
+          "bytes": 208,
+          "mtime_ms": 1790861787000,
+          "mtime_utc": "2026-10-01T13:36:27.000Z"
+        },
+        "gpu.csv": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/gpu.csv",
+          "sha256": "aebc875655287451c724fd88342694e28cf29905996fd555437c1c152932e469",
+          "bytes": 34,
+          "mtime_ms": 1790861797000,
+          "mtime_utc": "2026-10-01T13:36:37.000Z"
+        },
+        "vulkan.txt": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/vulkan.txt",
+          "sha256": "22babc65aa785570f96ecdbf43f87a36bf69a2f9abb17060daf4b7e76cb6eaa9",
+          "bytes": 2331,
+          "mtime_ms": 1790861802000,
+          "mtime_utc": "2026-10-01T13:36:42.000Z"
+        },
+        "deployment.json": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/deployment.json",
+          "sha256": "5d2a87eff419f4ebf8a300850f312af6af218f93dfabd2e598f1f9eb5c92fdef",
+          "bytes": 737,
+          "mtime_ms": 1790861802000,
+          "mtime_utc": "2026-10-01T13:36:42.000Z"
+        },
+        "baseline-build.json": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/baseline-build.json",
+          "sha256": "bced50cdf77e75d17703b45f674978f6ecb113edca30012787bc7508f013bc44",
+          "bytes": 1485,
+          "mtime_ms": 1790861995000,
+          "mtime_utc": "2026-10-01T13:39:55.000Z"
+        },
+        "trainer-dependencies.txt": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/trainer-dependencies.txt",
+          "sha256": "094b1ec748b87893c80e68e41a648cc9d6bd33854191fd29c2b9946e80fc4df6",
+          "bytes": 1862,
+          "mtime_ms": 1790862270000,
+          "mtime_utc": "2026-10-01T13:44:30.000Z"
+        },
+        "git-revision": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/git-revision",
+          "sha256": "ce07add52f3796574f86ca5431e3731df175cf0daa1e6d8f3fdc6071554f4be4",
+          "bytes": 41,
+          "mtime_ms": 1790862270000,
+          "mtime_utc": "2026-10-01T13:44:30.000Z"
+        },
+        "packages.txt": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/packages.txt",
+          "sha256": "42eacae7ed35681ad3e323b5e88ad1933f5720e005ba3950380cbf2115bcdf6f",
+          "bytes": 25287,
+          "mtime_ms": 1790862270000,
+          "mtime_utc": "2026-10-01T13:44:30.000Z"
+        },
+        "setup-complete.json": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/setup-complete.json",
+          "sha256": "e91968a204f22ab02b8d5d54cb882df59ea1d3ccd09c368cdfd3346cb597e5bd",
+          "bytes": 122,
+          "mtime_ms": 1790862270000,
+          "mtime_utc": "2026-10-01T13:44:30.000Z"
+        },
+        "bootstrap.log": {
+          "path": "runs/neural/teacher-optimization-05/collected/results/bootstrap.log",
+          "sha256": "f023cd70cbef6cb7abd4e809c8ca30bd0fe68f1f5c9ed56449a9f5d3af97c3f5",
+          "bytes": 81373,
+          "mtime_ms": 1790862270000,
+          "mtime_utc": "2026-10-01T13:44:30.000Z"
+        }
+      },
+      "results_collection": {
+        "record": {
+          "path": "runs/neural/teacher-optimization-05/collection.json",
+          "sha256": "285d9a5b4ebc6574740375b25ecde722e26011f28f759d30dc623caaff999bc3",
+          "bytes": 126,
+          "mtime_ms": 1790862632711.669,
+          "mtime_utc": "2026-10-01T13:50:32.711Z"
+        },
+        "archive_path": "runs/neural/teacher-optimization-05/results.tar.gz",
+        "archive_sha256_recorded": "6a984c44aff7285c919c7aea74dc6271b98a7b09be28b1e7142a15771c84ba68",
+        "previously_verified": true,
+        "archive_rehashed_for_this_summary": false
+      },
+      "libtorch_download": {
+        "source": "runs/neural/teacher-optimization-05/collected/results/bootstrap.log",
+        "source_sha256": "f023cd70cbef6cb7abd4e809c8ca30bd0fe68f1f5c9ed56449a9f5d3af97c3f5",
+        "final_progress_line": "100 3736M  100 3736M    0     0  64.8M      0  0:00:57  0:00:57 --:--:--  112M",
+        "reported_download_seconds": 57,
+        "reported_transfer_size": "3736M (curl display; rounded)",
+        "included_in": "device_record_to_baseline_record",
+        "note": "Does not include zip SHA verification or extraction; not an independent interval to add to the breakdown."
+      }
+    },
+    "06": {
+      "revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+      "ledger": {
+        "path": "runs/neural/teacher-optimization-06/rental.json",
+        "sha256_at_observation": "864331a81824acba99644b927cc063a86514d50a9511e31d1436c6fb238d4612",
+        "mutable": true,
+        "fields": {
+          "started_at": 1790863771146,
+          "validation_started_at": 1790864637226,
+          "training_started_at": 1790864844783,
+          "retargeted_at": 1790864129902
+        }
+      },
+      "prepared": {
+        "path": "runs/neural/teacher-optimization-06/prepared.json",
+        "sha256": "3bdcd31e2a3e49576c415227aa955789f30ccea2f6c3ae2efb18f3caa757f26c",
+        "bytes": 890,
+        "mtime_ms": 1790864129452.4731,
+        "mtime_utc": "2026-10-01T14:15:29.452Z"
+      },
+      "input_archive": {
+        "path": "runs/neural/teacher-optimization-06/input.tar",
+        "bytes": 204922880,
+        "sha256": "4e66a998d38fbb87b529bb4a801ecd4640694f21259f6f2acc63013da1bec0f3",
+        "matches_prepared": true,
+        "format": "uncompressed tar"
+      },
+      "source_bundle": {
+        "archive": "runs/neural/teacher-optimization-06/input.tar",
+        "member": "./source.bundle",
+        "bytes": 109224878,
+        "sha256": "48f0fba49a9f2c4c22525cae673726e939b3c6cb3a260300aa6a9ee1f1bc943a",
+        "fraction_of_input_bytes": 0.5330047967313362,
+        "percent_of_input_bytes": 53.30047967313362
+      },
+      "durations_seconds": {
+        "rental_to_setup": 866.08,
+        "setup_to_learning": 207.557,
+        "rental_to_learning": 1073.637
+      },
+      "notes": [
+        "This is a snapshot of the active local rental ledger; no remote query was made.",
+        "retargeted_at records an in-place source correction before upload, preserving original rental start and budget. The total includes that delay.",
+        "No collected bootstrap stage artifacts for06 were required or assumed."
+      ]
+    }
+  }
+}

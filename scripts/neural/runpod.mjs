@@ -199,6 +199,7 @@ async function prepare() {
       await copy(dataset + '/' + relative(asset.path), 'dataset/' + asset.path, asset.sha256);
   }
   const auditFiles = new Map();
+  let baselineCache;
   if (optimization) {
     const request = validateOptimizationRequest(read('research/neural/teacher-optimization.json'));
     if ((request.capability_minutes === 60) !== (deployment.id === 'teacher-optimization-a40-hour'))
@@ -210,6 +211,24 @@ async function prepare() {
       request.initialization_sha256,
     );
     await copy('research/neural/teacher-optimization.json', 'optimization/request.json');
+    if (process.env.BLITZ_BASELINE_CACHE) {
+      // Preparation runs locally before renting. The remote host independently
+      // checks its fresh toolchain/dependencies before accepting these bytes.
+      const { inspectBaselineCache } = await import('./baseline-cache.mjs');
+      const cacheDirectory = path.resolve(process.env.BLITZ_BASELINE_CACHE);
+      const cache = inspectBaselineCache({ cacheDirectory, request, candidateRoot: root });
+      for (const file of cache.files)
+        await copy(
+          path.join(cacheDirectory, file.path),
+          'baseline-cache/' + file.path,
+          file.sha256,
+        );
+      baselineCache = {
+        key: cache.key,
+        binary_sha256: cache.binary_sha256,
+        fresh_environment_validation_required: true,
+      };
+    }
     const selected = selectOptimizationAssets({
       assets: read('research/neural/corpus-v2/corpus.json').assets,
       trainingIds: read('research/neural/corpus-v2/training.json').assets.map((a) => a.id),
@@ -380,6 +399,7 @@ async function prepare() {
     archive_bytes: fs.statSync(dir + '/' + archiveName).size,
     files: files.length,
     ...(readiness ? { teacher_readiness: readiness } : {}),
+    ...(baselineCache ? { baseline_cache: baselineCache } : {}),
   });
   fs.rmSync(stage, { recursive: true });
   console.log(

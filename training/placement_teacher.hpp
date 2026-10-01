@@ -867,9 +867,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                 ? a
                 : audit.evaluate(previous_view, final, bounds, adjacent, &stats);
     });
+    const bool reference_confirmed = audit_measurement_passed(a) && audit_measurement_passed(b);
     bool complete = !cancel() && !unknown &&
-                    (data.states() == states + previous_steps || exhausted) && a.complete &&
-                    a.passed && b.complete && b.passed;
+                    (data.states() == states + previous_steps || exhausted) && reference_confirmed;
     final_audit_seconds =
         std::chrono::duration<double>(std::chrono::steady_clock::now() - final_audit_start).count();
     const auto output_start = std::chrono::steady_clock::now();
@@ -919,7 +919,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                   {"accepted", accepted},
                   {"source_triangles", source.triangles()},
                   {"teacher_triangles", final.faces},
-                  {"reference_confirmed", a.complete && a.passed && b.complete && b.passed},
+                  {"reference_confirmed", reference_confirmed},
                   {"requested_condition_available", !previous_steps || emitted},
                   {"preceding_lod_emitted", emitted},
                   {"previous_triangles", previous_view.triangles()},

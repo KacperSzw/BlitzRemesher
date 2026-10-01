@@ -2,6 +2,7 @@
 #include "neural/action.hpp"
 #include "neural/action_cache.hpp"
 #include "neural/action_gpu.hpp"
+#include "neural/audit_measurement.hpp"
 #include "neural/internal.hpp"
 #include "neural/memory.hpp"
 #include "neural/quantization.hpp"
@@ -428,19 +429,13 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
                            close(cpu.normal_degrees, gpu.normal_degrees));
             bool stopped = output.cancelled || cpu.cancelled || gpu.cancelled ||
                            (s.cancelled && s.cancelled());
-            auto invalid = [](const Measurement& m) {
-                return std::isnan(m.error) || std::isnan(m.coverage) ||
-                       std::isnan(m.coverage_upper) || !std::isfinite(m.changed_area) ||
-                       !std::isfinite(m.normal_degrees) ||
-                       (m.passed && (!std::isfinite(m.error) || !std::isfinite(m.coverage) ||
-                                     !std::isfinite(m.coverage_upper)));
-            };
-            bool nonfinite = invalid(output) ||
-                             (options.confirmation == NeuralConfirmation::Compare && invalid(cpu));
+            bool nonfinite = neural::audit_measurement_nonfinite(output) ||
+                             (options.confirmation == NeuralConfirmation::Compare &&
+                              neural::audit_measurement_nonfinite(cpu));
             bool resource =
                 output.resource_limited ||
                 (options.confirmation == NeuralConfirmation::Compare && cpu.resource_limited);
-            if (!stopped && !nonfinite && agrees && output.complete && output.passed)
+            if (!stopped && !resource && !nonfinite && agrees && output.complete && output.passed)
                 return true;
             NeuralConfirmationReason reason;
             if (stopped) {

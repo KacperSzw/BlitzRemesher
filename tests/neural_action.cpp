@@ -3,6 +3,7 @@
 #include "neural/action.hpp"
 #include "neural/action_cache.hpp"
 #include "neural/audit_cache.hpp"
+#include "neural/audit_measurement.hpp"
 #include <iostream>
 #include <numeric>
 using namespace blitz;
@@ -206,6 +207,39 @@ int main() {
             m.resource_limited = false;
             m.error = NAN;
             check(!action_audit_known(m, e), "NaN audit received a label");
+            // Empty/nonempty render disagreement can be a witnessed infinite
+            // distance. Keep that negative without accepting invalid diagnostics.
+            m = {};
+            m.passed = m.complete = false;
+            m.views_evaluated = 1;
+            m.error = m.coverage = m.coverage_upper = INFINITY;
+            check(action_audit_known(m, e) && !audit_measurement_passed(m),
+                  "witnessed infinite distance lost its negative label");
+            for (const auto corrupt : std::array<std::function<void(Measurement&)>, 5>{
+                     [](auto& q) { q.error = NAN; }, [](auto& q) { q.coverage = NAN; },
+                     [](auto& q) { q.coverage_upper = NAN; },
+                     [](auto& q) { q.changed_area = INFINITY; },
+                     [](auto& q) { q.normal_degrees = INFINITY; }}) {
+                auto invalid = m;
+                corrupt(invalid);
+                check(!action_audit_known(invalid, e) && !audit_measurement_passed(invalid),
+                      "invalid diagnostic became a known negative");
+                invalid = {};
+                corrupt(invalid);
+                check(!action_audit_known(invalid, e) && !audit_measurement_passed(invalid),
+                      "invalid diagnostic became a positive label");
+            }
+            for (auto field : {&Measurement::error, &Measurement::coverage,
+                               &Measurement::coverage_upper}) {
+                Measurement invalid;
+                invalid.*field = INFINITY;
+                check(!action_audit_known(invalid, e) && !audit_measurement_passed(invalid),
+                      "infinite distance was accepted as a positive label");
+            }
+            m = {};
+            m.resource_limited = true;
+            check(!audit_measurement_passed(m) && !action_audit_known(m, e),
+                  "resource flag was ignored on an otherwise passing measurement");
         }
         for (unsigned n : {5u, 7u}) {
             auto m = plane(n);

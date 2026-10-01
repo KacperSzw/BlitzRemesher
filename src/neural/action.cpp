@@ -1,4 +1,5 @@
 #include "neural/action.hpp"
+#include "neural/audit_measurement.hpp"
 #include <bit>
 #include <numeric>
 
@@ -18,7 +19,7 @@ template <class T> void unique(std::vector<T>& a) {
 }
 } // namespace
 bool action_audit_known(const Measurement& m, const EvalSettings& e) {
-    if (m.cancelled || m.resource_limited || std::isnan(m.error) || std::isnan(m.changed_area))
+    if (m.cancelled || m.resource_limited || audit_measurement_nonfinite(m))
         return false;
     return (m.complete && m.passed) || (m.views_evaluated && !m.passed &&
                                         (m.error > e.limit || m.changed_area > e.max_changed_area));

@@ -1,5 +1,5 @@
 #pragma once
-#include <blitz/evaluate.hpp>
+#include "neural/audit_measurement.hpp"
 
 namespace blitz::neural::training {
 // Before a predecessor is emitted, both source and adjacent audits compare
@@ -12,8 +12,7 @@ struct TeacherSeedAudit {
     Measurement source, adjacent, destination;
     bool passed() const {
         for (const auto* m : {&source, &adjacent, &destination})
-            if (!m->complete || !m->passed || m->cancelled || m->resource_limited ||
-                !std::isfinite(m->error) || !std::isfinite(m->changed_area))
+            if (!audit_measurement_passed(*m))
                 return false;
         return true;
     }

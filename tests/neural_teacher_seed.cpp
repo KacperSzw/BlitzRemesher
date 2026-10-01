@@ -66,7 +66,7 @@ int main() {
         // A seed cannot become an incumbent on an unknown/cancelled audit,
         // even if a caller accidentally leaves the default passed flag set.
         for (size_t gate = 0; gate < 3; ++gate)
-            for (unsigned failure = 0; failure < 5; ++failure) {
+            for (unsigned failure = 0; failure < 8; ++failure) {
                 TeacherSeedAudit audit;
                 auto* m = std::array{&audit.source, &audit.adjacent, &audit.destination}[gate];
                 switch (failure) {
@@ -84,6 +84,15 @@ int main() {
                     break;
                 case 4:
                     m->changed_area = std::numeric_limits<double>::infinity();
+                    break;
+                case 5:
+                    m->coverage = std::numeric_limits<double>::quiet_NaN();
+                    break;
+                case 6:
+                    m->coverage_upper = std::numeric_limits<double>::infinity();
+                    break;
+                case 7:
+                    m->normal_degrees = std::numeric_limits<double>::infinity();
                     break;
                 }
                 require(!audit.passed(), "unknown seed audit became an accepted initial state");

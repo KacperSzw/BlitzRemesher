@@ -7,6 +7,7 @@ import { read, write } from './artifacts.mjs';
 import { boundedProcess } from './bounded-process.mjs';
 import { runCoreValidation } from './core-validation-job.mjs';
 import { runTeacherProfile } from './teacher-profile.mjs';
+import { runNativeDebuggerPreflight } from './native-debugger-preflight.mjs';
 import {
   validateOptimizationRequest,
   optimizationCycleArguments,
@@ -28,6 +29,8 @@ export async function runTeacherOptimization({
   profile = runTeacherProfile,
   contracts = runCoreValidation,
   baseline = '/workspace/baseline/build/neural/blitz-neural-placement-prepare',
+  debuggerCommand = 'gdb',
+  debuggerPreflight = runNativeDebuggerPreflight,
 }) {
   validateOptimizationRequest(request);
   const started = now(),
@@ -48,20 +51,31 @@ export async function runTeacherOptimization({
   if (fs.existsSync(directory)) throw new Error('choose a fresh teacher optimization directory');
   fs.mkdirSync(directory, { recursive: true });
   const persist = () => write(directory + '/report.json', report);
+  const timeoutDiagnostics = request.timeout_diagnostics
+    ? { debuggerCommand, maximum: 5000 }
+    : undefined;
   const phase = (name) => {
     report.phase = name;
     write(path.join(directory, '../phase.json'), { phase: name, at: now() });
     persist();
   };
-  async function run(command, args, name, end) {
+  async function run(command, args, name, end, capture) {
     if (signal?.aborted || now() >= end) throw new Error(name + ': deadline/cancellation');
     const log = directory + '/' + name + '.log',
       fd = fs.openSync(log, 'w');
     try {
+      const grace = capture ? capture.maximum + 1000 : 3000;
       const result = await execute(command, args, {
-        maximum: Math.min(end, deadline) - now(),
+        maximum: Math.min(end, deadline) - now() - (capture ? grace : 0),
+        grace,
         signal,
         stdio: ['ignore', fd, fd],
+        ...(capture
+          ? {
+              env: { ...process.env, BLITZ_TEARDOWN_TRACE: '1', BLITZ_ALLOW_DEBUGGER_ATTACH: '1' },
+              timeoutDiagnostic: { ...capture, output: directory + '/' + name + '.threads.log' },
+            }
+          : {}),
       });
       report.phases.push({ name, command, args, ...result });
       if (
@@ -86,6 +100,31 @@ export async function runTeacherOptimization({
       throw new Error('invalid experiment deadline or initializer checksum');
     const teacherEnd = Math.min(started + 20 * 60000, deadline),
       learningEnd = Math.min(started + 62 * 60000, deadline);
+    const optimized = 'build/neural/blitz-neural-placement-prepare';
+    if (timeoutDiagnostics) {
+      phase('native-debugger-preflight');
+      report.debugger_preflight = await debuggerPreflight({
+        binary: optimized,
+        directory: directory + '/debugger-preflight',
+        debuggerCommand,
+        diagnosticMaximum: timeoutDiagnostics.maximum,
+        deadline: Math.min(now() + 10000, teacherEnd),
+        signal,
+        execute,
+        now,
+      });
+      persist();
+      if (!report.debugger_preflight.complete)
+        throw new Error('Native debugger preflight failed; timeout stacks are unavailable');
+      phase('native-teardown-stress');
+      await run(
+        'build/neural/blitz-neural-vulkan-tests',
+        ['--teardown'],
+        'teardown-stress',
+        Math.min(now() + 45000 + timeoutDiagnostics.maximum + 1000, teacherEnd),
+        timeoutDiagnostics,
+      );
+    }
     phase('coverage-contracts');
     report.contracts = await contracts({
       directory: directory + '/contracts',
@@ -96,7 +135,6 @@ export async function runTeacherOptimization({
     });
     persist();
     if (!report.contracts.complete) throw new Error('remote engineering contracts incomplete');
-    const optimized = 'build/neural/blitz-neural-placement-prepare';
     phase('warm-teacher-comparison');
     report.reuse = await profile({
       baseline,
@@ -113,6 +151,7 @@ export async function runTeacherOptimization({
       gpuMemoryMiB: request.gpu_memory_mib,
       maxSeconds: 100,
       timingAuthority: 'isolated_remote',
+      timeoutDiagnostics,
     });
     persist();
     if (!report.reuse.complete) throw new Error('warm reuse comparison incomplete or unequal');
@@ -132,6 +171,7 @@ export async function runTeacherOptimization({
       maxSeconds: 100,
       timingAuthority: 'isolated_remote',
       comparison: 'strategy',
+      timeoutDiagnostics,
     });
     persist();
     if (!report.strategy.complete) throw new Error('warm strategy comparison incomplete');
@@ -156,7 +196,13 @@ export async function runTeacherOptimization({
         });
         report.training_started = true;
         phase('paired-learning-pilots');
-        await run(cycle, args, 'seed-' + seed + '-' + strategy, now() + 7 * 60000);
+        await run(
+          cycle,
+          args,
+          'seed-' + seed + '-' + strategy,
+          now() + 7 * 60000,
+          timeoutDiagnostics,
+        );
         const result = read(runDirectory + '/report.json'),
           latest = read(runDirectory + '/latest.json'),
           contract = read(runDirectory + '/contract.json');

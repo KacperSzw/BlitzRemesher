@@ -318,6 +318,50 @@ test('resident ABBA compares actual payloads, episodes, conditions and warm work
     fs.rmSync(f.root, { recursive: true, force: true });
   }
 });
+
+test('diagnostic profiles reserve capture time, preserve baseline identity and qualify process timing', async () => {
+  const f = fixture();
+  let calls = 0,
+    clock = 1000;
+  try {
+    const r = await runTeacherProfile({
+      baseline: f.binary,
+      optimized: f.binary,
+      model: f.model,
+      directory: f.root + '/out',
+      plan: f.planPath,
+      deadline: 200000,
+      now: () => clock,
+      timeoutDiagnostics: { debuggerCommand: 'test-owned-gdb', maximum: 400 },
+      execute: async (binary, args, options) => {
+        const baseline = calls === 0 || calls === 3;
+        ++calls;
+        assert.equal(options.grace, 1400);
+        assert.ok(options.maximum + options.grace <= 200000 - clock);
+        assert.equal(options.env.BLITZ_ALLOW_DEBUGGER_ATTACH, '1');
+        assert.equal(options.env.BLITZ_TEARDOWN_TRACE, '1');
+        assert.equal(options.timeoutDiagnostic.debuggerCommand, 'test-owned-gdb');
+        assert.match(options.timeoutDiagnostic.output, /\.threads\.log$/);
+        if (baseline) {
+          assert.equal(args[0], '--debugger-exec');
+          assert.equal(args[1], f.binary);
+          nativeArtifacts(args[1], args.slice(2));
+        } else nativeArtifacts(binary, args);
+        clock += 4000;
+        return { code: 0, signal: null, success: true };
+      },
+    });
+    assert.equal(r.complete, true, r.error);
+    assert.equal(calls, 4);
+    assert.equal(r.diagnostics.baseline_launcher.sha256, r.binary_sha256.baseline);
+    assert.equal(r.diagnostics.process_timing_instrumented, true);
+    assert.equal(r.process_speedup, null);
+    assert.equal(r.diagnostic_process_wall_ratio, 1);
+    assert.equal(r.measured_speedup, 1);
+  } finally {
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});
 for (const failure of [
   'labels',
   'episode',

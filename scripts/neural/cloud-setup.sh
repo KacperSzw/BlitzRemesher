@@ -7,7 +7,7 @@ export CUDACXX=/usr/local/cuda/bin/nvcc
 export CUDAToolkit_ROOT=/usr/local/cuda
 "$CUDACXX" --version > /workspace/results/cuda-toolkit.txt
 apt-get update -qq
-apt-get install -y --no-install-recommends g++ cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
+apt-get install -y --no-install-recommends g++ gdb cmake ninja-build pkg-config git ripgrep nodejs curl ca-certificates unzip libssl-dev nlohmann-json3-dev libcurl4-openssl-dev libarchive-dev
 if [[ "${BLITZ_PIPELINE_VALIDATION:-0}" == 1 ]]; then
   apt-get install -y --no-install-recommends cuda-nsight-systems-12-9
 fi

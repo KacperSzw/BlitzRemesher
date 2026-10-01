@@ -91,7 +91,8 @@ export function validateOptimizationRequest(request) {
     request.workers !== 2 ||
     request.candidate_batch !== 4 ||
     request.learning_minutes !== 5 ||
-    request.finalize_minutes !== 2
+    request.finalize_minutes !== 2 ||
+    (request.timeout_diagnostics !== undefined && typeof request.timeout_diagnostics !== 'boolean')
   )
     throw new Error('invalid frozen teacher optimization request');
   return request;

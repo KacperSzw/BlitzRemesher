@@ -990,6 +990,7 @@ test('core preparation bundles only committed source and carries self-contained 
       'core-validation.mjs',
       'teacher-readiness.mjs',
       'bounded-process.mjs',
+      'native-stack.mjs',
       'teacher-optimization.mjs',
       'quality-metrics.mjs',
     ])

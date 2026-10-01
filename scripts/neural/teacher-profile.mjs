@@ -328,6 +328,7 @@ export async function runTeacherProfile({
   now = Date.now,
   timingAuthority = 'local_shared',
   comparison = 'parity',
+  timeoutDiagnostics,
 }) {
   if (fs.existsSync(directory)) throw new Error('choose a fresh teacher profile directory');
   fs.mkdirSync(directory, { recursive: true });
@@ -356,6 +357,16 @@ export async function runTeacherProfile({
       throw new Error('teacher profile deadline/cancellation');
     if (comparison !== 'parity' && comparison !== 'strategy')
       throw new Error('comparison must be parity or strategy');
+    if (
+      timeoutDiagnostics &&
+      (typeof timeoutDiagnostics.debuggerCommand !== 'string' ||
+        !timeoutDiagnostics.debuggerCommand ||
+        !Number.isInteger(timeoutDiagnostics.maximum) ||
+        timeoutDiagnostics.maximum < 1 ||
+        timeoutDiagnostics.maximum > 30000)
+    )
+      throw new Error('Invalid teacher timeout diagnostics');
+    const grace = timeoutDiagnostics ? timeoutDiagnostics.maximum + 1000 : 1000;
     const request = read(plan);
     if ((request.teacher_strategy ?? 'exhaustive') !== 'exhaustive')
       throw new Error('frozen benchmark plan must use exhaustive baseline');
@@ -387,13 +398,34 @@ export async function runTeacherProfile({
       request.max_seconds > 1800
     )
       throw new Error('invalid resident teacher profile settings');
-    request.max_seconds = Math.min(request.max_seconds, Math.floor((deadline - now()) / 4000) - 4);
+    request.max_seconds = Math.min(
+      request.max_seconds,
+      Math.floor((deadline - now()) / 4000) - 3 - Math.ceil(grace / 1000),
+    );
     if (!Number.isInteger(request.max_seconds) || request.max_seconds < 1)
       throw new Error('insufficient teacher profile deadline');
     const binaries = { baseline: path.resolve(baseline), optimized: path.resolve(optimized) };
     report.binary_sha256 = Object.fromEntries(
       Object.entries(binaries).map(([k, p]) => [k, hash(p)]),
     );
+    if (timeoutDiagnostics) {
+      report.diagnostics = {
+        enabled: true,
+        debugger_command: timeoutDiagnostics.debuggerCommand,
+        maximum_ms: timeoutDiagnostics.maximum,
+        termination_grace_ms: grace,
+        environment_flags: { BLITZ_TEARDOWN_TRACE: '1', BLITZ_ALLOW_DEBUGGER_ATTACH: '1' },
+        baseline_launcher:
+          comparison === 'parity'
+            ? {
+                path: binaries.optimized,
+                sha256: report.binary_sha256.optimized,
+                mode: '--debugger-exec; baseline executable and payload unchanged',
+              }
+            : null,
+        process_timing_instrumented: true,
+      };
+    }
     if (
       comparison === 'strategy' &&
       report.binary_sha256.baseline !== report.binary_sha256.optimized
@@ -454,11 +486,29 @@ export async function runTeacherProfile({
       const log = fs.openSync(output + '.log', 'wx');
       const start = now();
       try {
-        row.process = await execute(binaries[variant], ['--jobs', requestPaths[variant], output], {
-          maximum: Math.min((request.max_seconds + 2) * 1000, deadline - now() - 1000),
-          grace: 1000,
+        const command =
+          timeoutDiagnostics && comparison === 'parity' && variant === 'baseline'
+            ? binaries.optimized
+            : binaries[variant];
+        const args = ['--jobs', requestPaths[variant], output];
+        if (timeoutDiagnostics && comparison === 'parity' && variant === 'baseline')
+          args.unshift('--debugger-exec', binaries.baseline);
+        if (timeoutDiagnostics) row.invocation = { command, args };
+        row.process = await execute(command, args, {
+          maximum: Math.min((request.max_seconds + 2) * 1000, deadline - now() - grace),
+          grace,
           signal,
           stdio: ['ignore', log, log],
+          ...(timeoutDiagnostics
+            ? {
+                env: {
+                  ...process.env,
+                  BLITZ_TEARDOWN_TRACE: '1',
+                  BLITZ_ALLOW_DEBUGGER_ATTACH: '1',
+                },
+                timeoutDiagnostic: { ...timeoutDiagnostics, output: output + '.threads.log' },
+              }
+            : {}),
         });
         row.wall_seconds = (now() - start) / 1000;
         if (
@@ -524,9 +574,17 @@ export async function runTeacherProfile({
       report.measured_speedup = measuredSpeedup;
       report.speedup = measuredSpeedup;
       report.process_speedup = processSpeedup;
+      if (timeoutDiagnostics) {
+        report.diagnostic_process_wall_ratio = processSpeedup;
+        report.process_speedup = null;
+      }
     } else {
       report.strategy_measured_speedup = measuredSpeedup;
       report.strategy_process_speedup = processSpeedup;
+      if (timeoutDiagnostics) {
+        report.diagnostic_process_wall_ratio = processSpeedup;
+        report.strategy_process_speedup = null;
+      }
       report.matching_non_strategy_conditions = true;
       report.matching_repeats = true;
       report.diagnostics_scope =

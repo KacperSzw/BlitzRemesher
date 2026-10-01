@@ -230,6 +230,80 @@ function experiment(t) {
   };
 }
 
+test('timeout diagnostics require an explicit boolean request', () => {
+  for (const flag of [undefined, false, true])
+    assert.equal(
+      validateOptimizationRequest({ ...request(), timeout_diagnostics: flag }).timeout_diagnostics,
+      flag,
+    );
+  for (const flag of [1, 'true', {}, null])
+    assert.throws(
+      () => validateOptimizationRequest({ ...request(), timeout_diagnostics: flag }),
+      /invalid frozen/,
+    );
+});
+
+test('failed native attach preflight blocks GPU stress, comparisons and learning', async (t) => {
+  const options = experiment(t);
+  options.request.timeout_diagnostics = true;
+  const report = await runTeacherOptimization({
+    ...options,
+    debuggerPreflight: async (config) => {
+      assert.equal(config.binary, 'build/neural/blitz-neural-placement-prepare');
+      assert.equal(config.debuggerCommand, 'gdb');
+      assert.ok(config.deadline <= 10000);
+      return { complete: false, process: { diagnostic: { captured: false, ptrace_denied: true } } };
+    },
+    contracts: async () => assert.fail('no GPU contracts before successful attach'),
+    profile: async () => assert.fail('no benchmark before successful attach'),
+    execute: async () => assert.fail('no GPU stress or learning before successful attach'),
+  });
+  assert.equal(report.complete, false);
+  assert.equal(report.training_started, false);
+  assert.match(report.error, /preflight failed/);
+});
+
+test('diagnostic retry bounds teardown stress and forwards capture to paired cycles', async (t) => {
+  const options = experiment(t);
+  options.request.timeout_diagnostics = true;
+  const calls = [];
+  const report = await runTeacherOptimization({
+    ...options,
+    debuggerPreflight: async () => ({ complete: true }),
+    contracts: async () => ({ complete: true }),
+    profile: async (config) => {
+      assert.deepEqual(config.timeoutDiagnostics, { debuggerCommand: 'gdb', maximum: 5000 });
+      assert.equal(config.deadline, 20 * 60000);
+      return { complete: true };
+    },
+    execute: async (command, args, config) => {
+      calls.push(command);
+      assert.equal(config.grace, 6000);
+      assert.equal(config.env.BLITZ_ALLOW_DEBUGGER_ATTACH, '1');
+      assert.equal(config.timeoutDiagnostic.maximum, 5000);
+      if (calls.length === 1) {
+        assert.equal(command, 'build/neural/blitz-neural-vulkan-tests');
+        assert.deepEqual(args, ['--teardown']);
+        assert.equal(config.maximum, 45000);
+        return { success: true, code: 0, signal: null };
+      }
+      assert.equal(command, 'build/neural/blitz-neural-cycle');
+      assert.equal(config.maximum + config.grace, 7 * 60000);
+      return {
+        success: false,
+        code: null,
+        signal: 'SIGKILL',
+        timed_out: true,
+        diagnostic: { captured: true },
+      };
+    },
+  });
+  assert.equal(calls.length, 2);
+  assert.equal(report.complete, false);
+  assert.equal(report.training_started, true);
+  assert.equal(report.phases.at(-1).diagnostic.captured, true);
+});
+
 test('invalid engineering evidence prevents profiles and learning while preserving failure artifacts', async (t) => {
   const options = experiment(t);
   const report = await runTeacherOptimization({

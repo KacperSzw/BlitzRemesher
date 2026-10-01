@@ -1,0 +1,480 @@
+{
+  "version": 1,
+  "attempt": "remote-attempt-03",
+  "run_directory": "runs/neural/teacher-optimization-04",
+  "source_revision": "8bc9c14b9c076b5e045e38e5a23c14926795f091",
+  "recorded_against_revision": "8bc9c14b9c076b5e045e38e5a23c14926795f091",
+  "status": "engineering_contract_failure_before_capability_learning",
+  "complete": false,
+  "training_started": false,
+  "capability_learning_started": false,
+  "capability_learning_completed": false,
+  "final_training": false,
+  "training_ready": false,
+  "quality_proven": false,
+  "strategy_promotable": false,
+  "score": null,
+  "performance_speedup": null,
+  "paired_learning_pilots": 0,
+  "full_quality_comparisons": 0,
+  "retarget": {
+    "same_pod": true,
+    "no_new_rental": true,
+    "original_source_revision": "c66a95a4e7f488c8e82a282c437ca5c1680d1697",
+    "new_source_revision": "8bc9c14b9c076b5e045e38e5a23c14926795f091",
+    "at": "2026-10-01T13:07:52.824Z",
+    "reason": "User requested one continuous 60-minute learning run and continuation of previous validation",
+    "original_source_archive": {
+      "sha256": "529e50657350b081f7f8556c8f5381e6c43b90b5c7930a4efef626cbbba404c7",
+      "bytes": 204482560
+    },
+    "original_rental_start": "2026-10-01T12:53:52.020Z",
+    "requested_capability_minutes": 60,
+    "requested_following_validation_preserved": true,
+    "record": "retarget.json"
+  },
+  "source_archive": {
+    "sha256": "78c90934cc4d6519482a660c92bfe89d255b5e431845f8a19f334d2404a65ba8",
+    "bytes": 204492800,
+    "committed": false,
+    "independently_rehashed": true
+  },
+  "results_archive": {
+    "sha256": "ca813cd3c2d1cbf038030d9805fa61855082259b2c177c5a949fec8232b6cb14",
+    "bytes": 95309,
+    "committed": false,
+    "verified_at": "2026-10-01T13:19:16.985Z",
+    "independently_rehashed": true
+  },
+  "device": {
+    "gpu": "NVIDIA A40",
+    "data_center": "EU-SE-1",
+    "gpu_hourly_quote_usd": 0.49,
+    "compute_capability": "8.6",
+    "reported_memory_mib": 46068,
+    "driver": "580.159.04",
+    "vulkan_icd": {
+      "version": 1,
+      "requested": "glx",
+      "backend": "glx",
+      "source_path": "/etc/vulkan/icd.d/nvidia_icd.json",
+      "source_sha256": "7bdb6f27d35b66fc848df6f94b8773bba30ea3a7f06f114100d14154a235a34b",
+      "source_library_path": "libGLX_nvidia.so.0",
+      "selected_path": "/workspace/results/nvidia-selected.json",
+      "selected_sha256": "7bdb6f27d35b66fc848df6f94b8773bba30ea3a7f06f114100d14154a235a34b",
+      "selected_library_path": "libGLX_nvidia.so.0",
+      "file_format_version": "1.0.1",
+      "api_version": "1.4.312",
+      "original_copy_path": "/workspace/results/nvidia-icd.json",
+      "dependency_library_resolution": "ldconfig",
+      "dependency_library_path": "/usr/lib/x86_64-linux-gnu/libGLX_nvidia.so.580.159.04",
+      "dependency_library_sha256": "749270adfeb1ef77c1de8cb003043b342050e07ed529befeea5487d093b1fd58",
+      "VK_DRIVER_FILES": "/workspace/results/nvidia-selected.json",
+      "VK_ICD_FILENAMES": null
+    }
+  },
+  "baseline": {
+    "version": 1,
+    "original": {
+      "revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+      "tree": "dc3fa2f6f40b499663ab3fe11a2ab32e4d29a813"
+    },
+    "overlay": {
+      "version": 1,
+      "id": "worker-join-v1",
+      "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+      "original_tree": "dc3fa2f6f40b499663ab3fe11a2ab32e4d29a813",
+      "modified_tree": "351b6d59b2f3bcef1e374a2cba25fa05d7b161ab",
+      "patch_sha256": "ae9ae3f0479a73312bd0d56ee1798cef15bb7ac9d1b1a6594f94b04264af2988",
+      "files": [
+        {
+          "path": "training/workers.hpp",
+          "before_sha256": "2626881c7cc25a482fc16ede72a918f7e2b6530380ea366f3ae11ce81ad8ed92",
+          "after_sha256": "3857aff573143bb377aed5361fcec34fe82007b89bc98b50edd6f6d34773adb5"
+        },
+        {
+          "path": "training/worker_retirement.hpp",
+          "before_sha256": null,
+          "after_sha256": "8669dc640830061a960dbbb27536b8c3954f02ef3747accfd600d9741eb08174"
+        },
+        {
+          "path": "src/neural/teardown_trace.hpp",
+          "before_sha256": null,
+          "after_sha256": "fd2e3f81e015ca10fa7c4268c82a3ab76b5c103fd1be13310ac4d5065a9199f0"
+        }
+      ]
+    },
+    "effective_tree": "351b6d59b2f3bcef1e374a2cba25fa05d7b161ab",
+    "label": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c + join-retirement overlay worker-join-v1",
+    "binary": {
+      "path": "/workspace/baseline/build/neural/blitz-neural-placement-prepare",
+      "sha256": "41326b592775eb9642cdcb2a8e64ef27eeaea7cd90699484d6d1e432332f7d23"
+    }
+  },
+  "validation": {
+    "setup_build_complete": true,
+    "baseline_built": true,
+    "current_native_build_complete": true,
+    "debugger_preflight": {
+      "complete": true,
+      "training_started": false,
+      "gpu_started": false,
+      "binary": "build/neural/blitz-neural-placement-prepare",
+      "debugger_command": "gdb",
+      "started": 1790860600321,
+      "deadline": 1790860610320,
+      "process": {
+        "code": 0,
+        "signal": null,
+        "timed_out": true,
+        "cancelled": false,
+        "success": false,
+        "diagnostic": {
+          "attempted": true,
+          "captured": true,
+          "pid": 3178,
+          "command": "gdb",
+          "output": "/workspace/results/teacher-optimization/debugger-preflight/threads.log",
+          "maximum_ms": 5000,
+          "timed_out": false,
+          "cancelled": false,
+          "code": 0,
+          "signal": null,
+          "output_sha256": "bf3e02370076fee6111e563b8e903357ea89fa303af81107f885802952f9c819",
+          "output_bytes": 492,
+          "ptrace_denied": false,
+          "threads": 1,
+          "frames": 3
+        }
+      },
+      "target_ready": true,
+      "attach_permission_enabled": true,
+      "finished": 1790860601743
+    },
+    "teardown_stress": {
+      "binary": "build/neural/blitz-neural-vulkan-tests",
+      "binary_sha256": "9f16b4fc2cac059d57388a95b51da92feec91b0b5e6c7ddeb034292d22d4d716",
+      "retirement_mode": "join",
+      "fixture_arguments": ["--teardown-join"],
+      "teardown_trace_by_run": [true, false, false, true],
+      "requested_runs": 4,
+      "rounds_per_run": 12,
+      "requested_rounds": 48,
+      "completed_runs": 4,
+      "completed_full_run_rounds": 48,
+      "runs": [
+        {
+          "name": "teardown-stress-1",
+          "command": "build/neural/blitz-neural-vulkan-tests",
+          "args": ["--teardown-join"],
+          "teardown_trace": true,
+          "debugger_attach_requested": true,
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "completed_rounds": 12,
+          "maximum_peak_bytes": 444721094
+        },
+        {
+          "name": "teardown-stress-2",
+          "command": "build/neural/blitz-neural-vulkan-tests",
+          "args": ["--teardown-join"],
+          "teardown_trace": false,
+          "debugger_attach_requested": true,
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "completed_rounds": 12,
+          "maximum_peak_bytes": 444388166
+        },
+        {
+          "name": "teardown-stress-3",
+          "command": "build/neural/blitz-neural-vulkan-tests",
+          "args": ["--teardown-join"],
+          "teardown_trace": false,
+          "debugger_attach_requested": true,
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "completed_rounds": 12,
+          "maximum_peak_bytes": 444721094
+        },
+        {
+          "name": "teardown-stress-4",
+          "command": "build/neural/blitz-neural-vulkan-tests",
+          "args": ["--teardown-join"],
+          "teardown_trace": true,
+          "debugger_attach_requested": true,
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "completed_rounds": 12,
+          "maximum_peak_bytes": 444351174
+        }
+      ],
+      "interpretation": "All four join-retirement fixture processes and their 48 rounds completed normally, including two untraced runs. This validates this owned-worker fixture on the remote driver; it does not establish general caller-owned public-thread retirement or a performance improvement."
+    },
+    "remote_ctest": {
+      "passed": 47,
+      "failed": 2,
+      "total": 49,
+      "skipped": 0,
+      "seconds": 87.16,
+      "cases": [
+        {
+          "name": "neural-worker-retirement-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-teacher-cancellation-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-teacher-strategy-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-chain-integration-contracts",
+          "passed": true
+        },
+        {
+          "name": "shared-vertex-contracts",
+          "passed": true
+        },
+        {
+          "name": "wedge-contracts",
+          "passed": true
+        },
+        {
+          "name": "density-contracts",
+          "passed": true
+        },
+        {
+          "name": "appearance-contracts",
+          "passed": true
+        },
+        {
+          "name": "chain-graph-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-reference-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-vertex-storage-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-rollout-outcome-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-compact-storage-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-vulkan-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-audit-replay-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-pilot-selection-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-runner-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-cloud-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-action-runner-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-refactor-runner-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-corpus-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-pipeline-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-teacher-profile-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-native-stack-contracts",
+          "passed": false
+        },
+        {
+          "name": "neural-width-quality-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-teacher-optimization-contracts",
+          "passed": false
+        },
+        {
+          "name": "neural-teacher-capability-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-baseline-overlay-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-cli-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-action-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-predicate-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-action-gpu-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-cuda-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-libtorch-cuda-contract",
+          "passed": true
+        },
+        {
+          "name": "neural-action-libtorch-contract",
+          "passed": true
+        },
+        {
+          "name": "neural-device-update-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-resident-cycle-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-schema-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-checkpoint-failure-contracts",
+          "passed": true
+        },
+        {
+          "name": "neural-checkpoint-cancellation",
+          "passed": true
+        },
+        {
+          "name": "coverage-cache-contracts",
+          "passed": true
+        },
+        {
+          "name": "hybrid-contracts",
+          "passed": true
+        },
+        {
+          "name": "vegetation-contracts",
+          "passed": true
+        },
+        {
+          "name": "contracts",
+          "passed": true
+        },
+        {
+          "name": "precision-contracts",
+          "passed": true
+        },
+        {
+          "name": "render-cost-contracts",
+          "passed": true
+        },
+        {
+          "name": "c-abi",
+          "passed": true
+        },
+        {
+          "name": "io-contracts",
+          "passed": true
+        }
+      ],
+      "failures": [
+        {
+          "name": "neural-native-stack-contracts",
+          "subtest": "host gdb captures native pthread stacks, preserves attach permission across exec, and reports denial",
+          "observed_assertion": "false !== true",
+          "source_location": "tests/neural_native_stack.mjs:253",
+          "diagnosis": "Follow-up investigation; this archive preserves the failed frozen test, not a later corrected result."
+        },
+        {
+          "name": "neural-teacher-optimization-contracts",
+          "subtest": "the verified capability hour and diagnostics survive a later negative strategy comparison",
+          "observed_assertion": "0 !== 2",
+          "source_location": "tests/neural_teacher_optimization.mjs:983",
+          "diagnosis": "Follow-up investigation; this mocked orchestration test did not perform the live training hour."
+        }
+      ]
+    },
+    "standalone_compute_sanitizer_runs": 0,
+    "standalone_vulkan_validation_runs": 0,
+    "teacher_comparison_processes": 0,
+    "capability_quality_comparisons": 0,
+    "stop_reason": "Error: remote engineering contracts incomplete",
+    "debugger_preflight_note": "This deliberately timed probe captured one thread and three frames, then exited cleanly; its complete=true is separate from the later failed native-stack CTest."
+  },
+  "cleanup": {
+    "verified_collection_before_termination": true,
+    "compute_terminated": true,
+    "container_storage_released": true,
+    "ephemeral_storage_lost": false,
+    "provider_checked_at": "2026-10-01T13:20:59.846Z",
+    "pods": 0,
+    "network_volumes": 0,
+    "evidence": "provider-cleanup.json"
+  },
+  "cost": {
+    "authorization_id": "teacher-optimization-2026-10-01",
+    "grant_cap_at_launch_usd": 3,
+    "started_at": "2026-10-01T12:53:52.020Z",
+    "terminated_at": "2026-10-01T13:19:18.787Z",
+    "elapsed_seconds": 1526.767,
+    "retarget_did_not_reset_start": true,
+    "conservative_hourly_gpu_cap_usd": 0.55,
+    "hourly_storage_allowance_usd": 0.03,
+    "conservative_assumed_usd": 0.2459791277777778,
+    "rounded_up_assumed_usd": 0.246,
+    "prior_assumed_usd": 0.3179503611111112,
+    "cumulative_assumed_usd": 0.563929488888889,
+    "actual_provider_bill": false,
+    "retarget_maximum_total_reservation_usd": 2.860617027777778
+  },
+  "next_gate": "Correct and validate the two failed engineering tests, then rerun the requested continuous learning hour and remaining validation within the separately authorized grant. Preserve the failed attempt rather than replacing its result."
+}

@@ -231,3 +231,16 @@ The remaining grant permits bounded remote validation of the owned-worker fix.
 Complete representative teacher comparison, paired learning and uncensored full
 development quality are still required. The next recipe explicitly keeps
 `exhaustive`; long training remains disabled while those gates are unresolved.
+
+The [third remote attempt](evidence/teacher-optimization/remote-attempt-03/README.md)
+retargeted the same A40 rental to frozen source `8bc9c14` for the requested hour
+and continuation of validation. All 48 owned-worker join fixture rounds completed,
+including two untraced processes. CTest passed 47/49: all native cases passed, but
+the native-stack JavaScript test and mocked optimization-continuation test failed.
+The engineering gate stopped the job before the capability hour, teacher
+comparisons or quality evaluation; later standalone sanitizer stages did not run.
+This provides remote fixture evidence, without a learning, performance or quality
+result. The verified archive and retarget history are retained, and provider
+readback at 13:20:59 UTC confirmed zero Pods and volumes. Full-rental conservative
+cost adds $0.2459791278, bringing the three attempts to $0.5639294889. Correcting
+the failed tests and retrying the requested work remain pending.

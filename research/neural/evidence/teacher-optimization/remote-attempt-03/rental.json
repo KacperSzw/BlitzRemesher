@@ -1,0 +1,70 @@
+{
+  "name": "blitz-5c3ba49c-8029-4cc9-ab1c-496a249204a1",
+  "quote": {
+    "gpu": "NVIDIA A40",
+    "gpu_hourly_usd": 0.49,
+    "data_center": "EU-SE-1",
+    "quoted_at": "2026-10-01T12:53:51.681Z"
+  },
+  "deployment": {
+    "id": "teacher-optimization-a40-hour",
+    "gpu": "NVIDIA A40",
+    "catalog_vram_gb": 48,
+    "device_memory_mib": 45000,
+    "compute_capability": "8.6",
+    "cuda_architecture": 86,
+    "minimum_driver": [
+      575,
+      51,
+      3
+    ],
+    "minimum_cuda": "12.9",
+    "host_ram_gb": 24,
+    "vcpus": 6,
+    "gpu_hourly_usd_cap": 0.55,
+    "container_disk_gb": 50,
+    "network_volume_gb": 20,
+    "setup_minutes": 30,
+    "training_minutes": 194,
+    "collection_minutes": 8,
+    "staged_rental_minutes": 150,
+    "staged_experiment_minutes": 110,
+    "graphics": true
+  },
+  "experiment": "teacher-optimization",
+  "storage_mode": "container",
+  "budget": {
+    "authorization": {
+      "id": "teacher-optimization-2026-10-01",
+      "cap_usd": 3
+    },
+    "cap_usd": 3,
+    "prior_assumed_usd": 0.3179503611111112,
+    "maximum_rental_usd": 2.242666666666667,
+    "reserve_usd": 0.3,
+    "maximum_total_usd": 2.860617027777778,
+    "minutes": 232
+  },
+  "revision": "8bc9c14b9c076b5e045e38e5a23c14926795f091",
+  "started_at": 1790859232020,
+  "setup_deadline_ms": 1790861032020,
+  "training_minutes": 194,
+  "training_deadline_ms": 1790872240300,
+  "deadline_ms": 1790872720300,
+  "phase": "complete",
+  "pod_requested": true,
+  "pod_requested_at": 1790859233117,
+  "pod_id": "d0dlcpql2tk778",
+  "retargeted_at": 1790860072824,
+  "retarget_reason": "User requested one continuous 60-minute learning run and continuation of previous validation",
+  "uploaded": true,
+  "job_requested": true,
+  "setup_complete": true,
+  "validation_started_at": 1790860600300,
+  "compute_terminated": true,
+  "terminated_at": 1790860758787,
+  "container_storage_released": true,
+  "container_storage_preserved": false,
+  "results_verified": true,
+  "ephemeral_storage_lost": false
+}

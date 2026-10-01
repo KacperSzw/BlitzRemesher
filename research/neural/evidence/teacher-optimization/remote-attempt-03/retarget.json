@@ -1,0 +1,94 @@
+{
+  "at": 1790860072824,
+  "reason": "User requested one continuous 60-minute learning run and continuation of previous validation",
+  "original": {
+    "revision": "c66a95a4e7f488c8e82a282c437ca5c1680d1697",
+    "branch": "main",
+    "deployment": {
+      "id": "teacher-optimization-a40",
+      "gpu": "NVIDIA A40",
+      "catalog_vram_gb": 48,
+      "device_memory_mib": 45000,
+      "compute_capability": "8.6",
+      "cuda_architecture": 86,
+      "minimum_driver": [
+        575,
+        51,
+        3
+      ],
+      "minimum_cuda": "12.9",
+      "host_ram_gb": 24,
+      "vcpus": 6,
+      "gpu_hourly_usd_cap": 0.55,
+      "container_disk_gb": 50,
+      "network_volume_gb": 20,
+      "setup_minutes": 20,
+      "training_minutes": 112,
+      "collection_minutes": 8,
+      "staged_rental_minutes": 150,
+      "staged_experiment_minutes": 110,
+      "graphics": true
+    },
+    "storage_mode": "container",
+    "experiment": "teacher-optimization",
+    "archive_sha256": "529e50657350b081f7f8556c8f5381e6c43b90b5c7930a4efef626cbbba404c7",
+    "archive_bytes": 204482560,
+    "files": 30
+  },
+  "prepared": {
+    "revision": "8bc9c14b9c076b5e045e38e5a23c14926795f091",
+    "branch": "main",
+    "deployment": {
+      "id": "teacher-optimization-a40-hour",
+      "gpu": "NVIDIA A40",
+      "catalog_vram_gb": 48,
+      "device_memory_mib": 45000,
+      "compute_capability": "8.6",
+      "cuda_architecture": 86,
+      "minimum_driver": [
+        575,
+        51,
+        3
+      ],
+      "minimum_cuda": "12.9",
+      "host_ram_gb": 24,
+      "vcpus": 6,
+      "gpu_hourly_usd_cap": 0.55,
+      "container_disk_gb": 50,
+      "network_volume_gb": 20,
+      "setup_minutes": 30,
+      "training_minutes": 194,
+      "collection_minutes": 8,
+      "staged_rental_minutes": 150,
+      "staged_experiment_minutes": 110,
+      "graphics": true
+    },
+    "storage_mode": "container",
+    "experiment": "teacher-optimization",
+    "archive_sha256": "78c90934cc4d6519482a660c92bfe89d255b5e431845f8a19f334d2404a65ba8",
+    "archive_bytes": 204492800,
+    "files": 30
+  },
+  "budget": {
+    "authorization": {
+      "id": "teacher-optimization-2026-10-01",
+      "cap_usd": 3
+    },
+    "cap_usd": 3,
+    "prior_assumed_usd": 0.3179503611111112,
+    "maximum_rental_usd": 2.242666666666667,
+    "reserve_usd": 0.3,
+    "maximum_total_usd": 2.860617027777778,
+    "minutes": 232
+  },
+  "deadlines": {
+    "started_at": 1790859232020,
+    "setup_deadline_ms": 1790861032020,
+    "training_minutes": 194,
+    "training_deadline_ms": 1790872672020,
+    "deadline_ms": 1790873152020
+  },
+  "pod_id": "d0dlcpql2tk778",
+  "original_started_at": 1790859232020,
+  "no_new_rental": true
+}

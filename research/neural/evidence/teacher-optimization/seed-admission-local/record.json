@@ -1,0 +1,307 @@
+{
+  "version": 1,
+  "kind": "seed admission correctness regression and bounded local training soak",
+  "source_revision": "ecfc478b3478aafa7477efdd8e423d64e12eae62",
+  "recorded_at": "2026-10-01T14:06:10.258Z",
+  "quality_proven": false,
+  "score": null,
+  "performance_claim": false,
+  "source_sha256": {
+    "training/placement_teacher.hpp": "e526c29e1bef118771f5374bc0867df4fe33a64eb0812e27ee3d8be119919492",
+    "training/teacher_seed.hpp": "ed4e1ba3b418a372d3ef0d9748c6c92519ae007abe236cb3d048332ff4235b9a",
+    "tests/neural_teacher_seed.cpp": "0bc059861ca301652f2a6f38251fe138679f52c0d957773f4e9909bb82f24e2d"
+  },
+  "cpu": [
+    {
+      "name": "cpu",
+      "compiler": "/nix/store/x5jdywjy4pa79bzwj82ippzjwpawrazk-gcc-wrapper-14.4.0/bin/g++",
+      "args": [
+        "-std=c++20",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I.",
+        "-Iinclude",
+        "tests/neural_teacher_seed.cpp",
+        "-o",
+        "/tmp/blitz-teacher-seed-evidence-cpu"
+      ],
+      "build_exit": 0,
+      "run_exit": 0,
+      "binary_sha256": "3eb14859b90842eac114ef869245f1627f89f1f6ee2351bd506c1348562eac18"
+    },
+    {
+      "name": "asan-ubsan",
+      "compiler": "/nix/store/x5jdywjy4pa79bzwj82ippzjwpawrazk-gcc-wrapper-14.4.0/bin/g++",
+      "args": [
+        "-std=c++20",
+        "-g",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-I.",
+        "-Iinclude",
+        "tests/neural_teacher_seed.cpp",
+        "-o",
+        "/tmp/blitz-teacher-seed-evidence-asan-ubsan"
+      ],
+      "build_exit": 0,
+      "run_exit": 0,
+      "binary_sha256": "60ea0245facbe9874c24e48bb716bd82b10fcb70c23b0b213f6cc531c4525cea"
+    }
+  ],
+  "reproduction": {
+    "before": {
+      "complete": false,
+      "status": "final_audit_failed",
+      "source_triangles": 27659,
+      "teacher_triangles": 6914,
+      "states": 1,
+      "accepted": 0,
+      "seed": {
+        "accepted": true,
+        "audit": {
+          "changed_area": 0.07885031158590869,
+          "complete": true,
+          "coverage": 2,
+          "coverage_upper": 2.7071077811865476,
+          "error": 2.7071077811865476,
+          "error_kind": "measured",
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "sampling": 4,
+          "views": 8,
+          "worst_view": 0
+        },
+        "destination": {
+          "changed_area": 0.07885031158590869,
+          "complete": true,
+          "coverage": 2,
+          "coverage_upper": 2.7071077811865476,
+          "error": 2.7071077811865476,
+          "error_kind": "measured",
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "sampling": 4,
+          "views": 8,
+          "worst_view": 0
+        },
+        "requested": {
+          "kind": "audited_simplifier",
+          "parent_sha256": "",
+          "target_retained": 0.25
+        },
+        "start_retained": 0.24997288405220724,
+        "triangles": 6914
+      },
+      "source_audit": {
+        "changed_area": 0.07885031158590869,
+        "complete": true,
+        "coverage": 2,
+        "coverage_upper": 2.7071077811865476,
+        "error": 2.7071077811865476,
+        "error_kind": "measured",
+        "normal_degrees": 0,
+        "passed": true,
+        "resource_limited": false,
+        "sampling": 4,
+        "views": 8,
+        "worst_view": 0
+      },
+      "adjacent_audit": {
+        "changed_area": 0.09071430925932031,
+        "complete": false,
+        "coverage": 2.019436802675439,
+        "coverage_upper": 2.372991193268713,
+        "error": 2.372991193268713,
+        "error_kind": "measured",
+        "normal_degrees": 0,
+        "passed": false,
+        "resource_limited": false,
+        "sampling": 8,
+        "views": 1,
+        "worst_view": 0
+      },
+      "binary_sha256": "6e7599b4e61eed588a8b0396319f03ce30f83f99f4c110e65173c90306b40db5",
+      "binary_identity_source": "runtime /proc/self/exe SHA stored in contract.json; old binary has since been rebuilt",
+      "normal_exit_code": 2,
+      "exit_evidence": "root controller reported exact local reproduction exited2"
+    },
+    "after": {
+      "complete": true,
+      "status": "complete",
+      "source_triangles": 27659,
+      "teacher_triangles": 27627,
+      "states": 16,
+      "accepted": 16,
+      "seed": {
+        "accepted": false,
+        "adjacent": {
+          "changed_area": 0.09071430925932031,
+          "complete": false,
+          "coverage": 2.019436802675439,
+          "coverage_upper": 2.372991193268713,
+          "error": 2.372991193268713,
+          "error_kind": "measured",
+          "normal_degrees": 0,
+          "passed": false,
+          "resource_limited": false,
+          "sampling": 8,
+          "views": 1,
+          "worst_view": 0
+        },
+        "audit": {
+          "changed_area": 0.07885031158590869,
+          "complete": true,
+          "coverage": 2,
+          "coverage_upper": 2.7071077811865476,
+          "error": 2.7071077811865476,
+          "error_kind": "measured",
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "sampling": 4,
+          "views": 8,
+          "worst_view": 0
+        },
+        "destination": {
+          "changed_area": 0.07885031158590869,
+          "complete": true,
+          "coverage": 2,
+          "coverage_upper": 2.7071077811865476,
+          "error": 2.7071077811865476,
+          "error_kind": "measured",
+          "normal_degrees": 0,
+          "passed": true,
+          "resource_limited": false,
+          "sampling": 4,
+          "views": 8,
+          "worst_view": 0
+        },
+        "requested": {
+          "kind": "audited_simplifier",
+          "parent_sha256": "",
+          "target_retained": 0.25
+        },
+        "start_retained": 1,
+        "triangles": 6914
+      },
+      "source_audit": {
+        "changed_area": 0.0002584647195657793,
+        "complete": true,
+        "coverage": 0.25,
+        "coverage_upper": 0.9571077811865476,
+        "error": 0.9571077811865476,
+        "error_kind": "measured",
+        "normal_degrees": 0,
+        "passed": true,
+        "resource_limited": false,
+        "sampling": 4,
+        "views": 8,
+        "worst_view": 1
+      },
+      "adjacent_audit": {
+        "changed_area": 0.0002584647195657793,
+        "complete": true,
+        "coverage": 0.25,
+        "coverage_upper": 0.9571077811865476,
+        "error": 0.9571077811865476,
+        "error_kind": "measured",
+        "normal_degrees": 0,
+        "passed": true,
+        "resource_limited": false,
+        "sampling": 4,
+        "views": 8,
+        "worst_view": 1
+      },
+      "binary_sha256": "fb13c12fae9bb7ddc56e88ca5aebb659ed75ee8032956057fc79d1f77c8c7298",
+      "normal_exit_code": 0,
+      "exit_evidence": "root controller reported normal completion"
+    },
+    "wave88_sha256": "ae8b52f24646b5d391a9bfacc8a9cb3c19f22520f31e92464a392b642f541fa6",
+    "contract_changes": [
+      "binary_sha256",
+      "packing_admission_limit",
+      "seed_admission_version"
+    ],
+    "command_provenance": "Controller-recorded exact tool invocations, not subprocess-emitted command logs; controller corrected a metadata-copy-only --kill-before typo against the original --kill-after invocation before archival."
+  },
+  "soak": {
+    "complete": true,
+    "status": "duration_complete",
+    "normal_exit_code": 0,
+    "exit_evidence": "root tool70943 confirmed normal native process exit",
+    "learning_elapsed_ms": 300000,
+    "seconds": 301.36623862,
+    "updates_this_invocation": 24832,
+    "fresh_states_this_invocation": 3200,
+    "requested_condition_states": 3104,
+    "curriculum_coverage_complete": true,
+    "failed_conditions_count": 0,
+    "empty_conditions_count": 0,
+    "unavailable_conditions_count": 0,
+    "checkpoint": "checkpoints/step-24832",
+    "checkpoint_sha256": "ed631a82a3c37fd75017900994b078a3ae0807f749b64a76b62d16bb1bf43071",
+    "model_sha256": "5b8d7409bc5610fda352ee56ec970e2b93dc3a0233f8e4834d292bd61511131a",
+    "verification": {
+      "fp64": {
+        "finite": true,
+        "max_abs": 0.0000025228074829186653,
+        "max_relative": 0.00004424525703440585,
+        "rms": 2.9500208306568255e-7,
+        "same_shape": true,
+        "worst_index": 12
+      },
+      "native": {
+        "finite": true,
+        "max_abs": 0,
+        "max_relative": 0,
+        "rms": 0,
+        "same_shape": true,
+        "worst_index": 0
+      },
+      "native_fp64": {
+        "finite": true,
+        "max_abs": 0.0000025228074829186653,
+        "max_relative": 0.00004424525703440585,
+        "rms": 2.9500208306568255e-7,
+        "same_shape": true,
+        "worst_index": 12
+      },
+      "passed": true,
+      "threshold": 0.0002
+    },
+    "checkpoint_timing": {
+      "bytes": 1242646,
+      "local_wait_seconds": 0,
+      "publish_seconds": 0.18053453200000003,
+      "published": 5,
+      "serialize_seconds": 0.005825932,
+      "snapshot_seconds": 0.003408198,
+      "verify_seconds": 0.014036275,
+      "wait_seconds": 0.044101532
+    }
+  },
+  "negative_control": {
+    "gpu_memory_mib": 768,
+    "complete": false,
+    "error": "CUDA workspace exceeds configured memory cap",
+    "training_phases": 7
+  },
+  "limitations": [
+    "The local workstation is shared; no isolated speedup or quality score is claimed.",
+    "The 1024MiB soak ran five minutes, not the requested remote hour.",
+    "Fresh states include predecessor states; requested_condition_states excludes them.",
+    "Before/after use identical recorded policy payload, geometry and audit settings; native binaries differ by the admission fix.",
+    "The previous768MiB local cycle failed explicitly at its configured CUDA workspace cap; it is retained and is not counted as a successful soak."
+  ],
+  "full_ctest": {
+    "tests": 51,
+    "passed": 51,
+    "seconds": 63.92,
+    "source": "root-coordinated headless GPU/training CTest; archived log and JUnit",
+    "gpu_work_by_archiving_agent": false
+  }
+}

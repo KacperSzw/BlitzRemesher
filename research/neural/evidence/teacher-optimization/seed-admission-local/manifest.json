@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "kind": "seed admission correctness regression and bounded local training soak",
+  "quality_proven": false,
+  "score": null,
+  "files": [
+    {
+      "file": "tests/cpu.log.gz",
+      "source": "/tmp/blitz-teacher-seed-cpu.log",
+      "uncompressed_sha256": "ffe6aa10d49984d6db328d84d142bab960dca60d6b0145647f82197d868e71fc",
+      "sha256": "a5773d9afeaf34f4f8179bc5d0072bf85864fde65dc93738b1daa9d1fcbc7152",
+      "bytes": 235
+    },
+    {
+      "file": "tests/asan-ubsan.log.gz",
+      "source": "/tmp/blitz-teacher-seed-asan-ubsan.log",
+      "uncompressed_sha256": "b4645da0d991463064e4bb66becf819b8b938da5db928fbed3d73ec9c9c68e1c",
+      "sha256": "38cf1569bfc017c7c91b3cf83efbc2cfcf863299146d847be4ea41fa2d730f54",
+      "bytes": 264
+    },
+    {
+      "file": "before/contract.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/contract.json",
+      "uncompressed_sha256": "6ee3b5ddcbba69324d50a2bda8fbdcf2b736752388f730e56d34204c124b45f8",
+      "sha256": "77b419c8e5a2c92a64f703bbd144e5085fb238c172b0ed9c2056f563fb5eeca5",
+      "bytes": 1372
+    },
+    {
+      "file": "before/index.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/index.json",
+      "uncompressed_sha256": "48f32b49d249345f90e05633c7f9ca4e479f24f32cae266bb746338748cfb9c2",
+      "sha256": "eb8ccb0ccde266de7ec8bbe7a7d6fad0b0ba66801b21b08653d0b4232211f5a2",
+      "bytes": 1404
+    },
+    {
+      "file": "before/seed.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/seed.json",
+      "uncompressed_sha256": "560b3d584fb5cd8e5996eda60faf73eb4d2dc2b57cf35b9bedde38126cc63108",
+      "sha256": "e9b0f7c3f459a7ae491d04fbbc3fba0610a18bcf82cbac4315c4c55f2711fc99",
+      "bytes": 309
+    },
+    {
+      "file": "before/packing.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/packing.json",
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275
+    },
+    {
+      "file": "before/reuse.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/reuse.json",
+      "uncompressed_sha256": "d33988ad6e4dd38f2d054b88419f1e54c6a051fb57e3a473e0262f69469316c2",
+      "sha256": "865a94667fe463d6e7a5513dff313d9952ca5e5a5dde4b569123dbdcfa6e5c5b",
+      "bytes": 115
+    },
+    {
+      "file": "before/trajectory.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/trajectory.json",
+      "uncompressed_sha256": "7ed96fa2741f7234514ee4cd5312e966593aff4b5d8a9cdaf5343464a147db8f",
+      "sha256": "5d0b5e0c6fc6ca6a4c444201e3b2be0a50d1e780677924c84c8b928265dabc86",
+      "bytes": 458
+    },
+    {
+      "file": "before/actions.bin.gz",
+      "source": "runs/neural/teacher-seed-adjacent-before/actions.bin",
+      "uncompressed_sha256": "9e714f0a7702a34a633a241be19e0875de0a55750088f43645a5537db38b5530",
+      "sha256": "1477dd07b6fe5e0bee7f5ff3d96e9fdb7cce6fcc092dbacdc80f7efd41fadc05",
+      "bytes": 462
+    },
+    {
+      "file": "before/process.log.gz",
+      "source": "/tmp/blitz-seed-adjacent-before.log",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20
+    },
+    {
+      "file": "after/contract.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/contract.json",
+      "uncompressed_sha256": "b2c63541c6ae87876e145694e25236951c5387d2214c40c357bf89784945f15b",
+      "sha256": "ad3b7b13b27d64816755412bc5abdb7e239f47656394c05875d2eeb3490d8d19",
+      "bytes": 1390
+    },
+    {
+      "file": "after/index.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/index.json",
+      "uncompressed_sha256": "c53838ab52882888b82ad1f4d8ee980bd8f41c55d05e476cd544b979ef3a0b1f",
+      "sha256": "db8d9b7c520885d13975ba8013866a681244845fa53aebb5b35b9d9b5f906608",
+      "bytes": 1469
+    },
+    {
+      "file": "after/seed.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/seed.json",
+      "uncompressed_sha256": "221bc331918bd83fbca9c7434ad1cdd4c27ce8083e5954c66d1d53d1208ae86d",
+      "sha256": "e64f8c1614fd79e169f58a4cfa427ea12244838a1abfed9c964ec7fa4f96cc97",
+      "bytes": 363
+    },
+    {
+      "file": "after/packing.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/packing.json",
+      "uncompressed_sha256": "142f501ba5e1a7952799a7f94c115c8d31f6b5da791395feb801ba9f4e72a823",
+      "sha256": "4395133b097c77d2a57f3088bbbc5f108ab4555f853b8ac93badcfa00902e24e",
+      "bytes": 275
+    },
+    {
+      "file": "after/reuse.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/reuse.json",
+      "uncompressed_sha256": "4c456b5bb0693ab739f54c16b3d426f0c6cccb2e8f204e401291a44cb7307a7a",
+      "sha256": "851e95f8e7b9cc7a803fa383a3e05553fea7482315455a6905980d18bdd7c229",
+      "bytes": 120
+    },
+    {
+      "file": "after/trajectory.json.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/trajectory.json",
+      "uncompressed_sha256": "cc4e7223b2a578a523cea1527244b6705b1ced31d4c477980d2149026d44c1fa",
+      "sha256": "fa05bd417eefddda536a85f35e27b8da0bd2c4c380c7b2918a470255894c4246",
+      "bytes": 3245
+    },
+    {
+      "file": "after/actions.bin.gz",
+      "source": "runs/neural/teacher-seed-adjacent-after/actions.bin",
+      "uncompressed_sha256": "44fe435053c6e697bb57e56c52fbd7613b8de9fedb65533cbca4416e005f6237",
+      "sha256": "4395b518ff052b89e86be669dfdbd98dbe52d4b425a384599d1c52459761d499",
+      "bytes": 2710
+    },
+    {
+      "file": "after/process.log.gz",
+      "source": "/tmp/blitz-seed-adjacent-after.log",
+      "uncompressed_sha256": "b048aae021f1c07db19134b42ccab09c543c17d131e765f7b87a4b1d73d6d77e",
+      "sha256": "9bb0935f84088a172f00e01f9345d5544827d142e4fe2fd25ff4dde65856dee2",
+      "bytes": 300
+    },
+    {
+      "file": "soak-768mib-incomplete/contract.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-01/contract.json",
+      "uncompressed_sha256": "8477de8d0295fd22b90ea99e252d8e4aedadb67ef9a372445214e90a034fedd8",
+      "sha256": "fd5f7bf87dcd145f8a6459ad56f98e9bafaed7654f5041f49a62b22d5d33186e",
+      "bytes": 904
+    },
+    {
+      "file": "soak-768mib-incomplete/failure.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-01/failure.json",
+      "uncompressed_sha256": "2d1167f117e95bcda67f4bfa6b08727688f5cd6ab674c7172eeb33985e5ba0f9",
+      "sha256": "52ab630f0fb4054ce8b067186161f6c0dfefd32e18921ad05d61e66edde34c69",
+      "bytes": 98
+    },
+    {
+      "file": "soak-768mib-incomplete/history.jsonl.gz",
+      "source": "runs/neural/seed-admission-cycle-local-01/history.jsonl",
+      "uncompressed_sha256": "7c8465f14001e88f14ecb0aa49e4412e401a4a7513ac04097d2b54b896c6ed1e",
+      "sha256": "2bb672e789fb4a90626f8989130afa408271451b4512f106b845d39d25f709bc",
+      "bytes": 4942
+    },
+    {
+      "file": "soak-768mib-incomplete/process.log.gz",
+      "source": "/tmp/blitz-seed-admission-cycle.log",
+      "uncompressed_sha256": "41a8b50952150006fbfec031b285570dfe3912a04590c8512ef03cff9a656ce3",
+      "sha256": "018e6384994a3f168a5308d09a1372affb48c79a7b56e9f729d4b922adc97409",
+      "bytes": 1668
+    },
+    {
+      "file": "soak-1024mib/contract.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/contract.json",
+      "uncompressed_sha256": "8677d615fe0735f135faf797c074ef9fd76c99faee91db21ba9d8e2143cc70a9",
+      "sha256": "a0f381dd71ff51561d7b1562d6a579f34a5d1b2b277ec29da4f32035ea938953",
+      "bytes": 903
+    },
+    {
+      "file": "soak-1024mib/report.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/report.json",
+      "uncompressed_sha256": "5ec44b2f92e981e7cc9e66c46fc29c3e40e6e8580202a8b389978f1e2695c471",
+      "sha256": "6d5d743d4661585c05cb15c965f7c60b0f6fb5d72cc957ab03d68e071f13ab3d",
+      "bytes": 107305
+    },
+    {
+      "file": "soak-1024mib/latest.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/latest.json",
+      "uncompressed_sha256": "55128c0e1abdf54ba64c2914acf2bdaa6647487a99638516e05b4234d0759db4",
+      "sha256": "7a4f6df913aa79ca240dceba581053d756d8cf0ed7d20751214efdbc6a3266cb",
+      "bytes": 1684
+    },
+    {
+      "file": "soak-1024mib/history.jsonl.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/history.jsonl",
+      "uncompressed_sha256": "cc1a9c3a2729d850214acc6b501dd99eae09abccdb6a1399233eb2d8ef4b98ea",
+      "sha256": "190e7c6bfa7b530f3b6fa107d5d738ae65d2ff1d7a149a4ed6cc4b6eec46c7a4",
+      "bytes": 97521
+    },
+    {
+      "file": "soak-1024mib/process.log.gz",
+      "source": "/tmp/blitz-seed-admission-cycle-02.log",
+      "uncompressed_sha256": "54024c55b840d11615cc94681961a71e9a4ee3be9c181cb211cd289080c60e4a",
+      "sha256": "51176246a2ef0d76fe4720942e84c99cca6450faa9466201c2587ed6518fd7a5",
+      "bytes": 37561
+    },
+    {
+      "file": "soak-1024mib/checkpoint/index.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/checkpoints/step-24832/index.json",
+      "uncompressed_sha256": "967ae283546e02dc7102159ccd52887cf288d7b8262b12309952a9127126b6b4",
+      "sha256": "585a30c2c50bac1c61f56f9de9c6251cf577338809d35b2128fba49cba3d0833",
+      "bytes": 403
+    },
+    {
+      "file": "soak-1024mib/checkpoint/verification.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/checkpoints/step-24832/verification.json",
+      "uncompressed_sha256": "932185e9635cee52ed16197be309979754aa6944ead8ffc82ca05c23021b9927",
+      "sha256": "58f3c0497d00e3cef90d6b29eaa578bd4c2a8a8084dbf057f7a691100c8ddbba",
+      "bytes": 205
+    },
+    {
+      "file": "wave-88.blzn.gz",
+      "source": "runs/neural/teacher-optimization-05/collected/results/teacher-optimization/capability-hour/waves/wave-88.blzn",
+      "uncompressed_sha256": "ae8b52f24646b5d391a9bfacc8a9cb3c19f22520f31e92464a392b642f541fa6",
+      "sha256": "3f0a3838905fc76b1fa1809986a213ecf535b5ff75b0b8e716df1c081f3fe5d2",
+      "bytes": 49906
+    },
+    {
+      "file": "invocations.json.gz",
+      "source": "runs/neural/seed-admission-invocations.json",
+      "uncompressed_sha256": "13ce6b81ccf5ff8638307a58b50cfa1835cfac262ba185489d1ff916b8612db4",
+      "sha256": "834cda63dfcd850fc4ea4a3819d1cb2031f29e2fd29c32faa602e123347916a4",
+      "bytes": 994
+    },
+    {
+      "file": "build.log.gz",
+      "source": "/tmp/blitz-seed-admission-build.log",
+      "uncompressed_sha256": "d018efc8f8823fcca90bca1322cbcb62421d139b5ec1d85cfa1e64b8e02918d9",
+      "sha256": "7ffd63487e73fa4355ea76277497c9796a6cb0596af3015f1ae6ea30a9da2b34",
+      "bytes": 1517
+    },
+    {
+      "file": "record.json",
+      "source": "derived from archived contracts, native reports, CPU commands and controller exit observations",
+      "sha256": "6f94dc2d84bd7667460d52b72946446e37041c7b758ac456e5fd14d10efe7870",
+      "bytes": 10013
+    },
+    {
+      "file": "ctest.log.gz",
+      "source": "/tmp/blitz-seed-admission-ctest.log",
+      "uncompressed_sha256": "8c70a3c1608fe164f030ae885bcc5e89a1d9d165d0f8100e9dc68111e4b89c7b",
+      "sha256": "65c17dd6a11cb3d9da982871e545a514a69f40dc7a911b86b36a3520a085ff7f",
+      "bytes": 1199
+    },
+    {
+      "file": "ctest.xml.gz",
+      "source": "/tmp/blitz-seed-admission-ctest.xml",
+      "uncompressed_sha256": "b97fd0dc9310edc0be5eb4330a1f0267defeecf51349083cdbda3dac8a0993f3",
+      "sha256": "949fb08de840d001cb89d799610f97ad1db72408fe4785651d21342ba632dbc1",
+      "bytes": 6483
+    }
+  ]
+}

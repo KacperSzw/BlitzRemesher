@@ -366,10 +366,23 @@ template <class T> struct ImageOf {
     mutable Buffer<float> distance;
     SurfaceImage surfaces{};
     mutable Buffer<uint32_t> mask_bits;
+    uint32_t faces{};
 };
 using Image = ImageOf<AuditPixel>;
 // Exact owned mesh keys also cover mutable positions/normals. A topology-only
 // key is insufficient as soon as a proposal changes shading or placement.
+bool same_device_raster(DeviceMeshView a, DeviceMeshView b) {
+    return a.identity == b.identity && a.revision == b.revision && a.positions == b.positions &&
+           a.normals == b.normals && a.uv == b.uv && a.colors == b.colors &&
+           a.tangents == b.tangents && a.indices == b.indices && a.materials == b.materials &&
+           a.double_sided == b.double_sided && a.vertices == b.vertices && a.faces == b.faces &&
+           a.sided_count == b.sided_count && a.trial_status == b.trial_status &&
+           a.exact_position_bits == b.exact_position_bits &&
+           a.exact_position_bps == b.exact_position_bps &&
+           a.fixed_quantization == b.fixed_quantization &&
+           !std::memcmp(&a.quant_low, &b.quant_low, sizeof(Vec3)) &&
+           !std::memcmp(&a.quant_extent, &b.quant_extent, sizeof(Vec3));
+}
 class RasterMemo {
     using Key = std::tuple<float, float, float, double, double, uint32_t, uint16_t, uint16_t, bool,
                            Profile>;
@@ -378,11 +391,19 @@ class RasterMemo {
         uint8_t sampling;
         std::unique_ptr<Image> image;
     };
-    Key key_{};
+    struct Domain {
+        Key key{};
+        std::vector<Entry> entries;
+        size_t bytes{};
+        bool initialized{};
+    };
+    // Source audits alternate between predecessor and destination screens.
+    // Domains share one geometry snapshot and the original byte allowance.
+    std::array<Domain, 2> domains_;
+    uint8_t active_{}, domain_count_;
     Mesh mesh_;
     DeviceMeshView device_mesh_{};
     size_t limit_, bytes_{};
-    std::vector<Entry> entries_;
     bool enabled_{true};
     static Key key(const Bounds& b, const EvalSettings& e) {
         return {b.center.x,           b.center.y,
@@ -391,23 +412,49 @@ class RasterMemo {
                 e.views.orthographic, e.views.perspective,
                 e.force_two_sided,    e.profile};
     }
+    void clear_domain(uint8_t i) {
+        auto& domain = domains_[i];
+        bytes_ -= domain.bytes;
+        domain = {};
+    }
+    void configure_domain(const Bounds& b, const EvalSettings& e) {
+        auto next = key(b, e);
+        for (uint8_t i = 0; i < domain_count_; ++i)
+            if (domains_[i].initialized && domains_[i].key == next) {
+                active_ = i;
+                return;
+            }
+        if (domain_count_ == 2 && domains_[active_].initialized)
+            active_ ^= 1;
+        clear_domain(active_);
+        domains_[active_].key = next;
+        domains_[active_].initialized = true;
+    }
 
   public:
-    explicit RasterMemo(size_t limit) : limit_(limit) {}
+    explicit RasterMemo(size_t limit, bool two_domains = false)
+        : domain_count_(two_domains ? 2 : 1), limit_(limit) {}
     void clear() {
-        entries_.clear();
-        bytes_ = 0;
+        for (uint8_t i = 0; i < domain_count_; ++i)
+            clear_domain(i);
+    }
+    size_t limit() const {
+        return limit_;
+    }
+    void set_limit(size_t value) {
+        if (bytes_ > value)
+            clear();
+        limit_ = value;
     }
     void configure(MeshView m, const Bounds& b, const EvalSettings& e) {
-        auto next = key(b, e);
         try {
-            if (device_mesh_.identity || next != key_ || mesh_.positions.empty() ||
+            if (device_mesh_.identity || mesh_.positions.empty() ||
                 !same_mesh_data(m, mesh_.view())) {
                 clear();
                 mesh_ = copy_mesh(m);
-                key_ = next;
                 device_mesh_ = {};
             }
+            configure_domain(b, e);
             enabled_ = true;
         } catch (const std::bad_alloc&) {
             clear();
@@ -415,35 +462,25 @@ class RasterMemo {
         }
     }
     void configure(DeviceMeshView m, const Bounds& b, const EvalSettings& e) {
-        auto next = key(b, e);
         if (!m.identity)
             throw std::invalid_argument("device render cache requires owned mesh identity");
-        auto& old = device_mesh_;
-        if (next != key_ || old.identity != m.identity || old.revision != m.revision ||
-            old.positions != m.positions || old.exact_position_bits != m.exact_position_bits ||
-            old.exact_position_bps != m.exact_position_bps || old.normals != m.normals ||
-            old.colors != m.colors || old.indices != m.indices || old.materials != m.materials ||
-            old.double_sided != m.double_sided || old.vertices != m.vertices ||
-            old.faces != m.faces || old.trial_status != m.trial_status ||
-            old.sided_count != m.sided_count || old.fixed_quantization != m.fixed_quantization ||
-            std::memcmp(&old.quant_low, &m.quant_low, sizeof(Vec3)) ||
-            std::memcmp(&old.quant_extent, &m.quant_extent, sizeof(Vec3))) {
+        if (!same_device_raster(device_mesh_, m)) {
             clear();
             device_mesh_ = m;
-            key_ = next;
             mesh_ = {};
         }
+        configure_domain(b, e);
         enabled_ = true;
     }
     const Image* find(uint32_t view, uint8_t sampling) const {
         if (enabled_)
-            for (auto& entry : entries_)
+            for (auto& entry : domains_[active_].entries)
                 if (entry.view == view && entry.sampling == sampling)
                     return entry.image.get();
         return nullptr;
     }
     bool room(size_t bytes) const {
-        return enabled_ && bytes <= limit_ - bytes_ && entries_.size() < 4096;
+        return enabled_ && bytes <= limit_ - bytes_ && domains_[active_].entries.size() < 4096;
     }
     const Image* retain(uint32_t view, uint8_t sampling, Image&& image) {
         size_t bytes = image.pixels.n * sizeof(AuditPixel) + image.mask_bits.n * 4 +
@@ -451,23 +488,61 @@ class RasterMemo {
                        (image.cache_field ? size_t(image.size) * image.size * 4 : 0);
         if (image.surfaces.mask && !image.pixels.n && !image.mask_bits.n)
             return nullptr; // borrowed until next draw
-        if (!enabled_ || entries_.size() >= 4096 || bytes > limit_ - bytes_)
+        if (enabled_ && bytes <= limit_ && bytes > limit_ - bytes_ && domain_count_ == 2)
+            clear_domain(active_ ^ 1);
+        auto& domain = domains_[active_];
+        if (!room(bytes))
             return nullptr;
         // Reserve metadata before moving the only owned raster. Allocation
         // failure leaves the caller's scratch image usable.
         std::unique_ptr<Image> saved;
         try {
-            entries_.reserve(entries_.size() + 1);
+            domain.entries.reserve(domain.entries.size() + 1);
             saved = std::make_unique<Image>(std::move(image));
         } catch (const std::bad_alloc&) {
             return nullptr;
         }
         auto* result = saved.get();
-        entries_.push_back({view, sampling, std::move(saved)});
+        domain.entries.push_back({view, sampling, std::move(saved)});
+        domain.bytes += bytes;
         bytes_ += bytes;
         return result;
     }
 };
+// Trial views borrow mutable buffers. Keep their descriptors and owned masks only
+// across the queries in one non-mutating group, never across teacher trials.
+class CandidateRasters {
+    struct Lane {
+        DeviceMeshView mesh;
+        RasterMemo images;
+        Lane(DeviceMeshView mesh, size_t limit) : mesh(mesh), images(limit) {}
+    };
+    std::array<std::optional<Lane>, 8> lanes_;
+    bool enabled_{true};
+
+  public:
+    CandidateRasters(std::span<const DeviceMeshView> meshes, size_t limit) {
+        for (size_t i = 0; i < meshes.size(); ++i)
+            lanes_[i].emplace(meshes[i], limit / meshes.size());
+    }
+    void disable() {
+        enabled_ = false;
+        for (auto& lane : lanes_)
+            if (lane)
+                lane->images.clear();
+    }
+    RasterMemo* find(DeviceMeshView mesh, const Bounds& bounds, const EvalSettings& settings) {
+        if (!enabled_ || settings.profile != Profile::Coverage)
+            return nullptr;
+        for (auto& lane : lanes_)
+            if (lane && same_device_raster(lane->mesh, mesh)) {
+                lane->images.configure(mesh, bounds, settings);
+                return &lane->images;
+            }
+        return nullptr;
+    }
+};
+
 struct UploadedMesh {
     Buffer<Vec3> positions, normals;
     Buffer<ColorRGBA8> colors;
@@ -1095,6 +1170,7 @@ std::optional<Measurement> predicate_images(Device& device, const Image& x, cons
 struct RasterBackend {
     NeuralVertexStorage storage{}, reference_storage{};
     bool predicate{}, direct{}, mask_only{};
+    CandidateRasters* candidates{};
 #ifdef BLITZ_VULKAN
     VulkanRaster* hardware{};
 #else
@@ -1162,37 +1238,81 @@ measure_batch(Device& device, DeviceMeshView a, DeviceMeshView b, const Bounds& 
         for (size_t i = 1; i < count; ++i)
             x[i] = x[0];
     bool direct = backend.predicate && backend.direct;
-    outputs.clear();
-    y.reserve(count);
+    outputs.assign(count, {});
+    y.resize(count);
+    std::vector<const Image*> candidate_images(count);
+    std::vector<RasterMemo*> candidate_memos(count);
+    std::vector<RasterOutput> draws;
+    std::vector<DeviceMeshView> draw_meshes;
+    missing.clear();
+    indices.clear();
+    const size_t mask_bytes = ((size_t(n) + 31) / 32) * sizeof(uint32_t);
     for (size_t i = 0; i < count; ++i) {
-        y.push_back(Image{Buffer<AuditPixel>(device, direct || mask_only ? 0 : n),
-                          Buffer<Vec3>(device, (many ? candidates[i] : b).colors &&
-                                                       config.profile == Profile::Attributes
-                                                   ? (direct ? 1 : n)
-                                                   : 0),
-                          extent, false, true});
+        const auto mesh = many ? candidates[i] : b;
+        const auto view = first_view + (many ? 0 : uint32_t(i));
+        auto* memo = backend.candidates ? backend.candidates->find(mesh, bounds, config) : nullptr;
+        candidate_memos[i] = memo;
+        if (memo)
+            if (auto* cached = memo->find(view, ss)) {
+                candidate_images[i] = cached;
+                outputs[i].faces = cached->faces;
+                if (stats)
+                    ++stats->gpu_candidate_render_hits;
+                continue;
+            }
+        y[i] = Image{Buffer<AuditPixel>(device, direct || mask_only ? 0 : n),
+                     Buffer<Vec3>(device, mesh.colors && config.profile == Profile::Attributes
+                                              ? (direct ? 1 : n)
+                                              : 0),
+                     extent, false, !memo};
         if (mask_only && !direct)
-            y.back().mask_bits = Buffer<uint32_t>(device, (n + 31) / 32);
-        outputs.push_back({y.back().pixels.p, y.back().colors.p});
-        outputs.back().mask_bits = y.back().mask_bits.p;
+            y[i].mask_bits = Buffer<uint32_t>(device, (n + 31) / 32);
+        else if (mask_only && memo && memo->room(mask_bytes)) {
+            // Retaining a direct target is optional. A failed mask allocation
+            // keeps the original borrowed-target path and cannot reject a label.
+            try {
+                y[i].mask_bits = Buffer<uint32_t>(device, (n + 31) / 32);
+            } catch (const ResourceError& error) {
+                if (error.kind != NeuralResourceLimit::WorkspaceMemory &&
+                    error.kind != NeuralResourceLimit::DeviceMemory)
+                    throw;
+            }
+        }
+        draws.push_back({y[i].pixels.p, y[i].colors.p});
+        draws.back().mask_bits = y[i].mask_bits.p;
+        draw_meshes.push_back(mesh);
+        missing.push_back(cameras[i]);
+        indices.push_back(i);
     }
-    if (many)
-        backend.hardware->render_candidates(candidates, bounds, cameras[0], config.screen_size, ss,
-                                            config.force_two_sided, backend.storage, outputs,
-                                            mask_only);
-    else
-        backend.hardware->render_batch(b, bounds, cameras, config.screen_size, ss,
-                                       config.force_two_sided, backend.storage, outputs, mask_only);
-    if (stats)
-        stats->gpu_rasters += count;
-    for (size_t i = 0; i < count; ++i) {
-        if (!live.empty())
+    if (!indices.empty()) {
+        if (many)
+            backend.hardware->render_candidates(draw_meshes, bounds, missing[0], config.screen_size,
+                                                ss, config.force_two_sided, backend.storage, draws,
+                                                mask_only);
+        else
+            backend.hardware->render_batch(b, bounds, missing, config.screen_size, ss,
+                                           config.force_two_sided, backend.storage, draws,
+                                           mask_only);
+        if (stats)
+            stats->gpu_rasters += indices.size();
+        for (size_t slot = 0; slot < indices.size(); ++slot) {
+            const auto i = indices[slot];
+            outputs[i] = draws[slot];
+            y[i].clipped = outputs[i].clipped;
+            y[i].faces = outputs[i].faces;
+            if (direct && !y[i].mask_bits.n)
+                y[i].surfaces = {outputs[i].surfaces.mask, outputs[i].surfaces.attributes,
+                                 outputs[i].surfaces.colors};
+            candidate_images[i] = &y[i];
+            if (auto* memo = candidate_memos[i]; memo && y[i].mask_bits.n)
+                if (auto* saved =
+                        memo->retain(first_view + (many ? 0 : uint32_t(i)), ss, std::move(y[i])))
+                    candidate_images[i] = saved;
+        }
+    }
+    if (!live.empty())
+        for (size_t i = 0; i < count; ++i)
             live[i] = outputs[i].faces;
-        y[i].clipped = outputs[i].clipped;
-        if (direct)
-            y[i].surfaces = {outputs[i].surfaces.mask, outputs[i].surfaces.attributes,
-                             outputs[i].surfaces.colors};
-    }
     std::vector<Measurement> result(count);
     std::vector<bool> sparse(count, false);
     uint32_t capacity = std::min(n, 262144u);
@@ -1207,10 +1327,10 @@ measure_batch(Device& device, DeviceMeshView a, DeviceMeshView b, const Bounds& 
         if (double(squared) > sq)
             squared = std::nextafter(squared, 0.f);
         for (size_t i = 0; i < count; ++i) {
-            if (!outputs[i].faces || x[i]->clipped || y[i].clipped)
+            if (!outputs[i].faces || x[i]->clipped || candidate_images[i]->clipped)
                 continue;
             sparse[i] = true;
-            auto sx = samples(*x[i]), sy = samples(y[i]);
+            auto sx = samples(*x[i]), sy = samples(*candidate_images[i]);
             predicate_initialize<<<blocks(n), 256, 0, gpu::stream()>>>(
                 sx, sy, n, cq.p + i * capacity, aq.p ? aq.p + i * capacity : nullptr, capacity,
                 summary.p + i, int(config.profile), config.weights, squared);
@@ -1259,7 +1379,7 @@ measure_batch(Device& device, DeviceMeshView a, DeviceMeshView b, const Bounds& 
             result[i].complete = false;
             result[i].error = infinity;
         } else if (!sparse[i])
-            result[i] = compare_images(device, *x[i], y[i], config, ss, true);
+            result[i] = compare_images(device, *x[i], *candidate_images[i], config, ss, true);
     return result;
 }
 #endif
@@ -1388,6 +1508,10 @@ Measurement compare_images(Device& device, const Image& x, const Image& y,
         m.error = std::max(m.error, std::sqrt(s.attribute));
     }
     m.passed = m.error <= config.limit && m.changed_area <= config.max_changed_area;
+    if (!x.cache_field)
+        x.distance = {};
+    if (!y.cache_field)
+        y.distance = {};
     return m;
 }
 Measurement measure(Device& device, DeviceMeshView a, DeviceMeshView b, const Bounds& bounds,
@@ -1397,7 +1521,12 @@ Measurement measure(Device& device, DeviceMeshView a, DeviceMeshView b, const Bo
     std::optional<Image> reference_scratch, candidate_scratch;
     auto image = [&](DeviceMeshView m, RasterMemo& cache, std::optional<Image>& scratch,
                      bool is_reference) -> const Image& {
-        if (auto* cached = cache.find(view, ss)) {
+        auto* memo = &cache;
+        if (!is_reference && backend.candidates)
+            if (auto* grouped = backend.candidates->find(m, bounds, config))
+                memo = grouped;
+        const bool grouped = memo != &cache;
+        if (auto* cached = memo->find(view, ss)) {
             if (stats) {
                 if (is_reference)
                     ++stats->gpu_reference_render_hits;
@@ -1447,16 +1576,31 @@ Measurement measure(Device& device, DeviceMeshView a, DeviceMeshView b, const Bo
                       Buffer<Vec3>(device, m.colors && config.profile == Profile::Attributes
                                                ? (direct ? 1 : size_t(extent) * extent)
                                                : 0),
-                      extent, false, true});
+                      extent, false, !grouped});
             if (mask_only && !direct)
                 scratch->mask_bits = Buffer<uint32_t>(device, (size_t(extent) * extent + 31) / 32);
-            scratch->clipped = backend.hardware->render(
-                m, bounds, camera, config.screen_size, ss, config.force_two_sided,
-                is_reference ? backend.reference_storage : backend.storage, scratch->pixels.p,
-                scratch->colors.p, nullptr, mask_only, scratch->mask_bits.p);
-            if (direct) {
-                auto surface = backend.hardware->surfaces();
-                scratch->surfaces = {surface.mask, surface.attributes, surface.colors};
+            else if (mask_only && grouped &&
+                     memo->room(((size_t(extent) * extent + 31) / 32) * sizeof(uint32_t))) {
+                try {
+                    scratch->mask_bits =
+                        Buffer<uint32_t>(device, (size_t(extent) * extent + 31) / 32);
+                } catch (const ResourceError& error) {
+                    if (error.kind != NeuralResourceLimit::WorkspaceMemory &&
+                        error.kind != NeuralResourceLimit::DeviceMemory)
+                        throw;
+                }
+            }
+            RasterOutput output{scratch->pixels.p, scratch->colors.p};
+            output.mask_bits = scratch->mask_bits.p;
+            backend.hardware->render_batch(
+                m, bounds, std::span{&camera, 1}, config.screen_size, ss, config.force_two_sided,
+                is_reference ? backend.reference_storage : backend.storage, std::span{&output, 1},
+                mask_only);
+            scratch->clipped = output.clipped;
+            scratch->faces = output.faces;
+            if (direct && !scratch->mask_bits.n) {
+                scratch->surfaces = {output.surfaces.mask, output.surfaces.attributes,
+                                     output.surfaces.colors};
             }
         } else
 #endif
@@ -1464,7 +1608,7 @@ Measurement measure(Device& device, DeviceMeshView a, DeviceMeshView b, const Bo
                                    config.force_two_sided, nullptr, parent));
         if (stats)
             ++stats->gpu_rasters;
-        if (auto* retained = cache.retain(view, ss, std::move(*scratch))) {
+        if (auto* retained = memo->retain(view, ss, std::move(*scratch))) {
             scratch.reset();
             return *retained;
         }
@@ -1909,17 +2053,20 @@ struct AuditCuda::Impl {
     std::unique_ptr<VulkanRaster> hardware;
 #endif
     RasterMemo source_images, reference_images, candidate_images, parent_images;
+    bool grouped_queries{};
     Topology reference, candidate;
     void clear_images() {
+        if (backend.candidates)
+            backend.candidates->disable();
         source_images.clear();
         reference_images.clear();
         candidate_images.clear();
         parent_images.clear();
     }
     Measurement run(DeviceMeshView a, DeviceMeshView b, const Bounds& bounds,
-                    const EvalSettings& config, RasterMemo& images, NeuralStats* stats,
-                    uint32_t& view, uint8_t& sampling, double incumbent = infinity,
-                    bool* pruned = nullptr, bool predicate = false) {
+                    const EvalSettings& config, RasterMemo& images, bool original_reference,
+                    NeuralStats* stats, uint32_t& view, uint8_t& sampling,
+                    double incumbent = infinity, bool* pruned = nullptr, bool predicate = false) {
         backend.predicate = predicate;
         a.exact_position_bps = b.exact_position_bps = options.exact_position_bps;
         if (source.positions.count && backend.storage != NeuralVertexStorage::Float32) {
@@ -1941,7 +2088,7 @@ struct AuditCuda::Impl {
                 result.passed = false;
                 return result;
             }
-            backend.reference_storage = &images == &source_images || !source.positions.count
+            backend.reference_storage = original_reference || !source.positions.count
                                             ? NeuralVertexStorage::Float32
                                             : backend.storage;
 #ifdef BLITZ_VULKAN
@@ -1971,7 +2118,7 @@ struct AuditCuda::Impl {
             for (unsigned ss = config.supersample;;
                  ss = std::min<unsigned>(config.max_supersample, ss * 2)) {
                 sampling = uint8_t(ss);
-                backend.reference_storage = &images == &source_images || !source.positions.count
+                backend.reference_storage = original_reference || !source.positions.count
                                                 ? NeuralVertexStorage::Float32
                                                 : backend.storage;
                 auto perform = [&] {
@@ -2032,7 +2179,7 @@ struct AuditCuda::Impl {
     Impl(const NeuralOptions& options, MeshView mesh)
         : owned_budget{size_t(options.memory_mib) << 20, 0, 0, options.device},
           device(options, true), id(options.device), source(mesh), references(mesh), memo(mesh),
-          options(options), source_images(options.cache_rasters ? device.limit / 12 : 0),
+          options(options), source_images(options.cache_rasters ? device.limit / 12 : 0, true),
           reference_images(options.cache_rasters ? device.limit / 12 : 0),
           candidate_images(options.cache_rasters ? device.limit / 12 : 0),
           parent_images(options.cache_rasters ? device.limit / 12 : 0) {
@@ -2170,12 +2317,13 @@ Measurement AuditCuda::evaluate(MeshView a, MeshView b, const Bounds& bounds,
             da = upload_mesh(a, impl_->reference, owned_a);
             db = upload_mesh(b, impl_->candidate, owned_b);
         }
-        auto& images = impl_->source.positions.count && same_mesh_data(a, impl_->source)
-                           ? impl_->source_images
-                           : impl_->reference_images;
+        const bool original_reference =
+            impl_->source.positions.count && same_mesh_data(a, impl_->source);
+        auto& images = original_reference ? impl_->source_images : impl_->reference_images;
         images.configure(a, bounds, config);
         impl_->candidate_images.configure(b, bounds, config);
-        result = impl_->run(*da, *db, bounds, config, images, stats, view, sampling);
+        result =
+            impl_->run(*da, *db, bounds, config, images, original_reference, stats, view, sampling);
         impl_->memo.insert(a, b, bounds, config, result);
         return result;
     } catch (const ResourceError& error) {
@@ -2190,6 +2338,53 @@ Measurement AuditCuda::evaluate(MeshView a, MeshView b, const Bounds& bounds,
         result.supersample = sampling;
         return result;
     }
+}
+void AuditCuda::with_candidate_rasters_impl(std::span<const DeviceMeshView> candidates,
+                                            void* context, void (*queries)(void*)) {
+    auto& p = *impl_;
+    if (candidates.empty() || candidates.size() > 8 || p.grouped_queries)
+        throw std::invalid_argument(
+            "candidate raster group must contain 1..8 current trials and cannot nest");
+    for (auto mesh : candidates)
+        if (!mesh.identity || !mesh.positions || !mesh.indices || !mesh.vertices || !mesh.faces)
+            throw std::invalid_argument("invalid candidate raster group view");
+    p.grouped_queries = true;
+    struct EndGroup {
+        bool& active;
+        ~EndGroup() {
+            active = false;
+        }
+    } end_group{p.grouped_queries};
+    if (!p.options.cache_rasters || !p.backend.hardware || !p.backend.mask_only) {
+        queries(context);
+        return;
+    }
+    CurrentDevice scope(p.id);
+    std::array<DeviceMeshView, 8> normalized{};
+    for (size_t i = 0; i < candidates.size(); ++i) {
+        auto& mesh = normalized[i];
+        mesh = candidates[i];
+        mesh.exact_position_bps = p.options.exact_position_bps;
+        if (p.source.positions.count && p.backend.storage != NeuralVertexStorage::Float32) {
+            mesh.fixed_quantization = true;
+            mesh.quant_low = p.quantization.low;
+            mesh.quant_extent = p.quantization.extent;
+        }
+    }
+    // Replace, rather than add to, the existing candidate-image allowance.
+    const auto limit = p.candidate_images.limit();
+    p.candidate_images.set_limit(0);
+    CandidateRasters rasters({normalized.data(), candidates.size()}, limit);
+    p.backend.candidates = &rasters;
+    struct Restore {
+        Impl& impl;
+        size_t limit;
+        ~Restore() {
+            impl.backend.candidates = nullptr;
+            impl.candidate_images.set_limit(limit);
+        }
+    } restore{p, limit};
+    queries(context);
 }
 Measurement AuditCuda::evaluate(MeshView a, DeviceMeshView b, const Bounds& bounds,
                                 const EvalSettings& config, NeuralStats* stats, double incumbent,
@@ -2257,13 +2452,12 @@ AuditCuda::certify_candidates(MeshView a, std::span<const DeviceMeshView> candid
                            ? p.uploaded.get()
                            : p.reference.get(device, a, p.uploaded.get(), true))
                     : p.reference.get(device, a, nullptr, true);
-            auto& images = p.source.positions.count && same_mesh_data(a, p.source)
-                               ? p.source_images
-                               : p.reference_images;
+            const bool original_reference = p.source.positions.count && same_mesh_data(a, p.source);
+            auto& images = original_reference ? p.source_images : p.reference_images;
             images.configure(a, bounds, config);
             auto backend = p.backend;
             backend.predicate = true;
-            backend.reference_storage = &images == &p.source_images || !p.source.positions.count
+            backend.reference_storage = original_reference || !p.source.positions.count
                                             ? NeuralVertexStorage::Float32
                                             : backend.storage;
             DeviceMeshView from = *reference;
@@ -2434,12 +2628,12 @@ Measurement AuditCuda::evaluate_device(MeshView a, DeviceMeshView b, const Bound
             owned.reset();
             upload();
         }
-        auto& images = p.source.positions.count && same_mesh_data(a, p.source) ? p.source_images
-                                                                               : p.reference_images;
+        const bool original_reference = p.source.positions.count && same_mesh_data(a, p.source);
+        auto& images = original_reference ? p.source_images : p.reference_images;
         images.configure(a, bounds, config);
         p.candidate_images.configure(b, bounds, config);
-        return p.run(*reference, b, bounds, config, images, stats, view, sampling, incumbent,
-                     pruned, predicate);
+        return p.run(*reference, b, bounds, config, images, original_reference, stats, view,
+                     sampling, incumbent, pruned, predicate);
     } catch (const ResourceError& error) {
         if (stats && !stats->resource_failures++)
             stats->first_resource_failure = {config.screen_size, error.requested, error.limit, view,

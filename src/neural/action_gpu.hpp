@@ -32,7 +32,8 @@ class GpuActionState {
     };
     std::vector<Proposal> teacher_proposals(Action, bool supervise_normals = true);
     // Independent placements share one compacted topology. Views expire at the
-    // next trial_batch or state mutation; counts/validity remain on the device.
+    // next trial attempt (even an invalid trial), trial_batch, or state mutation;
+    // counts/validity remain on the device. Returned views never own storage.
     std::vector<DeviceMeshView> trial_batch(Action, std::span<const Proposal>);
     bool trial(Action, const Placement&, DeviceMeshView&);
     void commit(Action, const Placement&);

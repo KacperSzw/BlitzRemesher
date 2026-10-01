@@ -103,7 +103,7 @@ static void draw_domain_contracts(bool progress = false) {
         covered += p.covered;
     require(covered > 100, "valid draw failed after malformed cached draws");
 }
-static void candidate_contracts(bool memory_boundaries = false) {
+static Mesh candidate_fixture() {
     Mesh mesh;
     for (unsigned y = 0; y < 4; ++y)
         for (unsigned x = 0; x < 4; ++x) {
@@ -116,6 +116,10 @@ static void candidate_contracts(bool memory_boundaries = false) {
             mesh.indices.insert(mesh.indices.end(), {i, i + 1, i + 4, i + 1, i + 5, i + 4});
         }
     mesh.double_sided = {1};
+    return mesh;
+}
+static void candidate_contracts(bool memory_boundaries = false) {
+    auto mesh = candidate_fixture();
     NeuralOptions options;
     options.memory_mib = 256;
     options.raster_backend = NeuralRasterBackend::Vulkan;
@@ -175,6 +179,218 @@ static void candidate_contracts(bool memory_boundaries = false) {
                 }
             }
     require(state.view().faces == mesh.view().triangles(), "speculative batch committed geometry");
+}
+static void same_measurement(const Measurement& a, const Measurement& b) {
+    require(std::tie(a.error, a.coverage, a.coverage_upper, a.changed_area, a.normal_degrees,
+                     a.worst_view, a.changed_area_worst_view, a.views_evaluated, a.supersample,
+                     a.complete, a.passed, a.resource_limited, a.cancelled) ==
+                std::tie(b.error, b.coverage, b.coverage_upper, b.changed_area, b.normal_degrees,
+                         b.worst_view, b.changed_area_worst_view, b.views_evaluated, b.supersample,
+                         b.complete, b.passed, b.resource_limited, b.cancelled),
+            "grouped exact audit changed metrics or completion");
+}
+static void same_candidates(std::span<const CandidateAudit> a, std::span<const CandidateAudit> b) {
+    require(a.size() == b.size(), "grouped candidate count differs");
+    for (size_t i = 0; i < a.size(); ++i) {
+        auto& x = a[i];
+        auto& y = b[i];
+        require(std::tie(x.faces, x.valid, x.pruned, x.value.verdict, x.value.error_upper,
+                         x.value.changed_area, x.value.views, x.value.supersample,
+                         x.value.resource_limited, x.value.cancelled) ==
+                    std::tie(y.faces, y.valid, y.pruned, y.value.verdict, y.value.error_upper,
+                             y.value.changed_area, y.value.views, y.value.supersample,
+                             y.value.resource_limited, y.value.cancelled),
+                "grouped candidate audit changed labels, lane identity, or pruning");
+    }
+}
+static void grouped_candidate_contracts(bool memory_boundaries) {
+    auto mesh = candidate_fixture(), previous = mesh;
+    previous.positions[5].x += .17f;
+    auto box = bounds(mesh.view());
+    NeuralOptions options;
+    options.memory_mib = 128;
+    options.raster_backend = NeuralRasterBackend::Vulkan;
+    options.vertex_storage = NeuralVertexStorage::Packed;
+    options.mask_only_coverage = true;
+    GpuActionState state(mesh.view(), options, true);
+    auto rows = state.teacher_actions({}, 1, 919);
+    require(!rows.empty(), "grouped fixture has no legal edits");
+    auto alternatives = state.teacher_proposals(rows[0].action);
+    std::array<GpuActionState::Proposal, 4> proposals{alternatives[0], alternatives[2],
+                                                      alternatives[4], alternatives[6]};
+    proposals[3].placement.position.x = INFINITY;
+    EvalSettings source;
+    source.profile = Profile::Coverage;
+    source.screen_size = 24;
+    source.limit = 3;
+    source.views = {3, 1, 991};
+    source.supersample = 2;
+    source.max_supersample = 4;
+    source.max_changed_area = .4;
+    auto adjacent = source;
+    adjacent.limit = 1.5;
+    auto destination = source;
+    destination.screen_size = 16;
+    for (uint8_t batch : {1, 4})
+        for (bool direct : {false, true}) {
+            if (memory_boundaries && (batch != 4 || !direct))
+                continue;
+            options.view_batch = batch;
+            options.direct_targets = direct;
+            auto uncached = options;
+            uncached.cache_rasters = false;
+            AuditCuda control(uncached, mesh.view()), tested(options, mesh.view());
+            control.bind_reference(previous.view());
+            tested.bind_reference(previous.view());
+            for (double cutoff : {std::numeric_limits<double>::infinity(), .02}) {
+                auto views = state.trial_batch(rows[0].action, proposals);
+                // The second reference receives a non-prefix, reordered subset.
+                // A cache addressed by its compacted lane index would be wrong.
+                std::array<DeviceMeshView, 2> subset{views[2], views[0]};
+                auto expected_source =
+                    control.certify_candidates(mesh.view(), views, box, source, nullptr, cutoff);
+                auto expected_adjacent = control.certify_candidates(previous.view(), subset, box,
+                                                                    adjacent, nullptr, cutoff);
+                NeuralStats stats;
+                tested.with_candidate_rasters(views, [&] {
+                    same_candidates(
+                        tested.certify_candidates(mesh.view(), views, box, source, &stats, cutoff),
+                        expected_source);
+                    same_candidates(tested.certify_candidates(previous.view(), subset, box,
+                                                              adjacent, &stats, cutoff),
+                                    expected_adjacent);
+                });
+                require(stats.gpu_candidate_render_hits > 0,
+                        "grouped candidate masks were never reused");
+                require(!expected_source[3].valid, "invalid lane was not exercised");
+            }
+            // A refined image can be the next audit's initial sampling. Its
+            // cached draw count must be the live count, never the trial capacity.
+            auto views = state.trial_batch(rows[0].action, proposals);
+            auto coarse = source;
+            coarse.limit = .4;
+            auto fine = source;
+            fine.supersample = fine.max_supersample = 4;
+            auto expected_fine = control.certify_candidates(mesh.view(), views, box, fine);
+            NeuralStats refinement_stats;
+            tested.with_candidate_rasters(views, [&] {
+                tested.certify_candidates(mesh.view(), views, box, coarse, &refinement_stats);
+                same_candidates(
+                    tested.certify_candidates(mesh.view(), views, box, fine, &refinement_stats),
+                    expected_fine);
+            });
+            require(refinement_stats.gpu_candidate_render_hits > 0,
+                    "refined candidate images were not reused at their exact sampling");
+            // Identical pointers are reused by every serial trial; scopes must not
+            // retain a preceding placement, including after an invalid attempt.
+            for (size_t i : {0u, 2u}) {
+                DeviceMeshView candidate;
+                require(state.trial(rows[0].action, proposals[i].placement, candidate),
+                        "grouped exact fixture placement invalid");
+                std::array<Measurement, 4> expected{
+                    control.evaluate(mesh.view(), candidate, box, source),
+                    control.evaluate(previous.view(), candidate, box, adjacent),
+                    control.evaluate(mesh.view(), candidate, box, destination),
+                    control.evaluate(mesh.view(), candidate, box, source)};
+                NeuralStats stats;
+                tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                    same_measurement(tested.evaluate(mesh.view(), candidate, box, source, &stats),
+                                     expected[0]);
+                    same_measurement(
+                        tested.evaluate(previous.view(), candidate, box, adjacent, &stats),
+                        expected[1]);
+                    same_measurement(
+                        tested.evaluate(mesh.view(), candidate, box, destination, &stats),
+                        expected[2]);
+                    same_measurement(tested.evaluate(mesh.view(), candidate, box, source, &stats),
+                                     expected[3]);
+                });
+                require(stats.gpu_candidate_render_hits > 0,
+                        "grouped exact candidate mask was never reused");
+                require(stats.gpu_reference_render_hits > 0,
+                        "source resolution switch discarded both reference domains");
+                require(!state.trial(rows[0].action, proposals[3].placement, candidate),
+                        "invalid intervening trial was not exercised");
+            }
+            // Callback exceptions release the group even after it retained images.
+            auto candidate = state.view();
+            bool propagated = false;
+            try {
+                tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                    tested.evaluate(mesh.view(), candidate, box, source);
+                    throw std::runtime_error("test-owned interruption");
+                });
+            } catch (const std::runtime_error&) {
+                propagated = true;
+            }
+            require(propagated, "group swallowed callback exception");
+            bool nested = false;
+            tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                try {
+                    tested.with_candidate_rasters(std::span{&candidate, 1}, [] {});
+                } catch (const std::invalid_argument&) {
+                    nested = true;
+                }
+                same_measurement(tested.evaluate(mesh.view(), candidate, box, source),
+                                 control.evaluate(mesh.view(), candidate, box, source));
+            });
+            require(nested, "nested raster group was accepted");
+            // Cancellation during a query remains unknown with identical polling.
+            uint32_t polls = 0;
+            auto cancelled = source;
+            cancelled.cancelled = [&] { return ++polls == 3; };
+            auto expected = control.certify(mesh.view(), candidate, box, cancelled);
+            const auto expected_polls = polls;
+            polls = 0;
+            tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                // Populate masks without polling first, then cancel while the
+                // second audit reads those masks instead of drawing again.
+                tested.certify(mesh.view(), candidate, box, source);
+                NeuralStats hits;
+                auto actual = tested.certify(mesh.view(), candidate, box, cancelled, &hits);
+                require(actual.verdict == expected.verdict &&
+                            actual.cancelled == expected.cancelled &&
+                            actual.views == expected.views && polls == expected_polls,
+                        "group changed cancellation polling or made an unknown label known");
+                require(hits.gpu_candidate_render_hits > 0,
+                        "cancellation fixture did not exercise a cached candidate");
+            });
+            auto attributes = source;
+            attributes.profile = Profile::Attributes;
+            tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                tested.evaluate(mesh.view(), candidate, box, source);
+                same_measurement(tested.evaluate(mesh.view(), candidate, box, attributes),
+                                 control.evaluate(mesh.view(), candidate, box, attributes));
+            });
+            // One query exceeds workspace, the other the sample cap. Both remain
+            // resource results and release optional masks before a bounded retry.
+            for (double screen : {1024., 4096.}) {
+                auto unavailable = source;
+                unavailable.screen_size = screen;
+                unavailable.supersample = unavailable.max_supersample = 4;
+                auto failure = control.evaluate(mesh.view(), candidate, box, unavailable);
+                require(failure.resource_limited && !failure.complete,
+                        "resource fixture did not fail");
+                tested.with_candidate_rasters(std::span{&candidate, 1}, [&] {
+                    same_measurement(tested.evaluate(mesh.view(), candidate, box, unavailable),
+                                     failure);
+                    same_measurement(tested.evaluate(mesh.view(), candidate, box, source),
+                                     control.evaluate(mesh.view(), candidate, box, source));
+                });
+            }
+        }
+    // A fresh evaluator makes the second-screen retention assertion independent
+    // of preceding group hits. Only the third call can reuse a source image.
+    AuditCuda domains(options, mesh.view());
+    NeuralStats stats;
+    auto candidate = state.view();
+    auto first = domains.evaluate(mesh.view(), candidate, box, source, &stats);
+    domains.evaluate(mesh.view(), candidate, box, destination, &stats);
+    require(stats.gpu_reference_render_hits == 0, "source domain fixture was already cached");
+    same_measurement(domains.evaluate(mesh.view(), candidate, box, source, &stats), first);
+    require(first.complete && stats.gpu_reference_render_hits == first.views_evaluated,
+            "switching source resolution discarded the previous source images");
+    require(state.view().faces == mesh.view().triangles(), "group committed a trial");
 }
 void packed_seed_domain() {
     auto source = fixture(), seed = source, original = source;
@@ -268,6 +484,7 @@ int main(int argc, char** argv) {
         stage("draw domains", [&] { draw_domain_contracts(memory_boundaries); });
         stage("packed seeds", packed_seed_domain);
         stage("serial candidates", [&] { candidate_contracts(memory_boundaries); });
+        stage("grouped candidate rasters", [&] { grouped_candidate_contracts(memory_boundaries); });
         // Each worker must retain the serial verdicts on an independent stream.
         MemoryBudget shared{size_t(384) << 20, 0, 0, 0};
         std::barrier ready(2);

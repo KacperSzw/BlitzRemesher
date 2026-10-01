@@ -4,6 +4,8 @@
 #include "neural/vertex_storage.hpp"
 #include <array>
 #include <filesystem>
+#include <memory>
+#include <type_traits>
 namespace blitz::neural {
 constexpr uint32_t features = 24, hidden = 64, conditions = 8, outputs = 4, schema = 1;
 constexpr uint64_t max_raster_samples = 64000000;
@@ -125,6 +127,7 @@ class AuditCuda {
     std::unique_ptr<Impl> impl_;
     Measurement evaluate_device(MeshView, DeviceMeshView, const Bounds&, const EvalSettings&,
                                 NeuralStats*, double, bool*, bool);
+    void with_candidate_rasters_impl(std::span<const DeviceMeshView>, void*, void (*)(void*));
 
   public:
     explicit AuditCuda(const NeuralOptions&, MeshView fixed_source = {});
@@ -133,6 +136,19 @@ class AuditCuda {
     // and unchanged until the next binding or destruction of this evaluator.
     void bind_reference(MeshView);
     void clear_reference() noexcept;
+    // Borrow the current trial(s) for a sequence of independent audit queries.
+    // Only owned coverage masks are shared, and only until this call returns.
+    // All span elements must be simultaneously live: collecting views from
+    // successive serial trials does not satisfy this borrowing contract.
+    // No trial, trial_batch, commit, reset, or other mesh mutation is permitted
+    // inside the callback, including a trial attempt that fails. Not nestable.
+    // The borrowed callback adapter allocates no std::function/heap object.
+    template <class Callback>
+    void with_candidate_rasters(std::span<const DeviceMeshView> candidates, Callback&& callback) {
+        with_candidate_rasters_impl(
+            candidates, const_cast<void*>(static_cast<const void*>(std::addressof(callback))),
+            [](void* context) { (*static_cast<std::remove_reference_t<Callback>*>(context))(); });
+    }
     Measurement evaluate(MeshView, MeshView, const Bounds&, const EvalSettings&,
                          NeuralStats* = nullptr);
     // An optional teacher incumbent permits stopping once a completed view

@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "scope": "Local tiny optimizer boundary regressions; no training or quality claim",
+  "base_revision": "b947db8f7932bfd61f2ecda43cc43efec2624c57",
+  "before": [
+    {
+      "case": "nan_margin",
+      "constructor_accepted": true,
+      "cuda_loss": 0,
+      "gradient_abs_sum": 0,
+      "failure": 0,
+      "reference_relu_isnan": true
+    },
+    {
+      "case": "negative_saved_variance",
+      "load_accepted": true,
+      "parameter_finite": false,
+      "step": 1,
+      "failure": 0
+    }
+  ],
+  "after": {
+    "focused_ctest": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "compute_sanitizer": {
+      "errors": 0
+    },
+    "exact_captured_resume": true,
+    "allowed_zero_coefficients": true,
+    "invalid_scalar_settings_rejected_before_device_access": true,
+    "negative_checkpoint_variance_rejected": true
+  },
+  "commands": {
+    "build": "nix develop .#neural --command cmake --build build/neural --target blitz-neural-action-train -j2",
+    "ctest": "nix develop .#neural --command bash -c 'LD_LIBRARY_PATH=/run/opengl-driver/lib:$PWD/.cache/libtorch/lib ctest --test-dir build/neural -R \"^neural-device-update-contracts$\" --output-on-failure'",
+    "memcheck": "nix develop .#neural --command bash -c 'LD_LIBRARY_PATH=/run/opengl-driver/lib:$PWD/.cache/libtorch/lib timeout 90s compute-sanitizer --tool memcheck --error-exitcode 99 build/neural/blitz-neural-action-train --check-update'"
+  },
+  "source_files": [
+    {
+      "path": "training/update.hpp",
+      "sha256": "1408c198fba99cfceb8f56f8ad604ee33efcfd9a6a7b25dad80c8a3ca821f961"
+    },
+    {
+      "path": "training/update_cuda.hpp",
+      "sha256": "49f2cb0c3668572e6f9cc0880239fab73d51115f725e1124e916f1278f6240ec"
+    },
+    {
+      "path": "training/update_cuda.cu",
+      "sha256": "1661d1b9e8b3e3fdbfa17888a359f8a73152af800af310a15c7719a32e4ea5fb"
+    },
+    {
+      "path": "tools/neural/update_tests.hpp",
+      "sha256": "532b91d42e8741ce9943892928d6f6082613b8daa737db18a75e07364abbe4d8"
+    }
+  ],
+  "binary": {
+    "path": "build/neural/blitz-neural-action-train",
+    "sha256": "a8b808284acef9bede834be7209c5e0ff3f154cd1cf3cbf5f04a196bd95bad85"
+  },
+  "logs": [
+    {
+      "path": "build-before.log",
+      "sha256": "d390bee608a927733f8f08afa1f301e30de349156b4a1fcb407e3c7bd2b805d3"
+    },
+    {
+      "path": "before.log",
+      "sha256": "e8e687d4af054fd842118c2cf9e66dfd74d8eae71ad3a18fcb0a5490b572d328"
+    },
+    {
+      "path": "build-after.log",
+      "sha256": "57b1ecb8a256589882ceb4d83ac99f2551b0ed907f332fb5db53d635577ec4fc"
+    },
+    {
+      "path": "ctest.log",
+      "sha256": "ba68397ed97ea4f6efa9b99508da992255d828c44d20821226bea6ad7f16a8db"
+    },
+    {
+      "path": "ctest.xml",
+      "sha256": "88e17fa1b1b32d270787c818f0225d965e30001706e9527dffe2615f21c0a09f"
+    },
+    {
+      "path": "memcheck.log",
+      "sha256": "5d60d37373b92fdf4f370e23ca454bf3f5384edf776dce9aa0ca4603c4f7419f"
+    }
+  ],
+  "limitations": [
+    "Checkpoint rejection remains nontransactional, as before.",
+    "Loss and optimizer arithmetic for valid settings is unchanged.",
+    "No per-update variance scan was added."
+  ],
+  "fix_commit": "f822850f8c30eab03bf228d42088abc75b178e3e",
+  "exact_committed_source_verified": true,
+  "training_started": false,
+  "current_training_run_affected": null,
+  "current_training_run_affected_interpretation": "Not established: these synthetic malformed inputs were not the completed training run or its checkpoint.",
+  "quality_proven": false,
+  "performance_claim": false,
+  "model_or_optimizer_payloads_archived": false,
+  "before_committed_source_verified": true
+}

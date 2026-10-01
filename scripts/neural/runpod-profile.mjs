@@ -24,9 +24,10 @@ export const profiles = Object.freeze({
   ...Object.fromEntries(
     [
       ['a40', 'NVIDIA A40', 48, 45000, '8.6', 86, 0.55],
+      ['a40-hour', 'NVIDIA A40', 48, 45000, '8.6', 86, 0.55, 194],
       ['4090', 'NVIDIA GeForce RTX 4090', 24, 22000, '8.9', 89, 0.8],
       ['l40s', 'NVIDIA L40S', 48, 45000, '8.9', 89, 1.1],
-    ].map(([name, gpu, vram, memory, capability, architecture, rate]) => {
+    ].map(([name, gpu, vram, memory, capability, architecture, rate, experimentMinutes = 112]) => {
       const id = 'teacher-optimization-' + name;
       return [
         id,
@@ -41,8 +42,8 @@ export const profiles = Object.freeze({
           host_ram_gb: 24,
           vcpus: 6,
           gpu_hourly_usd_cap: rate,
-          setup_minutes: 20,
-          training_minutes: 112,
+          setup_minutes: name === 'a40-hour' ? 30 : 20,
+          training_minutes: experimentMinutes,
           collection_minutes: 8,
           graphics: true,
         }),

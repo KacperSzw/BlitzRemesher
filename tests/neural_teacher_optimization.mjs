@@ -66,12 +66,14 @@ test('optimization grant counts failed and active rentals and cannot extend core
   for (const id of teacherOptimizationProfiles) {
     const profile = profiles[id],
       deadlines = rentalDeadlines(now, undefined, profile);
-    assert.equal(deadlines.deadline_ms - now, 140 * 60000);
-    assert.equal(deadlines.setup_deadline_ms - now, 20 * 60000);
+    const minutes = id.endsWith('-hour') ? 232 : 140;
+    assert.equal(deadlines.deadline_ms - now, minutes * 60000);
+    assert.equal(deadlines.setup_deadline_ms - now, (id.endsWith('-hour') ? 30 : 20) * 60000);
     assert.equal(deadlines.deadline_ms - deadlines.training_deadline_ms, 8 * 60000);
     assert.ok(profile.catalog_vram_gb >= 24);
     assert.ok(
-      teacherOptimizationBudget({ rate: profile.gpu_hourly_usd_cap, now }).maximum_total_usd <= 3,
+      teacherOptimizationBudget({ rate: profile.gpu_hourly_usd_cap, now, minutes })
+        .maximum_total_usd <= 3,
     );
   }
   assert.equal(
@@ -155,11 +157,34 @@ test('pilot commands preserve initializer, learning limits and explicit strategy
     { final_training: true },
     { baseline_revision: 'HEAD' },
     { learning_minutes: 6 },
+    { capability_minutes: 59 },
+    { capability_minutes: 61 },
     { seeds: [101] },
     { gpu_memory_mib: 32768 },
   ])
     assert.throws(() => validateOptimizationRequest({ ...request(), ...patch }));
   assert.throws(() => optimizationCycleArguments(request(), { seed: 99, strategy: 'exhaustive' }));
+  const hour = { ...request(), capability_minutes: 60 };
+  const args = optimizationCycleArguments(hour, {
+    run: 'hour',
+    seed: 101,
+    strategy: 'exhaustive',
+    model: 'initial',
+    curriculum: 'conditions',
+    capability: true,
+  });
+  assert.equal(args[args.indexOf('--duration-minutes') + 1], '60');
+  assert.equal(args[args.indexOf('--checkpoint-seconds') + 1], '60');
+  assert.equal(args[args.indexOf('--updates') + 1], '128');
+  for (const patch of [{ seed: 211 }, { strategy: 'coverage-core-first' }])
+    assert.throws(() =>
+      optimizationCycleArguments(hour, {
+        seed: 101,
+        strategy: 'exhaustive',
+        capability: true,
+        ...patch,
+      }),
+    );
 });
 
 function audit(delta = -1) {
@@ -701,8 +726,8 @@ test('a shared or missing timing authority cannot start paid learning despite a 
   }
 });
 
-test('pilot evidence must identify its seed, strategy, initializer and fresh optimizer updates', () => {
-  const options = {
+function pilotEvidence() {
+  return {
     request: request(),
     seed: 211,
     strategy: 'coverage-core-first',
@@ -744,7 +769,36 @@ test('pilot evidence must identify its seed, strategy, initializer and fresh opt
     },
     latest: { complete: true, checkpoint: 'step-64', checkpoint_sha256: 'c'.repeat(64) },
   };
+}
+
+test('pilot evidence must identify its seed, strategy, initializer and fresh optimizer updates', () => {
+  const options = pilotEvidence();
   assert.doesNotThrow(() => validateOptimizationPilot(options));
+  const capability = {
+    ...options,
+    request: { ...options.request, capability_minutes: 60 },
+    seed: 101,
+    strategy: 'exhaustive',
+    capability: true,
+    contract: {
+      ...options.contract,
+      seed: 101,
+      teacher_strategy: 'exhaustive',
+      duration_minutes: 60,
+    },
+    result: { ...options.result, status: 'duration_complete', learning_elapsed_ms: 3600000 },
+  };
+  assert.doesNotThrow(() => validateOptimizationPilot(capability));
+  for (const patch of [
+    { status: 'work_complete' },
+    { learning_elapsed_ms: 3599999 },
+    { learning_elapsed_ms: undefined },
+  ])
+    assert.throws(
+      () =>
+        validateOptimizationPilot({ ...capability, result: { ...capability.result, ...patch } }),
+      /learning hour/,
+    );
   for (const patch of [
     { seed: 101 },
     { teacher_strategy: 'exhaustive' },
@@ -802,4 +856,141 @@ test('a verified optimizer checkpoint cannot authenticate a different exported m
       () => validateOptimizationCheckpoint({ ...options, ...patch }),
       /published journal/,
     );
+});
+
+test('requested capability learning precedes profiling and preserves failed hour artifacts', async (t) => {
+  const options = experiment(t);
+  options.request.capability_minutes = 60;
+  options.deadline = 194 * 60000;
+  let contractsDone = false,
+    calls = 0,
+    clock = 0;
+  const report = await runTeacherOptimization({
+    ...options,
+    now: () => clock++,
+    contracts: async () => {
+      contractsDone = true;
+      return { complete: true };
+    },
+    profile: async () => assert.fail('profiling must follow the completed capability hour'),
+    capabilityQuality: async () => assert.fail('failed hour cannot run final quality'),
+    execute: async (command, args, config) => {
+      assert.equal(contractsDone, true);
+      assert.equal(command, 'build/neural/blitz-neural-cycle');
+      assert.equal(args[args.indexOf('--duration-minutes') + 1], '60');
+      assert.equal(args[args.indexOf('--teacher-strategy') + 1], 'exhaustive');
+      assert.equal(args[args.indexOf('--seed') + 1], '101');
+      assert.ok(config.maximum <= 62 * 60000 && config.maximum > 62 * 60000 - 100);
+      calls++;
+      fs.mkdirSync(args[0], { recursive: true });
+      fs.writeFileSync(args[0] + '/retained-checkpoint', 'partial checkpoint');
+      return { success: false, code: null, signal: 'SIGTERM' };
+    },
+  });
+  assert.equal(calls, 1);
+  assert.equal(report.training_started, true);
+  assert.equal(report.capability.complete, false);
+  assert.equal(report.pilots.length, 0);
+  assert.equal(
+    fs.readFileSync(report.capability.directory + '/retained-checkpoint', 'utf8'),
+    'partial checkpoint',
+  );
+  assert.match(report.error, /capability-hour failed/);
+});
+
+test('the verified capability hour and diagnostics survive a later negative strategy comparison', async (t) => {
+  for (const qualityComplete of [true, false]) {
+    const options = experiment(t);
+    options.request.capability_minutes = 60;
+    options.deadline = 194 * 60000;
+    const hash = (file) => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    let clock = 0,
+      comparisons = 0,
+      qualityDone = false;
+    const report = await runTeacherOptimization({
+      ...options,
+      cycleBinary: options.teardownBinary,
+      now: () => clock,
+      contracts: async () => ({ complete: true }),
+      execute: async (_command, args) => {
+        const run = args[0],
+          checkpoint = run + '/step-128';
+        fs.mkdirSync(checkpoint, { recursive: true });
+        const save = (file, value) => fs.writeFileSync(file, JSON.stringify(value));
+        fs.writeFileSync(checkpoint + '/checkpoint.pt', 'verified optimizer');
+        fs.writeFileSync(checkpoint + '/model.blzn', 'verified final policy');
+        save(checkpoint + '/verification.json', { passed: true });
+        const checkpointSha = hash(checkpoint + '/checkpoint.pt'),
+          modelSha = hash(checkpoint + '/model.blzn');
+        const contract = {
+          ...pilotEvidence().contract,
+          initialize: options.request.initialization_sha256,
+          seed: 101,
+          teacher_strategy: 'exhaustive',
+          duration_minutes: 60,
+          binary_sha256: hash(options.teardownBinary),
+          curriculum_sha256: hash('research/neural/teacher-optimization-curriculum.json'),
+          corpus_sha256: hash('research/neural/corpus-v2/corpus.json'),
+          training_selection_sha256: hash('research/neural/corpus-v2/training.json'),
+        };
+        const result = {
+          ...pilotEvidence().result,
+          checkpoint: 'step-128',
+          step: 128,
+          status: 'duration_complete',
+          learning_elapsed_ms: 3600000,
+          checkpoint_sha256: checkpointSha,
+        };
+        save(run + '/contract.json', contract);
+        save(run + '/report.json', result);
+        save(run + '/latest.json', result);
+        save(checkpoint + '/index.json', {
+          complete: true,
+          step: 128,
+          checkpoint_sha256: checkpointSha,
+          model_sha256: modelSha,
+          files: {
+            'checkpoint.pt': checkpointSha,
+            'model.blzn': modelSha,
+            'verification.json': hash(checkpoint + '/verification.json'),
+          },
+        });
+        clock += 61 * 60000;
+        return { success: true, code: 0, signal: null };
+      },
+      capabilityQuality: async (config) => {
+        assert.equal(config.initialModel, options.model);
+        assert.equal(config.finalModel.endsWith('/step-128/model.blzn'), true);
+        assert.equal(config.deadline - clock, 20 * 60000);
+        clock += 19 * 60000;
+        qualityDone = true;
+        return {
+          complete: qualityComplete,
+          ...(qualityComplete ? {} : { error: 'bounded diagnostic timeout' }),
+        };
+      },
+      profile: async (config) => {
+        assert.equal(qualityDone, true);
+        assert.equal(config.deadline, 102 * 60000);
+        comparisons++;
+        return {
+          complete: true,
+          timing_authority: 'isolated_remote',
+          strategy_fresh_states_speedup: 1,
+        };
+      },
+    });
+    assert.equal(comparisons, 2);
+    assert.equal(report.capability.complete, true);
+    assert.equal(report.capability.quality.complete, qualityComplete);
+    assert.equal(
+      report.capability.quality_incomplete_reason,
+      qualityComplete ? undefined : 'bounded diagnostic timeout',
+    );
+    assert.equal(report.training_started, true);
+    assert.equal(report.learning_gate.passed, false);
+    assert.equal(report.pilots.length, 0);
+    assert.equal(report.error, undefined);
+    assert.equal(fs.existsSync(report.capability.model), true);
+  }
 });

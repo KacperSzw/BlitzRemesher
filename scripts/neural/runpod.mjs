@@ -150,11 +150,12 @@ async function prepare() {
   if (
     optimization &&
     (!teacherOptimizationProfiles.includes(deployment.id) ||
-      deployment.setup_minutes !== 20 ||
-      deployment.training_minutes !== 112 ||
+      deployment.setup_minutes !== (deployment.id === 'teacher-optimization-a40-hour' ? 30 : 20) ||
+      deployment.training_minutes !==
+        (deployment.id === 'teacher-optimization-a40-hour' ? 194 : 112) ||
       deployment.collection_minutes !== 8)
   )
-    throw new Error('Teacher optimization requires a bounded 20+112+8 minute profile');
+    throw new Error('Teacher optimization requires its bounded validation or one-hour profile');
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const stage = dir + '/input';
   fs.mkdirSync(stage, { recursive: true });
@@ -199,6 +200,8 @@ async function prepare() {
   const auditFiles = new Map();
   if (optimization) {
     const request = validateOptimizationRequest(read('research/neural/teacher-optimization.json'));
+    if ((request.capability_minutes === 60) !== (deployment.id === 'teacher-optimization-a40-hour'))
+      throw new Error('The one-hour training request and rental profile must match');
     sync('git', ['merge-base', '--is-ancestor', request.baseline_revision, revision]);
     await copy(
       request.initialization_model,
@@ -453,7 +456,14 @@ async function launch() {
     const continuation = prepared.experiment === 'action-v2-staged';
     budget =
       prepared.experiment === 'teacher-optimization'
-        ? teacherOptimizationBudget({ states: ledger, rate: deployment.gpu_hourly_usd_cap })
+        ? teacherOptimizationBudget({
+            states: ledger,
+            rate: deployment.gpu_hourly_usd_cap,
+            minutes:
+              deployment.setup_minutes +
+              deployment.training_minutes +
+              deployment.collection_minutes,
+          })
         : prepared.experiment === 'core-validation'
           ? coreValidationBudget({ states: ledger, rate: deployment.gpu_hourly_usd_cap })
           : (prepared.experiment === 'pipeline-validation'
@@ -822,6 +832,8 @@ async function control() {
             'final-validation-comparison',
             'warm-teacher-comparison',
             'paired-learning-pilots',
+            'capability-learning',
+            'capability-lod-comparison',
             'full-lod-quality-comparison',
           ].includes(p.phase) &&
           p.phase !== s.phase
@@ -829,7 +841,7 @@ async function control() {
           rental.commit({
             phase: p.phase,
             ...(s.experiment === 'teacher-optimization' &&
-            p.phase === 'paired-learning-pilots' &&
+            ['paired-learning-pilots', 'capability-learning'].includes(p.phase) &&
             !s.training_started_at
               ? { training_started_at: p.at }
               : {}),

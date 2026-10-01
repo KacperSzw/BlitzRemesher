@@ -7,6 +7,7 @@ import { read, write } from './artifacts.mjs';
 import { boundedProcess } from './bounded-process.mjs';
 import { runCoreValidation } from './core-validation-job.mjs';
 import { runTeacherProfile } from './teacher-profile.mjs';
+import { runCapabilityQuality } from './teacher-capability-quality.mjs';
 import { runNativeDebuggerPreflight } from './native-debugger-preflight.mjs';
 import { verifyNvidiaIcdSelection } from './nvidia-icd.mjs';
 import { verifyBaselineBuild } from './baseline-overlay.mjs';
@@ -30,10 +31,12 @@ export async function runTeacherOptimization({
   now = Date.now,
   profile = runTeacherProfile,
   contracts = runCoreValidation,
+  capabilityQuality = runCapabilityQuality,
   baseline = '/workspace/baseline/build/neural/blitz-neural-placement-prepare',
   debuggerCommand = 'gdb',
   debuggerPreflight = runNativeDebuggerPreflight,
   teardownBinary = 'build/neural/blitz-neural-vulkan-tests',
+  cycleBinary = 'build/neural/blitz-neural-cycle',
   icdSelection,
   baselineBuild,
   environment = process.env,
@@ -119,6 +122,52 @@ export async function runTeacherOptimization({
       persist();
     }
   }
+  function readPilot(runDirectory, seed, strategy, capability = false) {
+    const cycle = cycleBinary;
+    const result = read(runDirectory + '/report.json'),
+      latest = read(runDirectory + '/latest.json'),
+      contract = read(runDirectory + '/contract.json');
+    validateOptimizationPilot({
+      request,
+      seed,
+      strategy,
+      contract,
+      result,
+      latest,
+      capability,
+      hashes: {
+        binary_sha256: digest(cycle),
+        curriculum_sha256: digest('research/neural/teacher-optimization-curriculum.json'),
+        corpus_sha256: digest('research/neural/corpus-v2/corpus.json'),
+        training_selection_sha256: digest('research/neural/corpus-v2/training.json'),
+      },
+    });
+    const checkpoint = path.resolve(runDirectory, latest.checkpoint);
+    if (!checkpoint.startsWith(path.resolve(runDirectory) + '/'))
+      throw new Error('invalid pilot checkpoint path');
+    const pilot = {
+      seed,
+      strategy,
+      directory: runDirectory,
+      report: result,
+      contract,
+      model: checkpoint + '/model.blzn',
+      model_sha256: digest(checkpoint + '/model.blzn'),
+      checkpoint_sha256: digest(checkpoint + '/checkpoint.pt'),
+    };
+    const index = read(checkpoint + '/index.json'),
+      verification = read(checkpoint + '/verification.json');
+    validateOptimizationCheckpoint({
+      latest,
+      index,
+      verification,
+      checkpointSha256: pilot.checkpoint_sha256,
+      modelSha256: pilot.model_sha256,
+      verificationSha256: digest(checkpoint + '/verification.json'),
+    });
+    pilot.verification = verification;
+    return pilot;
+  }
   try {
     if (
       !Number.isFinite(deadline) ||
@@ -150,8 +199,10 @@ export async function runTeacherOptimization({
       };
       persist();
     }
-    const teacherEnd = Math.min(started + 20 * 60000, deadline),
-      learningEnd = Math.min(started + 62 * 60000, deadline);
+    let teacherEnd = Math.min(started + 20 * 60000, deadline);
+    const extraMinutes = request.capability_minutes ? 82 : 0,
+      learningEnd = Math.min(started + (62 + extraMinutes) * 60000, deadline);
+    const cycle = cycleBinary;
     const optimized = 'build/neural/blitz-neural-placement-prepare';
     if (timeoutDiagnostics) {
       phase('native-debugger-preflight');
@@ -206,6 +257,54 @@ export async function runTeacherOptimization({
     });
     persist();
     if (!report.contracts.complete) throw new Error('remote engineering contracts incomplete');
+    if (request.capability_minutes) {
+      const runDirectory = directory + '/capability-hour';
+      report.capability = {
+        complete: false,
+        directory: runDirectory,
+        strategy: 'exhaustive',
+        seed: 101,
+        learning_minutes: 60,
+        finalize_minutes: 2,
+        initializer: model,
+        initializer_sha256: digest(model),
+      };
+      const capabilityStarted = now();
+      const end = Math.min(capabilityStarted + 62 * 60000, deadline);
+      if (end - capabilityStarted < 62 * 60000)
+        throw new Error('complete capability hour does not fit deadline');
+      const args = optimizationCycleArguments(request, {
+        run: runDirectory,
+        seed: 101,
+        strategy: 'exhaustive',
+        model,
+        curriculum: 'research/neural/teacher-optimization-curriculum.json',
+        capability: true,
+      });
+      report.training_started = true;
+      phase('capability-learning');
+      await run(cycle, args, 'capability-hour', end, timeoutDiagnostics);
+      const trained = readPilot(runDirectory, 101, 'exhaustive', true);
+      if (digest(model) !== request.initialization_sha256)
+        throw new Error('capability initializer changed');
+      report.capability = { ...report.capability, ...trained, complete: true };
+      persist();
+      phase('capability-lod-comparison');
+      report.capability.quality = await capabilityQuality({
+        directory: directory + '/capability-quality',
+        initialModel: model,
+        finalModel: trained.model,
+        deadline: Math.min(now() + 20 * 60000, deadline),
+        signal,
+        execute: nativeExecute,
+        now,
+      });
+      persist();
+      if (!report.capability.quality.complete)
+        report.capability.quality_incomplete_reason =
+          report.capability.quality.error ?? 'capability initial/final diagnostic incomplete';
+      teacherEnd = Math.min(started + 102 * 60000, deadline);
+    }
     phase('warm-teacher-comparison');
     report.reuse = await profile({
       baseline,
@@ -265,7 +364,6 @@ export async function runTeacherOptimization({
     }
     persist();
 
-    const cycle = 'build/neural/blitz-neural-cycle';
     for (const [i, seed] of request.seeds.entries()) {
       if (learningEnd - now() < 14 * 60000)
         throw new Error('another complete paired pilot no longer fits the learning budget');
@@ -292,47 +390,7 @@ export async function runTeacherOptimization({
           now() + 7 * 60000,
           timeoutDiagnostics,
         );
-        const result = read(runDirectory + '/report.json'),
-          latest = read(runDirectory + '/latest.json'),
-          contract = read(runDirectory + '/contract.json');
-        validateOptimizationPilot({
-          request,
-          seed,
-          strategy,
-          contract,
-          result,
-          latest,
-          hashes: {
-            binary_sha256: digest(cycle),
-            curriculum_sha256: digest('research/neural/teacher-optimization-curriculum.json'),
-            corpus_sha256: digest('research/neural/corpus-v2/corpus.json'),
-            training_selection_sha256: digest('research/neural/corpus-v2/training.json'),
-          },
-        });
-        const checkpoint = path.resolve(runDirectory, latest.checkpoint);
-        if (!checkpoint.startsWith(path.resolve(runDirectory) + '/'))
-          throw new Error('invalid pilot checkpoint path');
-        const pilot = {
-          seed,
-          strategy,
-          directory: runDirectory,
-          report: result,
-          contract,
-          model: checkpoint + '/model.blzn',
-          model_sha256: digest(checkpoint + '/model.blzn'),
-          checkpoint_sha256: digest(checkpoint + '/checkpoint.pt'),
-        };
-        const index = read(checkpoint + '/index.json'),
-          verification = read(checkpoint + '/verification.json');
-        validateOptimizationCheckpoint({
-          latest,
-          index,
-          verification,
-          checkpointSha256: pilot.checkpoint_sha256,
-          modelSha256: pilot.model_sha256,
-          verificationSha256: digest(checkpoint + '/verification.json'),
-        });
-        pilot.verification = verification;
+        const pilot = readPilot(runDirectory, seed, strategy);
         report.pilots.push(pilot);
         persist();
       }
@@ -405,22 +463,26 @@ async function main() {
   if (
     ![setup, latest, minutes].every(Number.isFinite) ||
     started >= setup ||
-    minutes !== 112 ||
+    ![112, 194].includes(minutes) ||
     latest <= started
   )
     throw new Error('invalid teacher optimization deadline');
+  const request = read('/workspace/optimization/request.json');
+  validateOptimizationRequest(request);
+  if (minutes !== (request.capability_minutes ? 194 : 112))
+    throw new Error('experiment duration does not match capability request');
   const deadline = Math.min(latest, started + minutes * 60000),
     cancellation = new AbortController();
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => cancellation.abort());
   write('/workspace/results/setup-complete.json', {
     at: started,
-    training_minutes: 30,
+    training_minutes: 30 + (request.capability_minutes ?? 0),
     experiment_minutes: minutes,
     training_deadline_ms: deadline,
   });
   const report = await runTeacherOptimization({
     directory: '/workspace/results/teacher-optimization',
-    request: read('/workspace/optimization/request.json'),
+    request,
     model: '/workspace/optimization/model.blzn',
     icdSelection: '/workspace/results/nvidia-icd-selection.json',
     baselineBuild: '/workspace/results/baseline-build.json',

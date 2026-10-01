@@ -56,6 +56,32 @@ The [curriculum](teacher-optimization-curriculum.json) exercises source, rollout
 simplifier, predecessor and UV conditions. The runner verifies native cycle
 contracts, fresh optimizer work and checkpoint hashes before accepting a pilot.
 
+The current request additionally runs one continuous 60-minute learning capability
+check after engineering contracts and before the teacher comparisons. It uses
+exhaustive teaching, seed 101, the same width-64 v4 initializer and curriculum, and
+at most two minutes of finalization. The completed hour and its checkpoints remain
+separate artifacts even if a later comparison fails. This does not replace the
+paired experiment or authorize strategy adoption or final training.
+
+The initializer and hour checkpoint then use the same bounded
+[capability diagnostic](teacher-capability-quality.json) on the two development
+assets in [action-diagnostic.json](action-diagnostic.json): painted wooden shelves
+(524 triangles) and moon rock 02 (3,304 triangles). The four LODs span 128 to 32
+pixels, with 8 search views, 16 audit views, sampling 2/4 with maximum 8, coverage
+limits 3 pixels and 0.5 changed area, 64 action trials and batches of 16. This
+reuses the existing integration smoke's visual settings and is explicitly
+separate from the eight-LOD quality protocol. Each model gets at most ten minutes,
+including termination grace, within a combined twenty-minute deadline.
+
+Both models run learned and constant rankings. Constant ranking uses equal edge
+scores with stable action order while retaining model-predicted placements; it is
+not an independent classical QEM baseline. The report keeps every LOD's source
+and adjacent measurements, triangles, action stop reasons and partial failures.
+It compares the final learned chain against the initializer and records pointwise
+best observed comparator counts without calling those counts a combined valid
+chain. Trial-limited results remain censored. No aggregate SCORE, full-quality
+claim or strategy adoption follows from this diagnostic.
+
 Promotion also requires complete comparisons on all twelve frozen development
 assets, all eight LODs, identical [visual and work settings](teacher-optimization-quality.json),
 all three seeds and **no triangle increase at any matched LOD**. Every source and
@@ -74,14 +100,18 @@ again with the current gate before any adoption decision.
 
 Local contracts and a small warm comparison precede a rental. The separate user
 authorization is capped at $3 cumulatively, including failed attempts and storage
-allowance. Each attempt reserves at most 140 minutes: 20 setup, 20 contracts and
-teacher comparisons, 42 paired learning, 50 quality and 8 collection. The controller
+allowance. The original route reserves 140 minutes: 20 setup, 20 contracts and
+teacher comparisons, 42 paired learning, 50 quality and 8 collection. The explicit
+`teacher-optimization-a40-hour` route adds 60 minutes of capability learning,
+2 minutes of finalization and 20 minutes of initial/final diagnostics, and allows
+30 minutes for setup: 232 minutes total. The grant ledger must still reserve that
+attempt together with prior cost before launch. The controller
 and independent watchdog enforce deadlines; artifact checksums are verified before
 normal cleanup. The experiment cannot start final training.
 
 ```sh
-node scripts/neural/runpod.mjs prepare-teacher-optimization runs/neural/teacher-optimization-01
-BLITZ_RUNPOD_PROFILE=teacher-optimization-a40 node scripts/neural/runpod.mjs launch runs/neural/teacher-optimization-01
+BLITZ_RUNPOD_PROFILE=teacher-optimization-a40-hour node scripts/neural/runpod.mjs prepare-teacher-optimization runs/neural/teacher-optimization-NEW
+BLITZ_RUNPOD_PROFILE=teacher-optimization-a40-hour node scripts/neural/runpod.mjs launch runs/neural/teacher-optimization-NEW
 ```
 
 Use a fresh directory and review the current grant ledger before launch. These

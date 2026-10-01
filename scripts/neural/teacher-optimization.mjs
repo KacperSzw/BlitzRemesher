@@ -16,6 +16,7 @@ export const teacherOptimizationProfiles = Object.freeze([
   'teacher-optimization-a40',
   'teacher-optimization-4090',
   'teacher-optimization-l40s',
+  'teacher-optimization-a40-hour',
 ]);
 export const teacherOptimizationSeeds = Object.freeze([101, 211, 307]);
 
@@ -38,7 +39,13 @@ export function selectOptimizationAssets({ assets, trainingIds, teacherIds, audi
 }
 
 export function teacherOptimizationBudget({ states = [], rate, now = Date.now(), minutes = 140 }) {
-  if (!Number.isFinite(rate) || rate <= 0 || rate > 1.1 || minutes !== 140 || !Number.isFinite(now))
+  if (
+    !Number.isFinite(rate) ||
+    rate <= 0 ||
+    rate > 1.1 ||
+    ![140, 232].includes(minutes) ||
+    !Number.isFinite(now)
+  )
     throw new Error('teacher optimization requires a bounded compatible GPU rental');
   let prior = 0;
   const names = new Set();
@@ -92,6 +99,7 @@ export function validateOptimizationRequest(request) {
     request.candidate_batch !== 4 ||
     request.learning_minutes !== 5 ||
     request.finalize_minutes !== 2 ||
+    (request.capability_minutes !== undefined && request.capability_minutes !== 60) ||
     (request.timeout_diagnostics !== undefined &&
       typeof request.timeout_diagnostics !== 'boolean') ||
     (request.vulkan_icd !== undefined && !['glx', 'egl'].includes(request.vulkan_icd)) ||
@@ -101,16 +109,24 @@ export function validateOptimizationRequest(request) {
   return request;
 }
 
-export function optimizationCycleArguments(request, { run, seed, strategy, model, curriculum }) {
+export function optimizationCycleArguments(
+  request,
+  { run, seed, strategy, model, curriculum, capability = false },
+) {
   validateOptimizationRequest(request);
   if (!request.seeds.includes(seed) || !['exhaustive', 'coverage-core-first'].includes(strategy))
     throw new Error('unapproved teacher pilot seed or strategy');
+  if (
+    capability &&
+    (request.capability_minutes !== 60 || seed !== 101 || strategy !== 'exhaustive')
+  )
+    throw new Error('capability run requires the approved exhaustive hour and seed');
   return [
     run,
     '--initialize',
     model,
     '--duration-minutes',
-    '5',
+    String(capability ? request.capability_minutes : request.learning_minutes),
     '--finalize-minutes',
     '2',
     '--architecture',
@@ -208,7 +224,13 @@ export function validateOptimizationPilot({
   result,
   latest,
   hashes,
+  capability = false,
 }) {
+  if (
+    capability &&
+    (request.capability_minutes !== 60 || seed !== 101 || strategy !== 'exhaustive')
+  )
+    throw new Error('invalid capability training contract');
   const expected = {
     version: 9,
     architecture: 4,
@@ -217,7 +239,7 @@ export function validateOptimizationPilot({
     teacher_strategy: strategy,
     initialize: request.initialization_sha256,
     warmstart: '',
-    duration_minutes: request.learning_minutes,
+    duration_minutes: capability ? request.capability_minutes : request.learning_minutes,
     finalize_minutes: request.finalize_minutes,
     states: 16,
     updates: 128,
@@ -239,6 +261,13 @@ export function validateOptimizationPilot({
   };
   for (const [key, value] of Object.entries(expected))
     if (contract[key] !== value) throw new Error('paired pilot contract mismatch: ' + key);
+  if (
+    capability &&
+    (result.status !== 'duration_complete' ||
+      !Number.isFinite(result.learning_elapsed_ms) ||
+      result.learning_elapsed_ms < 60 * 60000)
+  )
+    throw new Error('capability run did not complete the learning hour');
   if (
     result.complete !== true ||
     latest.complete !== true ||

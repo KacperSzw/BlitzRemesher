@@ -10,11 +10,16 @@ struct TeacherJob {
     std::string asset, name;
     fs::path directory;
     PlacementRequest request;
+    uint64_t submitted_ns{};
+    bool allow_recovery{true};
 };
 struct TeacherResult {
     TeacherJob job;
     PlacementResult result;
     double seconds{}, device_seconds{};
+    uint64_t started_ns{}, completed_ns{}, consumed_ns{}, wave{};
+    uint8_t worker{};
+    bool recovered{};
     std::exception_ptr error;
 };
 // A wave owns one immutable policy and at most two jobs per worker. Completion
@@ -29,6 +34,7 @@ class TeacherWorkers {
     std::deque<TeacherJob> queue_;
     std::map<uint32_t, TeacherResult> ready_;
     size_t in_flight_{};
+    uint32_t ready_workers_{};
     bool stop_{};
     std::atomic<bool> cancelled_{};
     std::exception_ptr startup_error_;
@@ -36,7 +42,13 @@ class TeacherWorkers {
     size_t weight_count_{};
     cudaEvent_t policy_ready_{};
     uint64_t wave_{};
-    void worker() {
+    const std::chrono::steady_clock::time_point origin_{std::chrono::steady_clock::now()};
+    uint64_t timestamp() const {
+        return uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                            std::chrono::steady_clock::now() - origin_)
+                            .count());
+    }
+    void worker(uint8_t worker_id) {
         try {
             gpu::check(cudaSetDevice(options_.device));
             gpu::StreamScope stream;
@@ -47,6 +59,11 @@ class TeacherWorkers {
             shape.hidden_width = width_;
             shape.values.resize(policy_weights(shape.architecture, width_));
             ActionCuda policy(shape, options_, 1024);
+            {
+                std::lock_guard lock(mutex_);
+                ++ready_workers_;
+            }
+            changed_.notify_all();
             uint64_t installed = 0;
             for (;;) {
                 TeacherJob job;
@@ -63,6 +80,9 @@ class TeacherWorkers {
                 Timeline range(("teacher-" + std::to_string(job.id)).c_str());
                 TeacherResult done;
                 done.job = job;
+                done.worker = worker_id;
+                done.wave = wave;
+                done.started_ns = timestamp();
                 auto start = std::chrono::steady_clock::now();
                 cudaEvent_t begin{}, end{};
                 try {
@@ -79,6 +99,8 @@ class TeacherWorkers {
                         return cancelled_ || (cancel && cancel());
                     };
                     bool recovered = false;
+                    if (!job.allow_recovery && fs::exists(job.directory))
+                        throw std::invalid_argument("fresh teacher job directory already exists");
                     if (fs::exists(job.directory / "index.json")) {
                         auto index = read_json(job.directory / "index.json"),
                              contract = read_json(job.directory / "contract.json");
@@ -141,6 +163,7 @@ class TeacherWorkers {
                         done.result = prepare_placements(job.asset, job.directory, job.request,
                                                          options_, &policy);
                     }
+                    done.recovered = recovered;
                     gpu::check(cudaEventRecord(end, stream.value));
                     gpu::check(cudaEventSynchronize(end));
                     float ms;
@@ -155,6 +178,7 @@ class TeacherWorkers {
                     cudaEventDestroy(end);
                 done.seconds =
                     std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+                done.completed_ns = timestamp();
                 {
                     std::lock_guard lock(mutex_);
                     ready_.emplace(job.id, std::move(done));
@@ -176,7 +200,7 @@ class TeacherWorkers {
             throw std::invalid_argument("teacher worker count outside 1..3");
         try {
             for (uint32_t i = 0; i < count; ++i)
-                threads_.emplace_back([this] { worker(); });
+                threads_.emplace_back([this, i] { worker(uint8_t(i)); });
         } catch (...) {
             shutdown();
             throw;
@@ -184,6 +208,12 @@ class TeacherWorkers {
     }
     ~TeacherWorkers() {
         shutdown();
+    }
+    void wait_ready() {
+        std::unique_lock lock(mutex_);
+        changed_.wait(lock, [&] { return startup_error_ || ready_workers_ == threads_.size(); });
+        if (startup_error_)
+            std::rethrow_exception(startup_error_);
     }
     void shutdown() {
         cancelled_ = true;
@@ -213,6 +243,7 @@ class TeacherWorkers {
         if (!wave_ || in_flight_ >= threads_.size() * 2)
             throw std::length_error("teacher queue capacity");
         ++in_flight_;
+        job.submitted_ns = timestamp();
         queue_.push_back(std::move(job));
         changed_.notify_one();
     }
@@ -222,6 +253,7 @@ class TeacherWorkers {
         if (startup_error_)
             std::rethrow_exception(startup_error_);
         auto node = ready_.extract(id);
+        node.mapped().consumed_ns = timestamp();
         --in_flight_;
         lock.unlock();
         changed_.notify_all();

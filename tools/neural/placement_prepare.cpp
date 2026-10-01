@@ -1,5 +1,6 @@
 #include "neural/action_gpu.hpp"
 #include "neural/memory.hpp"
+#include "tools/neural/teacher_benchmark.hpp"
 #include "training/json.hpp"
 #include "training/placement_teacher.hpp"
 #include <csignal>
@@ -13,6 +14,13 @@ static void stop(int) {
 }
 int main(int argc, char** argv) {
     try {
+        if (argc > 1 && std::string_view(argv[1]) == "--jobs") {
+            if (argc != 4)
+                throw std::invalid_argument("blitz-neural-placement-prepare --jobs JSON OUTPUT");
+            std::signal(SIGINT, stop);
+            std::signal(SIGTERM, stop);
+            return prepare_teacher_jobs(argv[2], argv[3], [] { return bool(stopped); });
+        }
         if (argc < 3)
             throw std::invalid_argument(
                 "blitz-neural-placement-prepare ASSET OUTPUT [--states N] [--pool N] [--pixels N] "

@@ -1,0 +1,202 @@
+{
+  "version": 1,
+  "training_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+  "engineering": {
+    "ctest_passed": 50,
+    "ctest_skipped": 0,
+    "contracts_complete": true,
+    "compute_sanitizer_errors": 0,
+    "vulkan_validation_passed": true,
+    "join_retirement_rounds": 48
+  },
+  "training_complete": true,
+  "experiment_validation_complete": false,
+  "experiment_exit_code": 1,
+  "post_hour_policy": "Supervisor cancelled only after normal completed hour and verified checkpoint, per user local-first direction; additional remote pilots/quality deferred.",
+  "checkpoint": {
+    "step": 413184,
+    "checkpoint_sha256": "2d19118f645aaa059ce7ff7b11d35108944bc46cdc54472712e4f44b3de042ed",
+    "model_sha256": "08fe5fabd82e8352116161c7c2a9496bada9a3c429fa7df9a95a8f8f15a24ace",
+    "indexed_files_verified": 6,
+    "verification": {
+      "fp64": {
+        "finite": true,
+        "max_abs": 0.0000030335796206149013,
+        "max_relative": 0.000021453144130051362,
+        "rms": 3.714052232065729e-7,
+        "same_shape": true,
+        "worst_index": 216
+      },
+      "native": {
+        "finite": true,
+        "max_abs": 0,
+        "max_relative": 0,
+        "rms": 0,
+        "same_shape": true,
+        "worst_index": 0
+      },
+      "native_fp64": {
+        "finite": true,
+        "max_abs": 0.0000030335796206149013,
+        "max_relative": 0.000021453144130051362,
+        "rms": 3.714052232065729e-7,
+        "same_shape": true,
+        "worst_index": 216
+      },
+      "passed": true,
+      "threshold": 0.0002
+    }
+  },
+  "hour": {
+    "status": "duration_complete",
+    "learning_elapsed_ms": 3600000,
+    "total_seconds": 3601.088668797,
+    "updates": 413184,
+    "fresh_states": 53260,
+    "requested_condition_states": 51648,
+    "failed_conditions": 0,
+    "empty_conditions": 0,
+    "curriculum_coverage_complete": true,
+    "teacher_strategy": "exhaustive",
+    "device": {
+      "driver": 13000,
+      "major": 8,
+      "minor": 6,
+      "name": "NVIDIA A40",
+      "runtime": 12090
+    },
+    "process": {
+      "name": "capability-hour",
+      "command": "build/neural/blitz-neural-cycle",
+      "args": [
+        "/workspace/results/teacher-optimization/capability-hour",
+        "--initialize",
+        "/workspace/optimization/model.blzn",
+        "--duration-minutes",
+        "60",
+        "--finalize-minutes",
+        "2",
+        "--architecture",
+        "4",
+        "--hidden-width",
+        "64",
+        "--training-profile",
+        "coverage",
+        "--teacher-strategy",
+        "exhaustive",
+        "--teacher-selection",
+        "policy-mixed",
+        "--policy-rollout-trials",
+        "64",
+        "--episode-seeds",
+        "on",
+        "--simplifier-seeds",
+        "on",
+        "--states",
+        "16",
+        "--updates",
+        "128",
+        "--batch",
+        "512",
+        "--seed",
+        "101",
+        "--workers",
+        "2",
+        "--candidate-batch",
+        "4",
+        "--checkpoint-seconds",
+        "60",
+        "--update-backend",
+        "fused",
+        "--raster-backend",
+        "vulkan",
+        "--vertex-storage",
+        "packed",
+        "--data-storage",
+        "compact",
+        "--mask-only-coverage",
+        "on",
+        "--gpu-memory-mib",
+        "16384",
+        "--curriculum",
+        "research/neural/teacher-optimization-curriculum.json",
+        "--corpus",
+        "research/neural/corpus-v2/corpus.json",
+        "--training-selection",
+        "research/neural/corpus-v2/training.json",
+        "--quality",
+        "off"
+      ],
+      "teardown_trace": true,
+      "debugger_attach_requested": true,
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    }
+  },
+  "quality": {
+    "complete": true,
+    "score": null,
+    "quality_proven": false,
+    "uncensored": false,
+    "timing_authority": "local_shared",
+    "raw_report_sha256": "817392cef2d45cf62e36ba189810e137282fb314c5b683e91a3282f5387ddb07",
+    "model_sha256": "08fe5fabd82e8352116161c7c2a9496bada9a3c429fa7df9a95a8f8f15a24ace"
+  },
+  "original_inputs": [
+    {
+      "path": "research/neural/teacher-optimization-curriculum.json",
+      "sha256": "d4d11e8505dc376e97faeb905fdd2ea35e29428f7279487803cfac648d1af455",
+      "contract_field": "curriculum_sha256"
+    },
+    {
+      "path": "research/neural/corpus-v2/corpus.json",
+      "sha256": "9eb47ec92a45820e57cf1757928094b0b329c0a887fd100026aa8a11b6d8f853",
+      "contract_field": "corpus_sha256"
+    },
+    {
+      "path": "research/neural/corpus-v2/training.json",
+      "sha256": "319e01264bbb23cf6cc3d702e40c4b3f2f366234af71263cf56e8451eb0fe1ce",
+      "contract_field": "training_selection_sha256"
+    },
+    {
+      "path": "research/neural/action-diagnostic.json",
+      "sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+      "contract_field": "diagnostic_sha256"
+    },
+    {
+      "path": "research/neural/refactor-smoke.json",
+      "sha256": "0a202d475b6ad66a67b0942b1fc0a85b8bf0411f96df6774d2d17a37297157f7",
+      "contract_field": "quality_settings_sha256"
+    }
+  ],
+  "collection": {
+    "verified": true,
+    "archive_sha256": "b5880b0b90a6a04f047ccc4158ea4a6eb5e9f9c9d9b3b66538d5e8bafad8c041",
+    "terminated": true,
+    "source_receipt": "runs/neural/teacher-optimization-06/collection.json"
+  },
+  "omitted": [
+    "model/checkpoint/tensor payloads",
+    "teacher data shards/mesh caches/wave models",
+    "SSH endpoints and credential/identity files",
+    "Vulkan machine UUID fields (sanitized copy explicitly marked)"
+  ],
+  "limitations": [
+    "A completed training duration does not imply 60 minutes of optimizer GPU computation.",
+    "The local two-development-asset diagnostic is trial-censored and does not show consistent quality improvement or establish release quality.",
+    "The requested hour succeeded; the broader remote experiment was deliberately deferred after user policy changed.",
+    "No extra paid run or optimizer work was performed for this archive."
+  ],
+  "post_hour_observations": {
+    "capability_quality_initial_process": {
+      "signal": "SIGTERM",
+      "cancelled": true
+    },
+    "warm_reuse_rows": 0,
+    "warm_reuse_error": "Error: teacher profile deadline/cancellation",
+    "supervisor_error": "Error: warm reuse comparison incomplete or unequal"
+  }
+}

@@ -19,14 +19,13 @@
     "configure": "nix develop --command cmake -S . -B build/integration-cpu -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_ACQUISITION=ON -DBLITZ_CUDA=OFF -DBLITZ_NEURAL_TRAIN=OFF",
     "build": "nix develop --command cmake --build build/integration-cpu -j2",
     "build_passed": true,
-    "focused_tests": { "passed": 9, "failed": 0 },
+    "focused_tests": {
+      "passed": 9,
+      "failed": 0
+    },
     "full_tests": {
       "passed": 28,
-      "failed": 0,
-      "command": "nix develop --command ctest --test-dir build/integration-cpu --output-on-failure -j2",
-      "verification": "27 initial successes retained; corrected cloud test rerun passed from the CTest build directory",
-      "cloud_rerun_command": "nix develop --command ctest --test-dir build/integration-cpu --output-on-failure -R '^neural-cloud-contracts$'",
-      "cloud_node_subtests": { "passed": 23, "failed": 0 }
+      "failed": 0
     },
     "initial_full_tests": {
       "passed": 27,
@@ -46,5 +45,120 @@
     "shared pools and wedge transforms preserve per-vertex exact-position metadata",
     "packed precision bitmap bytes are charged separately from shared vertex stride"
   ],
-  "pending_validation": ["merged sanitizer", "merged GPU", "bounded remote core and teacher readiness"]
+  "pending_validation": [
+    "bounded remote core and teacher readiness"
+  ],
+  "code_revision": "083f15377b82fde2af88f3489b7a57a211e7ebb1",
+  "local_sanitizers": {
+    "asan": true,
+    "ubsan": true,
+    "passed": 27,
+    "total": 27
+  },
+  "local_cuda_vulkan_training": {
+    "passed": 41,
+    "total": 41,
+    "seconds": 47.32,
+    "skipped": 0
+  },
+  "external_installed_consumers": {
+    "passed": 2,
+    "total": 2,
+    "c_abi": 5,
+    "package_version": "0.5.0",
+    "disabled_optional_dependencies": [
+      "Torch",
+      "CURL",
+      "LibArchive",
+      "nlohmann_json",
+      "OpenSSL",
+      "CUDAToolkit",
+      "Vulkan"
+    ]
+  },
+  "compute_sanitizer": {
+    "action_errors": 0,
+    "vulkan_errors": 0
+  },
+  "vulkan_validation": {
+    "errors": 0,
+    "warnings": 1109,
+    "warning_kind": "Existing unused shader output warnings; full log retained"
+  },
+  "node_contracts": {
+    "passed": 73,
+    "total": 73
+  },
+  "local_teacher_readiness": {
+    "complete": true,
+    "runs": 8,
+    "byte_identical_batches": true,
+    "timing_invariants": true,
+    "timing_authority": "local_shared",
+    "quality_score": null
+  },
+  "local_lod_smoke": {
+    "complete": true,
+    "assets": 2,
+    "raw": "smoke.json.gz",
+    "settings": "smoke-settings.json",
+    "quality_score": null
+  },
+  "training_preparation": {
+    "corpus_files_verified": 231,
+    "recipe": "../../next-experiment.json",
+    "local_artifacts": "runs/neural/v4-pilot-prepared",
+    "training_started": false
+  },
+  "remote_attempts": [
+    {
+      "run": "runs/neural/core-validation-01",
+      "status": "provisioning_rejected",
+      "stage": "network-volume",
+      "error": "Provider requires at least $5 account credit for a network volume",
+      "gpu_created": false,
+      "volume_created": false,
+      "cleanup_verified_at": "2026-10-01T09:30:45.867Z"
+    }
+  ],
+  "performance": {
+    "prior_soak": {
+      "learner_wait_percent": 93.36,
+      "optimizer_wall_percent": 2.57,
+      "worker_intervals_overlap": true
+    },
+    "local_microfixtures": [
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "post_load_seconds_mean": 0.128086383,
+        "candidate_audit_percent": 61.20817503293851,
+        "exact_confirmation_percent": 15.581757039700307,
+        "other_percent": 6.529459107296362
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "post_load_seconds_mean": 0.2346949855,
+        "candidate_audit_percent": 51.005401647151935,
+        "exact_confirmation_percent": 28.12406914420419,
+        "other_percent": 3.6333922865173456
+      }
+    ],
+    "interpretation": "Tiny shared-GPU fixtures establish stage accounting and batch parity, not representative throughput. Audits and exact confirmations dominate teacher work; generic zero GPU counters do not mean no work.",
+    "before_final_training": [
+      "Measure representative larger meshes, both UV modes and the 64-trial policy rollout",
+      "Compare candidate batching and worker concurrency with identical audited outputs and fixed budgets",
+      "Demonstrate complete-chain quality in matched development controls before model-capacity changes"
+    ]
+  },
+  "local_cloud_validation": {
+    "cloud_subtests": 27,
+    "passed": 27,
+    "ctest_passed": 1,
+    "ctest_total": 1,
+    "storage_modes": [
+      "network",
+      "core-only-container"
+    ],
+    "malformed_metadata_does_not_block_termination": true
+  }
 }

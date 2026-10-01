@@ -116,6 +116,16 @@ node scripts/neural/teacher-readiness.mjs \
   runs/neural/v4-initialization/model.blzn runs/neural/v4-teacher-readiness-01
 ```
 
+For remote contracts and the same teacher fixtures, `prepare-core-validation`
+creates an immutable source/model/asset bundle. Set
+`BLITZ_CORE_READINESS_MODEL=runs/neural/v4-initialization/model.blzn` when preparing
+it. An explicit `BLITZ_CORE_STORAGE=container` uses only disposable container
+storage for this test route. Completed results are checksum-collected before
+termination; uncollected container results are lost on termination and recorded
+as incomplete. The cumulative validation cap is $1.25 and each rental is bounded
+to 20 minutes of setup, 10 minutes of testing and 5 minutes of collection.
+Container storage is rejected for learning experiments.
+
 This checks source and emitted-predecessor fixtures in batch order 1/4/4/1 with
 a 250-second local deadline. It records parity and timing evidence, not a quality
 score. For the existing test-only remote bundle, set

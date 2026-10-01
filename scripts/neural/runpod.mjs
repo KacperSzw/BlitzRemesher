@@ -15,6 +15,7 @@ import {
   terminationDue,
   rentalDeadlines,
   retrySsh,
+  storageMode,
 } from './runpod-api.mjs';
 import { deployment } from './runpod-profile.mjs';
 import {
@@ -82,6 +83,10 @@ function validateCoreDirectory() {
   }
 }
 async function prepare() {
+  const storage = storageMode({
+    storage_mode: process.env.BLITZ_CORE_STORAGE,
+    experiment: core ? 'core-validation' : undefined,
+  });
   if (core) validateCoreDirectory();
   if (fs.existsSync(dir + '/prepared.json'))
     throw new Error('Use a new directory for a new bundle');
@@ -298,6 +303,7 @@ async function prepare() {
     revision,
     branch,
     deployment,
+    ...(core ? { storage_mode: storage } : {}),
     experiment: core
       ? 'core-validation'
       : pipeline
@@ -351,13 +357,16 @@ async function launch() {
       'This rental already has durable state; services resume it without creating another Pod',
     );
   const prepared = read(dir + '/prepared.json');
+  const storage = storageMode(prepared);
+  if (process.env.BLITZ_CORE_STORAGE !== undefined && process.env.BLITZ_CORE_STORAGE !== storage)
+    throw new Error('Prepared storage mode differs; prepare a new bundle');
   if (prepared.experiment === 'core-validation') validateCoreDirectory();
   if (JSON.stringify(prepared.deployment) !== JSON.stringify(deployment))
     throw new Error('Prepared GPU profile differs; prepare a new bundle');
   if ((await sha(dir + '/input.tar')) !== prepared.archive_sha256)
     throw new Error('Prepared archive changed');
   const api = new Api(apiKey(keyFile)),
-    quote = await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER);
+    quote = await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER, storage);
   let budget;
   if (
     [
@@ -444,6 +453,7 @@ async function launch() {
     quote,
     deployment,
     experiment: prepared.experiment,
+    ...(prepared.experiment === 'core-validation' ? { storage_mode: storage } : {}),
     budget,
     revision: prepared.revision,
     ...deadlines,
@@ -575,17 +585,34 @@ async function collect(endpoint, deadline) {
   fs.renameSync(dir + '/results.tar.gz.part', dir + '/results.tar.gz');
   write(dir + '/collection.json', { verified: true, sha256: checksum, at: Date.now() });
 }
+function collectionVerified() {
+  try {
+    const collection = read(dir + '/collection.json');
+    const archive = fs.statSync(dir + '/results.tar.gz');
+    return (
+      collection.verified === true &&
+      /^[a-f0-9]{64}$/.test(collection.sha256) &&
+      archive.isFile() &&
+      archive.size > 0
+    );
+  } catch {
+    return false; // Advisory evidence must never prevent deadline cleanup.
+  }
+}
 async function control() {
+  const state = read(statePath);
+  const storage = state.storage_mode === 'container' ? 'container' : 'network';
   const api = new Api(apiKey(keyFile)),
-    rental = new Rental(api, read(statePath), (s) => write(statePath, s));
+    rental = new Rental(api, state, (s) => write(statePath, s));
   const s = rental.state;
   if (s.compute_terminated) {
-    await rental.cleanupVolume(
-      fs.existsSync(dir + '/collection.json') && read(dir + '/collection.json').verified,
-    );
+    await rental.cleanupVolume(collectionVerified());
     return;
   }
   try {
+    storageMode(s);
+    if (s.experiment === 'core-validation' && storageMode(read(dir + '/prepared.json')) !== storage)
+      throw new Error('Prepared storage mode differs from rental state');
     if (Date.now() >= s.deadline_ms || fs.existsSync(dir + '/stop-requested'))
       throw new Error('Rental deadline/cancellation reached');
     sync('systemctl', ['--user', 'is-active', s.name + '-watchdog.service']);
@@ -623,7 +650,7 @@ async function control() {
       await retrySsh(() =>
         remote(
           endpoint,
-          "flock /workspace/upload.lock sh -c 'cat > /workspace/input.tar.part && mv /workspace/input.tar.part /workspace/input.tar'",
+          "mkdir -p /workspace && flock /workspace/upload.lock sh -c 'cat > /workspace/input.tar.part && mv /workspace/input.tar.part /workspace/input.tar'",
           { input: dir + '/input.tar', timeout: Math.max(1, s.setup_deadline_ms - Date.now()) },
         ),
       );
@@ -751,19 +778,28 @@ async function control() {
           { timeout: 10000 },
         );
         if (finished === 'finished') await collect(s.endpoint, s.deadline_ms - 15000);
-      } catch {} // Failed collection leaves the network volume intact.
+      } catch {} // Network storage survives; container evidence expires with the Pod.
     }
   } finally {
-    await rental.terminate();
-    await rental.cleanupVolume(
-      fs.existsSync(dir + '/collection.json') && read(dir + '/collection.json').verified,
-    );
-    rental.commit({ phase: s.volume_deleted ? 'complete' : 'stopped_uncollected' });
+    const verified = collectionVerified();
+    await rental.terminate(verified);
+    await rental.cleanupVolume(verified);
+    rental.commit({
+      phase:
+        storage === 'container'
+          ? verified
+            ? 'complete'
+            : 'stopped_uncollected_ephemeral'
+          : s.volume_deleted
+            ? 'complete'
+            : 'stopped_uncollected',
+    });
     console.log(
       JSON.stringify({
         compute_terminated: true,
-        volume_preserved: !s.volume_deleted,
-        results_verified: fs.existsSync(dir + '/collection.json'),
+        volume_preserved: !s.volume_deleted && Boolean(s.volume_id || s.volume_requested),
+        ...(storage === 'container' ? { ephemeral_storage_lost: s.ephemeral_storage_lost } : {}),
+        results_verified: verified,
       }),
     );
   }
@@ -777,7 +813,7 @@ async function watchdog() {
     if (completed) return;
     if (expired) {
       const rental = new Rental(api, state, (s) => write(dir + '/watchdog.json', s));
-      await rental.terminate();
+      await rental.terminate(collectionVerified());
       // Keep polling through the deadline for a delayed, ambiguous POST response.
       if (Date.now() > state.deadline_ms + 60000) return;
     }
@@ -803,7 +839,18 @@ else if (command === 'control') await control();
 else if (command === 'watchdog') await watchdog();
 else if (command === 'stop') {
   fs.writeFileSync(dir + '/stop-requested', 'Stop requested\n', { mode: 0o600 });
-  console.log('Termination requested; the watchdog will preserve uncollected storage.');
+  let mode;
+  try {
+    const state = read(fs.existsSync(statePath) ? statePath : dir + '/prepared.json');
+    mode = state.storage_mode ?? 'network';
+  } catch {} // The cancellation marker is independent of advisory metadata.
+  console.log(
+    mode === 'container'
+      ? 'Termination requested; uncollected container evidence will be lost.'
+      : mode === 'network'
+        ? 'Termination requested; the watchdog will preserve uncollected storage.'
+        : 'Termination requested; storage metadata is unavailable. Uncollected evidence may be lost.',
+  );
 } else if (command === 'status') {
   for (const name of ['rental.json', 'watchdog.json', 'collection.json'])
     if (fs.existsSync(dir + '/' + name))

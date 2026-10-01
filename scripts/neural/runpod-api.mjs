@@ -7,6 +7,18 @@ export const IMAGE =
   'runpod/base:1.0.7-cuda1290-ubuntu2404@sha256:c776d549e38023c51a28c25267e029ec2aa53a525c87a934b77694d76572c629';
 import { read, write } from './artifacts.mjs';
 export { read, write };
+export function storageMode(state) {
+  const mode = state.storage_mode === undefined ? 'network' : state.storage_mode;
+  if (!['network', 'container'].includes(mode)) throw new Error('Invalid rental storage mode');
+  if (
+    mode === 'container' &&
+    (state.experiment !== 'core-validation' ||
+      state.volume_id !== undefined ||
+      state.volume_requested)
+  )
+    throw new Error('Container storage requires core-validation without a network-volume ledger');
+  return mode;
+}
 export function apiKey(file) {
   const stat = fs.statSync(file);
   if (!stat.isFile() || stat.mode & 0o077)
@@ -71,19 +83,24 @@ export class Api {
     } while (cursor);
     return pods;
   }
-  async quote(dataCenter) {
+  async quote(dataCenter, storage = 'network') {
+    if (!['network', 'container'].includes(storage)) throw new Error('Invalid rental storage mode');
     const [catalog, centers] = await Promise.all([
       this.request(
         'GET',
         '/catalog/gpus?include=AVAILABILITY&product=POD&count=1&cloud=SECURE&minCudaVersion=' +
           deployment.minimum_cuda,
       ),
-      this.request('GET', '/catalog/datacenters?networkVolumeTypes=STANDARD'),
+      this.request(
+        'GET',
+        '/catalog/datacenters' + (storage === 'network' ? '?networkVolumeTypes=STANDARD' : ''),
+      ),
     ]);
-    return chooseQuote(catalog.gpus, centers.dataCenters, dataCenter);
+    return chooseQuote(catalog.gpus, centers.dataCenters, dataCenter, deployment, storage);
   }
 }
-export function chooseQuote(gpus, centers, dataCenter, profile = deployment) {
+export function chooseQuote(gpus, centers, dataCenter, profile = deployment, storage = 'network') {
+  if (!['network', 'container'].includes(storage)) throw new Error('Invalid rental storage mode');
   const gpu = gpus.find((g) => g.id === profile.gpu);
   if (
     !gpu?.secure ||
@@ -98,13 +115,18 @@ export function chooseQuote(gpus, centers, dataCenter, profile = deployment) {
     (d) =>
       (!dataCenter || d.id === dataCenter) &&
       levels[d.availability] &&
-      centers.some((c) => c.id === d.id && c.networkVolumeTypes.includes('STANDARD')),
+      centers.some(
+        (c) =>
+          c.id === d.id && (storage === 'container' || c.networkVolumeTypes.includes('STANDARD')),
+      ),
   );
   available.sort(
     (a, b) => levels[b.availability] - levels[a.availability] || a.id.localeCompare(b.id),
   );
   if (!available.length)
-    throw new Error(`No Secure ${profile.gpu} location with standard network storage is available`);
+    throw new Error(
+      `No Secure ${profile.gpu} location${storage === 'network' ? ' with standard network storage' : ''} is available`,
+    );
   return {
     gpu: gpu.id,
     gpu_hourly_usd: gpu.price.secure,
@@ -114,6 +136,7 @@ export function chooseQuote(gpus, centers, dataCenter, profile = deployment) {
 }
 export function podRequest(state, publicKey) {
   const profile = state.deployment ?? deployment;
+  const storage = storageMode(state);
   return {
     name: state.name,
     cloud: 'SECURE',
@@ -127,7 +150,9 @@ export function podRequest(state, publicKey) {
       minCudaVersion: profile.minimum_cuda,
     },
     dataCenterIds: [state.quote.data_center],
-    mounts: { network: [{ volumeId: state.volume_id, path: '/workspace' }] },
+    ...(storage === 'network'
+      ? { mounts: { network: [{ volumeId: state.volume_id, path: '/workspace' }] } }
+      : {}),
     ports: ['22/tcp'],
     startSsh: true,
     startJupyter: false,
@@ -197,6 +222,7 @@ export class Rental {
   }
   async volume() {
     const s = this.state;
+    if (storageMode(s) === 'container') return;
     if (s.volume_id) return;
     if (s.volume_requested) {
       const result = await this.api.request('GET', '/network-volumes');
@@ -224,6 +250,7 @@ export class Rental {
   }
   async pod(publicKey) {
     const s = this.state;
+    storageMode(s);
     if (s.pod_id) return;
     if (this.now() >= s.setup_deadline_ms) throw new Error('Setup deadline reached');
     if (s.pod_requested) {
@@ -245,8 +272,10 @@ export class Rental {
       throw error;
     }
   }
-  async terminate() {
+  async terminate(verified = false) {
     const s = this.state;
+    // Invalid provisioning metadata must never block cleanup of an owned Pod.
+    const ephemeral = s.storage_mode === 'container';
     // Reconcile by durable unique name even if creation's response was lost.
     const pods = (await this.api.pods()).filter((p) => p.id === s.pod_id || p.name === s.name);
     if (s.pod_id && !pods.some((p) => p.id === s.pod_id)) {
@@ -261,11 +290,23 @@ export class Rental {
       if (current && current.status !== 'TERMINATED')
         throw new Error('Pod deletion is not yet confirmed');
     }
-    this.commit({ compute_terminated: true, terminated_at: this.now() });
+    this.commit({
+      compute_terminated: true,
+      terminated_at: this.now(),
+      ...(ephemeral
+        ? {
+            container_storage_released: true,
+            container_storage_preserved: false,
+            results_verified: verified === true,
+            ephemeral_storage_lost: verified !== true && Boolean(s.pod_id || pods.length),
+          }
+        : {}),
+    });
   }
   async cleanupVolume(verified) {
     if (!this.state.compute_terminated)
       throw new Error('Terminate compute before deleting storage');
+    if (storageMode(this.state) === 'container') return;
     const neverAttached =
       !this.state.pod_id && (this.state.pod_rejected || !this.state.pod_requested);
     if (!verified && !neverAttached) return; // The sole recovery copy stays on persistent storage.

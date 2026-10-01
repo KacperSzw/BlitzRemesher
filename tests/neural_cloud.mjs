@@ -16,6 +16,7 @@ import {
   terminationDue,
   rentalDeadlines as deadlinesFor,
   retrySsh,
+  storageMode,
 } from '../scripts/neural/runpod-api.mjs';
 import { profiles, verifyDevice } from '../scripts/neural/runpod-profile.mjs';
 import {
@@ -219,6 +220,89 @@ test('Pod request is pinned and forwards only the public key', () => {
   assert.deepEqual(body.env, { PUBLIC_KEY: 'ssh-ed25519 public-test' });
   assert.deepEqual(body.ports, ['22/tcp']);
   assert.equal(body.mounts.network[0].volumeId, 'volume1');
+});
+test('container storage is explicit, core-only and does not require network-volume availability', async () => {
+  const state = { ...initial(), experiment: 'core-validation', storage_mode: 'container' };
+  assert.equal(storageMode(initial()), 'network');
+  assert.equal(storageMode(state), 'container');
+  assert.equal(Object.hasOwn(podRequest(state, 'public'), 'mounts'), false);
+  assert.equal(podRequest(state, 'public').disk, deployment.container_disk_gb);
+  const withoutVolumes = [{ id: 'EU-1', networkVolumeTypes: [] }];
+  assert.throws(() => quoteFor([gpu], withoutVolumes, undefined, deployment));
+  assert.equal(
+    quoteFor([gpu], withoutVolumes, undefined, deployment, 'container').data_center,
+    'EU-1',
+  );
+  const api = new MockApi();
+  let durable;
+  let rental = new Rental(
+    api,
+    state,
+    (s) => {
+      durable = structuredClone(s);
+    },
+    () => 100,
+  );
+  await rental.volume();
+  assert.equal(api.calls.length, 0);
+  await rental.pod('public');
+  assert.equal(durable.storage_mode, 'container');
+  assert.equal(Object.hasOwn(api.calls[0].body, 'mounts'), false);
+  rental = new Rental(
+    api,
+    durable,
+    () => {},
+    () => 200,
+  );
+  await rental.terminate(true);
+  await rental.cleanupVolume(true);
+  assert.equal(durable.compute_terminated, true);
+  assert.equal(durable.results_verified, true);
+  assert.equal(durable.ephemeral_storage_lost, false);
+  assert.equal(durable.container_storage_preserved, false);
+  assert.ok(api.calls.every((call) => !call.uri.startsWith('/network-volumes')));
+});
+test('malformed storage blocks provisioning while owned Pod termination remains available', async () => {
+  for (const changed of [
+    { storage_mode: null },
+    { storage_mode: 'typo' },
+    { storage_mode: 'container', experiment: 'gpu-refactor' },
+    { storage_mode: 'container', volume_id: 'volume1' },
+    { storage_mode: 'container', volume_requested: true },
+  ]) {
+    const api = new MockApi(),
+      state = {
+        ...initial(),
+        experiment: 'core-validation',
+        storage_mode: 'container',
+        ...changed,
+      };
+    const rental = new Rental(
+      api,
+      state,
+      () => {},
+      () => 200,
+    );
+    assert.throws(() => podRequest(state, 'public'), /storage|network-volume/);
+    await assert.rejects(rental.volume(), /storage|network-volume/);
+    await assert.rejects(rental.pod('public'), /storage|network-volume/);
+    assert.equal(api.calls.length, 0);
+    state.pod_id = 'owned';
+    state.pod_requested = true;
+    api.resources = [
+      { id: 'owned', name: state.name },
+      { id: 'unrelated', name: 'training' },
+    ];
+    api.volumes = [{ id: 'volume1', name: state.name }];
+    await rental.terminate();
+    assert.deepEqual(
+      api.resources.map((pod) => pod.id),
+      ['unrelated'],
+    );
+    assert.equal(state.compute_terminated, true);
+    await assert.rejects(rental.cleanupVolume(true), /storage|network-volume/);
+    assert.equal(api.volumes.length, 1);
+  }
 });
 test('actual allocation must satisfy hardware and rate caps', () => {
   const pod = {
@@ -922,9 +1006,11 @@ test('core preparation bundles only committed source and carries self-contained 
     const env = { ...process.env };
     delete env.BLITZ_RUNPOD_PROFILE;
     delete env.BLITZ_CORE_READINESS_MODEL;
+    delete env.BLITZ_CORE_STORAGE;
     local(process.execPath, [cli, 'prepare-core-validation', output], { env });
     const prepared = JSON.parse(fs.readFileSync(output + '/prepared.json'));
     assert.equal(prepared.experiment, 'core-validation');
+    assert.equal(prepared.storage_mode, 'network');
     assert.equal(prepared.files, 1);
     assert.equal(prepared.deployment.id, 'hardware-validation-ada16');
     const archive = local('tar', ['-tf', output + '/input.tar']);
@@ -936,9 +1022,10 @@ test('core preparation bundles only committed source and carries self-contained 
       optional = root + '/runs/neural/optional';
     modelFixture(model);
     local(process.execPath, [cli, 'prepare-core-validation', optional], {
-      env: { ...env, BLITZ_CORE_READINESS_MODEL: model },
+      env: { ...env, BLITZ_CORE_READINESS_MODEL: model, BLITZ_CORE_STORAGE: 'container' },
     });
     const optionalPrepared = JSON.parse(fs.readFileSync(optional + '/prepared.json'));
+    assert.equal(optionalPrepared.storage_mode, 'container');
     assert.equal(optionalPrepared.teacher_readiness.model.sha256, checksum(fs.readFileSync(model)));
     assert.equal(optionalPrepared.files, 3 + assets.length);
     assert.equal(optionalPrepared.teacher_readiness.training_started, false);
@@ -1011,6 +1098,221 @@ test('core prepare and launch reject ledger escapes before provider access', () 
         assert.equal(fs.existsSync(rental + '/rental.json'), false);
       }
     }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+test('container controller collects before termination and records ephemeral loss on failure', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-container-controller-'));
+  const cli = fileURLToPath(new URL('../scripts/neural/runpod.mjs', import.meta.url));
+  const preload = directory + '/mock-controller.mjs';
+  try {
+    fs.mkdirSync(directory + '/home/.config/blitz', { recursive: true });
+    fs.writeFileSync(directory + '/home/.config/blitz/runpod-api-key', 'fixture-key', {
+      mode: 0o600,
+    });
+    fs.writeFileSync(
+      preload,
+      `
+import fs from 'node:fs';
+import os from 'node:os';
+import cp from 'node:child_process';
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
+import { syncBuiltinESMExports } from 'node:module';
+import { createHash } from 'node:crypto';
+const root = process.env.BLITZ_TEST_RENTAL;
+const mode = process.env.BLITZ_TEST_OUTCOME;
+const record = event => fs.appendFileSync(root + '/events.jsonl', JSON.stringify(event) + '\\n');
+const hash = data => createHash('sha256').update(data).digest('hex');
+const archive = Buffer.from('test-only collected evidence');
+const state = JSON.parse(fs.readFileSync(root + '/rental.json'));
+let pods = state.pod_id ? [{ id: state.pod_id, name: state.name }] : [];
+os.homedir = () => process.env.BLITZ_TEST_HOME;
+cp.execFileSync = (command, args) => {
+  if (command !== 'systemctl') throw new Error('Unexpected local command: ' + command);
+  record({ local: command, args }); return 'active';
+};
+cp.spawn = (command, args, options) => {
+  if (command !== 'ssh') throw new Error('Unexpected subprocess: ' + command);
+  const remote = args.at(-1); record({ ssh: remote });
+  const child = new EventEmitter();
+  child.stdin = new PassThrough(); child.stdin.resume();
+  child.stdout = typeof options.stdio[1] === 'number' ? null : new PassThrough();
+  child.stderr = new PassThrough(); child.kill = () => {};
+  child.stdin.once('finish', () => {
+    let data = '';
+    if (remote === 'sha256sum /workspace/input.tar') data = hash(fs.readFileSync(root + '/input.tar'));
+    else if (remote === 'cat /workspace/results.tar.gz.sha256') data = mode === 'collection-failure' ? 'invalid-checksum' : hash(archive);
+    else if (remote === 'cat /workspace/results.tar.gz') data = archive;
+    else if (remote.startsWith('if [ -f /workspace/job-finished ]') || remote.startsWith('test -f /workspace/job-finished')) data = 'finished';
+    else if (remote !== 'true' && !remote.startsWith('mkdir -p /workspace && flock ') &&
+             !remote.startsWith('cd /workspace && tar ') && !remote.startsWith('flock -o /workspace/launch.lock '))
+      throw new Error('Unexpected remote command: ' + remote);
+    if (child.stdout) child.stdout.emit('data', Buffer.from(data));
+    else fs.writeSync(options.stdio[1], data);
+    child.emit('close', 0, null);
+  });
+  return child;
+};
+syncBuiltinESMExports();
+globalThis.fetch = async (url, options) => {
+  const uri = new URL(url).pathname.replace('/v2', ''), method = options.method;
+  record({ api: uri, method, body: options.body ? JSON.parse(options.body) : undefined });
+  if (uri === '/pods' && method === 'GET') return Response.json({ pods, pagination: { nextCursor: null } });
+  if (uri === '/pods' && method === 'POST') {
+    const body = JSON.parse(options.body);
+    if ('mounts' in body) throw new Error('Container Pod must omit mounts');
+    const pod = { ...body, id: 'owned-pod' }; pods.push(pod); return Response.json(pod);
+  }
+  if (uri === '/pods/owned-pod' && method === 'DELETE') {
+    pods = []; return new Response(null, { status: 204 });
+  }
+  if (uri === '/pods/owned-pod' && method === 'GET')
+    return pods.length ? Response.json(pods[0]) : new Response(null, { status: 404 });
+  throw new Error('Unexpected provider request: ' + method + ' ' + uri);
+};
+`,
+    );
+    for (const outcome of [
+      'complete',
+      'collection-failure',
+      'deadline',
+      'malformed-collection',
+      'watchdog-malformed-collection',
+      'missing-archive',
+      'empty-archive',
+    ]) {
+      const run = directory + '/' + outcome;
+      fs.mkdirSync(run);
+      const now = Date.now(),
+        profile = profiles['hardware-validation-ada16'];
+      const state = {
+        name: 'fixture-' + outcome,
+        experiment: 'core-validation',
+        storage_mode: 'container',
+        deployment: profile,
+        quote: { data_center: 'EU-1' },
+        ...deadlinesFor(now, undefined, profile),
+        endpoint: { host: 'fixture.invalid', username: 'root', port: 22 },
+        ...(outcome === 'deadline' ||
+        outcome.includes('malformed-collection') ||
+        outcome.includes('archive')
+          ? { deadline_ms: now - 120000, pod_requested: true, pod_id: 'owned-pod' }
+          : {}),
+      };
+      fs.writeFileSync(run + '/rental.json', JSON.stringify(state));
+      fs.writeFileSync(run + '/input.tar', 'test-only input');
+      fs.writeFileSync(run + '/identity.pub', 'public-fixture');
+      if (outcome.includes('malformed-collection'))
+        fs.writeFileSync(run + '/collection.json', '{bad-json');
+      if (outcome.includes('archive'))
+        fs.writeFileSync(
+          run + '/collection.json',
+          JSON.stringify({ verified: true, sha256: 'a'.repeat(64) }),
+        );
+      if (outcome === 'empty-archive') fs.writeFileSync(run + '/results.tar.gz', '');
+      fs.writeFileSync(
+        run + '/prepared.json',
+        JSON.stringify({
+          experiment: 'core-validation',
+          storage_mode: 'container',
+          revision: 'fixture',
+          archive_sha256: checksum('test-only input'),
+        }),
+      );
+      const result = spawnSync(
+        process.execPath,
+        ['--import', preload, cli, outcome.startsWith('watchdog') ? 'watchdog' : 'control', run],
+        {
+          encoding: 'utf8',
+          timeout: 10000,
+          env: {
+            ...process.env,
+            BLITZ_RUNPOD_PROFILE: profile.id,
+            BLITZ_TEST_RENTAL: run,
+            BLITZ_TEST_OUTCOME: outcome,
+            BLITZ_TEST_HOME: directory + '/home',
+          },
+        },
+      );
+      assert.equal(result.status, 0, result.stderr);
+      const ended = JSON.parse(
+        fs.readFileSync(run + (outcome.startsWith('watchdog') ? '/watchdog.json' : '/rental.json')),
+      );
+      assert.equal(ended.storage_mode, 'container');
+      assert.equal(ended.compute_terminated, true);
+      assert.equal(ended.ephemeral_storage_lost, outcome !== 'complete');
+      assert.equal(ended.results_verified, outcome === 'complete');
+      if (!outcome.startsWith('watchdog'))
+        assert.equal(
+          ended.phase,
+          outcome === 'complete' ? 'complete' : 'stopped_uncollected_ephemeral',
+        );
+      const events = fs
+        .readFileSync(run + '/events.jsonl', 'utf8')
+        .trim()
+        .split('\n')
+        .map(JSON.parse);
+      assert.ok(events.every((event) => !event.api?.includes('network-volumes')));
+      if (!outcome.startsWith('watchdog'))
+        assert.equal(JSON.parse(result.stdout).volume_preserved, false);
+      if (outcome === 'complete') {
+        assert.equal(
+          fs.readFileSync(run + '/results.tar.gz', 'utf8'),
+          'test-only collected evidence',
+        );
+        const collected = events.findIndex(
+          (event) => event.ssh === 'cat /workspace/results.tar.gz',
+        );
+        const deleted = events.findIndex((event) => event.method === 'DELETE');
+        assert.ok(collected >= 0 && deleted > collected);
+        assert.ok(events.some((event) => event.ssh?.startsWith('mkdir -p /workspace && flock ')));
+      } else
+        assert.equal(
+          fs.existsSync(run + '/collection.json'),
+          outcome.includes('malformed-collection') || outcome.includes('archive'),
+        );
+    }
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('malformed storage cannot launch or prepare training, and cannot block a stop request', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-storage-guards-'));
+  const cli = fileURLToPath(new URL('../scripts/neural/runpod.mjs', import.meta.url));
+  try {
+    for (const state of [
+      { experiment: 'gpu-refactor', storage_mode: 'container' },
+      { experiment: 'core-validation', storage_mode: 'typo' },
+      { experiment: 'core-validation', storage_mode: 'container', volume_id: 'existing' },
+    ]) {
+      fs.writeFileSync(directory + '/prepared.json', JSON.stringify(state));
+      const launch = spawnSync(process.execPath, [cli, 'launch', directory], { encoding: 'utf8' });
+      assert.equal(launch.status, 1);
+      assert.match(launch.stderr, /storage|network-volume/);
+      assert.equal(fs.existsSync(directory + '/rental.json'), false);
+    }
+    const prepare = spawnSync(process.execPath, [cli, 'prepare-gpu-refactor', directory], {
+      encoding: 'utf8',
+      env: { ...process.env, BLITZ_CORE_STORAGE: 'container' },
+    });
+    assert.equal(prepare.status, 1);
+    assert.match(prepare.stderr, /requires core-validation/);
+    fs.writeFileSync(
+      directory + '/rental.json',
+      JSON.stringify({ storage_mode: 'typo', pod_id: 'owned' }),
+    );
+    const stopped = spawnSync(process.execPath, [cli, 'stop', directory], { encoding: 'utf8' });
+    assert.equal(stopped.status, 0, stopped.stderr);
+    assert.equal(fs.existsSync(directory + '/stop-requested'), true);
+    fs.rmSync(directory + '/stop-requested');
+    fs.writeFileSync(directory + '/rental.json', '{bad-json');
+    const malformed = spawnSync(process.execPath, [cli, 'stop', directory], { encoding: 'utf8' });
+    assert.equal(malformed.status, 0, malformed.stderr);
+    assert.equal(fs.existsSync(directory + '/stop-requested'), true);
+    assert.match(malformed.stdout, /metadata is unavailable/);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

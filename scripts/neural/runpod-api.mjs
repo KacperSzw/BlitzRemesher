@@ -12,11 +12,13 @@ export function storageMode(state) {
   if (!['network', 'container'].includes(mode)) throw new Error('Invalid rental storage mode');
   if (
     mode === 'container' &&
-    (state.experiment !== 'core-validation' ||
+    (!['core-validation', 'teacher-optimization'].includes(state.experiment) ||
       state.volume_id !== undefined ||
       state.volume_requested)
   )
-    throw new Error('Container storage requires core-validation without a network-volume ledger');
+    throw new Error(
+      'Container storage requires core-validation or teacher-optimization without a network-volume ledger',
+    );
   return mode;
 }
 export function apiKey(file) {

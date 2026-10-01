@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "final_training": false,
+  "initialization_model": "runs/neural/v4-initialization/model.blzn",
+  "initialization_sha256": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+  "seeds": [101, 211, 307],
+  "action_trials": 512,
+  "action_batch": 16,
+  "gpu_memory_mib": 16384,
+  "workers": 2,
+  "candidate_batch": 4,
+  "learning_minutes": 5,
+  "finalize_minutes": 2
+}

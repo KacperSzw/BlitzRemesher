@@ -30,11 +30,16 @@ import {
 import { freshConditions } from './action-curriculum.mjs';
 import { coreValidationBudget, coreValidationProfiles } from './core-validation.mjs';
 import { readinessAssets, readinessModel, readinessManifest } from './teacher-readiness.mjs';
+import {
+  teacherOptimizationBudget,
+  teacherOptimizationProfiles,
+  validateOptimizationRequest,
+} from './teacher-optimization.mjs';
 
 const [command, directory] = process.argv.slice(2);
 if (!directory)
   throw new Error(
-    'runpod.mjs {prepare-core-validation|prepare-gpu-refactor|prepare|prepare-actions|prepare-action-pilot|prepare-action-evaluation|prepare-action-staged|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]',
+    'runpod.mjs {prepare-teacher-optimization|prepare-core-validation|prepare-gpu-refactor|prepare|prepare-actions|prepare-action-pilot|prepare-action-evaluation|prepare-action-staged|launch|status|stop|control|watchdog} RUN_DIRECTORY [EARLIER_DEADLINE_MS]',
   );
 const dir = path.resolve(directory),
   root = process.cwd(),
@@ -43,6 +48,7 @@ const refactor = command === 'prepare-gpu-refactor';
 const hardware = command === 'prepare-hardware-validation';
 const pipeline = command === 'prepare-pipeline-validation';
 const core = command === 'prepare-core-validation';
+const optimization = command === 'prepare-teacher-optimization';
 const keyFile = path.join(os.homedir(), '.config/blitz/runpod-api-key');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const sh = (s) => "'" + String(s).replaceAll("'", "'\\''") + "'";
@@ -63,12 +69,12 @@ function relative(file) {
     throw new Error('Unsafe bundle path');
   return file;
 }
-function validateCoreDirectory() {
+function validateLedgerDirectory() {
   const repository = fs.realpathSync(sync('git', ['rev-parse', '--show-toplevel'])),
     ledger = path.join(repository, 'runs/neural');
   const invalid = () => {
     throw new Error(
-      'Core validation requires the repository root and a canonical direct child of runs/neural',
+      'Bounded experiments require the repository root and a canonical direct child of runs/neural',
     );
   };
   if (fs.realpathSync(root) !== repository || path.dirname(dir) !== ledger) invalid();
@@ -84,10 +90,12 @@ function validateCoreDirectory() {
 }
 async function prepare() {
   const storage = storageMode({
-    storage_mode: process.env.BLITZ_CORE_STORAGE,
-    experiment: core ? 'core-validation' : undefined,
+    storage_mode: optimization
+      ? (process.env.BLITZ_OPTIMIZATION_STORAGE ?? 'container')
+      : process.env.BLITZ_CORE_STORAGE,
+    experiment: core ? 'core-validation' : optimization ? 'teacher-optimization' : undefined,
   });
-  if (core) validateCoreDirectory();
+  if (core || optimization) validateLedgerDirectory();
   if (fs.existsSync(dir + '/prepared.json'))
     throw new Error('Use a new directory for a new bundle');
   if (sync('git', ['status', '--porcelain', '--untracked-files=normal']))
@@ -105,7 +113,7 @@ async function prepare() {
   const revision = sync('git', ['rev-parse', 'HEAD']),
     branch = sync('git', ['branch', '--show-current']);
   // The new deployment ships the complete immutable local commit in a bundle.
-  if (!refactor && !hardware && !pipeline && !core) {
+  if (!refactor && !hardware && !pipeline && !core && !optimization) {
     const remote = sync('git', ['ls-remote', 'origin', 'refs/heads/' + branch]).split(/\s/)[0];
     if (remote !== revision) throw new Error('Current branch is not fully pushed');
   }
@@ -138,6 +146,14 @@ async function prepare() {
     throw new Error(
       'Core tests require one of ' + coreValidationProfiles.join(', ') + ' (20+10+5 minutes)',
     );
+  if (
+    optimization &&
+    (!teacherOptimizationProfiles.includes(deployment.id) ||
+      deployment.setup_minutes !== 20 ||
+      deployment.training_minutes !== 112 ||
+      deployment.collection_minutes !== 8)
+  )
+    throw new Error('Teacher optimization requires a bounded 20+112+8 minute profile');
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const stage = dir + '/input';
   fs.mkdirSync(stage, { recursive: true });
@@ -154,6 +170,7 @@ async function prepare() {
   };
   const evaluation = command === 'prepare-action-evaluation';
   const actions =
+    optimization ||
     core ||
     refactor ||
     hardware ||
@@ -179,6 +196,36 @@ async function prepare() {
       await copy(dataset + '/' + relative(asset.path), 'dataset/' + asset.path, asset.sha256);
   }
   const auditFiles = new Map();
+  if (optimization) {
+    const request = validateOptimizationRequest(read('research/neural/teacher-optimization.json'));
+    sync('git', ['merge-base', '--is-ancestor', request.baseline_revision, revision]);
+    await copy(
+      request.initialization_model,
+      'optimization/model.blzn',
+      request.initialization_sha256,
+    );
+    await copy('research/neural/teacher-optimization.json', 'optimization/request.json');
+    const selected = new Set(
+      read('research/neural/teacher-profile.json').conditions.map((c) => c.asset),
+    );
+    for (const c of read('research/neural/teacher-optimization-curriculum.json').conditions)
+      selected.add(c.asset);
+    for (const a of read('research/neural/prepared-pilot/selection.json').assets)
+      selected.add(a.id);
+    // The cycle's final diagnostic is separate from the full quality comparison.
+    for (const a of read('research/neural/action-diagnostic.json').assets) selected.add(a.id);
+    const allowed = new Set(
+      read('research/neural/corpus-v2/training.json').assets.map((a) => a.id),
+    );
+    for (const a of read('research/neural/corpus-v2/corpus.json').assets) {
+      if (!selected.has(a.id)) continue;
+      if (!allowed.has(a.id) || a.split !== 'development')
+        throw new Error('Optimization fixture must belong to the training development split');
+      for (const file of a.files) auditFiles.set(file.path, file.sha256);
+      selected.delete(a.id);
+    }
+    if (selected.size) throw new Error('Missing teacher optimization assets');
+  }
   if (readiness) {
     await copy(readinessSource, 'readiness/model.blzn', readiness.model.sha256);
     for (const asset of readinessAssets(root))
@@ -194,11 +241,11 @@ async function prepare() {
     ['research/pilot.json', 'development'],
     ['research/corpus.json', 'validation'],
   ]) {
-    if (core || (actions && split === 'validation')) continue;
+    if (core || optimization || (actions && split === 'validation')) continue;
     for (const asset of read(manifest).assets.filter((a) => a.split === split))
       for (const file of asset.files) auditFiles.set(file.path, file.sha256);
   }
-  if (actions && !evaluation && !core) {
+  if (actions && !evaluation && !core && !optimization) {
     const selected = new Set(['ph_sweet_potato', 'ph_painted_wooden_bench']);
     if (command === 'prepare-action-staged' || refactor || hardware)
       for (const c of freshConditions) selected.add(c.asset);
@@ -297,30 +344,34 @@ async function prepare() {
     'core-validation.mjs',
     'teacher-readiness.mjs',
     'bounded-process.mjs',
+    'teacher-optimization.mjs',
+    'quality-metrics.mjs',
   ])
     fs.copyFileSync(root + '/scripts/neural/' + name, dir + '/control/' + name);
   write(dir + '/prepared.json', {
     revision,
     branch,
     deployment,
-    ...(core ? { storage_mode: storage } : {}),
-    experiment: core
-      ? 'core-validation'
-      : pipeline
-        ? 'pipeline-validation'
-        : hardware
-          ? 'hardware-validation'
-          : refactor
-            ? 'gpu-refactor'
-            : command === 'prepare-action-staged'
-              ? 'action-v2-staged'
-              : evaluation
-                ? 'action-v2-evaluate'
-                : command === 'prepare-action-pilot'
-                  ? 'action-v2-pilot'
-                  : actions
-                    ? 'action-v2'
-                    : 'vertex-v1',
+    ...(core || optimization ? { storage_mode: storage } : {}),
+    experiment: optimization
+      ? 'teacher-optimization'
+      : core
+        ? 'core-validation'
+        : pipeline
+          ? 'pipeline-validation'
+          : hardware
+            ? 'hardware-validation'
+            : refactor
+              ? 'gpu-refactor'
+              : command === 'prepare-action-staged'
+                ? 'action-v2-staged'
+                : evaluation
+                  ? 'action-v2-evaluate'
+                  : command === 'prepare-action-pilot'
+                    ? 'action-v2-pilot'
+                    : actions
+                      ? 'action-v2'
+                      : 'vertex-v1',
     archive_sha256: await sha(dir + '/input.tar'),
     archive_bytes: fs.statSync(dir + '/input.tar').size,
     files: files.length,
@@ -360,7 +411,14 @@ async function launch() {
   const storage = storageMode(prepared);
   if (process.env.BLITZ_CORE_STORAGE !== undefined && process.env.BLITZ_CORE_STORAGE !== storage)
     throw new Error('Prepared storage mode differs; prepare a new bundle');
-  if (prepared.experiment === 'core-validation') validateCoreDirectory();
+  if (['core-validation', 'teacher-optimization'].includes(prepared.experiment))
+    validateLedgerDirectory();
+  if (
+    prepared.experiment === 'teacher-optimization' &&
+    process.env.BLITZ_OPTIMIZATION_STORAGE !== undefined &&
+    process.env.BLITZ_OPTIMIZATION_STORAGE !== storage
+  )
+    throw new Error('Prepared optimization storage mode differs');
   if (JSON.stringify(prepared.deployment) !== JSON.stringify(deployment))
     throw new Error('Prepared GPU profile differs; prepare a new bundle');
   if ((await sha(dir + '/input.tar')) !== prepared.archive_sha256)
@@ -371,6 +429,7 @@ async function launch() {
   if (
     [
       'core-validation',
+      'teacher-optimization',
       'action-v2',
       'action-v2-pilot',
       'action-v2-evaluate',
@@ -395,35 +454,37 @@ async function launch() {
       .map(read);
     const continuation = prepared.experiment === 'action-v2-staged';
     budget =
-      prepared.experiment === 'core-validation'
-        ? coreValidationBudget({ states: ledger, rate: deployment.gpu_hourly_usd_cap })
-        : (prepared.experiment === 'pipeline-validation'
-            ? pipelineValidationBudget
-            : prepared.experiment === 'hardware-validation'
-              ? hardwareValidationBudget
-              : prepared.experiment === 'gpu-refactor'
-                ? pretrainingBudget
-                : continuation
-                  ? continuationBudget
-                  : actionBudget)({
-            billed: bill.metadata.totals.totalAmount,
-            additionalAccrued: actionAccrued(ledger),
-            rate: deployment.gpu_hourly_usd_cap,
-            minutes:
-              prepared.experiment === 'pipeline-validation'
-                ? deployment.setup_minutes +
-                  deployment.training_minutes +
-                  deployment.collection_minutes
-                : prepared.experiment === 'hardware-validation'
-                  ? 35
-                  : prepared.experiment === 'gpu-refactor'
-                    ? 180
-                    : continuation
-                      ? deployment.staged_rental_minutes
-                      : prepared.experiment === 'action-v2'
-                        ? 60
-                        : 90,
-          });
+      prepared.experiment === 'teacher-optimization'
+        ? teacherOptimizationBudget({ states: ledger, rate: deployment.gpu_hourly_usd_cap })
+        : prepared.experiment === 'core-validation'
+          ? coreValidationBudget({ states: ledger, rate: deployment.gpu_hourly_usd_cap })
+          : (prepared.experiment === 'pipeline-validation'
+              ? pipelineValidationBudget
+              : prepared.experiment === 'hardware-validation'
+                ? hardwareValidationBudget
+                : prepared.experiment === 'gpu-refactor'
+                  ? pretrainingBudget
+                  : continuation
+                    ? continuationBudget
+                    : actionBudget)({
+              billed: bill.metadata.totals.totalAmount,
+              additionalAccrued: actionAccrued(ledger),
+              rate: deployment.gpu_hourly_usd_cap,
+              minutes:
+                prepared.experiment === 'pipeline-validation'
+                  ? deployment.setup_minutes +
+                    deployment.training_minutes +
+                    deployment.collection_minutes
+                  : prepared.experiment === 'hardware-validation'
+                    ? 35
+                    : prepared.experiment === 'gpu-refactor'
+                      ? 180
+                      : continuation
+                        ? deployment.staged_rental_minutes
+                        : prepared.experiment === 'action-v2'
+                          ? 60
+                          : 90,
+            });
     write(dir + '/billing-before.json', bill);
   }
   sync('systemctl', ['--user', 'show-environment']);
@@ -436,24 +497,27 @@ async function launch() {
     budget ? Math.min(requested ?? Infinity, started + budget.minutes * 60000) : requested,
   );
   if (budget)
-    deadlines.training_minutes =
-      prepared.experiment === 'pipeline-validation'
-        ? deployment.training_minutes
-        : ['core-validation', 'hardware-validation'].includes(prepared.experiment)
-          ? 10
-          : prepared.experiment === 'gpu-refactor'
-            ? 150
-            : prepared.experiment === 'action-v2-staged'
-              ? deployment.staged_experiment_minutes
-              : prepared.experiment === 'action-v2'
-                ? 20
-                : 50;
+    deadlines.training_minutes = ['teacher-optimization', 'pipeline-validation'].includes(
+      prepared.experiment,
+    )
+      ? deployment.training_minutes
+      : ['core-validation', 'hardware-validation'].includes(prepared.experiment)
+        ? 10
+        : prepared.experiment === 'gpu-refactor'
+          ? 150
+          : prepared.experiment === 'action-v2-staged'
+            ? deployment.staged_experiment_minutes
+            : prepared.experiment === 'action-v2'
+              ? 20
+              : 50;
   write(statePath, {
     name,
     quote,
     deployment,
     experiment: prepared.experiment,
-    ...(prepared.experiment === 'core-validation' ? { storage_mode: storage } : {}),
+    ...(['core-validation', 'teacher-optimization'].includes(prepared.experiment)
+      ? { storage_mode: storage }
+      : {}),
     budget,
     revision: prepared.revision,
     ...deadlines,
@@ -611,7 +675,10 @@ async function control() {
   }
   try {
     storageMode(s);
-    if (s.experiment === 'core-validation' && storageMode(read(dir + '/prepared.json')) !== storage)
+    if (
+      ['core-validation', 'teacher-optimization'].includes(s.experiment) &&
+      storageMode(read(dir + '/prepared.json')) !== storage
+    )
       throw new Error('Prepared storage mode differs from rental state');
     if (Date.now() >= s.deadline_ms || fs.existsSync(dir + '/stop-requested'))
       throw new Error('Rental deadline/cancellation reached');
@@ -710,8 +777,10 @@ async function control() {
           throw new Error('Invalid remote training deadline');
         rental.commit({
           setup_complete: true,
-          phase: s.experiment === 'core-validation' ? 'testing' : 'training',
-          ...(s.experiment === 'core-validation'
+          phase: ['core-validation', 'teacher-optimization'].includes(s.experiment)
+            ? 'testing'
+            : 'training',
+          ...(['core-validation', 'teacher-optimization'].includes(s.experiment)
             ? { validation_started_at: timing.at }
             : { training_started_at: timing.at }),
           training_deadline_ms: timing.training_deadline_ms,
@@ -729,7 +798,8 @@ async function control() {
       }
       if (
         phase === 'training' &&
-        (s.experiment?.startsWith('action-v2') || s.experiment === 'gpu-refactor')
+        (s.experiment?.startsWith('action-v2') ||
+          ['gpu-refactor', 'teacher-optimization'].includes(s.experiment))
       ) {
         const live = await retrySsh(() =>
           remote(
@@ -752,10 +822,20 @@ async function control() {
             'expanded-training-preflight',
             'resident-learning-cycle',
             'final-validation-comparison',
+            'warm-teacher-comparison',
+            'paired-learning-pilots',
+            'full-lod-quality-comparison',
           ].includes(p.phase) &&
           p.phase !== s.phase
         )
-          rental.commit({ phase: p.phase });
+          rental.commit({
+            phase: p.phase,
+            ...(s.experiment === 'teacher-optimization' &&
+            p.phase === 'paired-learning-pilots' &&
+            !s.training_started_at
+              ? { training_started_at: p.at }
+              : {}),
+          });
       }
       if (!s.setup_complete && Date.now() >= s.setup_deadline_ms)
         throw new Error('Setup exceeded its bounded deadline');
@@ -823,6 +903,7 @@ async function watchdog() {
 if (
   [
     'prepare-core-validation',
+    'prepare-teacher-optimization',
     'prepare-pipeline-validation',
     'prepare-hardware-validation',
     'prepare-gpu-refactor',

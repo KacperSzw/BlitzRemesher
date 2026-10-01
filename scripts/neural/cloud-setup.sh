@@ -58,11 +58,27 @@ rm /opt/blitz/libtorch.zip
 fi
 blitz_cuda_arch=$(node --input-type=module -e "import {deployment} from './scripts/neural/runpod-profile.mjs'; console.log(deployment.cuda_architecture)")
 blitz_acquisition=ON
-if [[ "${BLITZ_CORE_VALIDATION:-0}" == 1 ]]; then blitz_acquisition=OFF; fi
+if [[ "${BLITZ_CORE_VALIDATION:-0}" == 1 || "${BLITZ_TEACHER_OPTIMIZATION:-0}" == 1 ]]; then blitz_acquisition=OFF; fi
+if [[ "${BLITZ_TEACHER_OPTIMIZATION:-0}" == 1 ]]; then
+  blitz_baseline=$(node --input-type=module <<'JS'
+import fs from 'node:fs';
+import {validateOptimizationRequest} from './scripts/neural/teacher-optimization.mjs';
+console.log(validateOptimizationRequest(JSON.parse(fs.readFileSync('/workspace/optimization/request.json'))).baseline_revision);
+JS
+)
+  git worktree add --detach /workspace/baseline "$blitz_baseline"
+  cmake -S /workspace/baseline -B /workspace/baseline/build/neural -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_VULKAN=ON \
+    -DBLITZ_NEURAL_TRAIN=OFF -DBLITZ_ACQUISITION=OFF \
+    -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch"
+  cmake --build /workspace/baseline/build/neural --target blitz-neural-placement-prepare -j2
+  sha256sum /workspace/baseline/build/neural/blitz-neural-placement-prepare > /workspace/results/baseline-binary.sha256
+  printf '%s\n' "$blitz_baseline" > /workspace/results/baseline-revision
+fi
 cmake -S . -B build/neural -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_CUDA=ON -DBLITZ_VULKAN="$blitz_vulkan" -DBLITZ_NEURAL_TRAIN="$blitz_training" -DBLITZ_ACQUISITION="$blitz_acquisition" -DCMAKE_CUDA_ARCHITECTURES="$blitz_cuda_arch" -DBLITZ_LIBTORCH_ROOT=/opt/blitz/libtorch
 cmake --build build/neural -j2
 if [[ "$blitz_training" == ON ]]; then ldd build/neural/blitz-neural-train > /workspace/results/trainer-dependencies.txt; fi
-if [[ "${BLITZ_CORE_VALIDATION:-0}" != 1 ]]; then
+if [[ "${BLITZ_CORE_VALIDATION:-0}" != 1 && "${BLITZ_TEACHER_OPTIMIZATION:-0}" != 1 ]]; then
   ctest --test-dir build/neural --output-on-failure | tee /workspace/results/ctest.log
 fi
 if [[ "${BLITZ_ACTION_V2:-0}" != 1 ]]; then

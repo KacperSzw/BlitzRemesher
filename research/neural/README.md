@@ -19,6 +19,8 @@ small smoke budgets cannot establish full-pilot or release superiority.
 
 Current entry points:
 
+- [Teacher generation optimization](TEACHER-OPTIMIZATION.md): resident baseline,
+  grouped raster reuse, experimental coverage search and bounded paired pilots.
 - [Architecture and contracts](../../docs/NEURAL.md): runtime, training, ownership,
   dependency boundaries and evidence limits.
 - [Integrated local and remote validation](evidence/main-integration/README.md):

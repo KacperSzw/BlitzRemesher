@@ -1,0 +1,35 @@
+{
+  "levels": 8,
+  "triangle_overhead_bps": 0,
+  "base_pixels": 512,
+  "last_pixels": 16,
+  "max_lod0_delta_px": 3,
+  "max_changed_area": 0.5,
+  "profile": "coverage",
+  "prune": false,
+  "research": {
+    "chain": "direct"
+  },
+  "candidate_budget": 8,
+  "beam_width": 2,
+  "search_views": {
+    "orthographic": 42,
+    "perspective": 12,
+    "seed": 2971082788
+  },
+  "audit_views": {
+    "orthographic": 642,
+    "perspective": 64,
+    "seed": 2971082790
+  },
+  "search_supersample": 4,
+  "audit_supersample": 8,
+  "max_supersample": 32,
+  "max_added_vertex_bytes_bps": null,
+  "action_trials": 512,
+  "action_batch": 16,
+  "audit_rankings": ["learned"],
+  "neural_origin": "both",
+  "preserve_uv": true,
+  "gpu_memory_mib": 16384
+}

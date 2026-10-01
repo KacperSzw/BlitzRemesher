@@ -990,6 +990,8 @@ test('core preparation bundles only committed source and carries self-contained 
       'core-validation.mjs',
       'teacher-readiness.mjs',
       'bounded-process.mjs',
+      'teacher-optimization.mjs',
+      'quality-metrics.mjs',
     ])
       fs.copyFileSync(path.dirname(cli) + '/' + name, root + '/scripts/neural/' + name);
     local('git', ['init', '-q']);

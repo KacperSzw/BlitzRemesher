@@ -21,6 +21,34 @@ const blackwell = {
   staged_experiment_minutes: 110,
 };
 export const profiles = Object.freeze({
+  ...Object.fromEntries(
+    [
+      ['a40', 'NVIDIA A40', 48, 45000, '8.6', 86, 0.55],
+      ['4090', 'NVIDIA GeForce RTX 4090', 24, 22000, '8.9', 89, 0.8],
+      ['l40s', 'NVIDIA L40S', 48, 45000, '8.9', 89, 1.1],
+    ].map(([name, gpu, vram, memory, capability, architecture, rate]) => {
+      const id = 'teacher-optimization-' + name;
+      return [
+        id,
+        Object.freeze({
+          ...blackwell,
+          id,
+          gpu,
+          catalog_vram_gb: vram,
+          device_memory_mib: memory,
+          compute_capability: capability,
+          cuda_architecture: architecture,
+          host_ram_gb: 24,
+          vcpus: 6,
+          gpu_hourly_usd_cap: rate,
+          setup_minutes: 20,
+          training_minutes: 112,
+          collection_minutes: 8,
+          graphics: true,
+        }),
+      ];
+    }),
+  ),
   'pipeline-validation-l40s': Object.freeze({
     ...blackwell,
     id: 'pipeline-validation-l40s',
@@ -218,7 +246,11 @@ export const profiles = Object.freeze({
 });
 const selected =
   process.env.BLITZ_RUNPOD_PROFILE ??
-  (process.argv[2] === 'prepare-core-validation' ? 'hardware-validation-ada16' : 'blackwell');
+  (process.argv[2] === 'prepare-core-validation'
+    ? 'hardware-validation-ada16'
+    : process.argv[2] === 'prepare-teacher-optimization'
+      ? 'teacher-optimization-a40'
+      : 'blackwell');
 if (!Object.hasOwn(profiles, selected)) throw new Error('Unknown bounded RunPod profile');
 export const deployment = profiles[selected];
 

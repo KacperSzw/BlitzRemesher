@@ -219,6 +219,8 @@ export class Rental {
     this.now = now;
   }
   commit(extra) {
+    if (extra.phase !== undefined && extra.phase !== this.state.phase)
+      (this.state.phase_history ??= []).push({ phase: extra.phase, at: this.now() });
     Object.assign(this.state, extra);
     this.save(this.state);
   }

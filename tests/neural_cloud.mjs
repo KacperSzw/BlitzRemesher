@@ -74,6 +74,44 @@ const initial = () => ({
   setup_deadline_ms: 1800000,
   deadline_ms: 7200000,
 });
+test('rental timings preserve transitions across restart without counting repeated observations', () => {
+  let time = 100,
+    saved;
+  const rental = new Rental(
+    null,
+    initial(),
+    (state) => {
+      saved = structuredClone(state);
+    },
+    () => time,
+  );
+  rental.commit({ phase: 'provisioning' });
+  time = 150;
+  rental.commit({ pod_id: 'fixture' });
+  rental.commit({ phase: 'provisioning' });
+  time = 300;
+  rental.commit({ phase: 'ssh' });
+  const resumed = new Rental(
+    null,
+    saved,
+    (state) => {
+      saved = structuredClone(state);
+    },
+    () => time,
+  );
+  time = 400;
+  resumed.commit({ phase: 'provisioning' });
+  time = 450;
+  resumed.commit({ phase: 'upload' });
+  assert.deepEqual(saved.phase_history, [
+    { phase: 'provisioning', at: 100 },
+    { phase: 'ssh', at: 300 },
+    { phase: 'provisioning', at: 400 },
+    { phase: 'upload', at: 450 },
+  ]);
+  assert.equal(saved.pod_id, 'fixture');
+  assert.equal(saved.deadline_ms, initial().deadline_ms);
+});
 test('repeatable SSH calls recover transport failures, preserve command failures and stop retrying', async () => {
   let calls = 0,
     waits = 0;

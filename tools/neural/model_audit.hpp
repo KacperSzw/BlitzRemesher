@@ -1,5 +1,6 @@
 #pragma once
 #include "neural/cuda.cuh"
+#include "neural/generation.hpp"
 #include "tools/neural/audit_settings.hpp"
 #include "training/data.hpp"
 #include "training/json.hpp"
@@ -10,6 +11,8 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
     if (fs::exists(output))
         throw std::invalid_argument("model audit output exists");
     auto manifest = read_json(manifest_path), config = read_json(settings_path);
+    const bool trace_execution = config.value("trace_execution", false);
+    config.erase("trace_execution");
     std::vector<NeuralRanking> rankings{NeuralRanking::Constant, NeuralRanking::Learned};
     if (auto it = config.find("audit_rankings"); it != config.end()) {
         if (!it->is_array() || it->empty())
@@ -34,6 +37,7 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
     auto execution = neural_json(options);
     execution.erase("ranking");
     execution["audit_rankings"] = json::array();
+    execution["trace_execution"] = trace_execution;
     for (auto ranking : rankings)
         execution["audit_rankings"].push_back(ranking_name(ranking));
     auto hash = [](const json& value) {
@@ -80,11 +84,38 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
             options.ranking = ranking;
             NeuralModel model(model_path.c_str(), options);
             NeuralStats stats;
-            json row;
+            json row, trace = json::array();
+            ExecutionObserver observe;
+            if (trace_execution)
+                observe = [&](const ActionRequest& request, const ActionTrial& trial,
+                              uint8_t failed_gate) {
+                    json actions = json::array();
+                    for (const auto& action : trial.actions)
+                        actions.push_back({action.from, action.to, action.revision});
+                    trace.push_back(
+                        {{"proposal", request.proposal},
+                         {"output", request.output == OutputMode::Reuse ? "reuse" : "rebuild"},
+                         {"pixels", request.source_audit.screen_size},
+                         {"target_triangles", request.target_triangles},
+                         {"trial", trial.trial},
+                         {"iteration", trial.iteration},
+                         {"faces_before", trial.faces_before},
+                         {"faces_after", trial.faces_after},
+                         {"first_rank", trial.first_rank},
+                         {"rank_cursor", trial.rank_cursor},
+                         {"actions", actions},
+                         {"geometry_valid", trial.geometry_valid},
+                         {"accepted", trial.accepted},
+                         {"failed_gate", failed_gate}});
+                };
             auto began = std::chrono::steady_clock::now();
             memory.budget.peak.store(memory.budget.live.load());
             try {
-                auto result = generate_neural(mesh.view(), settings, model, &stats);
+                auto result =
+                    trace_execution
+                        ? generate_observed(mesh.view(), settings, load_weights(model_path),
+                                            options, {}, &stats, observe)
+                        : generate_neural(mesh.view(), settings, model, &stats);
                 row = result_json(result);
                 if (result.status != Status::Complete || stats.resource_failures ||
                     stats.confirmation_nonfinite || stats.confirmation_cancelled)
@@ -107,6 +138,8 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
                 std::chrono::duration<double>(std::chrono::steady_clock::now() - began).count();
             row["gpu_workspace_peak_bytes"] = memory.budget.peak.load();
             row["neural"] = neural_json(stats);
+            if (trace_execution)
+                row["execution_trace"] = std::move(trace);
             report["rows"].push_back(row);
             write_json(output, report);
         }

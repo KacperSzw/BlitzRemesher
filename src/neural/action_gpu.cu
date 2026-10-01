@@ -1916,11 +1916,13 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
                             ActionCuda* network, NeuralRanking ranking, uint32_t seed,
                             uint8_t batch, const std::function<bool(DeviceMeshView)>& gate,
                             ActionStats* statistics, const std::function<bool()>& cancelled,
-                            const std::function<void(GpuActionState&)>& observe) {
+                            const std::function<void(GpuActionState&)>& observe,
+                            const ActionTrialObserver& trace) {
     if (!batch || batch > 64 || !gate || ranking > NeuralRanking::CurrentPlane)
         throw std::invalid_argument("invalid GPU action executor configuration");
     auto& p = *impl_;
     DeviceScope scope(p.id);
+    Buffer<Action> trace_actions(p.device, trace ? batch : 0);
     target = std::max<size_t>(1, target);
     p.read();
     bool stopped = false;
@@ -1975,7 +1977,20 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
                 p.build_trial();
                 if (p.placement || p.mesh.precision.n)
                     p.read();
-                accepted = !p.host.invalid_placement && gate(p.trial_view());
+                DeviceMeshView candidate;
+                if (!p.host.invalid_placement || trace)
+                    candidate = p.trial_view();
+                accepted = !p.host.invalid_placement && gate(candidate);
+                if (trace) {
+                    teacher_records<<<1, 64, 0, gpu::stream()>>>(p.state.p, p.edits.p, p.selected.p,
+                                                                 trace_actions.p, p.host.selected);
+                    std::array<Action, 64> actions;
+                    check(gpu::copy(actions.data(), trace_actions.p,
+                                    p.host.selected * sizeof(Action), cudaMemcpyDeviceToHost));
+                    trace({std::span(actions).first(p.host.selected), p.host.trials,
+                           accepted_batches, p.host.faces, candidate.faces, p.host.first,
+                           p.host.position, !p.host.invalid_placement, accepted});
+                }
                 verdict<<<1, 1, 0, gpu::stream()>>>(p.state.p, accepted);
                 if (accepted) {
                     p.commit();

@@ -17,8 +17,10 @@ struct ActionRequest {
     uint32_t proposal;
 };
 using ActionObserver = std::function<void(GpuActionState&, const ActionRequest&)>;
+using ExecutionObserver = std::function<void(const ActionRequest&, const ActionTrial&, uint8_t)>;
 
 // Internal entry for native teachers; the public generator supplies no observer.
 Result generate_observed(MeshView, const Settings&, const WeightsData&, const NeuralOptions&,
-                         const ActionObserver&, NeuralStats* = nullptr);
+                         const ActionObserver&, NeuralStats* = nullptr,
+                         const ExecutionObserver& = {});
 } // namespace blitz::neural

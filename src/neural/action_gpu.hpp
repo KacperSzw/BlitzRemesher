@@ -3,6 +3,14 @@
 #include "neural/vertex_storage.hpp"
 namespace blitz::neural {
 enum class TeacherSelection : uint8_t { GeometricRandom, PolicyMixed };
+// Read-only diagnostic record. Actions borrow a host buffer only for the
+// callback; failed backoff prefixes intentionally appear more than once.
+struct ActionTrial {
+    std::span<const Action> actions;
+    uint32_t trial, iteration, faces_before, faces_after, first_rank, rank_cursor;
+    bool geometry_valid, accepted;
+};
+using ActionTrialObserver = std::function<void(const ActionTrial&)>;
 // CPU readback methods are reference-test/export boundaries. Mesh topology,
 // features, legality and all intermediate action records live on the device.
 class GpuActionState {
@@ -49,6 +57,7 @@ class GpuActionState {
                 NeuralRanking, uint32_t seed, uint8_t batch,
                 const std::function<bool(DeviceMeshView)>& gate, ActionStats*,
                 const std::function<bool()>& cancelled = {},
-                const std::function<void(GpuActionState&)>& observe = {});
+                const std::function<void(GpuActionState&)>& observe = {},
+                const ActionTrialObserver& trace = {});
 };
 } // namespace blitz::neural

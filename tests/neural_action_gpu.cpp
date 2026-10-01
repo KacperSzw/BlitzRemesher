@@ -196,6 +196,40 @@ void executor() {
                         "GPU executor work contract differs");
                 require(actual.data.indices == expected.data.indices,
                         "GPU executor output differs");
+                gpu.reset();
+                ActionStats traced;
+                uint32_t recorded = 0, committed = 0, accepted_actions = 0, rejected_actions = 0;
+                auto traced_result = gpu.execute(
+                    {}, 1, 5, nullptr, ranking, 741, batch,
+                    [&](DeviceMeshView candidate) { return decision(candidate.faces); }, &traced,
+                    {}, {},
+                    [&](const ActionTrial& trial) {
+                        require(trial.trial == recorded && trial.iteration == committed &&
+                                    trial.geometry_valid &&
+                                    trial.accepted == decision(trial.faces_after),
+                                "execution trace changed trial order or verdict");
+                        require(!trial.actions.empty() && trial.actions.size() <= batch &&
+                                    trial.first_rank >= trial.rank_cursor &&
+                                    trial.faces_after == trials[recorded].data.view().triangles(),
+                                "execution trace lost selected batch or candidate");
+                        const auto removed = trial.faces_before - trial.faces_after;
+                        require(removed >= trial.actions.size() &&
+                                    removed <= trial.actions.size() * 2,
+                                "execution trace mixed state and candidate face counts");
+                        for (const auto& action : trial.actions)
+                            require(action.from != action.to && action.from < m.positions.size() &&
+                                        action.to < m.positions.size(),
+                                    "execution trace corrupted action identity");
+                        ++recorded;
+                        committed += trial.accepted;
+                        (trial.accepted ? accepted_actions : rejected_actions) +=
+                            trial.actions.size();
+                    });
+                require(traced_result.data.indices == actual.data.indices && recorded == b.trials &&
+                            committed == b.accepted_batches && accepted_actions == b.accepted &&
+                            rejected_actions == b.rejected && traced.ranked == b.ranked &&
+                            traced.stop_reason == b.stop_reason,
+                        "execution tracing perturbed native behavior or accounting");
             }
     gpu.reset();
     ActionStats stopped;

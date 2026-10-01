@@ -8,6 +8,7 @@ import { boundedProcess } from './bounded-process.mjs';
 import { runCoreValidation } from './core-validation-job.mjs';
 import { runTeacherProfile } from './teacher-profile.mjs';
 import { runNativeDebuggerPreflight } from './native-debugger-preflight.mjs';
+import { verifyNvidiaIcdSelection } from './nvidia-icd.mjs';
 import {
   validateOptimizationRequest,
   optimizationCycleArguments,
@@ -31,6 +32,9 @@ export async function runTeacherOptimization({
   baseline = '/workspace/baseline/build/neural/blitz-neural-placement-prepare',
   debuggerCommand = 'gdb',
   debuggerPreflight = runNativeDebuggerPreflight,
+  teardownBinary = 'build/neural/blitz-neural-vulkan-tests',
+  icdSelection,
+  environment = process.env,
 }) {
   validateOptimizationRequest(request);
   const started = now(),
@@ -59,20 +63,32 @@ export async function runTeacherOptimization({
     write(path.join(directory, '../phase.json'), { phase: name, at: now() });
     persist();
   };
+  const nativeExecute = (command, args, options) => {
+    if (!report.vulkan_icd) return execute(command, args, options);
+    const env = {
+      ...environment,
+      ...options.env,
+      VK_DRIVER_FILES: report.vulkan_icd.selected_path,
+    };
+    delete env.VK_ICD_FILENAMES;
+    return execute(command, args, { ...options, env });
+  };
   async function run(command, args, name, end, capture) {
     if (signal?.aborted || now() >= end) throw new Error(name + ': deadline/cancellation');
     const log = directory + '/' + name + '.log',
       fd = fs.openSync(log, 'w');
     try {
       const grace = capture ? capture.maximum + 1000 : 3000;
-      const result = await execute(command, args, {
-        maximum: Math.min(end, deadline) - now() - (capture ? grace : 0),
+      const maximum = Math.min(end, deadline) - now() - (capture ? grace : 0);
+      if (maximum <= 0) throw new Error(name + ': insufficient deadline for bounded capture');
+      const result = await nativeExecute(command, args, {
+        maximum,
         grace,
         signal,
         stdio: ['ignore', fd, fd],
         ...(capture
           ? {
-              env: { ...process.env, BLITZ_TEARDOWN_TRACE: '1', BLITZ_ALLOW_DEBUGGER_ATTACH: '1' },
+              env: { ...environment, BLITZ_TEARDOWN_TRACE: '1', BLITZ_ALLOW_DEBUGGER_ATTACH: '1' },
               timeoutDiagnostic: { ...capture, output: directory + '/' + name + '.threads.log' },
             }
           : {}),
@@ -98,6 +114,19 @@ export async function runTeacherOptimization({
       digest(model) !== request.initialization_sha256
     )
       throw new Error('invalid experiment deadline or initializer checksum');
+    if (request.vulkan_icd !== undefined && !icdSelection)
+      throw new Error('Requested NVIDIA ICD needs verified selection provenance');
+    if (icdSelection) {
+      const selected = verifyNvidiaIcdSelection(icdSelection, request.vulkan_icd ?? 'vendor');
+      if (environment.VK_DRIVER_FILES !== selected.selected_path || environment.VK_ICD_FILENAMES)
+        throw new Error('Vulkan environment does not match the verified NVIDIA ICD selection');
+      report.vulkan_icd = {
+        ...selected,
+        VK_DRIVER_FILES: selected.selected_path,
+        VK_ICD_FILENAMES: null,
+      };
+      persist();
+    }
     const teacherEnd = Math.min(started + 20 * 60000, deadline),
       learningEnd = Math.min(started + 62 * 60000, deadline);
     const optimized = 'build/neural/blitz-neural-placement-prepare';
@@ -110,27 +139,42 @@ export async function runTeacherOptimization({
         diagnosticMaximum: timeoutDiagnostics.maximum,
         deadline: Math.min(now() + 10000, teacherEnd),
         signal,
-        execute,
+        execute: nativeExecute,
         now,
       });
       persist();
       if (!report.debugger_preflight.complete)
         throw new Error('Native debugger preflight failed; timeout stacks are unavailable');
       phase('native-teardown-stress');
-      await run(
-        'build/neural/blitz-neural-vulkan-tests',
-        ['--teardown'],
-        'teardown-stress',
-        Math.min(now() + 45000 + timeoutDiagnostics.maximum + 1000, teacherEnd),
-        timeoutDiagnostics,
-      );
+      report.teardown_stress = {
+        binary: teardownBinary,
+        binary_sha256: digest(teardownBinary),
+        requested_runs: 4,
+        rounds_per_run: 12,
+        requested_rounds: 48,
+        completed_runs: 0,
+        completed_full_run_rounds: 0,
+      };
+      persist();
+      for (let repeat = 0; repeat < report.teardown_stress.requested_runs; repeat++) {
+        await run(
+          teardownBinary,
+          ['--teardown'],
+          'teardown-stress-' + (repeat + 1),
+          Math.min(now() + 45000 + timeoutDiagnostics.maximum + 1000, teacherEnd),
+          timeoutDiagnostics,
+        );
+        report.teardown_stress.completed_runs++;
+        report.teardown_stress.completed_full_run_rounds += report.teardown_stress.rounds_per_run;
+        persist();
+      }
     }
     phase('coverage-contracts');
     report.contracts = await contracts({
       directory: directory + '/contracts',
-      deadline: Math.min(started + 5 * 60000, teacherEnd),
+      deadline: Math.min(now() + 5 * 60000, teacherEnd),
       signal,
-      execute,
+      execute: nativeExecute,
       now,
     });
     persist();
@@ -144,7 +188,7 @@ export async function runTeacherOptimization({
       plan: 'research/neural/teacher-profile.json',
       deadline: teacherEnd,
       signal,
-      execute,
+      execute: nativeExecute,
       now,
       workers: request.workers,
       candidateBatch: request.candidate_batch,
@@ -163,7 +207,7 @@ export async function runTeacherOptimization({
       plan: 'research/neural/teacher-profile.json',
       deadline: teacherEnd,
       signal,
-      execute,
+      execute: nativeExecute,
       now,
       workers: request.workers,
       candidateBatch: request.candidate_batch,
@@ -333,6 +377,7 @@ async function main() {
     directory: '/workspace/results/teacher-optimization',
     request: read('/workspace/optimization/request.json'),
     model: '/workspace/optimization/model.blzn',
+    icdSelection: '/workspace/results/nvidia-icd-selection.json',
     deadline,
     signal: cancellation.signal,
   });

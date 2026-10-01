@@ -30,7 +30,8 @@ export BLITZ_PIPELINE_VALIDATION=0
 if [[ "${4:-vertex-v1}" == pipeline-validation ]]; then export BLITZ_PIPELINE_VALIDATION=1; fi
 if [[ "$BLITZ_TEACHER_OPTIMIZATION" == 1 || "$BLITZ_CORE_VALIDATION" == 1 || "${4:-vertex-v1}" == hardware-validation || "${4:-vertex-v1}" == gpu-refactor || "${4:-vertex-v1}" == pipeline-validation ]]; then
   export BLITZ_HARDWARE_VALIDATION=1
-  export VK_DRIVER_FILES=/workspace/results/nvidia-headless.json
+  unset VK_ICD_FILENAMES
+  export VK_DRIVER_FILES=/workspace/results/nvidia-selected.json
 fi
 export BLITZ_EVALUATE_ONLY=0
 if [[ "${4:-vertex-v1}" == action-v2-evaluate ]]; then export BLITZ_EVALUATE_ONLY=1; fi

@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { runTeacherOptimization } from '../scripts/neural/teacher-optimization-job.mjs';
+import { selectNvidiaIcd, verifyNvidiaIcdSelection } from '../scripts/neural/nvidia-icd.mjs';
 import {
   teacherOptimizationAuthorization,
   teacherOptimizationBudget,
@@ -218,9 +219,12 @@ function experiment(t) {
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const model = directory + '/model.blzn';
   fs.writeFileSync(model, 'test-owned initializer');
+  const teardownBinary = directory + '/teardown-fixture';
+  fs.writeFileSync(teardownBinary, 'test-owned native fixture identity');
   return {
     directory: directory + '/results',
     model,
+    teardownBinary,
     request: {
       ...request(),
       initialization_sha256: createHash('sha256').update(fs.readFileSync(model)).digest('hex'),
@@ -229,6 +233,144 @@ function experiment(t) {
     now: () => 0,
   };
 }
+
+function icdFixture(t, backend = 'glx') {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-nvidia-icd-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const library = directory + (backend === 'glx' ? '/libGLX_nvidia.so.0' : '/libEGL_nvidia.so.0');
+  fs.writeFileSync(library, 'test-owned library identity');
+  const original = JSON.stringify({
+    file_format_version: '1.0.0',
+    ICD: { api_version: '1.4.303', library_path: library },
+  });
+  const selected = selectNvidiaIcd(original, {
+    sourcePath: directory + '/injected.json',
+    selectedPath: directory + '/selected.json',
+    requested: backend,
+  });
+  const provenance = {
+    ...selected.provenance,
+    original_copy_path: directory + '/original.json',
+    dependency_library_resolution: 'manifest_path',
+    dependency_library_path: library,
+    dependency_library_sha256: createHash('sha256').update(fs.readFileSync(library)).digest('hex'),
+  };
+  fs.writeFileSync(provenance.original_copy_path, original);
+  fs.writeFileSync(provenance.selected_path, selected.contents);
+  const file = directory + '/selection.json';
+  fs.writeFileSync(file, JSON.stringify(provenance));
+  return { file, provenance, environment: { VK_DRIVER_FILES: provenance.selected_path } };
+}
+
+test('vendor ICD selection preserves GLX/EGL manifests, paths, API versions and extra fields', () => {
+  for (const backend of ['GLX', 'EGL'])
+    for (const prefix of ['', '/opt/driver/lib/'])
+      for (const api of ['1.3.289', '1.4.303']) {
+        const library = `${prefix}lib${backend}_nvidia.so.0`;
+        const manifest = {
+          file_format_version: '1.0.1',
+          ICD: { library_path: library, api_version: api, is_portability_driver: false },
+          vendor_metadata: { retained: true },
+        };
+        const contents = JSON.stringify(manifest, null, 4) + '\n';
+        const selected = selectNvidiaIcd(contents, {
+          sourcePath: '/etc/vulkan/icd.d/nvidia_icd.json',
+          selectedPath: '/workspace/results/nvidia-selected.json',
+        });
+        assert.equal(selected.contents, contents);
+        assert.equal(selected.provenance.backend, backend.toLowerCase());
+        assert.equal(selected.provenance.api_version, api);
+        assert.equal(selected.provenance.source_sha256, selected.provenance.selected_sha256);
+        assert.equal(selected.provenance.selected_library_path, library);
+        assert.deepEqual(JSON.parse(selected.contents), manifest);
+      }
+});
+
+test('copying a directory-relative ICD retains the original library resolution', () => {
+  const manifest = {
+    file_format_version: '1.0.0',
+    ICD: { library_path: '../../../lib/libGLX_nvidia.so.0', api_version: '1.4.303' },
+  };
+  const selected = selectNvidiaIcd(JSON.stringify(manifest), {
+    sourcePath: '/opt/driver/share/vulkan/icd.d/nvidia_icd.json',
+    selectedPath: '/workspace/results/selected.json',
+    requested: 'glx',
+  });
+  assert.equal(selected.provenance.selected_library_path, '/opt/driver/lib/libGLX_nvidia.so.0');
+  assert.equal(selected.provenance.source_library_path, manifest.ICD.library_path);
+  assert.deepEqual(JSON.parse(selected.contents), {
+    ...manifest,
+    ICD: { ...manifest.ICD, library_path: '/opt/driver/lib/libGLX_nvidia.so.0' },
+  });
+  assert.notEqual(selected.provenance.selected_sha256, selected.provenance.source_sha256);
+});
+
+test('ICD selection rejects unsupported entries and explicit backend mismatches without rewriting', () => {
+  const options = { sourcePath: '/etc/nvidia.json', selectedPath: '/results/selected.json' };
+  const manifest = (library) =>
+    JSON.stringify({
+      file_format_version: '1.0.0',
+      ICD: { library_path: library, api_version: '1.4.303' },
+    });
+  for (const library of ['libvulkan_intel.so', 'libGLX.so.0', 'libGLX_nvidia.so.1', '', null])
+    assert.throws(() => selectNvidiaIcd(manifest(library), options), /ICD/);
+  for (const [requested, vendor] of [
+    ['glx', 'EGL'],
+    ['egl', 'GLX'],
+  ])
+    assert.throws(
+      () => selectNvidiaIcd(manifest(`lib${vendor}_nvidia.so.0`), { ...options, requested }),
+      /vendor manifest selects/,
+    );
+  for (const requested of ['auto', '', null])
+    assert.throws(
+      () => selectNvidiaIcd(manifest('libGLX_nvidia.so.0'), { ...options, requested }),
+      /selection/,
+    );
+});
+
+test('ICD verification checks selected manifest and driver library hashes', (t) => {
+  const fixture = icdFixture(t);
+  assert.deepEqual(verifyNvidiaIcdSelection(fixture.file, 'glx'), fixture.provenance);
+  assert.throws(() => verifyNvidiaIcdSelection(fixture.file, 'egl'), /vendor manifest selects/);
+  const original = fs.readFileSync(fixture.provenance.selected_path);
+  fs.appendFileSync(fixture.provenance.selected_path, '\n');
+  assert.throws(() => verifyNvidiaIcdSelection(fixture.file, 'glx'), /ICD checksum/);
+  fs.writeFileSync(fixture.provenance.selected_path, original);
+  fs.appendFileSync(fixture.provenance.dependency_library_path, 'changed');
+  assert.throws(() => verifyNvidiaIcdSelection(fixture.file, 'glx'), /library checksum/);
+});
+
+test('frozen optimization ICD choice is explicit and rejects unknown selections', () => {
+  for (const vulkan_icd of [undefined, 'glx', 'egl'])
+    assert.equal(validateOptimizationRequest({ ...request(), vulkan_icd }).vulkan_icd, vulkan_icd);
+  for (const vulkan_icd of ['vendor', 'auto', false, null])
+    assert.throws(
+      () => validateOptimizationRequest({ ...request(), vulkan_icd }),
+      /invalid frozen/,
+    );
+});
+
+test('an explicit ICD request requires matching provenance and a clean loader environment', async (t) => {
+  for (const invalid of ['missing', 'wrong-backend', 'wrong-path', 'legacy-override']) {
+    const options = experiment(t),
+      fixture = icdFixture(t);
+    options.request.vulkan_icd = invalid === 'wrong-backend' ? 'egl' : 'glx';
+    const environment = { ...fixture.environment };
+    if (invalid === 'wrong-path') environment.VK_DRIVER_FILES = '/other/manifest.json';
+    if (invalid === 'legacy-override') environment.VK_ICD_FILENAMES = '/stale/manifest.json';
+    const report = await runTeacherOptimization({
+      ...options,
+      icdSelection: invalid === 'missing' ? undefined : fixture.file,
+      environment,
+      contracts: async () => assert.fail('ICD mismatch must stop native work'),
+      execute: async () => assert.fail('ICD mismatch must stop native work'),
+    });
+    assert.equal(report.complete, false);
+    assert.equal(report.training_started, false);
+    assert.match(report.error, /ICD|Vulkan/);
+  }
+});
 
 test('timeout diagnostics require an explicit boolean request', () => {
   for (const flag of [undefined, false, true])
@@ -266,25 +408,59 @@ test('failed native attach preflight blocks GPU stress, comparisons and learning
 test('diagnostic retry bounds teardown stress and forwards capture to paired cycles', async (t) => {
   const options = experiment(t);
   options.request.timeout_diagnostics = true;
+  options.request.vulkan_icd = 'glx';
+  const fixture = icdFixture(t);
   const calls = [];
+  let clock = 0;
   const report = await runTeacherOptimization({
     ...options,
-    debuggerPreflight: async () => ({ complete: true }),
-    contracts: async () => ({ complete: true }),
+    icdSelection: fixture.file,
+    environment: fixture.environment,
+    now: () => clock,
+    debuggerPreflight: async () => {
+      clock += 6000;
+      return { complete: true };
+    },
+    contracts: async (config) => {
+      assert.equal(calls.length, 4);
+      assert.equal(config.deadline - clock, 5 * 60000);
+      assert.ok(config.deadline <= 20 * 60000);
+      await config.execute('contract-fixture', [], {
+        env: { VK_DRIVER_FILES: '/wrong.json', VK_ICD_FILENAMES: '/legacy.json' },
+      });
+      return { complete: true };
+    },
     profile: async (config) => {
       assert.deepEqual(config.timeoutDiagnostics, { debuggerCommand: 'gdb', maximum: 5000 });
       assert.equal(config.deadline, 20 * 60000);
+      await config.execute('profile-fixture', [], {});
       return { complete: true };
     },
     execute: async (command, args, config) => {
+      assert.equal(config.env.VK_DRIVER_FILES, fixture.provenance.selected_path);
+      assert.equal(config.env.VK_ICD_FILENAMES, undefined);
+      if (command === 'contract-fixture' || command === 'profile-fixture')
+        return { success: true, code: 0, signal: null };
       calls.push(command);
       assert.equal(config.grace, 6000);
       assert.equal(config.env.BLITZ_ALLOW_DEBUGGER_ATTACH, '1');
+      assert.equal(config.env.VK_DRIVER_FILES, fixture.provenance.selected_path);
+      assert.equal(config.env.VK_ICD_FILENAMES, undefined);
       assert.equal(config.timeoutDiagnostic.maximum, 5000);
-      if (calls.length === 1) {
-        assert.equal(command, 'build/neural/blitz-neural-vulkan-tests');
+      if (calls.length <= 4) {
+        assert.equal(command, options.teardownBinary);
         assert.deepEqual(args, ['--teardown']);
         assert.equal(config.maximum, 45000);
+        const saved = JSON.parse(fs.readFileSync(options.directory + '/report.json'));
+        assert.equal(
+          saved.teardown_stress.binary_sha256,
+          createHash('sha256').update(fs.readFileSync(command)).digest('hex'),
+        );
+        assert.equal(saved.teardown_stress.requested_rounds, 48);
+        assert.equal(saved.teardown_stress.completed_runs, calls.length - 1);
+        assert.equal(saved.vulkan_icd.selected_sha256, fixture.provenance.selected_sha256);
+        assert.equal(saved.vulkan_icd.VK_DRIVER_FILES, config.env.VK_DRIVER_FILES);
+        clock += 45000;
         return { success: true, code: 0, signal: null };
       }
       assert.equal(command, 'build/neural/blitz-neural-cycle');
@@ -298,10 +474,44 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
       };
     },
   });
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 5);
   assert.equal(report.complete, false);
   assert.equal(report.training_started, true);
+  assert.equal(report.teardown_stress.completed_full_run_rounds, 48);
   assert.equal(report.phases.at(-1).diagnostic.captured, true);
+});
+
+test('failed stress stops remaining runs and short deadlines cannot extend the teacher phase', async (t) => {
+  for (const failure of ['stress', 'deadline']) {
+    const options = experiment(t);
+    options.request.timeout_diagnostics = true;
+    let clock = 0,
+      calls = 0;
+    const report = await runTeacherOptimization({
+      ...options,
+      deadline: failure === 'deadline' ? 51000 : options.deadline,
+      now: () => clock,
+      debuggerPreflight: async () => ({ complete: true }),
+      contracts: async () => assert.fail('stress failure must stop contracts'),
+      profile: async () => assert.fail('stress failure must stop profiling'),
+      execute: async (_command, _args, config) => {
+        calls++;
+        assert.ok(clock + config.maximum + config.grace <= Math.min(options.deadline, 20 * 60000));
+        if (failure === 'stress')
+          return { success: false, code: null, signal: 'SIGKILL', timed_out: true };
+        clock += 45000;
+        return { success: true, code: 0, signal: null };
+      },
+    });
+    assert.equal(calls, 1);
+    assert.equal(report.complete, false);
+    assert.equal(report.training_started, false);
+    assert.equal(report.teardown_stress.completed_runs, failure === 'deadline' ? 1 : 0);
+    assert.match(
+      report.error,
+      failure === 'stress' ? /teardown-stress-1 failed/ : /insufficient deadline/,
+    );
+  }
 });
 
 test('invalid engineering evidence prevents profiles and learning while preserving failure artifacts', async (t) => {

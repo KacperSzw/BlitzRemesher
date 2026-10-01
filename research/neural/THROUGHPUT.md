@@ -322,7 +322,50 @@ expansion and standard storage pricing are documented by
 [RunPod](https://docs.runpod.io/storage/network-volumes).
 
 Stable preflight reports, launch arguments, first checkpoint verification and
-telemetry are in `evidence/throughput-remote/training-launch`. The controller and
-independent watchdog remain active; they collect and checksum results, terminate
-compute, and delete the volume after successful collection. Final two-hour
-training results are pending.
+telemetry are in `evidence/throughput-remote/training-launch`. These are historical
+snapshots; the failed outcome below supersedes their running status.
+
+## Packed candidate failure and repair (2026-10-01)
+
+The run stopped after 720.776 seconds, before completing two hours. Shard 1394
+(`ph_wooden_display_shelves_01`, audited QEM seed at 25% retention) threw a packed
+draw exception. The durable, checksum-verified checkpoint contains 160,256
+updates and 20,014 states. Results were collected and both compute and volume
+were deleted. The incomplete run has no score. The frozen policy, condition and
+outcome are in `evidence/packed-domain-failure`.
+
+Replaying its policy and condition on the RTX 2080 reproduced the error. An
+out-of-bounds edit affected a vertex whose final incident triangle disappeared.
+The triangle validation kernel therefore skipped it, while the packed renderer
+still validated the retained vertex slot. A deterministic two-triangle regression
+failed before the fix. Stream validation now runs in the vertex-writing kernel,
+and the triangle kernel retains orientation/UV-foldover checks. Invalid candidates
+are rejected independently in serial and indirect batches, before drawing or
+commit; no additional kernel or host readback is added. Rejection counts remain
+visible in teacher records.
+
+Related checks now reject nonfinite proposed normals before normalization,
+nonfinite/out-of-range working UVs, nonfinite draw positions, and malformed fixed
+domains (NaN/infinite lower bounds, negative/infinite extent, overflowing upper
+bounds). The same domain check runs before host cache encoding/decoding and GPU
+working-mesh construction, preventing NaN-to-integer encoding as well as invalid
+draws. Draw exceptions name the failing lane and violated contract. Visual
+limits, source FP32 references and the referenced-vertex exact-position cap are
+unchanged. The distinction between stored vertices and indexed drawing follows
+the [Vulkan drawing contract](https://docs.vulkan.org/spec/latest/chapters/drawing.html).
+
+Local validation: 32/32 CTest, 13/13 ASan/UBSan tests, and zero Compute Sanitizer
+errors for action generation and Vulkan candidate/ownership boundaries. The
+saved failure now completes 16 audited steps (793 to 761 triangles), rejecting
+157 invalid alternatives. Serial, four-lane and eight-lane runs produce identical
+label and episode hashes. Shared-workstation episode times were 0.779 / 0.620 /
+0.578 seconds, single observations rather than a speedup benchmark. Source
+coverage upper bound is 2.207108 pixels against the unchanged 3-pixel limit;
+changed area is 0.014567 against 0.5. Raw evidence is in
+`evidence/packed-domain-local`.
+
+The next remote gate runs the saved failure, sanitizer checks and a separate
+20-minute adaptive learning soak on all 100 training groups, initialized from the
+failing policy. It must pass the former failing condition, duration and coverage
+gates before another two-hour run. This validation does not count toward those
+two hours and does not establish release shading quality.

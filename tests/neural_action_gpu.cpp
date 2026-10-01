@@ -3,6 +3,22 @@
 #include <iostream>
 using namespace blitz;using namespace blitz::neural;
 void require(bool value,const char* message){if(!value)throw std::runtime_error(message);}
+void discarded_vertex_contracts(){
+    Mesh mesh;mesh.positions={{0,0,0},{1,0,0},{0,1,0},{2,0,0},{3,0,0},{2,1,0}};mesh.indices={0,1,2,3,4,5};mesh.normals.assign(6,{0,0,1});mesh.uv.assign(6,{8,-8});
+    NeuralOptions options;options.memory_mib=128;options.vertex_storage=NeuralVertexStorage::Packed;
+    GpuActionState state(mesh.view(),options,true);auto rows=state.placements({});auto row=std::find_if(rows.begin(),rows.end(),[](const auto& r){return r.action.from==0&&r.action.to==1;});
+    require(row!=rows.end(),"discarded vertex fixture has no legal edge");auto original=state.snapshot().data;auto proposals=state.teacher_proposals(row->action,false);auto valid=proposals[0];valid.placement.position={.5f,0,0};
+    DeviceMeshView view;require(state.trial(row->action,valid.placement,view)&&view.faces==1,"valid disconnected-component collapse rejected");
+    for(float x:{-1.f,4.f,INFINITY,std::numeric_limits<float>::quiet_NaN()}){
+        auto invalid=valid;invalid.placement.position.x=x;
+        require(!state.trial(row->action,invalid.placement,view),"discarded vertex escaped placement domain checks");
+        std::array<GpuActionState::Proposal,3> batch{valid,invalid,valid};auto views=state.trial_batch(row->action,batch);
+        for(size_t i=0;i<views.size();++i){DeviceTrialStatus status;gpu::check(gpu::copy(&status,views[i].trial_status,sizeof(status),cudaMemcpyDeviceToHost));require(bool(status.invalid)==(i==1)&&status.faces==1,"batched domain rejection contaminated another lane");}
+        bool rejected=false;try{state.commit(row->action,invalid.placement);}catch(const std::invalid_argument&){rejected=true;}require(rejected&&same_mesh_data(original.view(),state.snapshot().data.view()),"invalid discarded vertex was committed");
+    }
+    for(float value:{INFINITY,std::numeric_limits<float>::quiet_NaN()}){auto bad=valid;bad.placement.normals[0].x=value;require(!state.trial(row->action,bad.placement,view),"nonfinite discarded normal was silently normalized");auto views=state.trial_batch(row->action,std::span(&bad,1));DeviceTrialStatus status;gpu::check(gpu::copy(&status,views[0].trial_status,sizeof(status),cudaMemcpyDeviceToHost));require(status.invalid,"batched nonfinite normal was silently normalized");}
+    state.commit(row->action,valid.placement);auto result=state.snapshot().data;require(result.view().triangles()==1&&validate(result.view()).empty(),"valid collapse failed after rejected lanes");for(auto uv:result.uv)require(uv.x==8&&uv.y==-8,"inclusive UV endpoints changed");
+}
 Mesh plane(unsigned n){Mesh m;for(unsigned y=0;y<n;++y)for(unsigned x=0;x<n;++x){m.positions.push_back({float(x),float(y),0});m.normals.push_back({0,0,1});m.uv.push_back({float(x),float(y)});m.colors.push_back({uint8_t(x*21),uint8_t(y*12),100,255});m.tangents.push_back({1,0,0,1});}
     for(unsigned y=0;y+1<n;++y)for(unsigned x=0;x+1<n;++x){uint32_t a=y*n+x;m.indices.insert(m.indices.end(),{a,a+1,a+n,a+1,a+n+1,a+n});}m.double_sided={1};return m;}
 void parity(const Mesh& mesh,unsigned iterations){NeuralOptions options;options.memory_mib=256;ActionState cpu(mesh.view());GpuActionState gpu(mesh.view(),options);auto before=copy_mesh(mesh.view());
@@ -107,7 +123,7 @@ void strided_upload(){auto m=plane(5);struct Vertex {uint32_t prefix;Vec3 positi
     auto view=m.view();view.positions.data=reinterpret_cast<const std::byte*>(&vertices[0].position);view.positions.stride=sizeof(Vertex);view.normals.data=reinterpret_cast<const std::byte*>(&vertices[0].normal);view.normals.stride=sizeof(Vertex);
     NeuralOptions options;options.memory_mib=128;GpuActionState packed(m.view(),options),strided(view,options);auto a=packed.actions({}),b=strided.actions({});require(a.size()==b.size(),"strided upload topology");for(size_t i=0;i<a.size();++i)require(a[i].action==b[i].action&&a[i].x==b[i].x,"strided upload changed features");
 }
-int main(){try{if(!neural_available())return 77;
+int main(){try{if(!neural_available())return 77;discarded_vertex_contracts();
     for(unsigned n:{5u,7u}){auto m=plane(n);parity(m,8);m.normals.clear();m.uv.clear();m.colors.clear();m.tangents.clear();m.positions[n+1].z=.2f;parity(m,6);}
     auto seam=plane(5);std::vector<uint32_t> duplicate(25,UINT32_MAX);for(uint32_t y=0;y<5;++y){auto i=y*5+2;duplicate[i]=uint32_t(seam.positions.size());seam.positions.push_back(seam.positions[i]);seam.normals.push_back({0,1,0});seam.uv.push_back({-2,float(y)});seam.colors.push_back(seam.colors[i]);seam.tangents.push_back({0,0,1,-1});}
     for(uint32_t f=0;f<seam.view().triangles();++f){bool right=false;for(unsigned j=0;j<3;++j)right|=seam.positions[seam.indices[f*3+j]].x>2;seam.materials.push_back(uint16_t(right));if(right)for(unsigned j=0;j<3;++j){auto& i=seam.indices[f*3+j];if(duplicate[i]!=UINT32_MAX)i=duplicate[i];}}seam.double_sided={1,1};parity(seam,8);

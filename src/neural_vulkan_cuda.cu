@@ -22,14 +22,15 @@ __global__ void draw_bounds(DeviceMeshView m,DrawMetadata* out,bool packed,DrawL
     if(m.trial_status&&m.trial_status->invalid){if(threadIdx.x==0)*out={};return;}
     MinMax v{{INFINITY,INFINITY,INFINITY},{-INFINITY,-INFINITY,-INFINITY},0};
     for(uint32_t i=threadIdx.x;i<m.vertices;i+=blockDim.x){auto p=m.positions[i];v=CombineBounds{}(v,{p,p,0});
-        if(m.fixed_quantization&&(p.x<m.quant_low.x||p.y<m.quant_low.y||p.z<m.quant_low.z||p.x>m.quant_low.x+m.quant_extent.x||p.y>m.quant_low.y+m.quant_extent.y||p.z>m.quant_low.z+m.quant_extent.z))v.invalid=1;
-        if(packed&&m.uv){auto t=m.uv[i];if(!(t.x>=-8&&t.x<=8&&t.y>=-8&&t.y<=8))v.invalid=1;}}
+        if(!isfinite(p.x)||!isfinite(p.y)||!isfinite(p.z))v.invalid|=DrawNonfinite;
+        if(m.fixed_quantization&&(p.x<m.quant_low.x||p.y<m.quant_low.y||p.z<m.quant_low.z||p.x>m.quant_low.x+m.quant_extent.x||p.y>m.quant_low.y+m.quant_extent.y||p.z>m.quant_low.z+m.quant_extent.z))v.invalid|=DrawPosition;
+        if(packed&&m.uv){auto t=m.uv[i];if(!(t.x>=-8&&t.x<=8&&t.y>=-8&&t.y<=8))v.invalid|=DrawUv;}}
     __shared__ cub::BlockReduce<MinMax,256>::TempStorage temp;auto b=cub::BlockReduce<MinMax,256>(temp).Reduce(v,CombineBounds{});
     if(threadIdx.x==0){if(m.fixed_quantization){b.lo=m.quant_low;b.hi={m.quant_low.x+m.quant_extent.x,m.quant_low.y+m.quant_extent.y,m.quant_low.z+m.quant_extent.z};}*out={};out->low[0]=b.lo.x;out->low[1]=b.lo.y;out->low[2]=b.lo.z;out->extent[0]=m.fixed_quantization?m.quant_extent.x:b.hi.x-b.lo.x;out->extent[1]=m.fixed_quantization?m.quant_extent.y:b.hi.y-b.lo.y;out->extent[2]=m.fixed_quantization?m.quant_extent.z:b.hi.z-b.lo.z;out->invalid=b.invalid;
-        for(unsigned j=0;j<3;++j)if(!isfinite(out->extent[j]))out->invalid=1;
+        for(unsigned j=0;j<3;++j)if(!isfinite(out->low[j])||!isfinite(out->extent[j])||out->extent[j]<0||!isfinite(out->low[j]+out->extent[j]))out->invalid|=DrawDomain;
         if(l.exact_bits){auto* bits=reinterpret_cast<uint32_t*>(buffer+l.exact_bits);auto* rank=reinterpret_cast<uint32_t*>(buffer+l.exact_rank);auto* used=reinterpret_cast<uint32_t*>(buffer+l.used);uint32_t count=0,referenced=0;
             for(uint32_t word=0;word<(m.vertices+31)/32;++word){rank[word]=count;count+=__popc(bits[word]);referenced+=__popc(used[word]);}
-            if(uint64_t(count)*10000>uint64_t(referenced)*m.exact_position_bps)out->invalid=2;
+            if(uint64_t(count)*10000>uint64_t(referenced)*m.exact_position_bps)out->invalid|=DrawPrecisionCap;
             out->bits_offset=uint32_t(l.exact_bits/4);out->rank_offset=uint32_t(l.exact_rank/4);out->exact_offset=uint32_t(l.exact_positions/4);}
     }
 }

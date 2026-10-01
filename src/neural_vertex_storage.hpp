@@ -12,6 +12,10 @@ namespace blitz::neural {
 // Separate streams: position 6, UV 4, color 4, normal 4, tangent 4 bytes.
 // Bounds are per mesh, never per camera. Zero extent encodes as zero.
 struct VertexBounds { Vec3 low{}, extent{}; };
+inline bool valid_vertex_bounds(VertexBounds q){
+    auto valid=[](float low,float extent){return std::isfinite(low)&&std::isfinite(extent)&&extent>=0&&std::isfinite(low+extent);};
+    return valid(q.low.x,q.extent.x)&&valid(q.low.y,q.extent.y)&&valid(q.low.z,q.extent.z);
+}
 BLITZ_VERTEX_HD inline uint16_t pack_unorm16(float value,float low,float extent) {
     if(extent==0)return 0;
     double q=(double(value)-low)/extent*65535.;

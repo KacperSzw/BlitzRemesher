@@ -1,0 +1,28 @@
+{
+  "complete": false,
+  "score": null,
+  "run": "runs/neural/runpod-expanded-pretraining-02",
+  "revision": "a587c33169e02e7de59e064edd85b7b56516e899",
+  "started_utc": "2026-09-30T21:17:58.386Z",
+  "failed_utc": "2026-09-30T21:29:59.162Z",
+  "elapsed_learning_wall_seconds": 720.776,
+  "error": "packed draw requires finite fixed bounds, UVs in [-8,8] and exact positions within the referenced-vertex cap",
+  "failed_shard": 1394,
+  "asset": "ph_wooden_display_shelves_01",
+  "policy_sha256": "15ece25176a46faf70be86457dacf7e339b5df960563e5b5cbef9da401eee8ab",
+  "checkpoint": {
+    "path": "checkpoints/step-160256",
+    "step": 160256,
+    "fresh_states": 20014,
+    "learning_elapsed_ms": 669858,
+    "sha256": "a745b009563ecc30345e7cd05859f663c83817fd9c57c95571972c6548cec9f2",
+    "verified": true
+  },
+  "collection": {
+    "verified": true,
+    "sha256": "efc20ac8b880c20f0d97cc5d3f80027e1234577167dba8c1d22a91132b3f5177",
+    "at": 1790804033752
+  },
+  "compute_terminated": true,
+  "volume_deleted": true
+}

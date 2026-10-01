@@ -17,7 +17,7 @@ inline Mesh read_reference(std::istream& f){
     if(f.peek()!=EOF)throw std::invalid_argument("mesh reference trailing data");if(auto error=validate(m.view());!error.empty())throw std::invalid_argument(error);return m;
 }
 inline void write_packed_mesh(std::ostream& f,MeshView m,const VertexBounds* domain=nullptr){
-    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);auto q=domain?*domain:vertex_bounds(m);std::vector<uint16_t> positions,uv;std::vector<uint32_t> normals,tangents;std::vector<ColorRGBA8> colors;
+    if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);auto q=domain?*domain:vertex_bounds(m);if(!valid_vertex_bounds(q))throw std::invalid_argument("invalid packed bounds");std::vector<uint16_t> positions,uv;std::vector<uint32_t> normals,tangents;std::vector<ColorRGBA8> colors;
     for(size_t i=0;i<m.positions.count;++i){auto p=m.positions[i];positions.insert(positions.end(),{pack_unorm16(p.x,q.low.x,q.extent.x),pack_unorm16(p.y,q.low.y,q.extent.y),pack_unorm16(p.z,q.low.z,q.extent.z)});}
     for(size_t i=0;i<m.normals.count;++i)normals.push_back(pack_direction(m.normals[i]));
     for(size_t i=0;i<m.uv.count;++i){auto v=m.uv[i];if(v.x< -8||v.x>8||v.y< -8||v.y>8)throw std::invalid_argument("packed cache UV outside [-8,8]");uv.insert(uv.end(),{pack_unorm16(v.x,-8,16),pack_unorm16(v.y,-8,16)});}
@@ -29,7 +29,7 @@ inline void write_packed_mesh(std::ostream& f,MeshView m,const VertexBounds* dom
 }
 inline std::pair<Mesh,VertexBounds> read_packed_mesh(std::istream& f){
     char magic[8];VertexBounds q;f.read(magic,8);f.read(reinterpret_cast<char*>(&q),sizeof(q));if(!f||(std::memcmp(magic,"BLZMPK01",8)&&std::memcmp(magic,"BLZMPK02",8)))throw std::invalid_argument("packed mesh version");
-    for(float v:{q.low.x,q.low.y,q.low.z,q.extent.x,q.extent.y,q.extent.z})if(!std::isfinite(v))throw std::invalid_argument("nonfinite packed bounds");if(q.extent.x<0||q.extent.y<0||q.extent.z<0)throw std::invalid_argument("negative packed extent");
+    if(!valid_vertex_bounds(q))throw std::invalid_argument("invalid packed bounds");
     constexpr size_t vertices=40000000,faces=80000000;auto p=read_vector<uint16_t>(f,vertices*3);auto normal=read_vector<uint32_t>(f,vertices);auto uv=read_vector<uint16_t>(f,vertices*2);auto colors=read_vector<ColorRGBA8>(f,vertices);auto tangent=read_vector<uint32_t>(f,vertices);
     size_t n=p.size()/3;if(!n||p.size()%3||(!normal.empty()&&normal.size()!=n)||(!uv.empty()&&uv.size()!=n*2)||(!colors.empty()&&colors.size()!=n)||(!tangent.empty()&&tangent.size()!=n))throw std::invalid_argument("packed mesh dimensions");Mesh m;
     m.positions.reserve(n);for(size_t i=0;i<n;++i)m.positions.push_back({unpack_unorm16(p[i*3],q.low.x,q.extent.x),unpack_unorm16(p[i*3+1],q.low.y,q.extent.y),unpack_unorm16(p[i*3+2],q.low.z,q.extent.z)});

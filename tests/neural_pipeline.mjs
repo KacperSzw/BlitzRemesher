@@ -6,6 +6,26 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {residentArguments,preparedLearningOptions,validatePreparedLearning} from '../research/neural/resident-cycle.mjs';
 import {pipelineValidationBudget,pretrainingAuthorization,actionAccrued} from '../research/neural/action-budget.mjs';
+import {replayPackedDomain,soakPackedDomain} from '../research/neural/packed-domain-proof.mjs';
+test('packed failure replay requires accepted seeds, rejected invalid candidates and identical serial/batched outputs',async()=>{
+  for(const failure of ['none','incomplete','seed','unexercised','labels','episode']){
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-packed-proof-'));let calls=0;
+    const ctx={root,async execute(name,args){assert.equal(name,'blitz-neural-placement-prepare');const directory=args[1];fs.mkdirSync(directory,{recursive:true});++calls;
+      const index={complete:failure!=='incomplete',reference_confirmed:true,seed:{accepted:failure!=='seed'},states:16,invalid_candidates:failure==='unexercised'?0:3,sha256:failure==='labels'?String(calls):'same-labels',episode_sha256:failure==='episode'?String(calls):'same-mesh'};
+      fs.writeFileSync(directory+'/index.json',JSON.stringify(index));return 0;
+    }};
+    try{if(failure==='none'){assert.equal((await replayPackedDomain(ctx,1024)).complete,true);assert.equal(calls,3);}else await assert.rejects(()=>replayPackedDomain(ctx,1024),/replay/);}
+    finally{fs.rmSync(root,{recursive:true,force:true});}
+  }
+});
+test('soak gates elapsed learning, completed work and audit failures independently',async()=>{
+  for(const change of [{},{complete:false},{learning_elapsed_ms:1000},{failed_conditions_count:1},{coverage_quality_failed:true},{next_condition:1200}]){
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-packed-soak-'));
+    const ctx={root,async execute(name,args){assert.equal(name,'blitz-neural-cycle');fs.mkdirSync(args[0],{recursive:true});fs.writeFileSync(args[0]+'/report.json',JSON.stringify({complete:true,learning_elapsed_ms:20*60000,failed_conditions_count:0,coverage_quality_failed:false,next_condition:1700,...change}));return 0;}};
+    try{if(!Object.keys(change).length)assert.equal((await soakPackedDomain(ctx)).complete,true);else await assert.rejects(()=>soakPackedDomain(ctx),/former failing condition/);}
+    finally{fs.rmSync(root,{recursive:true,force:true});}
+  }
+});
 test('validation and forensic rentals share the current pinned grant and reserve',()=>{
   const base=pretrainingAuthorization.baseline_usd;
   for(const minutes of [35,60])for(const rate of [.5,1.1,2.1]){

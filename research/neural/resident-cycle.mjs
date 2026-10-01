@@ -2,6 +2,7 @@
 // Building these arguments does not launch training.
 import fs from 'node:fs';
 import {read,write} from './runpod-api.mjs';
+import {replayPackedDomain} from './packed-domain-proof.mjs';
 export function residentArguments(directory,{model,checkpoint,memory=16384,minutes=120,finalize=10,candidateBatch=2,backend='reference',profile='coverage',states=8,updates=2048,workers=1,hiddenWidth=64,checkpointSeconds=60,episodeSeeds=false,corpus='research/corpus.json',selection='research/neural/prepared-pilot/selection.json',curriculum='research/neural/prepared-pilot/curriculum.json',meshCache=directory+'/mesh-cache'}={}){
   if(minutes!==120||!Number.isInteger(finalize)||finalize<1||finalize>30||![1,2,4,8].includes(candidateBatch)||!['reference','fused'].includes(backend)||!['coverage','attributes'].includes(profile))throw new Error('Invalid prepared learning window');
   for(const [value,max] of [[states,4096],[updates,100000],[workers,3],[checkpointSeconds,3600]])if(!Number.isInteger(value)||value<1||value>max)throw new Error('Invalid prepared pipeline setting');
@@ -22,6 +23,7 @@ export function preparedLearningOptions(plan){
 export async function validatePreparedLearning(ctx,validation,plan=read('research/neural/next-training.json')){
   const options=preparedLearningOptions(plan),proof={complete:false,score:null,attempts:[]};
   ctx.phase('expanded-training-preflight');
+  if(plan.packed_domain_gate===true)proof.packed_replay=await replayPackedDomain(ctx,options.memory);
   const directory=ctx.root+'/expanded-preflight',args=residentArguments(directory,{model:validation.model,...options,meshCache:ctx.root+'/mesh-cache'});
   // One complete pass at the selected states/update/worker settings. This is
   // separate from the two-hour window and cannot shorten it.

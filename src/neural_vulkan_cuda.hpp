@@ -8,6 +8,7 @@ struct AuditPixel;
 struct RasterDebugPixel;
 // std430 metadata; explicit padding, shared with raster.vert.
 struct DrawMetadata {float low[4],extent[4];uint32_t invalid,unused[4],bits_offset,rank_offset,exact_offset;};
+enum DrawInvalid : uint32_t { DrawDomain=1, DrawPrecisionCap=2, DrawPosition=4, DrawUv=8, DrawNonfinite=16 };
 struct DrawLayout {
     size_t position,normal,uv,color,tangent,indices,faces,metadata,indirect,status,bytes,exact_bits,exact_rank,exact_positions,used;
     uint32_t position_stride,normal_stride;

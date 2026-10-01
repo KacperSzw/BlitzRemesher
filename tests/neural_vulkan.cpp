@@ -10,6 +10,24 @@
 using namespace blitz;using namespace blitz::neural;
 static void require(bool value,const char* message){if(!value)throw std::runtime_error(message);}
 static Mesh fixture(){Mesh m;m.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0}};m.normals.assign(4,{0,0,1});m.uv={{-8,-8},{8,-8},{8,8},{-8,8}};m.tangents.assign(4,{1,0,0,-1});m.colors.assign(4,{31,127,255,47});m.indices={0,1,2,0,2,3};m.materials={65535,65535};return m;}
+static void draw_domain_contracts(){
+    auto mesh=fixture();auto box=bounds(mesh.view());NeuralOptions options;options.memory_mib=128;options.raster_backend=NeuralRasterBackend::Vulkan;
+    gpu::Device device(options);GpuActionState state(mesh.view(),options,true);VulkanRaster raster(options);auto view=state.view();
+    auto positions=gpu::upload_stream(device,mesh.view().positions);view.positions=positions.p;
+    gpu::Buffer<AuditPixel> pixels(device,64*64);Camera camera{{1,0,0},{0,1,0},{0,0,1},box.radius*4,1,24/box.diameter(),false};
+    auto draw=[&]{raster.render(view,box,camera,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);};
+    auto reject=[&]{bool rejected=false;try{draw();}catch(const std::invalid_argument&){rejected=true;}require(rejected,"malformed packed device stream escaped validation");
+        VertexBounds domain{view.quant_low,view.quant_extent};if(view.fixed_quantization&&!valid_vertex_bounds(domain)){rejected=false;try{GpuActionState bad(mesh.view(),options,true,&domain);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"malformed fixed domain reached working mesh encoding");}};
+    for(bool fixed:{false,true})for(float value:{INFINITY,-INFINITY,std::numeric_limits<float>::quiet_NaN()}){
+        auto bad=mesh.positions;bad[0].x=value;positions.upload(bad);view.fixed_quantization=fixed;++view.revision;reject();
+    }
+    positions.upload(mesh.positions);view.fixed_quantization=true;auto domain=vertex_bounds(mesh.view());
+    for(float value:{INFINITY,-INFINITY,std::numeric_limits<float>::quiet_NaN()}){view.quant_low=domain.low;view.quant_extent=domain.extent;view.quant_low.x=value;++view.revision;reject();}
+    for(float value:{-1.f,INFINITY,std::numeric_limits<float>::quiet_NaN()}){view.quant_low=domain.low;view.quant_extent=domain.extent;view.quant_extent.x=value;++view.revision;reject();}
+    view.quant_low={std::numeric_limits<float>::max(),0,0};view.quant_extent=view.quant_low;++view.revision;reject();
+    view.quant_low=domain.low;view.quant_extent=domain.extent;++view.revision;draw();
+    unsigned covered=0;for(const auto& p:pixels.download())covered+=p.covered;require(covered>100,"valid draw failed after malformed cached draws");
+}
 static void candidate_contracts(bool memory_boundaries=false){
     Mesh mesh;for(unsigned y=0;y<4;++y)for(unsigned x=0;x<4;++x){mesh.positions.push_back({float(x),float(y),0});mesh.normals.push_back({0,0,1});}
     for(uint32_t y=0;y<3;++y)for(uint32_t x=0;x<3;++x){auto i=y*4+x;mesh.indices.insert(mesh.indices.end(),{i,i+1,i+4,i+1,i+5,i+4});}mesh.double_sided={1};
@@ -52,7 +70,7 @@ static void mask_memory_contracts(){
     for(size_t i=0;i<mask.size();++i)require(mask[i].covered==full[i].covered&&mask[i].covered==((bits[i/32]>>(i%32))&1)&&!mask[i].visible,"instrumented mask/full coverage differs");
 }
 int main(int argc,char** argv){try{bool memory_boundaries=argc==2&&std::string_view(argv[1])=="--memcheck";if(argc!=1&&!memory_boundaries)throw std::invalid_argument("expected optional --memcheck");if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
-    packed_seed_domain();candidate_contracts(memory_boundaries);
+    draw_domain_contracts();packed_seed_domain();candidate_contracts(memory_boundaries);
     // Each worker must retain the serial verdicts on an independent stream.
     MemoryBudget shared{size_t(384)<<20,0,0,0};std::barrier ready(2);
     auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts(memory_boundaries);};

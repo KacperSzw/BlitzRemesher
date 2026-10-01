@@ -1,0 +1,123 @@
+{
+  "adjacent_limit": 3.0,
+  "area_limit": 0.5,
+  "asset": {
+    "bytes": 112783,
+    "category": "manufactured",
+    "colors": false,
+    "diameter": 1.9232140067906278,
+    "files": [
+      {
+        "bytes": 105988,
+        "path": "data/polyhaven/wooden_display_shelves_01/wooden_display_shelves_01.bin",
+        "sha256": "e6c000a780626e618c1f1c0c1ec2ec29e1452e7824055ba53b40963d857edfbe",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_display_shelves_01/wooden_display_shelves_01.bin"
+      },
+      {
+        "bytes": 6795,
+        "path": "data/polyhaven/wooden_display_shelves_01/source.gltf",
+        "sha256": "3784953c451b088d24ac1b0e6946c7f7bd589115f51e6549fdb8fe9f7c10600e",
+        "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_display_shelves_01/wooden_display_shelves_01_1k.gltf"
+      }
+    ],
+    "geometry_sha256": "a4e44acf3a24777bb90eeb615086039dd32e10a1b80e4dc065184184bccbe1da",
+    "id": "ph_wooden_display_shelves_01",
+    "import_status": "ok",
+    "license": "CC0-1.0",
+    "license_url": "https://polyhaven.com/license",
+    "normals": true,
+    "opaque": true,
+    "path": "data/polyhaven/wooden_display_shelves_01/source.gltf",
+    "provider": "polyhaven",
+    "source_group": "polyhaven:wooden_display_shelves",
+    "source_identity": "wooden_display_shelves_01",
+    "source_url": "https://polyhaven.com/a/wooden_display_shelves_01",
+    "split": "development",
+    "triangles": 3174,
+    "uv": true,
+    "vertices": 2717,
+    "woody": false
+  },
+  "binary_sha256": "ceb6adfe1fdf4a16df8aea72b31a39aa93783defe47bb86ff3cb937e0c8f5abb",
+  "candidate_batch": 4,
+  "data_storage": "compact-v1",
+  "episode": {
+    "kind": "audited_simplifier",
+    "parent_sha256": "",
+    "target_retained": 0.25
+  },
+  "gpu_memory_mib": 16384,
+  "mask_only_coverage": true,
+  "max_supersample": 8,
+  "metric_kind": "threshold bounds; exact committed states",
+  "pixels": 128.0,
+  "policy_payload_sha256": "7bb07da461b10f4e9303d164001c425fa9a0d71523d856c61abf3a7268e5c65d",
+  "pool": 4,
+  "preference": "minimum triangles, then coverage-area bound, then stable proposal order",
+  "prepared_mesh": {
+    "asset": {
+      "bytes": 112783,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 1.9232140067906278,
+      "files": [
+        {
+          "bytes": 105988,
+          "path": "data/polyhaven/wooden_display_shelves_01/wooden_display_shelves_01.bin",
+          "sha256": "e6c000a780626e618c1f1c0c1ec2ec29e1452e7824055ba53b40963d857edfbe",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/wooden_display_shelves_01/wooden_display_shelves_01.bin"
+        },
+        {
+          "bytes": 6795,
+          "path": "data/polyhaven/wooden_display_shelves_01/source.gltf",
+          "sha256": "3784953c451b088d24ac1b0e6946c7f7bd589115f51e6549fdb8fe9f7c10600e",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_display_shelves_01/wooden_display_shelves_01_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "a4e44acf3a24777bb90eeb615086039dd32e10a1b80e4dc065184184bccbe1da",
+      "id": "ph_wooden_display_shelves_01",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/wooden_display_shelves_01/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:wooden_display_shelves",
+      "source_identity": "wooden_display_shelves_01",
+      "source_url": "https://polyhaven.com/a/wooden_display_shelves_01",
+      "split": "development",
+      "triangles": 3174,
+      "uv": true,
+      "vertices": 2717,
+      "woody": false
+    },
+    "packed_bytes": 82588,
+    "packed_sha256": "294c1368a27e25049110674ea2ffb1face4a1707e573c1ca1aba62784fc2a445",
+    "reference_bytes": 131462,
+    "reference_sha256": "43a859ab4290db198fe77d4aba979253ae8de91f316e62e8dc7c6c66c35d3310",
+    "version": 1
+  },
+  "previous_steps": 0,
+  "protocol_sha256": "71e7a71e508f400140f99fff10ba248c0d89cabe95e32329cf8a968f204dd42b",
+  "quantization": "fixed mesh bounds; grid placements",
+  "raster": "vulkan-v1",
+  "repair_budget": 256,
+  "schema": 3,
+  "seed": 1495,
+  "source_limit": 3.0,
+  "source_manifest_sha256": "9eb47ec92a45820e57cf1757928094b0b329c0a887fd100026aa8a11b6d8f853",
+  "states_requested": 16,
+  "supersample": 4,
+  "target": "one audited joint XYZ/normal candidate per edge; no averaging",
+  "teacher_candidates": 11,
+  "teacher_version": 4,
+  "training_profile": "coverage",
+  "training_selection_sha256": "319e01264bbb23cf6cc3d702e40c4b3f2f366234af71263cf56e8451eb0fe1ce",
+  "vertex_storage": "packed",
+  "view_seed": 2971082790,
+  "views": [
+    6,
+    2
+  ]
+}

@@ -1,0 +1,34 @@
+✔ repeatable SSH calls recover transport failures, preserve command failures and stop retrying (1.973114ms)
+✔ recovery can shorten a rental to its original cutoff without extending the budget (0.633817ms)
+✔ status succeeds with optional state files absent and reports every available record (82.855693ms)
+✔ reject wrong GPUs, unknown prices, insufficient VRAM and unavailable storage (0.777056ms)
+✔ Pod request is pinned and forwards only the public key (1.845102ms)
+✔ actual allocation must satisfy hardware and rate caps (0.324402ms)
+✔ remote hardware validation requires a full device and a valid compatible driver (0.449548ms)
+✔ each selected profile binds quote, Pod allocation, native architecture and rate cap (0.691747ms)
+✔ lost create response is reconciled after restart without a second rental or deadline reset (0.929384ms)
+✔ ambiguous provisioning must not be reported as terminated when no response is visible yet (0.283082ms)
+✔ deadlines prevent creation; API errors retain storage and retryable termination (1.48931ms)
+✔ independent watchdog enforces setup and hard deadlines regardless of controller progress (0.259205ms)
+✔ a definitive provisioning rejection cleans up the new empty volume (0.266369ms)
+✔ lost volume response is reconciled and cleaned without another volume create (0.258031ms)
+✔ REST handles empty deletions, missing resources, errors and cursor pagination (22.034576ms)
+✔ packed failure replay requires accepted seeds, rejected invalid candidates and identical serial/batched outputs (155.682961ms)
+✔ soak gates elapsed learning, completed work and audit failures independently (1.411983ms)
+✔ validation and forensic rentals share the current pinned grant and reserve (0.655286ms)
+✔ prepared plan reaches the real learner without inheriting old pilot settings (0.582882ms)
+✔ preflight rejects incomplete selected work and requires matched complete model audits (110.737954ms)
+✔ hardware validation consumes the existing grant and includes previous validation rentals (2.366459ms)
+✔ new authorization includes historical ledger, future rentals, rate, storage and reserve (0.346986ms)
+✔ a complete learning window cannot be silently shortened after validation (0.207606ms)
+✔ refresh identities remain training-only and include preceding LOD and 128px conditions (0.379794ms)
+✔ model comparison includes all weights but excludes metadata and its checksum (1.316293ms)
+✔ learning cycle excludes incomplete labels, carries optimizer state and audits the final model (2239.568132ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2333.245492

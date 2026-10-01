@@ -209,11 +209,11 @@ __device__ uint8_t blend_byte(uint8_t a,uint8_t b,uint8_t c,Vec3 w){return uint8
 // UV/color/tangent correspondence stays on the original incident chart. It is
 // never obtained by welding coincident positions or by projecting across seams.
 __global__ void place_vertices(DeviceMeshView current,DeviceMeshView original,const State* state,const Edit* edits,const Placement* proposals,const uint32_t* selected,const uint32_t* geometry,const uint32_t* canonical,
-    const uint32_t* original_offsets,const uint32_t* original_faces,Vec3* positions,Vec3* normals,Vec2* uv,ColorRGBA8* colors,Vec4* tangents){
+    const uint32_t* original_offsets,const uint32_t* original_faces,Vec3* positions,Vec3* normals,Vec2* uv,ColorRGBA8* colors,Vec4* tangents,bool packed_uv,uint32_t* invalid){
     uint32_t v=blockIdx.x*blockDim.x+threadIdx.x;if(v>=current.vertices)return;
     positions[v]=current.positions[v];if(normals)normals[v]=current.normals[v];if(uv)uv[v]=current.uv[v];if(colors)colors[v]=current.colors[v];if(tangents)tangents[v]=current.tangents[v];
     for(unsigned k=0;k<state->selected;++k){auto index=selected[k];auto edit=edits[index];if(geometry[v]!=edit.to)continue;auto proposal=proposals[index];positions[v]=proposal.position;
-        uint32_t roots[2]={canonical[v],none};for(unsigned w=0;w<edit.wedges;++w)if(canonical[v]==canonical[edit.target[w]]){roots[1]=canonical[edit.source[w]];if(normals)normals[v]=norm3(proposal.normals[w]);}
+        uint32_t roots[2]={canonical[v],none};for(unsigned w=0;w<edit.wedges;++w)if(canonical[v]==canonical[edit.target[w]]){roots[1]=canonical[edit.source[w]];if(normals){if(!finite3(proposal.normals[w]))atomicExch(invalid,1u);normals[v]=norm3(proposal.normals[w]);}}
         double best=dot3(sub3(proposal.position,original.positions[v]),sub3(proposal.position,original.positions[v]));uint32_t ids[3]={v,v,v};Vec3 weights{1,0,0};
         for(unsigned side=0;side<2;++side){auto root=roots[side];if(root==none)continue;for(uint32_t j=original_offsets[root];j<original_offsets[root+1];++j){auto f=original_faces[j];uint32_t a=original.indices[f*3],b=original.indices[f*3+1],c=original.indices[f*3+2];
             auto w=barycentric(proposal.position,original.positions[a],original.positions[b],original.positions[c]);auto delta=sub3(proposal.position,blend3(original.positions[a],original.positions[b],original.positions[c],w));double distance=dot3(delta,delta);
@@ -222,6 +222,13 @@ __global__ void place_vertices(DeviceMeshView current,DeviceMeshView original,co
         if(colors){auto a=original.colors[ids[0]],b=original.colors[ids[1]],c=original.colors[ids[2]];colors[v]={blend_byte(a.r,b.r,c.r,weights),blend_byte(a.g,b.g,c.g,weights),blend_byte(a.b,b.b,c.b,weights),blend_byte(a.a,b.a,c.a,weights)};}
         if(tangents){auto a=original.tangents[ids[0]],b=original.tangents[ids[1]],c=original.tangents[ids[2]];auto t=blend3({a.x,a.y,a.z},{b.x,b.y,b.z},{c.x,c.y,c.z},weights);if(normals){t=sub3(t,mul3(normals[v],dot3(t,normals[v])));if(len3(t)<1e-15)t=cross3(normals[v],fabsf(normals[v].x)<.8f?Vec3{1,0,0}:Vec3{0,1,0});}t=norm3(t);
             tangents[v]={t.x,t.y,t.z,original.tangents[v].w};}break;}
+    // The packed streams retain discarded vertex slots until compaction. A
+    // triangle-only check misses an invalid edit when all its faces disappear.
+    // Validate the streams here, in the kernel that writes them, for both serial
+    // and indirect trials. Rejected candidates never reach packing or commit.
+    auto p=positions[v],lo=current.quant_low,e=current.quant_extent;
+    if(!finite3(p)||(normals&&!finite3(normals[v]))||(current.fixed_quantization&&(p.x<lo.x||p.y<lo.y||p.z<lo.z||p.x>lo.x+e.x||p.y>lo.y+e.y||p.z>lo.z+e.z)))atomicExch(invalid,1u);
+    if(uv){auto t=uv[v];if(!isfinite(t.x)||!isfinite(t.y)||(packed_uv&&(t.x< -8||t.x>8||t.y< -8||t.y>8)))atomicExch(invalid,1u);}
 }
 __global__ void trial_precision(DeviceMeshView m,const State* state,const Edit* edits,const uint32_t* selected,const uint32_t* geometry,uint32_t* out,bool transfer){
     uint32_t v=blockIdx.x*blockDim.x+threadIdx.x;bool exact=v<m.vertices&&exact_position(m,v);
@@ -234,10 +241,8 @@ __global__ void precision_cap(uint32_t* bits,const uint32_t* used,uint32_t words
     __shared__ cub::BlockReduce<uint64_t,256>::TempStorage temp;auto sum=cub::BlockReduce<uint64_t,256>(temp).Sum(counts);
     if(threadIdx.x==0&&(sum>>32)*10000>uint64_t(uint32_t(sum))*bps)atomicExch(invalid,1u);
 }
-__global__ void validate_placement(DeviceMeshView current,const State* state,const uint32_t* remap,const uint32_t* keep,const Vec3* positions,const Vec3* normals,const Vec2* uv,uint32_t* invalid){
-    uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=state->faces||!keep[f])return;uint32_t old[3],next[3];for(unsigned j=0;j<3;++j){old[j]=current.indices[f*3+j];next[j]=remap[old[j]]==none?old[j]:remap[old[j]];
-        auto p=positions[next[j]];auto lo=current.quant_low,e=current.quant_extent;
-        if(!finite3(p)||(normals&&!finite3(normals[next[j]]))||(current.fixed_quantization&&(p.x<lo.x||p.y<lo.y||p.z<lo.z||p.x>lo.x+e.x||p.y>lo.y+e.y||p.z>lo.z+e.z))){atomicExch(invalid,1u);return;}}
+__global__ void validate_placement(DeviceMeshView current,const State* state,const uint32_t* remap,const uint32_t* keep,const Vec3* positions,const Vec2* uv,uint32_t* invalid){
+    uint32_t f=blockIdx.x*blockDim.x+threadIdx.x;if(f>=state->faces||!keep[f])return;uint32_t old[3],next[3];for(unsigned j=0;j<3;++j){old[j]=current.indices[f*3+j];next[j]=remap[old[j]]==none?old[j]:remap[old[j]];}
     auto before=cross3(sub3(current.positions[old[1]],current.positions[old[0]]),sub3(current.positions[old[2]],current.positions[old[0]]));auto after=cross3(sub3(positions[next[1]],positions[next[0]]),sub3(positions[next[2]],positions[next[0]]));
     if(len3(after)<=1e-15||dot3(before,after)<=.05*len3(before)*len3(after)){atomicExch(invalid,1u);return;}
     if(uv){double x=area2(current.uv[old[0]],current.uv[old[1]],current.uv[old[2]]),y=area2(uv[next[0]],uv[next[1]],uv[next[2]]);if(!isfinite(y)||(fabs(x)>1e-20&&x*y<=0))atomicExch(invalid,1u);}
@@ -272,7 +277,7 @@ __global__ void teacher_placements(DeviceMeshView m,TopologyView topology,const 
 struct DeviceScope {int previous;explicit DeviceScope(int id){check(cudaGetDevice(&previous));check(cudaSetDevice(id));}~DeviceScope(){cudaSetDevice(previous);}};
 }
 struct GpuActionState::Impl {
-    Device device;int id;DeviceMesh mesh;Bounds bounds;uint32_t face_capacity,action_capacity,hash_capacity,source_faces,inference_batch;bool placement;
+    Device device;int id;DeviceMesh mesh;Bounds bounds;uint32_t face_capacity,action_capacity,hash_capacity,source_faces,inference_batch;bool placement,packed_uv;
     std::unique_ptr<DeviceMesh> original;
     Buffer<State> state;Buffer<uint32_t> geometry,canonical,slots,seams;Topology geometric,attribute;
     Buffer<float> vertex_x,conditions_buffer,features_buffer;Buffer<Edit> possible,edits;Buffer<uint8_t> valid;
@@ -289,7 +294,7 @@ struct GpuActionState::Impl {
     std::unique_ptr<Buffer<std::byte>> select_temp,scan_temp,sort_temp;size_t select_bytes{},scan_bytes{},sort_bytes{};State host{};
     uint64_t trial_revision{};bool teacher_policy{},selected_is_action{};Action selected_action{};
     static uint32_t hash_size(size_t vertices){if(vertices>uint32_t(INT_MAX)/2)throw std::length_error("GPU vertex hash exceeds u32");uint32_t n=2;while(n<vertices*2)n*=2;return n;}
-    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization,MeshView origin,uint32_t batch):device(options,true),id(options.device),mesh(device,m,free&&options.draw_storage()==NeuralVertexStorage::Packed,quantization),bounds(blitz::bounds(origin.positions.count?origin:m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),source_faces(uint32_t(origin.positions.count?origin.triangles():m.triangles())),inference_batch(batch),placement(free),
+    Impl(MeshView m,const NeuralOptions& options,bool free,const VertexBounds* quantization,MeshView origin,uint32_t batch):device(options,true),id(options.device),mesh(device,m,free&&options.draw_storage()==NeuralVertexStorage::Packed,quantization),bounds(blitz::bounds(origin.positions.count?origin:m)),face_capacity(uint32_t(m.triangles())),action_capacity(face_capacity*6),hash_capacity(hash_size(m.positions.count)),source_faces(uint32_t(origin.positions.count?origin.triangles():m.triangles())),inference_batch(batch),placement(free),packed_uv(options.draw_storage()==NeuralVertexStorage::Packed),
         state(device,1),geometry(device,m.positions.count),canonical(device,m.positions.count),slots(device,hash_capacity),seams(device,m.positions.count),geometric(device,uint32_t(m.positions.count),face_capacity),attribute(device,uint32_t(m.positions.count),face_capacity),
         vertex_x(device,m.positions.count*24),conditions_buffer(device,conditions),possible(device,action_capacity),edits(device,action_capacity),valid(device,action_capacity),
         selected(device,64),remap(device,m.positions.count),keep(device,size_t(face_capacity)+1),offsets(device,size_t(face_capacity)+1),trial_indices(device,m.indices.size()),original_indices(device,m.indices.size()),order(device,action_capacity),sorted_order(device,action_capacity),trial_materials(device,m.materials.size()),original_materials(device,m.materials.size()),
@@ -347,8 +352,8 @@ struct GpuActionState::Impl {
     void build_precision(Buffer<uint32_t>& bits,uint32_t* invalid){if(!bits.n)return;precision_used.zero();trial_precision<<<blocks(mesh.view.vertices),256,0,gpu::stream()>>>(mesh.view,state.p,edits.p,selected.p,geometry.p,bits.p,placement);precision_references<<<blocks(size_t(face_capacity)*3),256,0,gpu::stream()>>>(trial_indices.p,offsets.p+face_capacity,face_capacity,precision_used.p);precision_cap<<<1,256,0,gpu::stream()>>>(bits.p,precision_used.p,uint32_t(bits.n),mesh.view.exact_position_bps,invalid);}
     void build_trial(){build_trial_topology();check(gpu::memset(&state.p->invalid_placement,0,sizeof(uint32_t)));
         if(placement){
-            place_vertices<<<blocks(mesh.view.vertices),256,0,gpu::stream()>>>(mesh.view,original->view,state.p,edits.p,proposals.p,selected.p,geometry.p,canonical.p,original_offsets.p,original_faces.p,trial_positions.p,trial_normals.p,trial_uv.p,trial_colors.p,trial_tangents.p);
-            validate_placement<<<blocks(face_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,remap.p,keep.p,trial_positions.p,trial_normals.p,trial_uv.p,&state.p->invalid_placement);}
+            place_vertices<<<blocks(mesh.view.vertices),256,0,gpu::stream()>>>(mesh.view,original->view,state.p,edits.p,proposals.p,selected.p,geometry.p,canonical.p,original_offsets.p,original_faces.p,trial_positions.p,trial_normals.p,trial_uv.p,trial_colors.p,trial_tangents.p,packed_uv,&state.p->invalid_placement);
+            validate_placement<<<blocks(face_capacity),256,0,gpu::stream()>>>(mesh.view,state.p,remap.p,keep.p,trial_positions.p,trial_uv.p,&state.p->invalid_placement);}
         build_precision(trial_bits,&state.p->invalid_placement);check(cudaGetLastError());}
     Lod download_trial(){uint32_t n=0;check(gpu::copy(&n,offsets.p+face_capacity,sizeof(n),cudaMemcpyDeviceToHost));if(!n)throw std::invalid_argument("GPU action removed the entire mesh");Lod lod;
         lod.data.indices.resize(size_t(n)*3);check(gpu::copy(lod.data.indices.data(),trial_indices.p,lod.data.indices.size()*sizeof(uint32_t),cudaMemcpyDeviceToHost));
@@ -375,7 +380,9 @@ struct GpuActionState::Impl {
     Lod download(){read();Lod lod;lod.data.indices.resize(size_t(host.faces)*3);check(gpu::copy(lod.data.indices.data(),mesh.indices.p,lod.data.indices.size()*sizeof(uint32_t),cudaMemcpyDeviceToHost));if(mesh.materials.n){lod.data.materials.resize(host.faces);check(gpu::copy(lod.data.materials.data(),mesh.materials.p,host.faces*sizeof(uint16_t),cudaMemcpyDeviceToHost));}
         if(placement){lod.shared_vertices=false;lod.data.positions=mesh.positions.download();lod.data.normals=mesh.normals.download();lod.data.uv=mesh.uv.download();lod.data.colors=mesh.colors.download();lod.data.tangents=mesh.tangents.download();lod.data.double_sided=mesh.sided.download();lod.data.exact_position_bits=mesh.precision.download();compact(lod.data);}return lod;}
 };
-GpuActionState::GpuActionState(MeshView m,const NeuralOptions& options,bool placement,const VertexBounds* quantization,MeshView origin,uint32_t inference_batch){if(!inference_batch||inference_batch>65536)throw std::invalid_argument("inference batch outside 1..65536");if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);if(m.triangles()>uint32_t(INT_MAX)/6)throw std::length_error("GPU action capacity exceeds signed sort range");if(origin.positions.count&&(!origin.triangles()||origin.triangles()>UINT32_MAX))throw std::invalid_argument("episode origin triangle domain");impl_=std::make_unique<Impl>(m,options,placement,quantization,origin,inference_batch);}
+GpuActionState::GpuActionState(MeshView m,const NeuralOptions& options,bool placement,const VertexBounds* quantization,MeshView origin,uint32_t inference_batch){if(!inference_batch||inference_batch>65536)throw std::invalid_argument("inference batch outside 1..65536");if(auto e=validate(m);!e.empty())throw std::invalid_argument(e);if(m.triangles()>uint32_t(INT_MAX)/6)throw std::length_error("GPU action capacity exceeds signed sort range");if(origin.positions.count&&(!origin.triangles()||origin.triangles()>UINT32_MAX))throw std::invalid_argument("episode origin triangle domain");
+    VertexBounds domain;if(options.draw_storage()!=NeuralVertexStorage::Float32){domain=quantization?*quantization:vertex_bounds(m);if(!valid_vertex_bounds(domain))throw std::invalid_argument("invalid working mesh bounds");quantization=&domain;}
+    impl_=std::make_unique<Impl>(m,options,placement,quantization,origin,inference_batch);}
 GpuActionState::~GpuActionState(){if(impl_){int previous=0;cudaGetDevice(&previous);impl_.reset();cudaSetDevice(previous);}}
 std::vector<ActionRecord> GpuActionState::actions(const std::array<float,conditions>& c){auto& p=*impl_;DeviceScope scope(p.id);p.features(c);p.read();std::vector<Edit> edits(p.host.actions);std::vector<float> x(size_t(p.host.actions)*action_features);std::vector<ActionRecord> out(p.host.actions);
     if(!out.empty()){check(gpu::copy(edits.data(),p.edits.p,edits.size()*sizeof(Edit),cudaMemcpyDeviceToHost));check(gpu::copy(x.data(),p.features_buffer.p,x.size()*sizeof(float),cudaMemcpyDeviceToHost));}
@@ -418,8 +425,8 @@ std::vector<DeviceMeshView> GpuActionState::trial_batch(Action action,std::span<
     for(size_t i=0;i<proposals.size();++i)if(!p.trial_slots[i])p.trial_slots[i]=std::make_unique<Impl::TrialBuffers>(p.device,p.mesh.view);
     p.select(action);p.build_trial_topology();std::vector<DeviceMeshView> views;views.reserve(proposals.size());
     for(size_t i=0;i<proposals.size();++i){auto& slot=*p.trial_slots[i];assign_trial<<<1,1,0,gpu::stream()>>>(p.selected.p,p.proposals.p,proposals[i].placement,slot.status.p,p.offsets.p+p.face_capacity);
-        place_vertices<<<blocks(p.mesh.view.vertices),256,0,gpu::stream()>>>(p.mesh.view,p.original->view,p.state.p,p.edits.p,p.proposals.p,p.selected.p,p.geometry.p,p.canonical.p,p.original_offsets.p,p.original_faces.p,slot.positions.p,slot.normals.p,slot.uv.p,slot.colors.p,slot.tangents.p);
-        validate_placement<<<blocks(p.face_capacity),256,0,gpu::stream()>>>(p.mesh.view,p.state.p,p.remap.p,p.keep.p,slot.positions.p,slot.normals.p,slot.uv.p,&slot.status.p->invalid);
+        place_vertices<<<blocks(p.mesh.view.vertices),256,0,gpu::stream()>>>(p.mesh.view,p.original->view,p.state.p,p.edits.p,p.proposals.p,p.selected.p,p.geometry.p,p.canonical.p,p.original_offsets.p,p.original_faces.p,slot.positions.p,slot.normals.p,slot.uv.p,slot.colors.p,slot.tangents.p,p.packed_uv,&slot.status.p->invalid);
+        validate_placement<<<blocks(p.face_capacity),256,0,gpu::stream()>>>(p.mesh.view,p.state.p,p.remap.p,p.keep.p,slot.positions.p,slot.uv.p,&slot.status.p->invalid);
         p.build_precision(slot.bits,&slot.status.p->invalid);auto view=p.mesh.view;view.exact_position_bits=slot.bits.p;view.positions=slot.positions.p;view.normals=slot.normals.p;view.uv=slot.uv.p;view.colors=slot.colors.p;view.tangents=slot.tangents.p;view.indices=p.trial_indices.p;view.materials=p.trial_materials.p;view.faces=p.face_capacity;view.trial_status=slot.status.p;view.revision=++p.trial_revision;views.push_back(view);
     }check(cudaGetLastError());return views;
 }

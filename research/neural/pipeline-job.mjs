@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {read,write} from './runpod-api.mjs';
+import {replayPackedDomain,soakPackedDomain} from './packed-domain-proof.mjs';
 process.env.PATH='/usr/local/cuda/bin:'+process.env.PATH;
 const [setup,latest,minutes]=process.argv.slice(2).map(Number),started=Date.now(),root='/workspace/results/pipeline-validation';
 if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||![10,30].includes(minutes))throw new Error('Invalid pipeline validation deadline');
@@ -22,7 +23,14 @@ try{
   report.cancellation=read(root+'/cancellation.json');
   await execute(cycle,['--replay-checkpoint','/workspace/forensic',root+'/replay','16384'],'replay.log');
   report.replay=read(root+'/replay/report.json');
-  if(config.mode==='pipeline'){
+  if(config.mode==='packed-domain'){
+    await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-action-gpu-tests'],'action-memcheck.log');
+    await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-vulkan-tests','--memcheck'],'vulkan-memcheck.log');
+    await execute('build/neural/blitz-neural-vulkan-tests',[],'vulkan-validation.log',{environment:{VK_INSTANCE_LAYERS:'VK_LAYER_KHRONOS_validation'}});
+    if(/Validation Error|VUID-|SYNC-HAZARD|was not found/.test(fs.readFileSync(root+'/vulkan-validation.log','utf8')))throw new Error('Vulkan validation layer failure');
+    const context={root,execute:(name,args,log,minutes)=>execute('build/neural/'+name,args,log.slice(root.length+1),{maximum:minutes*60000})};
+    report.packed_replay=await replayPackedDomain(context);report.packed_soak=await soakPackedDomain(context);report.complete=true;
+  }else if(config.mode==='pipeline'){
     await execute('build/neural/blitz-neural-vulkan-tests',[],'vulkan-validation.log',{environment:{VK_INSTANCE_LAYERS:'VK_LAYER_KHRONOS_validation'}});
     if(/Validation Error|VUID-|SYNC-HAZARD|was not found/.test(fs.readFileSync(root+'/vulkan-validation.log','utf8')))throw new Error('Vulkan validation layer failure');
     await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1',cycle,'--check-width','64'],'resident-memcheck.log');

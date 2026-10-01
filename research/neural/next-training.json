@@ -55,5 +55,11 @@
   "packed_domain_local_evidence": "research/neural/evidence/packed-domain-local",
   "packed_domain_remote_evidence": "research/neural/evidence/packed-domain-remote-02",
   "pending_run": "runs/neural/runpod-expanded-pretraining-05",
-  "prepared_revision": "716bb7c491ce232a51b9e1a6f3cfa4fc6fea52f1"
+  "prepared_revision": "716bb7c491ce232a51b9e1a6f3cfa4fc6fea52f1",
+  "capacity_wait": {
+    "unit": "blitz-await-packed-training-05.service",
+    "status": "runs/neural/runpod-expanded-pretraining-05/launch-wait.json",
+    "deadline_utc": "2026-10-01T07:51:09.331Z",
+    "maximum_new_rentals": 1
+  }
 }

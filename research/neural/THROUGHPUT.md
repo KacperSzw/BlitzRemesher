@@ -433,3 +433,9 @@ report, CTest and memory-check logs. The two-hour retry bundle
 `runpod-expanded-pretraining-05` contains follow-up fixes at `716bb7c`; its
 startup repeats the remote contracts and full prepared-corpus/model preflight.
 At 07:28 UTC the retry is awaiting L40S capacity, with no new rental created.
+At 07:31 UTC, local unit `blitz-await-packed-training-05.service` began a bounded
+capacity wait until 07:51:09 UTC. It checks once per minute, retains the price and
+total-budget gates, and stops attempting launch as soon as durable rental state
+exists. A successful launch transfers ownership to the existing controller and
+independent cleanup watchdog. `runpod-expanded-pretraining-05/launch-wait.json`
+records its live status. No capacity by the deadline means no new rental.

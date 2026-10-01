@@ -1,0 +1,111 @@
+{
+  "kind": "bounded-remote-core-validation",
+  "revision": "4729907b5eefd204a46786deab1c8c7bdc415cac",
+  "run": "runs/neural/core-validation-04",
+  "complete": true,
+  "training_started": false,
+  "quality_proven": false,
+  "score": null,
+  "device": {
+    "name": "NVIDIA RTX 2000 Ada Generation",
+    "memory_mib": 16380,
+    "cuda_architecture": 89,
+    "driver": "580.159.04"
+  },
+  "storage": "disposable-container",
+  "started_at": "2026-10-01T09:46:18.177Z",
+  "terminated_at": "2026-10-01T09:58:30.020Z",
+  "elapsed_rental_seconds": 731.843,
+  "quoted_gpu_hourly_usd": 0.24,
+  "estimated_gpu_usd": 0.04878953333333333,
+  "cost_note": "Elapsed controller interval times quoted GPU rate; estimate, not provider invoice; storage and billing rounding excluded.",
+  "archive_sha256": "24e3883e427e48c75e1dcd14c28871d961ff25e578f2c1dce0b295fa54ef04d1",
+  "archive_independently_verified": true,
+  "collection_before_termination": true,
+  "cleanup": {
+    "verified_at": "2026-10-01T09:59:08.374Z",
+    "pod_id": "do3vervnsvy7tt",
+    "pod_absent": true,
+    "active_pods": 0,
+    "network_volumes": 0,
+    "compute_terminated": true,
+    "container_storage_released": true,
+    "results_verified": true,
+    "ephemeral_storage_lost": false
+  },
+  "ctest": {
+    "passed": 40,
+    "total": 40,
+    "skipped": 0,
+    "seconds": 64.27,
+    "acquisition": false,
+    "note": "Acquisition disabled remotely; local 41-test configuration includes acquisition."
+  },
+  "compute_sanitizer": {
+    "action_errors": 0,
+    "vulkan_errors": 0
+  },
+  "teacher_readiness": {
+    "complete": true,
+    "runs": 8,
+    "matching_payloads": true,
+    "timing_authority": "isolated_remote",
+    "timing_invariants": true
+  },
+  "artifacts": [
+    {
+      "path": "core-validation-report.json.gz",
+      "uncompressed_sha256": "cc40255e00ce24b41dc8b1855492cc9dba9751b2b51039241886918c90272958"
+    },
+    {
+      "path": "core-validation-ctest.log.gz",
+      "uncompressed_sha256": "4447820884bbfc611aa7939dd54eb6be1f527b3023f3f4a7f97e75b51231dcf7"
+    },
+    {
+      "path": "core-validation-ctest.xml.gz",
+      "uncompressed_sha256": "eb27de6fce7057446aa0d3161556796da7c5a751ad52c4ae4f6078854b56b655"
+    },
+    {
+      "path": "core-validation-vulkan-validation.log.gz",
+      "uncompressed_sha256": "00c077c05679580206faed2b07c2b11ac171e0ac6e43ff19898931cad566885b"
+    },
+    {
+      "path": "core-validation-action-gpu-memcheck.log.gz",
+      "uncompressed_sha256": "72675b2d1282935661580d40e84e080292749e7367bf118e5e2b99898bda3006"
+    },
+    {
+      "path": "core-validation-vulkan-memcheck.log.gz",
+      "uncompressed_sha256": "014887dbeb8e5a1a9906213617acba67a3616fdebc681233d38abd804c635b7b"
+    },
+    {
+      "path": "core-validation-teacher-readiness-report.json.gz",
+      "uncompressed_sha256": "49d3d477d695cac080ba670e2936fccc0cf1a862259f5a3b442de07945768f22"
+    },
+    {
+      "path": "bootstrap.log.gz",
+      "uncompressed_sha256": "ad2a238ffa4af33c987860545d8ef7ec3efc76d9298210923a14b04c46cb8253"
+    }
+  ],
+  "vulkan_validation": {
+    "errors": 0,
+    "warnings": 0,
+    "layer": "VK_LAYER_KHRONOS_validation",
+    "note": "Remote log contains only the passing contract message; local warning count is retained separately."
+  },
+  "warnings": {
+    "compiler": 17,
+    "compiler_categories": {
+      "misleading_indentation": 10,
+      "missing_aggregate_field_initializer": 1,
+      "unused_cuda_helper": 2,
+      "third_party_tinyobj_constexpr": 1,
+      "libtorch_stringop_overflow_diagnostic": 3
+    },
+    "cublas_context_initialization": 2,
+    "setup": [
+      "Missing DISPLAY/XDG_RUNTIME_DIR during headless vulkaninfo",
+      "Missing Node manpage packaging warning"
+    ],
+    "note": "Warnings retained in bootstrap and CTest artifacts. Passing tests do not establish a warning-free build."
+  }
+}

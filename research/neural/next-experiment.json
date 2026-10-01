@@ -1,7 +1,7 @@
 {
   "version": 2,
   "launch": false,
-  "status": "Bounded v4 pilot recipe only; final training disabled. Requires current integration validation, teacher readiness and matched development evidence; no new training launched.",
+  "status": "Bounded v4 pilot prepared; integrated local and remote contracts plus tiny teacher fixtures passed. No training session launched. Representative teacher profiling and matched complete-chain development quality remain prerequisites for final training.",
   "objective": "Reduce complete audited LOD-chain triangle count; coverage first; record bytes and time separately",
   "architecture": 4,
   "hidden_width": 64,
@@ -16,11 +16,7 @@
   "updates_per_shard": 128,
   "batch": 512,
   "seed": 101,
-  "validation_seeds": [
-    101,
-    211,
-    307
-  ],
+  "validation_seeds": [101, 211, 307],
   "workers": 2,
   "candidate_batch": 4,
   "checkpoint_seconds": 60,
@@ -35,12 +31,7 @@
     "audited_policy_rollout": 0.25,
     "audited_simplifier": 0.25
   },
-  "retained_fraction_targets": [
-    1,
-    0.75,
-    0.5,
-    0.25
-  ],
+  "retained_fraction_targets": [1, 0.75, 0.5, 0.25],
   "gpu_memory_mib": 16384,
   "held_out_use": "release audit only",
   "checkpoint_policy": "Save exact weights, optimizer, input and native/Torch outputs before numerical gates; never publish failed snapshot as latest",
@@ -109,7 +100,7 @@
   ],
   "initialization_model": "runs/neural/v4-initialization/model.blzn",
   "initialization_proof": "research/neural/evidence/stopped-pretraining-05/migration.json",
-  "validation_evidence": "research/neural/evidence/core-refactor/validation.json",
+  "validation_evidence": "research/neural/evidence/main-integration/validation.json",
   "final_training": false,
   "duration_minutes": 5,
   "finalize_minutes": 2,

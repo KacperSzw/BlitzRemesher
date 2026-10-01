@@ -45,9 +45,7 @@
     "shared pools and wedge transforms preserve per-vertex exact-position metadata",
     "packed precision bitmap bytes are charged separately from shared vertex stride"
   ],
-  "pending_validation": [
-    "bounded remote core and teacher readiness"
-  ],
+  "pending_validation": [],
   "code_revision": "083f15377b82fde2af88f3489b7a57a211e7ebb1",
   "local_sanitizers": {
     "asan": true,
@@ -119,6 +117,16 @@
       "gpu_created": false,
       "volume_created": false,
       "cleanup_verified_at": "2026-10-01T09:30:45.867Z"
+    },
+    {
+      "run": "runs/neural/core-validation-04",
+      "status": "complete",
+      "storage": "disposable-container",
+      "revision": "4729907b5eefd204a46786deab1c8c7bdc415cac",
+      "archive_verified": true,
+      "compute_terminated": true,
+      "cleanup_verified_at": "2026-10-01T09:59:08.374Z",
+      "estimated_gpu_usd": 0.04878953333333333
     }
   ],
   "performance": {
@@ -147,18 +155,59 @@
     "before_final_training": [
       "Measure representative larger meshes, both UV modes and the 64-trial policy rollout",
       "Compare candidate batching and worker concurrency with identical audited outputs and fixed budgets",
+      "Profile model loading, device/session setup and teardown before considering persistent teacher processes; the current process/teacher timing gap does not isolate these costs",
       "Demonstrate complete-chain quality in matched development controls before model-capacity changes"
-    ]
+    ],
+    "remote_microfixtures": {
+      "analysis": "remote/teacher-analysis.json",
+      "batch_order": [1, 4, 4, 1],
+      "timing_authority": "isolated_remote",
+      "process_speedup_batch4_vs1": 1.0378496982995062,
+      "post_load_speedup_batch4_vs1": 1.4787436311774715,
+      "batch4_candidate_audit_percent": 49.588602958663806,
+      "batch4_exact_confirmation_percent": 23.1720000284387,
+      "conditions": "Two small assets, UV on, rollout0, 512 MiB allocation cap; not representative of the prepared large-mesh rollout64 training workload.",
+      "quality_score": null
+    }
   },
   "local_cloud_validation": {
     "cloud_subtests": 27,
     "passed": 27,
     "ctest_passed": 1,
     "ctest_total": 1,
-    "storage_modes": [
-      "network",
-      "core-only-container"
-    ],
+    "storage_modes": ["network", "core-only-container"],
     "malformed_metadata_does_not_block_termination": true
+  },
+  "remote_validation": {
+    "complete": true,
+    "record": "remote/record.json",
+    "code_revision": "4729907b5eefd204a46786deab1c8c7bdc415cac",
+    "ctest": {
+      "passed": 40,
+      "total": 40,
+      "skipped": 0,
+      "seconds": 64.27,
+      "acquisition": false,
+      "note": "Acquisition disabled remotely; local 41-test configuration includes acquisition."
+    },
+    "compute_sanitizer": {
+      "action_errors": 0,
+      "vulkan_errors": 0
+    },
+    "teacher_readiness": {
+      "complete": true,
+      "runs": 8,
+      "matching_payloads": true,
+      "timing_authority": "isolated_remote",
+      "timing_invariants": true
+    },
+    "training_started": false,
+    "quality_proven": false,
+    "vulkan_validation": {
+      "errors": 0,
+      "warnings": 0,
+      "layer": "VK_LAYER_KHRONOS_validation",
+      "note": "Remote log contains only the passing contract message; local warning count is retained separately."
+    }
   }
 }

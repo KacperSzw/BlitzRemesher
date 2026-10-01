@@ -1,0 +1,285 @@
+{
+  "complete": true,
+  "training_started": false,
+  "actual_files_verified": 16,
+  "runs": 8,
+  "timing_invariants": {
+    "max_postload_residual_seconds": 5.551115123125783e-17,
+    "max_total_residual_seconds": 0,
+    "passed": true
+  },
+  "gpu_before": {
+    "at": 1790848696366,
+    "available": true,
+    "result": {
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    "csv": "0, NVIDIA RTX 2000 Ada Generation, GPU-4b436f5f-bf8f-1d8c-0202-98e6e7b387e9, 580.159.04, 16380, 2, 5, 2\n"
+  },
+  "gpu_after": {
+    "at": 1790848703868,
+    "available": true,
+    "result": {
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    "csv": "0, NVIDIA RTX 2000 Ada Generation, GPU-4b436f5f-bf8f-1d8c-0202-98e6e7b387e9, 580.159.04, 16380, 2, 1, 0\n"
+  },
+  "assets": [
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "batch1": {
+        "process": 0.8905000000000001,
+        "teacher": 0.4020500675,
+        "post_load": 0.1737731515,
+        "external_process": 0.4884499325
+      },
+      "batch4": {
+        "process": 0.905,
+        "teacher": 0.364761827,
+        "post_load": 0.11832190149999999,
+        "external_process": 0.540238173
+      },
+      "speedup": {
+        "process": 0.9839779005524862,
+        "teacher": 1.1022262685947124,
+        "post_load": 1.4686473873140047,
+        "external_process": 0.9041381318679975
+      },
+      "audits_speedup": 1.3771120959137886,
+      "parity_actual": true,
+      "bytes_peak_by_batch": {
+        "1": 7749175,
+        "4": 19564751
+      }
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "batch1": {
+        "process": 1.0015,
+        "teacher": 0.495672193,
+        "post_load": 0.28619751449999997,
+        "external_process": 0.505827807
+      },
+      "batch4": {
+        "process": 0.918,
+        "teacher": 0.4302078245,
+        "post_load": 0.192733143,
+        "external_process": 0.48779217550000004
+      },
+      "speedup": {
+        "process": 1.090958605664488,
+        "teacher": 1.152169172134618,
+        "post_load": 1.4849418737492388,
+        "external_process": 1.0369740073864713
+      },
+      "audits_speedup": 1.9034756698650976,
+      "parity_actual": true,
+      "bytes_peak_by_batch": {
+        "1": 42079470,
+        "4": 42315918
+      }
+    }
+  ],
+  "by_batch": {
+    "1": {
+      "count": 4,
+      "seconds": {
+        "process": 3.784,
+        "teacher": 1.795444521,
+        "post_load": 0.919941332,
+        "external_process": 1.988555479
+      },
+      "mean_seconds": {
+        "process": 0.946,
+        "teacher": 0.44886113025,
+        "post_load": 0.229985333,
+        "external_process": 0.49713886975
+      },
+      "stages": {
+        "candidate_audit_seconds": 0.5204613519999999,
+        "candidate_build_seconds": 0.031597184,
+        "commit_seconds": 0.003604987,
+        "exact_confirmation_seconds": 0.15269407000000002,
+        "features_and_proposals_seconds": 0.016155233999999997,
+        "final_audit_seconds": 0.010460150999999999,
+        "final_output_seconds": 0.0045592670000000005,
+        "load_and_session_seconds": 0.875503189,
+        "other_preparation_seconds": 0.01781288100000015,
+        "packing_and_baseline_seconds": 0.13743084700000002,
+        "policy_rollout_seconds": 0,
+        "predecessor_snapshot_and_audit_seconds": 0.013988918999999999,
+        "state_setup_seconds": 0.01117644
+      },
+      "stage_postload_percent": {
+        "candidate_audit_seconds": 56.5754938816033,
+        "candidate_build_seconds": 3.434695550781058,
+        "commit_seconds": 0.3918714025124376,
+        "exact_confirmation_seconds": 16.598239984286305,
+        "features_and_proposals_seconds": 1.756115682385711,
+        "final_audit_seconds": 1.1370454436761843,
+        "final_output_seconds": 0.49560410445826136,
+        "other_preparation_seconds": 1.9363061947954905,
+        "packing_and_baseline_seconds": 14.939088202637691,
+        "policy_rollout_seconds": 0,
+        "predecessor_snapshot_and_audit_seconds": 1.5206316439318328,
+        "state_setup_seconds": 1.2149079089317403
+      }
+    },
+    "4": {
+      "count": 4,
+      "seconds": {
+        "process": 3.646,
+        "teacher": 1.589939303,
+        "post_load": 0.622110089,
+        "external_process": 2.056060697
+      },
+      "mean_seconds": {
+        "process": 0.9115,
+        "teacher": 0.39748482575,
+        "post_load": 0.15552752225,
+        "external_process": 0.51401517425
+      },
+      "stages": {
+        "candidate_audit_seconds": 0.30849570200000004,
+        "candidate_build_seconds": 0.010304403,
+        "commit_seconds": 0.003563207,
+        "exact_confirmation_seconds": 0.14415535000000002,
+        "features_and_proposals_seconds": 0.015550909000000002,
+        "final_audit_seconds": 0.010480491,
+        "final_output_seconds": 0.00433869,
+        "load_and_session_seconds": 0.967829214,
+        "other_preparation_seconds": 0.01740387899999998,
+        "packing_and_baseline_seconds": 0.083076749,
+        "policy_rollout_seconds": 0,
+        "predecessor_snapshot_and_audit_seconds": 0.013387373,
+        "state_setup_seconds": 0.011353335999999999
+      },
+      "stage_postload_percent": {
+        "candidate_audit_seconds": 49.588602958663806,
+        "candidate_build_seconds": 1.656363267884569,
+        "commit_seconds": 0.5727614875572288,
+        "exact_confirmation_seconds": 23.1720000284387,
+        "features_and_proposals_seconds": 2.4997037140158005,
+        "final_audit_seconds": 1.684668225980177,
+        "final_output_seconds": 0.6974151483339792,
+        "other_preparation_seconds": 2.797556141225027,
+        "packing_and_baseline_seconds": 13.354026959045187,
+        "policy_rollout_seconds": 0,
+        "predecessor_snapshot_and_audit_seconds": 2.15192989741081,
+        "state_setup_seconds": 1.824972171444723
+      }
+    }
+  },
+  "overall_speedup": {
+    "process": 1.0378496982995062,
+    "teacher": 1.1292534989305816,
+    "post_load": 1.4787436311774715,
+    "external_process": 0.9671676920343368
+  },
+  "contracts": [
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "batch": 1,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 0,
+      "pixels": 64,
+      "previous_pixels": 64,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "batch": 4,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 0,
+      "pixels": 64,
+      "previous_pixels": 64,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "batch": 4,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 0,
+      "pixels": 64,
+      "previous_pixels": 64,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "batch": 1,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 0,
+      "pixels": 64,
+      "previous_pixels": 64,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "batch": 1,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 1,
+      "pixels": 64,
+      "previous_pixels": 128,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "batch": 4,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 1,
+      "pixels": 64,
+      "previous_pixels": 128,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "batch": 4,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 1,
+      "pixels": 64,
+      "previous_pixels": 128,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "batch": 1,
+      "preserve_uv": true,
+      "rollout": 0,
+      "states": 2,
+      "previous": 1,
+      "pixels": 64,
+      "previous_pixels": 128,
+      "gpu_memory_mib": 512,
+      "binary": "066efaff7f250bd9fa14840487ee9c4ab9770ec70e29e0ecc8521ae38b39b9d0"
+    }
+  ]
+}

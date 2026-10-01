@@ -216,6 +216,18 @@ its parent phase, so do not add it again. Worker totals still overlap across
 concurrent jobs. Zero generic inference/audit counters in a teacher report do
 not imply that no GPU work occurred; use these teacher phase timings.
 
+The [integrated validation record](../research/neural/evidence/main-integration/README.md)
+includes passing local CPU, sanitizer, CUDA/Vulkan and training contracts, followed
+by 40 passing remote tests and eight teacher runs on an RTX 2000 Ada. The remote
+batch-4 fixtures spent 49.59% of post-load time auditing candidates and 23.17%
+confirming winners. Batching measured 1.48x post-load speedup but only 1.04x process
+speedup. These are tiny UV-on fixtures with no policy rollout, not a projection of
+full training throughput. Loading and session setup are substantial, and another
+roughly half-second per invocation lies outside the teacher timer. Profile model
+loading, startup and teardown separately before deciding whether persistent
+teacher processes are worthwhile. Candidate audit reuse and confirmation batching
+are also candidates for measured improvement; acceptance audits must remain intact.
+
 The implementation refactor is verified separately from learning quality.
 Behavior changes are tested with deterministic fixtures, versioned interfaces,
 model export checks, CPU sanitizers and bounded GPU validation. Larger models,

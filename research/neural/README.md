@@ -21,6 +21,9 @@ Current entry points:
 
 - [Architecture and contracts](../../docs/NEURAL.md): runtime, training, ownership,
   dependency boundaries and evidence limits.
+- [Integrated local and remote validation](evidence/main-integration/README.md):
+  contract tests, sanitizer checks, teacher parity and measured bottlenecks;
+  engineering evidence without a model-quality score.
 - [Prepared next experiment](next-experiment.json) and [curriculum](next-curriculum.json):
   v4, width 64, multiple screen sizes, audited predecessor states and independent
   limits. `launch` is **false**; this configuration does not start a training run.

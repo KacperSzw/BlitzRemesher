@@ -46,8 +46,9 @@ Dataset dataset(const fs::path& directory, bool ranking_only, const std::string&
         auto data = load_actions(path / "actions.bin");
         const auto contract = read_json(path / "contract.json");
         const auto target = contract.value("teacher_target", "oracle");
-        const bool runtime_endpoint =
-            target == "runtime-endpoint-v1" || target == "runtime-endpoint-v2";
+        const bool runtime_endpoint = target == "runtime-endpoint-v1" ||
+                                      target == "runtime-endpoint-v2" ||
+                                      target == "runtime-endpoint-v3";
         if (ranking_only != (target == "policy-placement-v1" || runtime_endpoint))
             throw std::invalid_argument("teacher labels do not match the training objective");
         if (ranking_only) {
@@ -55,9 +56,10 @@ Dataset dataset(const fs::path& directory, bool ranking_only, const std::string&
                 throw std::invalid_argument("v4 ranking cannot mix endpoint and placement targets");
             out.rank_target = target;
             if (contract.at("policy_payload_sha256") != policy_hash ||
-                contract.at("teacher_version") != (target == "runtime-endpoint-v2" ? 9
-                                                   : runtime_endpoint              ? 8
-                                                                                   : 7) ||
+                contract.at("teacher_version") != (target == "runtime-endpoint-v3"   ? 10
+                                                   : target == "runtime-endpoint-v2" ? 9
+                                                   : runtime_endpoint                ? 8
+                                                                                     : 7) ||
                 contract.at("data_storage") != "fp32" ||
                 data.architecture != conditioned_placement_schema ||
                 j.at("geometry_rejected_sha256") != file_sha256(path / "geometry-rejected.bin"))

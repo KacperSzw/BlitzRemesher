@@ -13,7 +13,8 @@ struct TeacherChoice {
 };
 // Only completed independent audits establish equivalent preferred choices.
 // Unknown/pruned observations cannot become positive or negative rank labels.
-inline uint16_t preferred_actions(std::span<const TeacherChoice> choices) {
+inline uint16_t preferred_actions(std::span<const TeacherChoice> choices,
+                                  uint32_t minimum_faces = 0) {
     if (choices.size() > 16)
         throw std::invalid_argument("teacher choice mask capacity");
     uint32_t faces = UINT32_MAX;
@@ -21,7 +22,7 @@ inline uint16_t preferred_actions(std::span<const TeacherChoice> choices) {
     uint16_t result = 0;
     for (size_t i = 0; i < choices.size(); ++i) {
         const auto& choice = choices[i];
-        if (!choice.confirmed || !std::isfinite(choice.margin))
+        if (!choice.confirmed || !std::isfinite(choice.margin) || choice.faces < minimum_faces)
             continue;
         if (choice.faces < faces || (choice.faces == faces && choice.margin < margin)) {
             faces = choice.faces;

@@ -52,8 +52,8 @@ int main(int argc, char** argv) {
         settings.cancelled =
             teaching.cancelled = [&] { return stopped || seconds() >= minutes * 60; };
         json contract = {
-            {"teacher_version", 9},
-            {"teacher_target", "runtime-endpoint-v2"},
+            {"teacher_version", 10},
+            {"teacher_target", "runtime-endpoint-v3"},
             {"schema", weights.architecture},
             {"data_storage", "fp32"},
             {"training_profile", "coverage"},
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
             {"protocol_sha256", file_sha256("research/PROTOCOL.md")},
             {"binary_sha256", file_sha256("/proc/self/exe")},
             {"preference",
-             "minimum triangles, then exact normalized source/adjacent search and audit error; all "
-             "exact ties preferred"}};
+             "minimum triangles without crossing the runtime target, then exact normalized "
+             "source/adjacent search and audit pixel/area error; all exact ties preferred"}};
         const auto parent = load_mesh(metadata.at("path").get<std::string>());
         auto source = parent.view();
         Mesh augmented;

@@ -144,6 +144,8 @@ inline RuntimeTeachingResult prepare_runtime_rankings(MeshView source, const Set
             json observation = {
                 {"from", row.action.from}, {"to", row.action.to}, {"geometry_rejected", !valid}};
             if (valid) {
+                observation["candidate_triangles"] = candidate.faces;
+                observation["target_eligible"] = candidate.faces >= request.target_triangles;
                 audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
                     const auto x = audit.evaluate(request.source, candidate, request.bounds, a,
                                                   &out.teacher_stats);
@@ -173,7 +175,9 @@ inline RuntimeTeachingResult prepare_runtime_rankings(MeshView source, const Set
                                   std::max({x.error / a.limit, y.error / b.limit,
                                             sx.error / search_a.limit, sy.error / search_b.limit,
                                             area(x.changed_area, a.max_changed_area),
-                                            area(y.changed_area, b.max_changed_area)}),
+                                            area(y.changed_area, b.max_changed_area),
+                                            area(sx.changed_area, search_a.max_changed_area),
+                                            area(sy.changed_area, search_b.max_changed_area)}),
                                   x.complete && y.complete && sx.complete && sy.complete};
                     }
                 });
@@ -190,7 +194,7 @@ inline RuntimeTeachingResult prepare_runtime_rankings(MeshView source, const Set
             if (unknown)
                 break;
         }
-        const auto preferred = preferred_actions(choices);
+        const auto preferred = preferred_actions(choices, uint32_t(request.target_triangles));
         for (size_t i = 0; i < choices.size(); ++i)
             if (preferred & (1u << i))
                 out.data.labels[first + i] |= PlacementPreferred;

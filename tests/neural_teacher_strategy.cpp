@@ -93,6 +93,11 @@ int main() {
             std::array<TeacherChoice, 4> choices{
                 {{8, .2, true}, {8, .2, true}, {8, .1, false}, {10, 0, true}}};
             require(preferred_actions(choices) == 3, "equivalent queried actions lost their tie");
+            for (uint32_t target : {8u, 9u, 10u, 11u})
+                require(preferred_actions(choices, target) == (target == 8    ? 3
+                                                               : target <= 10 ? 8
+                                                                              : 0),
+                        "teacher preferred an action the runtime target would exclude");
             choices[1].confirmed = false;
             require(preferred_actions(choices) == 1, "unknown action acquired a preference");
         }

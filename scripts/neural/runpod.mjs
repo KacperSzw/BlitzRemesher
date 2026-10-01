@@ -16,6 +16,7 @@ import {
   rentalDeadlines,
   retrySsh,
   storageMode,
+  inputArchive,
 } from './runpod-api.mjs';
 import { deployment } from './runpod-profile.mjs';
 import {
@@ -332,7 +333,8 @@ async function prepare() {
     stage + '/inputs.sha256',
     files.map((f) => `${f.sha256}  ${f.path}`).join('\n') + '\n',
   );
-  sync('tar', ['-cf', dir + '/input.tar', '-C', stage, '.']);
+  const archiveName = 'input.tar.gz';
+  sync('tar', ['-I', 'gzip -1', '-cf', dir + '/' + archiveName, '-C', stage, '.']);
   fs.mkdirSync(dir + '/control', { recursive: true });
   for (const name of [
     'runpod.mjs',
@@ -373,8 +375,9 @@ async function prepare() {
                     : actions
                       ? 'action-v2'
                       : 'vertex-v1',
-    archive_sha256: await sha(dir + '/input.tar'),
-    archive_bytes: fs.statSync(dir + '/input.tar').size,
+    archive_name: archiveName,
+    archive_sha256: await sha(dir + '/' + archiveName),
+    archive_bytes: fs.statSync(dir + '/' + archiveName).size,
     files: files.length,
     ...(readiness ? { teacher_readiness: readiness } : {}),
   });
@@ -422,7 +425,7 @@ async function launch() {
     throw new Error('Prepared optimization storage mode differs');
   if (JSON.stringify(prepared.deployment) !== JSON.stringify(deployment))
     throw new Error('Prepared GPU profile differs; prepare a new bundle');
-  if ((await sha(dir + '/input.tar')) !== prepared.archive_sha256)
+  if ((await sha(dir + '/' + inputArchive(prepared))) !== prepared.archive_sha256)
     throw new Error('Prepared archive changed');
   const api = new Api(apiKey(keyFile)),
     quote = await api.quote(process.env.BLITZ_RUNPOD_DATA_CENTER, storage);
@@ -726,7 +729,10 @@ async function control() {
         remote(
           endpoint,
           "mkdir -p /workspace && flock /workspace/upload.lock sh -c 'cat > /workspace/input.tar.part && mv /workspace/input.tar.part /workspace/input.tar'",
-          { input: dir + '/input.tar', timeout: Math.max(1, s.setup_deadline_ms - Date.now()) },
+          {
+            input: dir + '/' + inputArchive(prepared),
+            timeout: Math.max(1, s.setup_deadline_ms - Date.now()),
+          },
         ),
       );
       rental.commit({ phase: 'verify-upload' });

@@ -7,6 +7,12 @@ export const IMAGE =
   'runpod/base:1.0.7-cuda1290-ubuntu2404@sha256:c776d549e38023c51a28c25267e029ec2aa53a525c87a934b77694d76572c629';
 import { read, write } from './artifacts.mjs';
 export { read, write };
+export function inputArchive(prepared) {
+  const name = prepared.archive_name ?? 'input.tar';
+  if (!['input.tar', 'input.tar.gz'].includes(name))
+    throw new Error('Invalid prepared input archive name');
+  return name;
+}
 export function storageMode(state) {
   const mode = state.storage_mode === undefined ? 'network' : state.storage_mode;
   if (!['network', 'container'].includes(mode)) throw new Error('Invalid rental storage mode');

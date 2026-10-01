@@ -17,6 +17,7 @@ import {
   rentalDeadlines as deadlinesFor,
   retrySsh,
   storageMode,
+  inputArchive,
 } from '../scripts/neural/runpod-api.mjs';
 import { profiles, verifyDevice } from '../scripts/neural/runpod-profile.mjs';
 import {
@@ -73,6 +74,13 @@ const initial = () => ({
   quote: chooseQuote([gpu], centers),
   setup_deadline_ms: 1800000,
   deadline_ms: 7200000,
+});
+test('input archives accept compressed and legacy bundles without arbitrary paths', () => {
+  assert.equal(inputArchive({}), 'input.tar');
+  for (const name of ['input.tar', 'input.tar.gz'])
+    assert.equal(inputArchive({ archive_name: name }), name);
+  for (const name of ['', '../input.tar', '/input.tar.gz', 'other.tar', 4])
+    assert.throws(() => inputArchive({ archive_name: name }), /archive name/);
 });
 test('rental timings preserve transitions across restart without counting repeated observations', () => {
   let time = 100,
@@ -1054,7 +1062,12 @@ test('core preparation bundles only committed source and carries self-contained 
     assert.equal(prepared.storage_mode, 'network');
     assert.equal(prepared.files, 1);
     assert.equal(prepared.deployment.id, 'hardware-validation-ada16');
-    const archive = local('tar', ['-tf', output + '/input.tar']);
+    assert.equal(prepared.archive_name, 'input.tar.gz');
+    assert.equal(
+      checksum(fs.readFileSync(output + '/' + prepared.archive_name)),
+      prepared.archive_sha256,
+    );
+    const archive = local('tar', ['-tf', output + '/' + inputArchive(prepared)]);
     assert.match(archive, /source.bundle/);
     assert.ok(!/dataset|assets|model[.]blzn/.test(archive));
     local(process.execPath, [output + '/control/runpod.mjs', 'status', output], { env });
@@ -1072,7 +1085,7 @@ test('core preparation bundles only committed source and carries self-contained 
     assert.equal(optionalPrepared.teacher_readiness.training_started, false);
     const extract = directory + '/extracted';
     fs.mkdirSync(extract);
-    local('tar', ['-xf', optional + '/input.tar', '-C', extract]);
+    local('tar', ['-xf', optional + '/' + inputArchive(optionalPrepared), '-C', extract]);
     const inputs = JSON.parse(fs.readFileSync(extract + '/inputs.json'));
     assert.deepEqual(
       inputs.files.map((file) => file.path).sort(),
@@ -1183,7 +1196,10 @@ cp.spawn = (command, args, options) => {
   child.stderr = new PassThrough(); child.kill = () => {};
   child.stdin.once('finish', () => {
     let data = '';
-    if (remote === 'sha256sum /workspace/input.tar') data = hash(fs.readFileSync(root + '/input.tar'));
+    if (remote === 'sha256sum /workspace/input.tar') {
+      const prepared = JSON.parse(fs.readFileSync(root + '/prepared.json'));
+      data = hash(fs.readFileSync(root + '/' + (prepared.archive_name ?? 'input.tar')));
+    }
     else if (remote === 'cat /workspace/results.tar.gz.sha256') data = mode === 'collection-failure' ? 'invalid-checksum' : hash(archive);
     else if (remote === 'cat /workspace/results.tar.gz') data = archive;
     else if (remote.startsWith('if [ -f /workspace/job-finished ]') || remote.startsWith('test -f /workspace/job-finished')) data = 'finished';
@@ -1243,7 +1259,8 @@ globalThis.fetch = async (url, options) => {
           : {}),
       };
       fs.writeFileSync(run + '/rental.json', JSON.stringify(state));
-      fs.writeFileSync(run + '/input.tar', 'test-only input');
+      const archiveName = outcome === 'complete' ? 'input.tar.gz' : 'input.tar';
+      fs.writeFileSync(run + '/' + archiveName, 'test-only input');
       fs.writeFileSync(run + '/identity.pub', 'public-fixture');
       if (outcome.includes('malformed-collection'))
         fs.writeFileSync(run + '/collection.json', '{bad-json');
@@ -1259,6 +1276,7 @@ globalThis.fetch = async (url, options) => {
           experiment: 'core-validation',
           storage_mode: 'container',
           revision: 'fixture',
+          ...(outcome === 'complete' ? { archive_name: archiveName } : {}),
           archive_sha256: checksum('test-only input'),
         }),
       );

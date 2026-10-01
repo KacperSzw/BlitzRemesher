@@ -74,6 +74,21 @@ function sourceProof({ checkout, evidenceFile, request }) {
   };
 }
 
+export function baselineCmakeIdentity(cache) {
+  const identity = { ...cache };
+  // CTest records the container hostname. Cloud pools and their setup include
+  // control scheduling only; expanded compile/link commands remain strict.
+  for (const key of [
+    'SITE',
+    'SITE-ADVANCED',
+    'BLITZ_CLOUD_JOBS',
+    'BLITZ_CLOUD_CUDA_JOBS',
+    'CMAKE_PROJECT_INCLUDE',
+  ])
+    delete identity[key];
+  return identity;
+}
+
 // Versions identify package-managed headers; explicitly hash the selected public
 // SDK headers and actual linked libraries. Do not scan whole CUDA/Torch trees.
 export async function inspectBaselineEnvironment({ buildDirectory, binary }) {
@@ -164,10 +179,6 @@ export async function inspectBaselineEnvironment({ buildDirectory, binary }) {
       throw new Error('Baseline dependency fingerprint exceeds its bounded budget');
     runtime.push(await fileIdentity(file, deadline));
   }
-  // These affect scheduling only. The expanded target commands remain strict,
-  // so a future include that changes code generation still invalidates reuse.
-  for (const key of ['BLITZ_CLOUD_JOBS', 'BLITZ_CLOUD_CUDA_JOBS', 'CMAKE_PROJECT_INCLUDE'])
-    delete cache[key];
   return {
     container_image: IMAGE,
     architecture: process.arch,
@@ -175,7 +186,7 @@ export async function inspectBaselineEnvironment({ buildDirectory, binary }) {
     packages: run('dpkg-query', ['-W', '-f=${binary:Package}\t${Version}\t${Architecture}\n'])
       .split('\n')
       .sort(),
-    cmake_cache: cache,
+    cmake_cache: baselineCmakeIdentity(cache),
     commands_sha256: digest(commands),
     tools,
     headers: headerIdentities,

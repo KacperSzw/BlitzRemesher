@@ -7,6 +7,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
+  baselineCmakeIdentity,
   exportBaselineCache,
   inspectBaselineCache,
   restoreBaselineCache,
@@ -16,6 +17,44 @@ import {
 const sha = (value) => createHash('sha256').update(value).digest('hex');
 const read = (file) => JSON.parse(fs.readFileSync(file));
 const write = (file, value) => fs.writeFileSync(file, JSON.stringify(value) + '\n');
+
+test('CMake identity ignores only known scheduling and CTest host metadata while preserving code generation', () => {
+  const codegen = Object.freeze({
+    CMAKE_BUILD_TYPE: 'Release',
+    CMAKE_CUDA_ARCHITECTURES: '86',
+    CMAKE_CXX_FLAGS: '-fno-fast-math',
+    CMAKE_EXE_LINKER_FLAGS: '-Wl,--as-needed',
+    BLITZ_AVX2: 'ON',
+    FUTURE_OPTION: 'strictly retained',
+  });
+  for (const host of [
+    { SITE: 'container-a', 'SITE-ADVANCED': '1' },
+    {
+      SITE: 'container-b',
+      'SITE-ADVANCED': '0',
+      BLITZ_CLOUD_JOBS: '8',
+      BLITZ_CLOUD_CUDA_JOBS: '2',
+      CMAKE_PROJECT_INCLUDE: '/workspace/project/cmake/CloudBuild.cmake',
+    },
+  ]) {
+    const input = Object.freeze({ ...codegen, ...host });
+    assert.deepEqual(baselineCmakeIdentity(input), codegen);
+    assert.deepEqual(input, { ...codegen, ...host });
+  }
+  for (const [key, value] of [
+    ['CMAKE_BUILD_TYPE', 'Debug'],
+    ['CMAKE_CUDA_ARCHITECTURES', '89'],
+    ['CMAKE_CXX_FLAGS', '-ffast-math'],
+    ['CMAKE_EXE_LINKER_FLAGS', '-Wl,--no-as-needed'],
+    ['BLITZ_AVX2', 'OFF'],
+    ['FUTURE_OPTION', 'changed'],
+  ]) {
+    const changed = baselineCmakeIdentity({ ...codegen, [key]: value, SITE: 'another-host' });
+    assert.notDeepEqual(changed, baselineCmakeIdentity(codegen), key);
+    assert.equal(changed[key], value);
+  }
+});
+
 function fixture() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-baseline-cache-'));
   const checkout = path.join(root, 'source'),

@@ -1,5 +1,5 @@
 // This grant covers the approved teacher optimization experiment, not final training.
-import { compareAudits } from './quality-metrics.mjs';
+import { auditTermination, compareAudits } from './quality-metrics.mjs';
 
 export const teacherOptimizationAuthorization = Object.freeze({
   id: 'teacher-optimization-2026-10-01',
@@ -177,11 +177,20 @@ export function teacherStrategyGate(pairs, expectedAssets) {
       result.base.assets.some((a) => a.triangles.length !== 8)
     )
       throw new Error('full eight-LOD development pilot required');
-    return { seed, ...result };
+    return {
+      seed,
+      ...result,
+      termination: [exhaustive, candidate].map(auditTermination),
+    };
   });
   return {
+    version: 2,
     complete: true,
-    passed: comparisons.every((c) => c.per_lod_regressions.length === 0),
+    matched_budget_nonregression: comparisons.every((c) => c.per_lod_regressions.length === 0),
+    passed: comparisons.every(
+      (c) =>
+        c.per_lod_regressions.length === 0 && c.termination.every((t) => t.known && t.uncensored),
+    ),
     comparisons,
     release_quality_proven: false,
   };

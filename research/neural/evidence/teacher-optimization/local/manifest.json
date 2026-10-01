@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "complete": true,
+  "kind": "local engineering and shared GPU smoke evidence",
+  "quality_proven": false,
+  "score": null,
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "integrated_source_revision": "5244fb34bbea9a6aa34910d54817ff357711adff",
+  "files": [
+    {
+      "file": "tiny-abba.json.gz",
+      "source": "runs/neural/teacher-local-parity-01/report.json",
+      "uncompressed_sha256": "458adb3defc888912fd0c078d4fc62ef6d52c8c3f1242a4a2e714ebabcd38400",
+      "sha256": "37ee40eb86572b98ce2332e97451a7c0c690e6fc940416729ae6b7fcdba25cd8",
+      "bytes": 7774
+    },
+    {
+      "file": "medium-abba.json.gz",
+      "source": "runs/neural/teacher-local-medium-01/report.json",
+      "uncompressed_sha256": "907c2e6cddf370a3ebd41bbebd085f3bf89ab60965252384a048b26ab23f7ef2",
+      "sha256": "f805b80edd4ec97b07304b7864676b1b36da0257478931036565c4703665c52d",
+      "bytes": 11250
+    },
+    {
+      "file": "strategy-smoke.json.gz",
+      "source": "runs/neural/teacher-local-strategy-01/report.json",
+      "uncompressed_sha256": "16fb8fe0459520f293fca89b32cf256aa9a7824842e41955cafe54f9cd4f2f32",
+      "sha256": "87ba79c5de079b8d9d77d4b4dbb6f20e0ea35814356b97679820c1e93463f284",
+      "bytes": 25153
+    },
+    {
+      "file": "strategy-memcheck-report.json.gz",
+      "source": "runs/neural/teacher-local-strategy-memcheck-01/report.json",
+      "uncompressed_sha256": "90320ab2f5d9464c682c714c7eb8c785c589a5fd439000ddd4f77d7950872956",
+      "sha256": "93fe1860d26ce37401c9b2e270a3265197165040afda210102bd16a9f64a13f7",
+      "bytes": 3546
+    },
+    {
+      "file": "strategy-memcheck.log.gz",
+      "source": "/tmp/blitz-teacher-strategy-memcheck.log",
+      "uncompressed_sha256": "2087a3b778f7c088f436a052bdf3ab68ea77a1ff85112b645e44990f6b83cf59",
+      "sha256": "ab707d5e7a5a4964675aa59a122b65b0f3b9efe2e0c0253944615c907d8558ab",
+      "bytes": 246
+    },
+    {
+      "file": "integrated-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-ctest.log",
+      "uncompressed_sha256": "b245c2424cccc7542a4b4e4bc53042495f19e37d11782b7936e1702046230854",
+      "sha256": "7778c46cd5d7a8f20f21a8c3499ac7fdf3949b026956a2bae62b99be15855bb1",
+      "bytes": 1073
+    },
+    {
+      "file": "final-controller-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-ctest-final-js.log",
+      "uncompressed_sha256": "f5be4eb69691f77d32be953c039d516ea4a65eadda0b0894a8a8bb0fe6bcb9f6",
+      "sha256": "e8033c8317656f807fcd09837d5370eb41b5e0c4d8c6a4e3f7c23c965c34ccc5",
+      "bytes": 346
+    },
+    {
+      "file": "cpu-sanitizer-validation.json.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-strategy/build/strategy-validation/validation.json",
+      "uncompressed_sha256": "bcc87ee8593654fc47fd9db047c861059c4ceeea154eedc16705b56018b44cfd",
+      "sha256": "2baf985b0ad6e181873deca26801a2c93d5964122086b0ed66e9b39a2697fe65",
+      "bytes": 706
+    },
+    {
+      "file": "grouped-memcheck.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/grouped-memcheck.log",
+      "uncompressed_sha256": "4e27e651a14abb95da728491212e6377c969dd44d5034459fd1ab2034c8d8d74",
+      "sha256": "a3d1aac1732880a5afd31f7eb97b3c3d41bb0a9da37e04ed5bb9a99bc2c74a50",
+      "bytes": 319
+    },
+    {
+      "file": "grouped-validation.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/grouped-validation.log",
+      "uncompressed_sha256": "c86502703ce028b801c39eb29c3586f60a62bcae8d322fa6da8061e4b1f2f5b0",
+      "sha256": "9b4e66f09199067f149dc4f73b277a87e726cc08bdb2ba1069f5483d2dd865e5",
+      "bytes": 1067
+    },
+    {
+      "file": "baseline-provenance.json.gz",
+      "source": "runs/neural/teacher-optimization-baseline/provenance.json",
+      "uncompressed_sha256": "b55cd8d46014370c9fb4a302e8ba2554ea6ad6ab259ef2fb59390d64ad771d3c",
+      "sha256": "0197ddff23ff2ee83c4b1856245d0a72b0d4bb289dab19d35f3207bfd0d66c04",
+      "bytes": 338
+    },
+    {
+      "file": "incomplete-quality-calibration.json.gz",
+      "source": "runs/neural/teacher-quality-calibration-01/record.json",
+      "uncompressed_sha256": "47482323160cbe2acf6d93d6aa1091a8969b211d283d59d010cb64417879c0cd",
+      "sha256": "ea1e22ffcbe54c4b88b6a0aae92c6b28ddc2e0c18dd2c79ff69deefbdfbc9e36",
+      "bytes": 490
+    },
+    {
+      "file": "stage-analysis.json.gz",
+      "source": "runs/neural/teacher-local-analysis.json",
+      "uncompressed_sha256": "c4ce9f008bd0bb4fc1626bebce007e204055b4f132fc268086a0ed8a0dd419e6",
+      "sha256": "df9d121a46270af54fcfea4eb8ab1f81676a620a571eae20ea68921c6c34528d",
+      "bytes": 6809
+    }
+  ]
+}

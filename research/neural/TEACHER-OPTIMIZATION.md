@@ -57,6 +57,13 @@ adjacent audit must pass. Incomplete, resource-limited or numerically invalid ru
 receive no aggregate quality score and cannot promote the strategy. Development
 evidence is separate from release-only held-out audits.
 
+Adoption also requires known, uncensored action termination. An audited fallback
+after the action budget is exhausted remains valid matched-budget evidence, but
+cannot establish that the strategy preserves reduction quality. Gate version 2
+records those termination reasons explicitly. The first remote bundle was frozen
+at `5244fb3` before this stricter review rule; its raw comparisons must be evaluated
+again with the current gate before any adoption decision.
+
 ## Bounded remote execution
 
 Local contracts and a small warm comparison precede a rental. The separate user
@@ -80,7 +87,29 @@ calling a partial comparison a quality result.
 
 ## Evidence status
 
-Implementation and integrated validation are in progress. No new rental or
-learning pilot has started at this documentation checkpoint. Final measured
-results, remaining bottlenecks and resource cleanup must be recorded here before
-claiming readiness for a longer training session.
+Integrated local validation passed 44/44 GPU/training CTests, 28/28 CPU tests and
+28/28 ASan/UBSan tests. The updated cloud/profile/optimization CTests passed 3/3.
+Grouped Vulkan audits and the core-first resident teacher passed Compute Sanitizer
+with zero errors. [Checksummed local evidence](evidence/teacher-optimization/local/manifest.json)
+records source revisions, raw reports, tests and the incomplete quality calibration.
+
+Two local ABBA smokes preserve actual label/episode bytes and all common
+intermediate query, pruning, preferred-action and selection outcomes across 32
+jobs. The medium predecessor/rollout/simplifier comparison measured 2.356 seconds
+of warm work before reuse and 2.009 after (1.173x); process time was 5.904 versus
+5.115 seconds. These shared RTX 2080 timings are diagnostic only. It removed 2,112
+rasterizations without changing 1,174 evaluations. Owned workspace increased by
+698,880 bytes and allocation count rose from 322 to 502.
+
+Candidate audits still consume 44.71% of optimized post-load worker time and exact
+confirmation 21.36% on that medium smoke. Reuse does not remove the teacher
+bottleneck. The limited coffee rollout retained 99.7903% of triangles despite a
+75% target; it exercised the rollout path but did not demonstrate deep progress.
+The branch simplifier seed retained 49.9970%. These distinctions must remain
+visible when evaluating learning throughput and state coverage.
+
+The bounded A40 experiment started from immutable source `5244fb3` on 2026-10-01
+at 11:04:41 UTC, quoted at $0.49/hour. Its conservative maximum reservation is
+$1.6534 of the separate $3 grant, including storage allowance and reserve. Final
+remote measurements, remaining bottlenecks and verified resource cleanup are
+pending; no long training is authorized by this document.

@@ -180,6 +180,10 @@ function audit(delta = -1) {
       ranking: 'learned',
       status: 'complete',
       seconds: 1,
+      neural: {
+        action_diagnostics_version: 1,
+        action_proposals: [{ stop_reason: 'no_accepted_action' }],
+      },
       lods: Array.from({ length: 8 }, (_, i) => ({
         triangles: i ? 1000 - i * 50 + delta : 1000,
         source: { complete: true, passed: true },
@@ -195,6 +199,12 @@ test('a single per-LOD regression cannot be hidden by aggregate gains or partial
     candidate: audit(-2),
   }));
   assert.equal(teacherStrategyGate(pairs, 12).passed, true);
+  pairs[0].candidate.rows[0].neural.action_proposals[0].stop_reason = 'trial_budget';
+  const censored = teacherStrategyGate(pairs, 12);
+  assert.equal(censored.matched_budget_nonregression, true);
+  assert.equal(censored.passed, false);
+  assert.equal(censored.comparisons[0].termination[1].uncensored, false);
+  pairs[0].candidate.rows[0].neural.action_proposals[0].stop_reason = 'no_accepted_action';
   pairs[1].candidate.rows[0].lods[2].triangles = pairs[1].exhaustive.rows[0].lods[2].triangles + 1;
   assert.equal(teacherStrategyGate(pairs, 12).passed, false);
   assert.throws(() => teacherStrategyGate(pairs.slice(1), 12));

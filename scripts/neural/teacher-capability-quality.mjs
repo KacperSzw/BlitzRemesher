@@ -1,6 +1,7 @@
 // A bounded two-asset before/after diagnostic, separate from full quality gates.
 import fs from 'node:fs';
 import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { createHash } from 'node:crypto';
 import { read, write } from './artifacts.mjs';
 import { boundedProcess } from './bounded-process.mjs';
@@ -110,8 +111,10 @@ export async function runCapabilityQuality({
       )
         throw new Error('capability audit inputs changed');
       if (
-        JSON.stringify(row.audit.expected_assets) !==
-          JSON.stringify(assets.map(({ id, category }) => ({ id, category }))) ||
+        !isDeepStrictEqual(
+          row.audit.expected_assets,
+          assets.map(({ id, category }) => ({ id, category })),
+        ) ||
         row.audit.rows.some((asset) => asset.lods?.length !== config.levels)
       )
         throw new Error('capability audit asset or LOD schedule differs');

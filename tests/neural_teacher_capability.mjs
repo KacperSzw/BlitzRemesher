@@ -127,6 +127,10 @@ test('incomplete or mismatched audits cannot become a capability comparison', as
     (a) => (a.rows[0].neural.confirmation_cancelled = 1),
     (a) => (a.binary_sha256 = 'wrong-binary'),
     (a) => (a.model_sha256 = 'wrong-model'),
+    (a) => (a.expected_assets[0].id = 'wrong-asset'),
+    (a) => (a.expected_assets[0].category = 'wrong-category'),
+    (a) => a.expected_assets.reverse(),
+    (a) => (a.expected_assets[1] = a.expected_assets[0]),
     (a) => a.rows.pop(),
     (a) => a.rows[0].lods.pop(),
   ]) {
@@ -140,6 +144,20 @@ test('incomplete or mismatched audits cannot become a capability comparison', as
     assert.equal(result.runs.length, 1);
     assert(result.runs[0].audit); // Failure remains inspectable.
   }
+});
+
+test('native JSON object key order does not change the exact expected asset sequence', async () => {
+  const result = await run(async (command, args) => {
+    writeAudit(command, args, (a) => {
+      // nlohmann::json serializes category before id, unlike the JS manifest map.
+      a.expected_assets = a.expected_assets.map(({ id, category }) => ({ category, id }));
+    });
+    return success;
+  });
+  assert.equal(result.complete, true, result.error);
+  assert.equal(result.runs.length, 2);
+  assert.equal(result.quality_proven, false);
+  assert.equal(result.score, null);
 });
 
 test('signal failure preserves partial native output and never launches the final audit', async () => {

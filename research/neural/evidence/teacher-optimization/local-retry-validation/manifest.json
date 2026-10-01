@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "kind": "local retry regression proof",
+  "quality_proven": false,
+  "score": null,
+  "files": [
+    {
+      "file": "build.log.gz",
+      "source": "/tmp/blitz-hour-retry-build.log",
+      "uncompressed_sha256": "2e48eb1762a1ca162fdd8185b687ae49547411631af5f829a6fc134494bf1188",
+      "sha256": "2a57cd36847aa8b8c635dcb7f0bf8edb49c86c877bb9ea6948e876656d59c707",
+      "bytes": 170
+    },
+    {
+      "file": "bulk-ctest.log.gz",
+      "source": "/tmp/blitz-hour-retry-ctest.log",
+      "uncompressed_sha256": "b22bfb75dfb088dcefeb3b093db484680b256910d680d3fefad8453fc0ef927a",
+      "sha256": "9412b27be5b92e8ff58b04908eb3a598b5b17296bdc42ed533cc6db45084ef3a",
+      "bytes": 1172
+    },
+    {
+      "file": "bulk-ctest.xml.gz",
+      "source": "/tmp/blitz-hour-retry-ctest.xml",
+      "uncompressed_sha256": "d25d8e873dccf6a600dfbffaa5ef9d80bfd18a3f9daff0e12627af07f68a88ef",
+      "sha256": "cdac9a02d30a3478e71483094b95e72502bc1c6b7af234ba3a734b469d3771fe",
+      "bytes": 6025
+    },
+    {
+      "file": "native-stack-ctest.log.gz",
+      "source": "/tmp/blitz-hour-retry-native-stack.log",
+      "uncompressed_sha256": "77b9aad9a4138171d54a11dbcb29b828cf20c2ef8415c426b12b234df253ab53",
+      "sha256": "3f060f2fe80ec98bb03370ea8451f32855a92096f9b66fc7767329094a6967d1",
+      "bytes": 188
+    },
+    {
+      "file": "native-stack-ctest.xml.gz",
+      "source": "/tmp/blitz-hour-retry-native-stack.xml",
+      "uncompressed_sha256": "1e1c7e02563e367f5d1d1c9c6d7fce5ef10fcccb263dc621d46d8f3f53a6b54b",
+      "sha256": "1909589693ce2b3274b98c639070d9c02f95d56ce06528766de2627044281183",
+      "bytes": 798
+    },
+    {
+      "file": "capability-cwd-source.log.gz",
+      "source": "/tmp/blitz-capability-cwd-source.log",
+      "uncompressed_sha256": "5e9d7f090f0032f54a92012b5b0589f6d98ec5440e6882225f5488da629d1cc4",
+      "sha256": "00ec9f1d8c6dac20e2aea26809df7aad8c7b91c74fdce5c388ae6fa6ed98fc13",
+      "bytes": 1284
+    },
+    {
+      "file": "capability-cwd-build.log.gz",
+      "source": "/tmp/blitz-capability-cwd-build.log",
+      "uncompressed_sha256": "fa9ea71da4b829458af474bac617b2f996c1320a76c621739b440a3195cd2088",
+      "sha256": "27a75bead1556d752ffb4a10523d1ba7a0e70bb2d4a83f9ba57aaf56cdb25ead",
+      "bytes": 1288
+    },
+    {
+      "file": "capability-cwd-unrelated.log.gz",
+      "source": "/tmp/blitz-capability-cwd-unrelated.log",
+      "uncompressed_sha256": "774c55e2501b7c67889ee67be67261a6d6e7b54283b9ba77787df2b9a6fd438f",
+      "sha256": "31a3181d49ffce93b8cd6b27077682c464f04a8074fede8beadd97fadd61c19f",
+      "bytes": 1292
+    },
+    {
+      "file": "record.json",
+      "source": "derived source revision checks, raw test logs/JUnit and controller-provided run scope",
+      "sha256": "21b888bec59cda8433d72c89007cf7259061db1b51fbb089c58ae9c1e8ab15fd",
+      "bytes": 5219
+    },
+    {
+      "file": "README.md",
+      "source": "derived explanation of checked-in raw evidence",
+      "sha256": "d8a6b72251619414af7d1f47c11a37225c5b15004638d88b74cfc61bb9f292c0",
+      "bytes": 1482
+    }
+  ]
+}

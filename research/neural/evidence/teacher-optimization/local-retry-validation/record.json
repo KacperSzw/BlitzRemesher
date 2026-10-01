@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "scope": "Local retry validation after the third remote attempt failed its engineering gate",
+  "recorded_against_revision": "d1ed9f8173a2df7e910917e38d754bc45755d5fc",
+  "frozen_remote_retry_revision": "959f248e19f62169603a82674367c757eccb3a29",
+  "training_session_started": false,
+  "quality_proven": false,
+  "performance_speedup": null,
+  "score": null,
+  "native_runtime_changed": false,
+  "source_provenance": {
+    "capability_fixture_revision": "661a01c5f350d0568b3ff783283eb7380d274883",
+    "intervening_evidence_only_revision": "cc706ea1dabfe646b1764e7db6df21f2605df141",
+    "native_stack_fix_revision": "959f248e19f62169603a82674367c757eccb3a29",
+    "controller_report": "The bulk build and 49-case CTest run used the capability fixture fix at 661a01c, with cc706ea changing evidence only. The separate native-stack CTest ran after 959f248.",
+    "non_research_files_changed_between_bulk_and_native": [
+      "scripts/neural/native-stack.mjs",
+      "tests/neural_native_stack.mjs"
+    ],
+    "native_directories_checked_for_changes": ["src", "include", "training", "tools"]
+  },
+  "build": {
+    "complete": true,
+    "log": "build.log.gz",
+    "result": "CMake regenerated successfully; Ninja reported no work to do."
+  },
+  "bulk_ctest": {
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 64.26,
+    "excluded": ["neural-native-stack-contracts"],
+    "log": "bulk-ctest.log.gz",
+    "junit": "bulk-ctest.xml.gz",
+    "test_names": [
+      "appearance-contracts",
+      "c-abi",
+      "chain-graph-contracts",
+      "contracts",
+      "coverage-cache-contracts",
+      "density-contracts",
+      "foliage-contracts",
+      "hybrid-contracts",
+      "io-contracts",
+      "neural-action-contracts",
+      "neural-action-gpu-contracts",
+      "neural-action-libtorch-contract",
+      "neural-action-runner-contracts",
+      "neural-audit-replay-contracts",
+      "neural-baseline-overlay-contracts",
+      "neural-chain-integration-contracts",
+      "neural-checkpoint-cancellation",
+      "neural-checkpoint-failure-contracts",
+      "neural-cli-contracts",
+      "neural-cloud-contracts",
+      "neural-compact-storage-contracts",
+      "neural-contracts",
+      "neural-corpus-contracts",
+      "neural-cuda-contracts",
+      "neural-device-update-contracts",
+      "neural-libtorch-cuda-contract",
+      "neural-pilot-selection-contracts",
+      "neural-pipeline-contracts",
+      "neural-predicate-contracts",
+      "neural-refactor-runner-contracts",
+      "neural-reference-contracts",
+      "neural-resident-cycle-contracts",
+      "neural-rollout-outcome-contracts",
+      "neural-runner-contracts",
+      "neural-schema-contracts",
+      "neural-teacher-cancellation-contracts",
+      "neural-teacher-capability-contracts",
+      "neural-teacher-optimization-contracts",
+      "neural-teacher-profile-contracts",
+      "neural-teacher-strategy-contracts",
+      "neural-vertex-storage-contracts",
+      "neural-vulkan-contracts",
+      "neural-width-quality-contracts",
+      "neural-worker-retirement-contracts",
+      "precision-contracts",
+      "render-cost-contracts",
+      "shared-vertex-contracts",
+      "vegetation-contracts",
+      "wedge-contracts"
+    ]
+  },
+  "native_stack_ctest": {
+    "source_revision": "959f248e19f62169603a82674367c757eccb3a29",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 3.73,
+    "log": "native-stack-ctest.log.gz",
+    "junit": "native-stack-ctest.xml.gz",
+    "test_names": ["neural-native-stack-contracts"],
+    "debugger_reproduction": "../native-stack-denial/record.json"
+  },
+  "combined_registered_ctest_coverage": {
+    "unique_test_names": 50,
+    "all_registered_local_tests_covered": true,
+    "one_simultaneous_suite": false,
+    "method": "Union of the two JUnit test-name sets exactly matches the current configured local CTestTestfile.cmake registrations. The only intervening executable/test code changes affect the separately rerun native-stack contract."
+  },
+  "capability_fixture_cwd_checks": {
+    "source_revision": "661a01c5f350d0568b3ff783283eb7380d274883",
+    "tests_per_run": 25,
+    "runs": [
+      {
+        "working_directory_class": "source",
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0,
+        "log": "capability-cwd-source.log.gz"
+      },
+      {
+        "working_directory_class": "build",
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0,
+        "log": "capability-cwd-build.log.gz"
+      },
+      {
+        "working_directory_class": "unrelated",
+        "passed": 25,
+        "failed": 0,
+        "skipped": 0,
+        "log": "capability-cwd-unrelated.log.gz"
+      }
+    ],
+    "provenance": "Working-directory classes were supplied by the controller; the raw Node logs do not record absolute working-directory paths. Original test timings are preserved without normalization."
+  },
+  "limitations": [
+    "Local regression evidence does not replace the preserved failed remote attempt or the next frozen remote run.",
+    "No training-hour completion, model quality or throughput claim follows from these checks.",
+    "The 50-test coverage is a union of source-scoped runs, not a single all-tests execution."
+  ]
+}

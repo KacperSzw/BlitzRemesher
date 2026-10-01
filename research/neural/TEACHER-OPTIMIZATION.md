@@ -253,3 +253,11 @@ The [checksummed CPU reproduction](evidence/teacher-optimization/native-stack-de
 records the old 7/8 failure and corrected 9/9 result, package and source hashes,
 raw debugger output and commands. This does not replace the failed remote result
 or establish a training or quality result.
+
+Before the retry frozen at `959f248`, the [local regression runs](evidence/teacher-optimization/local-retry-validation/README.md)
+passed 49 bulk CTests excluding native-stack, then that contract separately after
+its fix. Their test-name union covers all 50 configured local CTests; this was
+not one simultaneous suite. The capability orchestration tests also passed 25/25
+from source, build and unrelated working directories. Raw logs and source scopes
+are preserved, without changing the prior remote failure or claiming a completed
+learning hour.

@@ -33,6 +33,7 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
                                               "profile",
                                               "mask_only_coverage",
                                               "teacher_selection",
+                                              "teacher_strategy",
                                               "pool",
                                               "source_limit",
                                               "adjacent_limit",
@@ -64,6 +65,8 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
             throw std::invalid_argument(
                 "resident benchmark requires the frozen v4 teacher contract");
         auto count = benchmark_uint(plan, "workers", 1, 2);
+        const auto strategy =
+            teacher_strategy_option(plan.value("teacher_strategy", std::string("exhaustive")));
         auto passes = benchmark_uint(plan, "measured_passes", 1, 8);
         auto maximum = benchmark_uint(plan, "max_seconds", 1, 1800);
         auto job_seconds = benchmark_uint(plan, "job_seconds", 1, 180);
@@ -115,6 +118,7 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
                 throw std::invalid_argument("duplicate/empty benchmark condition name");
             assets.push_back(c.at("asset").get<std::string>());
             PlacementRequest r;
+            r.strategy = strategy;
             r.architecture = conditioned_placement_schema;
             r.states = benchmark_uint(c, "states", 1, 64);
             r.pool = 4;

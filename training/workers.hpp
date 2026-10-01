@@ -130,6 +130,8 @@ class TeacherWorkers {
                             contract.at("pool") == job.request.pool &&
                             contract.at("training_profile") ==
                                 training_profile_name(job.request.profile) &&
+                            contract.value("teacher_strategy", std::string("exhaustive")) ==
+                                teacher_strategy_name(job.request.strategy) &&
                             contract.at("episode").at("target_retained") == job.request.retained &&
                             contract.at("episode").at("kind") ==
                                 (job.request.policy_rollout_trials ? "audited_policy_rollout"

@@ -46,7 +46,96 @@ const semanticFields = [
   'baseline',
 ];
 
-export function validateTeacherRun(directory, request, binarySha256) {
+function normalizedTeacherContract(contract, request) {
+  // Version 6 adds an explicit strategy and search diagnostics. Only the
+  // exhaustive policy is compatible with the historical version 5 contract.
+  const strategy = request.teacher_strategy ?? 'exhaustive';
+  if (
+    !['exhaustive', 'coverage-core-first'].includes(strategy) ||
+    ![5, 6].includes(contract.teacher_version) ||
+    (contract.teacher_version === 5 && strategy !== 'exhaustive') ||
+    (contract.teacher_version === 6 && contract.teacher_strategy !== strategy) ||
+    (contract.teacher_strategy ?? 'exhaustive') !== strategy
+  )
+    throw new Error('unsupported teacher version or strategy contract');
+  const normalized = { ...contract, teacher_version: 6, teacher_strategy: strategy };
+  delete normalized.binary_sha256;
+  return normalized;
+}
+
+function strategyDiagnostics(folder, index, strategy, previousSteps) {
+  const trajectoryPath = path.join(folder, 'trajectory.json');
+  const reusePath = path.join(folder, 'reuse.json');
+  const trajectory = read(trajectoryPath),
+    reuse = read(reusePath);
+  const count = (value) => Number.isSafeInteger(value) && value >= 0;
+  const mask = (value) => count(value) && value <= 2047;
+  const bits = (value) => value.toString(2).replaceAll('0', '').length;
+  if (!Array.isArray(trajectory) || !trajectory.length || !count(index.queries))
+    throw new Error('missing strategy query diagnostics');
+  const totals = {
+    queries: index.queries,
+    fresh_scored_queries: 0,
+    states: index.states,
+    fresh_states: index.states - previousSteps,
+    accepted: index.accepted,
+    searched_edges: 0,
+    unique_queried_candidates: 0,
+    expanded_edges: strategy === 'coverage-core-first' ? 0 : null,
+    exact_rejected_candidates: strategy === 'coverage-core-first' ? 0 : null,
+    exact_confirmations: strategy === 'coverage-core-first' ? 0 : null,
+  };
+  for (const state of trajectory) {
+    if (
+      state.complete === false ||
+      !count(state.revision) ||
+      !Array.isArray(state.queries) ||
+      !Array.isArray(state.candidate_search) ||
+      !state.candidate_search.length
+    )
+      throw new Error('incomplete strategy search diagnostics');
+    for (const query of state.queries) {
+      if (!count(query.known_mask) || query.known_mask > 31)
+        throw new Error('invalid strategy query label');
+      if (
+        state.revision >= previousSteps &&
+        !query.pruned_by_incumbent &&
+        (query.known_mask & 24) === 24
+      )
+        ++totals.fresh_scored_queries;
+    }
+    for (const search of state.candidate_search) {
+      if (
+        !mask(search.queried_mask) ||
+        (strategy === 'coverage-core-first' &&
+          (!mask(search.exact_rejected_mask) || typeof search.expanded !== 'boolean'))
+      )
+        throw new Error('invalid strategy search diagnostics');
+      ++totals.searched_edges;
+      totals.unique_queried_candidates += bits(search.queried_mask);
+      if (strategy === 'coverage-core-first') {
+        totals.expanded_edges += Number(search.expanded);
+        totals.exact_rejected_candidates += bits(search.exact_rejected_mask);
+      }
+    }
+    if (state.confirmations !== undefined && !Array.isArray(state.confirmations))
+      throw new Error('invalid strategy confirmations');
+    if (strategy === 'coverage-core-first')
+      totals.exact_confirmations += state.confirmations?.length ?? 0;
+  }
+  for (const key of [
+    'duplicate_proposals',
+    'identical_adjacent_audits',
+    'pruned_candidates',
+    'unbeatable_incumbent_skips',
+  ]) {
+    if (!count(reuse[key])) throw new Error('invalid strategy reuse diagnostics');
+    totals[key] = reuse[key];
+  }
+  return { ...totals, trajectory_sha256: hash(trajectoryPath), reuse_sha256: hash(reusePath) };
+}
+
+export function validateTeacherRun(directory, request, binarySha256, comparison = 'parity') {
   const report = read(path.join(directory, 'report.json'));
   const measuredCount = request.conditions.length * request.measured_passes;
   const warmupCount = request.workers * 2;
@@ -105,7 +194,10 @@ export function validateTeacherRun(directory, request, binarySha256) {
       index.training_started !== false ||
       index.reference_confirmed !== true ||
       index.requested_condition_available !== true ||
-      index.states <= 0 ||
+      !Number.isSafeInteger(index.states) ||
+      index.states <= request.conditions[condition].previous_steps ||
+      index.states >
+        request.conditions[condition].states + request.conditions[condition].previous_steps ||
       index.audit?.resource_failures !== 0 ||
       index.timing_version !== 2 ||
       !stageFields.every((k) => finite(index.timings?.[k]))
@@ -155,7 +247,7 @@ export function validateTeacherRun(directory, request, binarySha256) {
       policy_action_candidates: true,
       policy_rollout_trials: c.policy_rollout_trials,
       gpu_memory_mib: request.gpu_memory_mib,
-      raster: 'vulkan',
+      raster: 'vulkan-v1',
       vertex_storage: 'packed',
     };
     for (const [key, value] of Object.entries(expected))
@@ -167,8 +259,7 @@ export function validateTeacherRun(directory, request, binarySha256) {
       ((c.simplifier || c.policy_rollout_trials) && index.seed?.accepted !== true)
     )
       throw new Error('requested teacher condition was not exercised');
-    const normalizedContract = { ...contract };
-    delete normalizedContract.binary_sha256;
+    const normalizedContract = normalizedTeacherContract(contract, request);
     outputs.push({
       phase: row.phase,
       condition,
@@ -177,6 +268,16 @@ export function validateTeacherRun(directory, request, binarySha256) {
       episode_sha256: row.episode_sha256,
       contract: normalizedContract,
       semantics: Object.fromEntries(semanticFields.map((k) => [k, index[k]])),
+      ...(comparison === 'strategy'
+        ? {
+            diagnostics: strategyDiagnostics(
+              folder,
+              index,
+              normalizedContract.teacher_strategy,
+              c.previous_steps,
+            ),
+          }
+        : {}),
     });
   }
   if (warmed.size !== request.workers) throw new Error('not every worker was warmed');
@@ -198,12 +299,13 @@ export async function runTeacherProfile({
   maxSeconds,
   now = Date.now,
   timingAuthority = 'local_shared',
+  comparison = 'parity',
 }) {
   if (fs.existsSync(directory)) throw new Error('choose a fresh teacher profile directory');
   fs.mkdirSync(directory, { recursive: true });
   const report = {
     version: 1,
-    mode: 'parity',
+    mode: comparison,
     complete: false,
     training_started: false,
     optimizer_updates: 0,
@@ -212,6 +314,10 @@ export async function runTeacherProfile({
     speedup: null,
     measured_speedup: null,
     process_speedup: null,
+    strategy_measured_speedup: null,
+    strategy_process_speedup: null,
+    strategy_fresh_states_speedup: null,
+    strategy_fresh_scored_queries_speedup: null,
     order,
     rows: [],
     timing_authority: timingAuthority,
@@ -220,7 +326,14 @@ export async function runTeacherProfile({
   try {
     if (!Number.isFinite(deadline) || deadline <= now() || signal?.aborted)
       throw new Error('teacher profile deadline/cancellation');
+    if (comparison !== 'parity' && comparison !== 'strategy')
+      throw new Error('comparison must be parity or strategy');
     const request = read(plan);
+    if ((request.teacher_strategy ?? 'exhaustive') !== 'exhaustive')
+      throw new Error('frozen benchmark plan must use exhaustive baseline');
+    // The baseline infrastructure predates this field. Its absence has the
+    // exact exhaustive meaning validated by normalizedTeacherContract.
+    delete request.teacher_strategy;
     const checked = readinessModel(model ?? request.model);
     if (checked.sha256 !== request.model_sha256 || checked.width !== request.hidden_width)
       throw new Error('frozen teacher policy changed');
@@ -253,6 +366,11 @@ export async function runTeacherProfile({
     report.binary_sha256 = Object.fromEntries(
       Object.entries(binaries).map(([k, p]) => [k, hash(p)]),
     );
+    if (
+      comparison === 'strategy' &&
+      report.binary_sha256.baseline !== report.binary_sha256.optimized
+    )
+      throw new Error('strategy comparison requires the same candidate binary');
     report.plan_sha256 = hash(plan);
     report.model = checked;
     report.request = request;
@@ -278,11 +396,27 @@ export async function runTeacherProfile({
       fileURLToPath(new URL('../../research/PROTOCOL.md', import.meta.url)),
     ])
       report.manifests[file] = hash(file);
-    const requestPath = path.resolve(directory, 'request.json');
-    write(requestPath, request);
-    report.request_sha256 = hash(requestPath);
+    const requests =
+      comparison === 'strategy'
+        ? {
+            baseline: { ...request, teacher_strategy: 'exhaustive' },
+            optimized: { ...request, teacher_strategy: 'coverage-core-first' },
+          }
+        : { baseline: request, optimized: request };
+    const requestPaths = {},
+      requestHashes = {};
+    for (const [variant, value] of Object.entries(requests)) {
+      requestPaths[variant] = path.resolve(
+        directory,
+        comparison === 'strategy' ? `request-${variant}.json` : 'request.json',
+      );
+      write(requestPaths[variant], value);
+      requestHashes[variant] = hash(requestPaths[variant]);
+    }
+    report.requests = requests;
+    report.request_sha256 = comparison === 'strategy' ? requestHashes : requestHashes.baseline;
     save();
-    let reference;
+    const references = {};
     for (const [repeat, variant] of order.entries()) {
       if (signal?.aborted || deadline <= now())
         throw new Error('teacher profile deadline/cancellation');
@@ -292,7 +426,7 @@ export async function runTeacherProfile({
       const log = fs.openSync(output + '.log', 'wx');
       const start = now();
       try {
-        row.process = await execute(binaries[variant], ['--jobs', requestPath, output], {
+        row.process = await execute(binaries[variant], ['--jobs', requestPaths[variant], output], {
           maximum: Math.min((request.max_seconds + 2) * 1000, deadline - now() - 1000),
           grace: 1000,
           signal,
@@ -307,13 +441,34 @@ export async function runTeacherProfile({
           row.process.cancelled
         )
           throw new Error('resident teacher process failed: ' + JSON.stringify(row.process));
-        const verified = validateTeacherRun(output, request, report.binary_sha256[variant]);
-        if (verified.report.request_sha256 !== report.request_sha256)
+        const verified = validateTeacherRun(
+          output,
+          requests[variant],
+          report.binary_sha256[variant],
+          comparison,
+        );
+        if (verified.report.request_sha256 !== requestHashes[variant])
           throw new Error('resident request checksum mismatch');
         row.result = verified.report;
-        if (reference && !isDeepStrictEqual(verified.outputs, reference))
+        const key = comparison === 'strategy' ? variant : 'parity';
+        if (references[key] && !isDeepStrictEqual(verified.outputs, references[key]))
           throw new Error('teacher payload, episode or semantic outcomes differ');
-        reference ??= verified.outputs;
+        references[key] ??= verified.outputs;
+        if (comparison === 'strategy') {
+          row.artifacts = verified.outputs;
+          if (references.baseline && references.optimized) {
+            const conditions = (outputs) =>
+              outputs.map(({ phase, condition, pass, contract }) => {
+                const common = { ...contract };
+                delete common.teacher_strategy;
+                return { phase, condition, pass, contract: common };
+              });
+            if (
+              !isDeepStrictEqual(conditions(references.baseline), conditions(references.optimized))
+            )
+              throw new Error('non-strategy teacher conditions differ');
+          }
+        }
         row.complete = true;
       } catch (error) {
         row.error = String(error);
@@ -330,14 +485,68 @@ export async function runTeacherProfile({
         .filter((r) => r.variant === variant)
         .reduce((total, row) => total + (key === 'wall_seconds' ? row[key] : row.result[key]), 0);
     report.complete = true;
-    report.matching_payloads = true;
-    report.matching_semantics = true;
-    report.measured_speedup =
+    const measuredSpeedup =
       sum('baseline', 'measured_seconds') / sum('optimized', 'measured_seconds');
-    report.speedup = report.measured_speedup;
     const optimizedWall = sum('optimized', 'wall_seconds');
-    report.process_speedup =
+    const processSpeedup =
       optimizedWall > 0 ? sum('baseline', 'wall_seconds') / optimizedWall : null;
+    if (comparison === 'parity') {
+      report.matching_payloads = true;
+      report.matching_semantics = true;
+      report.measured_speedup = measuredSpeedup;
+      report.speedup = measuredSpeedup;
+      report.process_speedup = processSpeedup;
+    } else {
+      report.strategy_measured_speedup = measuredSpeedup;
+      report.strategy_process_speedup = processSpeedup;
+      report.matching_non_strategy_conditions = true;
+      report.matching_repeats = true;
+      report.diagnostics_scope =
+        'queries are consumed valid candidate outcomes, including reuse/prunes; unique_queried_candidates includes prefetched candidates once per edge. These are not GPU kernel or raster call counts. Expansion/rejection/confirmation counters are available for core-first only.';
+      report.strategy_comparisons = references.baseline.flatMap((a, i) => {
+        if (a.phase !== 'measured') return [];
+        const b = references.optimized[i];
+        return [
+          {
+            condition: a.condition,
+            pass: a.pass,
+            labels_changed: a.payload_sha256 !== b.payload_sha256,
+            episode_changed: a.episode_sha256 !== b.episode_sha256,
+            semantics_changed: !isDeepStrictEqual(a.semantics, b.semantics),
+            baseline: a.diagnostics,
+            optimized: b.diagnostics,
+            baseline_semantics: a.semantics,
+            optimized_semantics: b.semantics,
+          },
+        ];
+      });
+      const totals = {};
+      for (const variant of ['baseline', 'optimized']) {
+        const rows = report.rows.filter((r) => r.variant === variant);
+        const measured = rows.flatMap((r) => r.artifacts.filter((a) => a.phase === 'measured'));
+        const freshStates = measured.reduce((n, a) => n + a.diagnostics.fresh_states, 0);
+        const scoredQueries = measured.reduce((n, a) => n + a.diagnostics.fresh_scored_queries, 0);
+        const seconds = sum(variant, 'measured_seconds');
+        totals[variant] = {
+          fresh_states: freshStates,
+          fresh_scored_queries: scoredQueries,
+          measured_seconds: seconds,
+          fresh_states_per_second: freshStates / seconds,
+          fresh_scored_queries_per_second: scoredQueries / seconds,
+        };
+      }
+      report.strategy_throughput = totals;
+      report.strategy_fresh_states_speedup =
+        totals.optimized.fresh_states_per_second / totals.baseline.fresh_states_per_second;
+      report.strategy_fresh_scored_queries_speedup =
+        totals.baseline.fresh_scored_queries_per_second > 0
+          ? totals.optimized.fresh_scored_queries_per_second /
+            totals.baseline.fresh_scored_queries_per_second
+          : null;
+      report.equal_fresh_state_counts = report.strategy_comparisons.every(
+        (p) => p.baseline.fresh_states === p.optimized.fresh_states,
+      );
+    }
   } catch (error) {
     report.error = String(error);
   } finally {
@@ -504,10 +713,10 @@ async function legacyProfile(args) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   if (args[0] === '--jobs') {
-    const [, plan, baseline, optimized, directory, model, workers] = args;
-    if (!plan || !baseline || !optimized || !directory || args.length > 7)
+    const [, plan, baseline, optimized, directory, model, workers, comparison] = args;
+    if (!plan || !baseline || !optimized || !directory || args.length > 8)
       throw new Error(
-        'teacher-profile.mjs --jobs PLAN BASELINE OPTIMIZED FRESH_OUTPUT [MODEL] [WORKERS]',
+        'teacher-profile.mjs --jobs PLAN BASELINE OPTIMIZED FRESH_OUTPUT [MODEL] [WORKERS] [parity|strategy]',
       );
     const controller = new AbortController();
     for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => controller.abort());
@@ -518,6 +727,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       model,
       plan,
       workers: workers === undefined ? undefined : Number(workers),
+      comparison,
       deadline: Date.now() + 900000,
       signal: controller.signal,
     });

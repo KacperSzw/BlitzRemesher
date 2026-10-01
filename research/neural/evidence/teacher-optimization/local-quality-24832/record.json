@@ -1,0 +1,422 @@
+{
+  "version": 1,
+  "kind": "Two-development-asset before/after diagnostic after 24832 local updates",
+  "recorded_against_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+  "score_eligible": false,
+  "score": null,
+  "quality_proven": false,
+  "strategy_adopted": false,
+  "performance_claim": false,
+  "timing_authority": "local_shared",
+  "source_directory": "runs/neural/seed-admission-quality-local-01",
+  "provenance": {
+    "original_context": {
+      "source_revision": "977c6f2a1b071387cd71fb29c56e766919c8862b",
+      "training_directory": "runs/neural/seed-admission-cycle-local-02",
+      "training_updates": 24832,
+      "timing_authority": "local_shared",
+      "gpu_memory_mib": 1024,
+      "diagnostic_only": true
+    },
+    "repeat_context": {
+      "runner_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+      "reason": "Repeat after strict asset comparison was made independent of JSON object key order",
+      "gpu_memory_mib": 1024,
+      "timing_authority": "local_shared"
+    },
+    "comparison_binary_sha256": "5cf56b140a7462469f507ae2a73a09459d4000ea2fa4ead60fe8a80909dad180",
+    "visual_settings_sha256": "39a6274a327d0c5ec87660b4f5b8c8eeaed2a0353106a8dae87fe022759ef71b",
+    "execution_settings_sha256": "38f0cc4e6203f2e9bb5e6dc7e6b3fac5ea5a1df28fb7195fc855a264cfabf83a",
+    "manifest_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+    "settings_sha256": "e0dbde7aca020189c76109b1151ad8e5fc45558ea0a01c5aadbbc0ab01c570fe",
+    "identical_input_contract_except_model": true,
+    "local_override": {
+      "field": "gpu_memory_mib",
+      "repository_value": 16384,
+      "local_value": 1024,
+      "other_settings_unchanged": true
+    },
+    "native_runtime_changed_by_helper_fix": false
+  },
+  "training": {
+    "directory": "runs/neural/seed-admission-cycle-local-02",
+    "related_evidence": "../seed-admission-local/record.json",
+    "complete": true,
+    "status": "duration_complete",
+    "learning_elapsed_ms": 300000,
+    "updates_this_invocation": 24832,
+    "checkpoint": "checkpoints/step-24832",
+    "checkpoint_sha256": "ed631a82a3c37fd75017900994b078a3ae0807f749b64a76b62d16bb1bf43071",
+    "initial_model_sha256": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+    "final_model_sha256": "5b8d7409bc5610fda352ee56ec970e2b93dc3a0233f8e4834d292bd61511131a",
+    "checkpoint_indexed_files_independently_verified": [
+      {
+        "file": "checkpoint.pt",
+        "bytes": 169605,
+        "sha256": "ed631a82a3c37fd75017900994b078a3ae0807f749b64a76b62d16bb1bf43071",
+        "stored_in_this_evidence": false
+      },
+      {
+        "file": "expected.pt",
+        "bytes": 3519,
+        "sha256": "c9a5a5f6e7795fa8c1d51b0231756e425f28d2d4ce732b0e500e17f94942b49f",
+        "stored_in_this_evidence": false
+      },
+      {
+        "file": "input.pt",
+        "bytes": 18279,
+        "sha256": "bf01d1355d78c4e1095489cc4c6990848e202289089794d0d40f5342c678df65",
+        "stored_in_this_evidence": false
+      },
+      {
+        "file": "model.blzn",
+        "bytes": 53028,
+        "sha256": "5b8d7409bc5610fda352ee56ec970e2b93dc3a0233f8e4834d292bd61511131a",
+        "stored_in_this_evidence": false
+      },
+      {
+        "file": "native.pt",
+        "bytes": 3503,
+        "sha256": "dad4424169511264ad2dd2c0b6252958afe4f0e699379970d479bb87467f6297",
+        "stored_in_this_evidence": false
+      },
+      {
+        "file": "verification.json",
+        "bytes": 596,
+        "sha256": "932185e9635cee52ed16197be309979754aa6944ead8ffc82ca05c23021b9927",
+        "stored_in_this_evidence": true
+      }
+    ],
+    "verification": {
+      "fp64": {
+        "finite": true,
+        "max_abs": 0.0000025228074829186653,
+        "max_relative": 0.00004424525703440585,
+        "rms": 2.9500208306568255e-7,
+        "same_shape": true,
+        "worst_index": 12
+      },
+      "native": {
+        "finite": true,
+        "max_abs": 0,
+        "max_relative": 0,
+        "rms": 0,
+        "same_shape": true,
+        "worst_index": 0
+      },
+      "native_fp64": {
+        "finite": true,
+        "max_abs": 0.0000025228074829186653,
+        "max_relative": 0.00004424525703440585,
+        "rms": 2.9500208306568255e-7,
+        "same_shape": true,
+        "worst_index": 12
+      },
+      "passed": true,
+      "threshold": 0.0002
+    }
+  },
+  "original_helper_failure": {
+    "complete": false,
+    "error": "Error: capability audit asset or LOD schedule differs",
+    "native_initial_process": {
+      "code": 0,
+      "signal": null,
+      "timed_out": false,
+      "cancelled": false,
+      "success": true
+    },
+    "native_initial_complete": true,
+    "trained_model_audit_started": false,
+    "cause": "JSON.stringify compared expected asset object key insertion order: native category,id versus JavaScript id,category. Asset identities and four-level schedule actually matched.",
+    "fix_revision": "2246b9195edd04a5f4b31cd898bb20f4a03e077f",
+    "fix": "Deep strict equality ignores object key insertion order while preserving asset identity and array order."
+  },
+  "completed_comparison": {
+    "complete": true,
+    "started": 1790864086634,
+    "finished": 1790864099608,
+    "initial_model_sha256": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae",
+    "final_model_sha256": "5b8d7409bc5610fda352ee56ec970e2b93dc3a0233f8e4834d292bd61511131a",
+    "output_hashes": [
+      {
+        "variant": "initial",
+        "sha256": "7b245c9f28b5b4536b58733fda2e92c4be88cae198a9547c03106c2e8e569da3",
+        "process": {
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true
+        }
+      },
+      {
+        "variant": "final",
+        "sha256": "3a27ce6a3d76ab2ff20d0f02acb86cfb6d0cdad41b8aa3b18fcf8c2121489ea2",
+        "process": {
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true
+        }
+      }
+    ],
+    "uncensored": false,
+    "termination": [
+      {
+        "variant": "initial",
+        "known": true,
+        "uncensored": false,
+        "reasons": {
+          "trial_budget": 18,
+          "target_reached": 4,
+          "no_accepted_action": 2
+        }
+      },
+      {
+        "variant": "final",
+        "known": true,
+        "uncensored": false,
+        "reasons": {
+          "trial_budget": 16,
+          "target_reached": 7,
+          "no_accepted_action": 1
+        }
+      }
+    ],
+    "initial": [
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "ranking": "constant",
+        "triangles": [524, 524, 262, 244],
+        "source_error_px": [0.9571077811865476, 1.9571077811865474, 2.970954065720902],
+        "adjacent_error_px": [0.9571077811865476, 1.9571077811865474, 2.768660593995378],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 5,
+          "target_reached": 1
+        },
+        "fallback_levels": 1
+      },
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "ranking": "learned",
+        "triangles": [524, 518, 259, 247],
+        "source_error_px": [1.2661247755614948, 2.2882466112707376, 1.7378841875909627],
+        "adjacent_error_px": [1.2661247755614948, 2.2882466112707376, 0.9571077811865476],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 3,
+          "target_reached": 3
+        },
+        "fallback_levels": 0
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "ranking": "constant",
+        "triangles": [3304, 3222, 1910, 1902],
+        "source_error_px": [1.6084956000525448, 2.82842812474619, 1.9818626595847435],
+        "adjacent_error_px": [1.6084956000525448, 2.4748747341529165, 1.414214562373095],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 5,
+          "no_accepted_action": 1
+        },
+        "fallback_levels": 0
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "ranking": "learned",
+        "triangles": [3304, 1862, 932, 930],
+        "source_error_px": [1.9785543905932736, 2.0533989829701738, 1.6084956000525448],
+        "adjacent_error_px": [1.9785543905932736, 1.9571077811865474, 1.0606611717798213],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 5,
+          "no_accepted_action": 1
+        },
+        "fallback_levels": 0
+      }
+    ],
+    "final": [
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "ranking": "constant",
+        "triangles": [524, 493, 246, 230],
+        "source_error_px": [1.9785543905932736, 2.722672218261185, 2.853554390593274],
+        "adjacent_error_px": [1.9785543905932736, 2.2071077811865476, 2.5271352535066773],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 4,
+          "target_reached": 2
+        },
+        "fallback_levels": 0
+      },
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "ranking": "learned",
+        "triangles": [524, 500, 250, 236],
+        "source_error_px": [1.2661247755614948, 2.2882466112707376, 1.7378841875909627],
+        "adjacent_error_px": [1.2661247755614948, 2.2882466112707376, 0.9571077811865476],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 3,
+          "target_reached": 3
+        },
+        "fallback_levels": 0
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "ranking": "constant",
+        "triangles": [3304, 3198, 1918, 1912],
+        "source_error_px": [1.7677679529663688, 2.82842812474619, 2.121321343559643],
+        "adjacent_error_px": [1.7677679529663688, 2.4748747341529165, 1.0606611717798213],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 5,
+          "no_accepted_action": 1
+        },
+        "fallback_levels": 0
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "ranking": "learned",
+        "triangles": [3304, 3252, 1626, 1626],
+        "source_error_px": [1.8251417699364423, 1.9571077811865474, 1.4571077811865474],
+        "adjacent_error_px": [1.8251417699364423, 1.7677679529663688, 0.7071077811865476],
+        "source_limits": [2, 3, 3],
+        "adjacent_limits": [2, 2.5, 3],
+        "all_emitted_source_and_adjacent_audits_passed": true,
+        "unknown_emitted_audits": 0,
+        "proposal_stop_reasons": {
+          "trial_budget": 4,
+          "target_reached": 2
+        },
+        "fallback_levels": 1
+      }
+    ],
+    "learned_per_lod_deltas": [
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "triangle_deltas": [1390, 694, 696]
+      },
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "triangle_deltas": [-18, -9, -11]
+      }
+    ],
+    "constant_per_lod_deltas": [
+      {
+        "asset": "ph_moon_rock_02",
+        "category": "rocks",
+        "triangle_deltas": [-24, 8, 10]
+      },
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "category": "manufactured",
+        "triangle_deltas": [-31, -16, -14]
+      }
+    ],
+    "best_observed_comparators": [
+      {
+        "asset": "ph_painted_wooden_shelves",
+        "lods": [
+          {
+            "level": 1,
+            "triangles": 493,
+            "methods": ["final-constant"],
+            "final_learned_triangles": 500,
+            "final_delta": 7
+          },
+          {
+            "level": 2,
+            "triangles": 246,
+            "methods": ["final-constant"],
+            "final_learned_triangles": 250,
+            "final_delta": 4
+          },
+          {
+            "level": 3,
+            "triangles": 230,
+            "methods": ["final-constant"],
+            "final_learned_triangles": 236,
+            "final_delta": 6
+          }
+        ]
+      },
+      {
+        "asset": "ph_moon_rock_02",
+        "lods": [
+          {
+            "level": 1,
+            "triangles": 1862,
+            "methods": ["initial-learned"],
+            "final_learned_triangles": 3252,
+            "final_delta": 1390
+          },
+          {
+            "level": 2,
+            "triangles": 932,
+            "methods": ["initial-learned"],
+            "final_learned_triangles": 1626,
+            "final_delta": 694
+          },
+          {
+            "level": 3,
+            "triangles": 930,
+            "methods": ["initial-learned"],
+            "final_learned_triangles": 1626,
+            "final_delta": 696
+          }
+        ]
+      }
+    ]
+  },
+  "interpretation": {
+    "result": "Mixed: all three learned shelves LODs improve triangle reduction; all three learned moon-rock LODs regress.",
+    "consistent_progress_demonstrated": false,
+    "minimum_updates_for_progress": null,
+    "constant_control": "Equal edge ranking retains model-dependent placement; it is not an independent classical baseline. Final constant ranking beats final learned ranking on all three shelves LODs.",
+    "audits": "Both variants emitted 24 reduced-LOD source/adjacent measurements across learned and constant controls; all passed and completed with no unknown, cancellation, resource or nonfinite result.",
+    "limitations": [
+      "Only two development assets, four LODs and reduced camera settings were evaluated; no full development or held-out score.",
+      "Initial learned proposals hit the 64-trial limit 8 of 12 times; final learned proposals hit it 7 of 12 times. Results are matched-budget observations, not exhausted reduction.",
+      "Final learned moon-rock LOD3 retains LOD2 triangle count (1626) and records one fallback level.",
+      "A single initial/final checkpoint pair cannot establish earliest improvement or expected future convergence.",
+      "The source and adjacent error limits are maintained, but measured errors need not match between models.",
+      "Raw timing and retained-ratio summaries are preserved for provenance; no aggregate SCORE, isolated speedup or adoption claim is assigned."
+    ]
+  }
+}

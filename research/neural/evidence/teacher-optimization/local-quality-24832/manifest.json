@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "kind": "Two-development-asset before/after diagnostic after 24832 local updates",
+  "quality_proven": false,
+  "score": null,
+  "files": [
+    {
+      "file": "original-helper-failure/report.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit/report.json",
+      "uncompressed_sha256": "1ada3ff65bb212021332e0aff068d3feab06d13bce45eaf9540d1cd3d2a7a5bd",
+      "uncompressed_bytes": 88764,
+      "sha256": "40f507b5f2b6a159919e519244b55d65a5daaa39296aef5b597194785b50764e",
+      "bytes": 7647
+    },
+    {
+      "file": "original-helper-failure/initial.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit/initial.json",
+      "uncompressed_sha256": "b5f642798b1b898b9a5dd4d634b21cbe77d0a0dbd2fe94d784136deccf4246a0",
+      "uncompressed_bytes": 71426,
+      "sha256": "560bde2da2821272f6451a2a7cae4c2ec5215e99ffa2130e2a0221e757f363a4",
+      "bytes": 6360
+    },
+    {
+      "file": "original-helper-failure/initial.log.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit/initial.log",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uncompressed_bytes": 0,
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20
+    },
+    {
+      "file": "comparison/report.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02/report.json",
+      "uncompressed_sha256": "18c3e5d9e4fc9f860e0c340aaad7b5c0da624a5ad1c86580c043579ed7aa3334",
+      "uncompressed_bytes": 183374,
+      "sha256": "dce7eebc3b09903abfe7c4728f8e28df46ec531bed5b943ca8be1902d1b51e53",
+      "bytes": 13752
+    },
+    {
+      "file": "comparison/initial.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02/initial.json",
+      "uncompressed_sha256": "7b245c9f28b5b4536b58733fda2e92c4be88cae198a9547c03106c2e8e569da3",
+      "uncompressed_bytes": 71433,
+      "sha256": "2afd233fc3635955aeb17950814e838a05427a413fe882b1d435baf46c13c1f1",
+      "bytes": 6364
+    },
+    {
+      "file": "comparison/initial.log.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02/initial.log",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uncompressed_bytes": 0,
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20
+    },
+    {
+      "file": "comparison/final.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02/final.json",
+      "uncompressed_sha256": "3a27ce6a3d76ab2ff20d0f02acb86cfb6d0cdad41b8aa3b18fcf8c2121489ea2",
+      "uncompressed_bytes": 72046,
+      "sha256": "d7521c0a12669e90535f1401d98640b24574ad49ea539ebac045788c3d1aadb5",
+      "bytes": 6352
+    },
+    {
+      "file": "comparison/final.log.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02/final.log",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uncompressed_bytes": 0,
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20
+    },
+    {
+      "file": "context/original.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/local-context.json",
+      "uncompressed_sha256": "ce10b6c38bfca5326a5e9db8d020513616e152ae6c0095a4abc118632a405519",
+      "uncompressed_bytes": 257,
+      "sha256": "34925f3bd38c5e1d9c71e8f5738b1643eb2ac879ac61be04c3b3eca2bd50a119",
+      "bytes": 201
+    },
+    {
+      "file": "context/repeat.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/audit-02-context.json",
+      "uncompressed_sha256": "342ff0d0071016ab8bf6bc5d57281a80e0c914cb6d2a244cfd4d3cd071ecd328",
+      "uncompressed_bytes": 230,
+      "sha256": "0724828672e3521507bb543eb5a5db21fe1282ef9a039569f0159fc04539a42a",
+      "bytes": 199
+    },
+    {
+      "file": "inputs/action-diagnostic.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/workspace/research/neural/action-diagnostic.json",
+      "uncompressed_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+      "uncompressed_bytes": 3059,
+      "sha256": "2779f85c8c3faa143861672c42639bb156a7abd1207c4ce5c7e4b3ca7cdd636e",
+      "bytes": 903
+    },
+    {
+      "file": "inputs/settings.json.gz",
+      "source": "runs/neural/seed-admission-quality-local-01/workspace/research/neural/teacher-capability-quality.json",
+      "uncompressed_sha256": "e0dbde7aca020189c76109b1151ad8e5fc45558ea0a01c5aadbbc0ab01c570fe",
+      "uncompressed_bytes": 753,
+      "sha256": "afc6195bc3978d515cd54cd052809cbfddb9e747d5f45bb2e8db334ac41ca5fc",
+      "bytes": 379
+    },
+    {
+      "file": "training/contract.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/contract.json",
+      "uncompressed_sha256": "8677d615fe0735f135faf797c074ef9fd76c99faee91db21ba9d8e2143cc70a9",
+      "uncompressed_bytes": 1660,
+      "sha256": "a0f381dd71ff51561d7b1562d6a579f34a5d1b2b277ec29da4f32035ea938953",
+      "bytes": 903
+    },
+    {
+      "file": "training/latest.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/latest.json",
+      "uncompressed_sha256": "55128c0e1abdf54ba64c2914acf2bdaa6647487a99638516e05b4234d0759db4",
+      "uncompressed_bytes": 7077,
+      "sha256": "7a4f6df913aa79ca240dceba581053d756d8cf0ed7d20751214efdbc6a3266cb",
+      "bytes": 1684
+    },
+    {
+      "file": "training/checkpoint-index.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/checkpoints/step-24832/index.json",
+      "uncompressed_sha256": "967ae283546e02dc7102159ccd52887cf288d7b8262b12309952a9127126b6b4",
+      "uncompressed_bytes": 758,
+      "sha256": "585a30c2c50bac1c61f56f9de9c6251cf577338809d35b2128fba49cba3d0833",
+      "bytes": 403
+    },
+    {
+      "file": "training/checkpoint-verification.json.gz",
+      "source": "runs/neural/seed-admission-cycle-local-02/checkpoints/step-24832/verification.json",
+      "uncompressed_sha256": "932185e9635cee52ed16197be309979754aa6944ead8ffc82ca05c23021b9927",
+      "uncompressed_bytes": 596,
+      "sha256": "58f3c0497d00e3cef90d6b29eaa578bd4c2a8a8084dbf057f7a691100c8ddbba",
+      "bytes": 205
+    },
+    {
+      "file": "README.md",
+      "source": "derived interpretation and verification of archived raw evidence",
+      "sha256": "734d0dc7d6d13ac650fa9b3492cdbea4a8c88cded1b825025e296bbf58002b3d",
+      "bytes": 3841
+    },
+    {
+      "file": "record.json",
+      "source": "derived interpretation and verification of archived raw evidence",
+      "sha256": "82764171a978a0eca0f1c10999164634a5a56f488b9ab54dc6ba6d1ea8181711",
+      "bytes": 15279
+    }
+  ]
+}

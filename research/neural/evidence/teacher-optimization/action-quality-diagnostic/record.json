@@ -1,0 +1,475 @@
+{
+  "version": 1,
+  "kind": "Local fixed-state ranking/placement 2x2 diagnostic",
+  "diagnostic_code_commit": "6bb2dc9bfeda39ea562d1c5727eae24e828f3268",
+  "binary_sha256": "e4977709492b0ad2dc27bb532c50e721d04c8187ea6df3ff82e926bf7d5d6a62",
+  "tested_before_commit": true,
+  "exact_committed_source_verified": true,
+  "source_files": [
+    {
+      "path": "tools/neural/action_probe.hpp",
+      "sha256": "7efae9e4e642e6dabb40111c007093f41796f79397cad4d9ad51f6ee9bb2a8d7"
+    },
+    {
+      "path": "tools/neural/action_audit.hpp",
+      "sha256": "f5d34a1ed4c58c0b649bbaab4f655eb98c107311e94f0ed708546421bef47043"
+    },
+    {
+      "path": "tools/neural/diagnostics.cpp",
+      "sha256": "44c348f2fb4b91d0ca6a2aaf44c806271a7253c62469da2c7655d12eaf32a886"
+    },
+    {
+      "path": "tests/neural_action_gpu.cpp",
+      "sha256": "2ea230c58f11817ec06750f8647872ed1b79fc259f4c305dba2170b11397451f"
+    }
+  ],
+  "score": null,
+  "score_eligible": false,
+  "quality_proven": false,
+  "performance_claim": false,
+  "timing_authority": "local_shared",
+  "scope": "independent single edits in a fixed geometry-selected pool; no chain or batch claim",
+  "local_gpu": "NVIDIA GeForce RTX 2080, 595.71.05, 8192 MiB",
+  "models": {
+    "final": "08fe5fabd82e8352116161c7c2a9496bada9a3c429fa7df9a95a8f8f15a24ace",
+    "initial": "306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae"
+  },
+  "checkpoint": {
+    "step": 413184,
+    "checkpoint_sha256": "2d19118f645aaa059ce7ff7b11d35108944bc46cdc54472712e4f44b3de042ed",
+    "status": "duration_complete",
+    "learning_elapsed_ms": 3600000,
+    "updates_this_invocation": 413184,
+    "files_independently_verified": [
+      {
+        "file": "checkpoint.pt",
+        "sha256": "2d19118f645aaa059ce7ff7b11d35108944bc46cdc54472712e4f44b3de042ed",
+        "bytes": 169605,
+        "archived": false
+      },
+      {
+        "file": "expected.pt",
+        "sha256": "616b7479fcce18ef0b5ef3cf77110b79e10872c838fa2f65e0b2ea9e15c07624",
+        "bytes": 3519,
+        "archived": false
+      },
+      {
+        "file": "input.pt",
+        "sha256": "6758b70154f61dc587ecb769ef7d48096e477d86ff2375e786e92d8ef31167bf",
+        "bytes": 18279,
+        "archived": false
+      },
+      {
+        "file": "model.blzn",
+        "sha256": "08fe5fabd82e8352116161c7c2a9496bada9a3c429fa7df9a95a8f8f15a24ace",
+        "bytes": 53029,
+        "archived": false
+      },
+      {
+        "file": "native.pt",
+        "sha256": "03adb396f411fdaa58244c49fb96cde5ae7bce50bd0b5bbdc5ee36da22de9048",
+        "bytes": 3503,
+        "archived": false
+      },
+      {
+        "file": "verification.json",
+        "sha256": "d0fd3ca16eeeb44dd7659ca423ff6b15bc525808eb476a8edf6bd081d8008f18",
+        "bytes": 598,
+        "archived": true
+      }
+    ],
+    "payloads_archived_here": false
+  },
+  "configuration": {
+    "manifest_sha256": "47e64b45cebfa83252628c6da74376719f46088bf9e181962bfa27818d38674b",
+    "settings_sha256": "e0dbde7aca020189c76109b1151ad8e5fc45558ea0a01c5aadbbc0ab01c570fe",
+    "gpu_memory_mib": 1024,
+    "repository_settings_only_override": "gpu_memory_mib:16384 -> 1024",
+    "profile": "coverage",
+    "pool": 16,
+    "pool_selection": "half current-plane, half deterministic random; independent of model",
+    "pool_seed": 2971082790,
+    "states": "initializer LOD0 and LOD2 for each of two development assets",
+    "references": "immutable original source and fixed initializer predecessor",
+    "conditions": "actual initializer rebuilt-proposal target at the next scheduled level",
+    "audit_views": {
+      "orthographic": 12,
+      "perspective": 4
+    },
+    "audit_supersample": 4,
+    "max_supersample": 8,
+    "committed_actions": 0,
+    "native_deadline_seconds": 600,
+    "external_timeout_seconds": 180
+  },
+  "validation": {
+    "affected_native_build_passed": true,
+    "focused_ctest": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": 10.46
+    },
+    "compute_sanitizer": {
+      "tool": "memcheck",
+      "errors": 0
+    },
+    "same_model": {
+      "complete": true,
+      "states": 4,
+      "placements": 128,
+      "all_geometry_unchanged": true,
+      "identical_predictions_decoded_placements_raw_audits_and_four_summaries": true
+    },
+    "final_model": {
+      "complete": true,
+      "states": 4,
+      "actions": 64,
+      "placements": 128,
+      "all_geometry_unchanged": true,
+      "unknown": 0
+    },
+    "validation_layer_requested": true,
+    "validation_error_patterns_found": false
+  },
+  "observations": [
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "initializer_level": 0,
+      "working_triangles": 524,
+      "counts": {
+        "initial": {
+          "safe": 7,
+          "invalid_geometry": 9
+        },
+        "final": {
+          "safe": 9,
+          "invalid_geometry": 6,
+          "rejected": 1
+        }
+      },
+      "transitions": {
+        "safe -> safe": 4,
+        "invalid_geometry -> invalid_geometry": 4,
+        "invalid_geometry -> safe": 5,
+        "safe -> rejected": 1,
+        "safe -> invalid_geometry": 2
+      },
+      "combinations": [
+        {
+          "first_safe_row": 11,
+          "placement_model": "initial",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 527,
+            "to": 117
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 0,
+          "placement_model": "final",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 3,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 527,
+            "to": 117
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 13,
+          "placement_model": "initial",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 527,
+            "to": 117
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 13,
+          "placement_model": "final",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 527,
+            "to": 117
+          },
+          "top_placement_status": "invalid_geometry"
+        }
+      ]
+    },
+    {
+      "asset": "ph_painted_wooden_shelves",
+      "initializer_level": 2,
+      "working_triangles": 259,
+      "counts": {
+        "initial": {
+          "safe": 10,
+          "invalid_geometry": 6
+        },
+        "final": {
+          "safe": 8,
+          "invalid_geometry": 8
+        }
+      },
+      "transitions": {
+        "safe -> safe": 7,
+        "safe -> invalid_geometry": 3,
+        "invalid_geometry -> invalid_geometry": 5,
+        "invalid_geometry -> safe": 1
+      },
+      "combinations": [
+        {
+          "first_safe_row": 8,
+          "placement_model": "initial",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 3,
+          "triangles_removed": 2,
+          "top_row": 11,
+          "top_action": {
+            "from": 185,
+            "to": 187
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 11,
+          "placement_model": "final",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 11,
+          "top_action": {
+            "from": 185,
+            "to": 187
+          },
+          "top_placement_status": "safe"
+        },
+        {
+          "first_safe_row": 8,
+          "placement_model": "initial",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 5,
+          "top_action": {
+            "from": 85,
+            "to": 63
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 8,
+          "placement_model": "final",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 5,
+          "top_action": {
+            "from": 85,
+            "to": 63
+          },
+          "top_placement_status": "invalid_geometry"
+        }
+      ]
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "initializer_level": 0,
+      "working_triangles": 3304,
+      "counts": {
+        "initial": {
+          "safe": 16
+        },
+        "final": {
+          "safe": 15,
+          "invalid_geometry": 1
+        }
+      },
+      "transitions": {
+        "safe -> safe": 15,
+        "safe -> invalid_geometry": 1
+      },
+      "combinations": [
+        {
+          "first_safe_row": 1,
+          "placement_model": "initial",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 803,
+            "to": 780
+          },
+          "top_placement_status": "safe"
+        },
+        {
+          "first_safe_row": 1,
+          "placement_model": "final",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 1,
+          "top_action": {
+            "from": 803,
+            "to": 780
+          },
+          "top_placement_status": "safe"
+        },
+        {
+          "first_safe_row": 5,
+          "placement_model": "initial",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 5,
+          "top_action": {
+            "from": 1079,
+            "to": 1084
+          },
+          "top_placement_status": "safe"
+        },
+        {
+          "first_safe_row": 5,
+          "placement_model": "final",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 5,
+          "top_action": {
+            "from": 1079,
+            "to": 1084
+          },
+          "top_placement_status": "safe"
+        }
+      ]
+    },
+    {
+      "asset": "ph_moon_rock_02",
+      "initializer_level": 2,
+      "working_triangles": 932,
+      "counts": {
+        "initial": {
+          "safe": 11,
+          "invalid_geometry": 5
+        },
+        "final": {
+          "safe": 11,
+          "invalid_geometry": 5
+        }
+      },
+      "transitions": {
+        "safe -> safe": 10,
+        "invalid_geometry -> invalid_geometry": 4,
+        "invalid_geometry -> safe": 1,
+        "safe -> invalid_geometry": 1
+      },
+      "combinations": [
+        {
+          "first_safe_row": 15,
+          "placement_model": "initial",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": true,
+          "trials": 1,
+          "triangles_removed": 2,
+          "top_row": 15,
+          "top_action": {
+            "from": 1536,
+            "to": 1557
+          },
+          "top_placement_status": "safe"
+        },
+        {
+          "first_safe_row": 7,
+          "placement_model": "final",
+          "ranking_model": "initial",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 15,
+          "top_action": {
+            "from": 1536,
+            "to": 1557
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 3,
+          "placement_model": "initial",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 8,
+          "top_action": {
+            "from": 25,
+            "to": 1363
+          },
+          "top_placement_status": "invalid_geometry"
+        },
+        {
+          "first_safe_row": 3,
+          "placement_model": "final",
+          "ranking_model": "final",
+          "stop_reason": "safe_action",
+          "top_one_safe": false,
+          "trials": 2,
+          "triangles_removed": 2,
+          "top_row": 8,
+          "top_action": {
+            "from": 25,
+            "to": 1363
+          },
+          "top_placement_status": "invalid_geometry"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "The pool is selected by geometry and deterministic sampling, not the full runtime ranking.",
+    "Independent single edits do not model accepted batches, changing topology, or complete LOD trajectories.",
+    "Both predecessor states were supplied by the initializer; no current-model-only state distribution was tested.",
+    "Complete means the selected diagnostic work was classified; it does not establish exhausted reduction search or a quality improvement.",
+    "Stored timings describe a shared workstation and are not a speedup claim.",
+    "No model, optimizer, training curriculum, runtime implementation, or production setting changed for this diagnostic."
+  ]
+}

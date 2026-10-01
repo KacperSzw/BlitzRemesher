@@ -133,3 +133,9 @@ parity. Additive rollout outcome metadata is checked independently before its
 named object may be absent from legacy-baseline comparisons; repeats of each
 variant remain strict. No lifecycle or metadata compatibility changes the
 model, dataset, or full-chain quality acceptance requirements.
+
+Paired learning starts only after a complete isolated strategy profile reports a
+finite fresh-state throughput ratio above 1. Unknown, nonfinite, equal or slower
+results retain their profile evidence and an explicit no-learning reason; the
+runner skips the paired pilots and quality stage. A measured warm-work or
+process-wall ratio cannot substitute for fresh-state throughput.

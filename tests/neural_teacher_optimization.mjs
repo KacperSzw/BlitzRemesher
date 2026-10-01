@@ -457,7 +457,11 @@ test('diagnostic retry bounds teardown stress and forwards capture to paired cyc
       assert.deepEqual(config.timeoutDiagnostics, { debuggerCommand: 'gdb', maximum: 5000 });
       assert.equal(config.deadline, 20 * 60000);
       await config.execute('profile-fixture', [], {});
-      return { complete: true };
+      return {
+        complete: true,
+        timing_authority: 'isolated_remote',
+        strategy_fresh_states_speedup: 1.1,
+      };
     },
     execute: async (command, args, config) => {
       assert.equal(config.env.VK_DRIVER_FILES, fixture.provenance.selected_path);
@@ -603,7 +607,11 @@ test('the runner reserves a complete pair and preserves signalled pilot failure'
       contracts: async () => ({ complete: true }),
       profile: async () => {
         now = (62 - remaining) * 60000;
-        return { complete: true };
+        return {
+          complete: true,
+          timing_authority: 'isolated_remote',
+          strategy_fresh_states_speedup: 1.1,
+        };
       },
       execute: async (_command, _args, config) => {
         calls++;
@@ -616,6 +624,80 @@ test('the runner reserves a complete pair and preserves signalled pilot failure'
     assert.equal(report.complete, false);
     assert.equal(report.strategy_promotable, false);
     assert.match(report.error, runPilot ? /SIGTERM/ : /complete paired pilot/);
+  }
+});
+
+test('paired learning requires a finite isolated fresh-state throughput gain above one', async (t) => {
+  for (const speedup of [
+    undefined,
+    null,
+    NaN,
+    Infinity,
+    -Infinity,
+    '1.1',
+    0.8,
+    1,
+    1 + Number.EPSILON,
+    1.1,
+    2,
+  ]) {
+    const options = experiment(t),
+      expected = Number.isFinite(speedup) && speedup > 1;
+    let profiles = 0,
+      cycles = 0;
+    const report = await runTeacherOptimization({
+      ...options,
+      contracts: async () => ({ complete: true }),
+      profile: async () => {
+        profiles++;
+        return {
+          complete: true,
+          timing_authority: 'isolated_remote',
+          strategy_fresh_states_speedup: speedup,
+          strategy_measured_speedup: 10,
+          preserved_evidence: 'complete profile artifacts',
+        };
+      },
+      execute: async (command) => {
+        cycles++;
+        assert.equal(command, 'build/neural/blitz-neural-cycle');
+        return { success: false, code: null, signal: 'SIGTERM' };
+      },
+    });
+    assert.equal(profiles, 2);
+    assert.equal(cycles, expected ? 1 : 0);
+    assert.equal(report.training_started, expected);
+    assert.equal(report.learning_gate.passed, expected);
+    assert.equal(report.complete, false);
+    assert.equal(report.score, null);
+    assert.equal(report.reuse.complete, true);
+    assert.equal(report.strategy.complete, true);
+    assert.equal(report.strategy.preserved_evidence, 'complete profile artifacts');
+    if (!expected) {
+      assert.equal(report.phase, 'teacher-strategy-rejected');
+      assert.equal(report.strategy_promotable, false);
+      assert.match(report.learning_skipped_reason, /fresh-state throughput gain above 1/);
+      assert.equal(report.pilots.length, 0);
+      assert.equal(report.quality.length, 0);
+      const saved = JSON.parse(fs.readFileSync(options.directory + '/report.json'));
+      assert.equal(saved.learning_skipped_reason, report.learning_skipped_reason);
+      assert.equal(saved.strategy.complete, true);
+      assert.equal(saved.finished, options.now());
+    } else assert.match(report.error, /SIGTERM/);
+  }
+});
+
+test('a shared or missing timing authority cannot start paid learning despite a numeric gain', async (t) => {
+  for (const timing_authority of [undefined, 'local_shared']) {
+    const options = experiment(t);
+    const report = await runTeacherOptimization({
+      ...options,
+      contracts: async () => ({ complete: true }),
+      profile: async () => ({ complete: true, timing_authority, strategy_fresh_states_speedup: 2 }),
+      execute: async () => assert.fail('unqualified timing cannot start a cycle'),
+    });
+    assert.equal(report.learning_gate.passed, false);
+    assert.equal(report.training_started, false);
   }
 });
 

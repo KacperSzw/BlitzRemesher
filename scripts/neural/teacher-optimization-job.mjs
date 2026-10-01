@@ -246,6 +246,24 @@ export async function runTeacherOptimization({
     });
     persist();
     if (!report.strategy.complete) throw new Error('warm strategy comparison incomplete');
+    const freshStateSpeedup = report.strategy.strategy_fresh_states_speedup;
+    report.learning_gate = {
+      metric: 'strategy_fresh_states_speedup',
+      value: Number.isFinite(freshStateSpeedup) ? freshStateSpeedup : null,
+      timing_authority: report.strategy.timing_authority ?? null,
+      passed:
+        report.strategy.timing_authority === 'isolated_remote' &&
+        Number.isFinite(freshStateSpeedup) &&
+        freshStateSpeedup > 1,
+    };
+    if (!report.learning_gate.passed) {
+      report.learning_skipped_reason =
+        'No finite isolated fresh-state throughput gain above 1; paired learning and quality evaluation were not started.';
+      report.strategy_promotable = false;
+      phase('teacher-strategy-rejected');
+      return report;
+    }
+    persist();
 
     const cycle = 'build/neural/blitz-neural-cycle';
     for (const [i, seed] of request.seeds.entries()) {

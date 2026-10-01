@@ -6,6 +6,7 @@
 #include "training/action_data.hpp"
 #include "training/json.hpp"
 #include "training/packing.hpp"
+#include "training/policy_ranking.hpp"
 #include "training/teacher_cancellation.hpp"
 #include "training/teacher_labels.hpp"
 #include "training/teacher_seed.hpp"
@@ -32,6 +33,8 @@ struct PlacementRequest {
     bool policy_candidates{}, preserve_uv{true};
     double previous_pixels{};
     TeacherStrategy strategy{TeacherStrategy::Exhaustive};
+    bool policy_ranking{};
+    std::optional<EvalSettings> policy_audit;
 };
 struct PlacementResult {
     bool complete;
@@ -46,12 +49,16 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     const auto& [states, pool, previous_steps, seed, pixels, minutes, source_limit, adjacent_limit,
                  sparse, policy_hash, cancelled, compact_data, repair_budget, corpus, selection,
                  mesh_cache, profile, cache, episode, retained, simplifier, architecture,
-                 rollout_trials, policy_candidates, preserve_uv, previous_pixels, strategy] =
-        request;
+                 rollout_trials, policy_candidates, preserve_uv, previous_pixels, strategy,
+                 policy_ranking, policy_audit] = request;
     auto options = base_options;
     options.preserve_uv = preserve_uv;
     const bool core_first = strategy == TeacherStrategy::CoverageCoreFirst;
     teacher_strategy_name(strategy);
+    if (policy_ranking &&
+        (!policy || architecture != conditioned_placement_schema || profile != Profile::Coverage ||
+         core_first || compact_data || !policy_audit || policy_audit->profile != Profile::Coverage))
+        throw std::invalid_argument("policy ranking requires a v4 coverage policy and FP32 data");
     if (core_first &&
         (architecture != conditioned_placement_schema || profile != Profile::Coverage))
         throw std::invalid_argument("coverage-core-first requires v4 coverage teaching");
@@ -107,6 +114,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     AuditCuda audit(options, source);
     NeuralStats stats;
     ActionData data;
+    std::vector<uint8_t> geometry_rejections;
     data.architecture = architecture;
     auto start = std::chrono::steady_clock::now();
     double load_seconds = std::chrono::duration<double>(start - load_start).count();
@@ -150,6 +158,12 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     auto e = action_eval(
         previous_steps ? (previous_pixels ? previous_pixels : std::min(512., pixels * 2)) : pixels,
         source_limit, profile);
+    if (policy_audit) {
+        const auto size = e.screen_size;
+        e = *policy_audit;
+        e.screen_size = size;
+        e.limit = source_limit;
+    }
     e.cancelled = cancel;
     auto adjacent = e;
     adjacent.limit = adjacent_limit;
@@ -188,10 +202,10 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         {"adjacent_limit", adjacent_limit},
         {"packing_admission_limit", std::min(source_limit, adjacent_limit)},
         {"area_limit", e.max_changed_area},
-        {"views", {6, 2}},
+        {"views", {e.views.orthographic, e.views.perspective}},
         {"view_seed", e.views.rotation_seed},
-        {"supersample", 4},
-        {"max_supersample", 8},
+        {"supersample", e.supersample},
+        {"max_supersample", e.max_supersample},
         {"gpu_memory_mib", options.memory_mib},
         {"teacher_candidates", (profile == Profile::Coverage ? 10 : 20) + (policy ? 1 : 0)},
         {"policy_payload_sha256", request.policy_sha256},
@@ -200,6 +214,12 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         {"preference", "minimum triangles, then exact normalized source/adjacent error; all "
                        "confirmed exact ties preferred"}};
     contract["preserve_uv"] = preserve_uv;
+    if (policy_ranking) {
+        contract["teacher_version"] = 7;
+        contract["teacher_target"] = "policy-placement-v1";
+        contract["teacher_candidates"] = 1;
+        contract["target"] = "frozen policy placement; rank only; separate geometry rejection bits";
+    }
     contract["previous_pixels"] = e.screen_size;
     contract["policy_action_candidates"] = policy_candidates;
     contract["policy_rollout_trials"] = rollout_trials;
@@ -385,18 +405,23 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
     struct Confirmation {
         Measurement source, adjacent;
         TeacherChoice choice;
-        bool known{}, passed{};
+        bool valid{}, known{}, passed{};
         uint8_t label() const {
             return uint8_t(SourceKnown | AdjacentKnown | (source.passed ? PlacementSourcePass : 0) |
                            (adjacent.passed ? PlacementAdjacentPass : 0));
         }
     };
-    auto confirm = [&](Action action, const GpuActionState::Proposal& proposal) {
+    auto confirm = [&](Action action, const GpuActionState::Proposal& proposal,
+                       bool allow_geometry_rejection = false) {
         return timed(confirmation_seconds, [&] {
             DeviceMeshView candidate;
-            if (!state.trial(action, proposal.placement, candidate))
+            if (!state.trial(action, proposal.placement, candidate)) {
+                if (allow_geometry_rejection)
+                    return Confirmation{.known = true};
                 throw std::runtime_error("teacher finalist became invalid");
+            }
             Confirmation result;
+            result.valid = true;
             audit.with_candidate_rasters(std::span{&candidate, 1}, [&] {
                 result.source = audit.evaluate(source, candidate, bounds, e, &stats);
                 result.adjacent =
@@ -448,10 +473,12 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
             adjacent.screen_size = pixels;
         }
         double fraction = std::array{.1, .5, .9, .02}[step % 4];
+        std::vector<Placement> policy_placements;
         auto rows = timed(proposals_seconds, [&] {
             return state.teacher_actions(condition(e, adjacent.limit, fraction), pool, seed, policy,
                                          policy_candidates ? TeacherSelection::PolicyMixed
-                                                           : TeacherSelection::GeometricRandom);
+                                                           : TeacherSelection::GeometricRandom,
+                                         policy_ranking ? &policy_placements : nullptr);
         });
         if (rows.empty()) {
             exhausted = true;
@@ -469,6 +496,39 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         for (auto& row : rows) {
             if (architecture == conditioned_placement_schema)
                 row.x[79] = float(preserve_uv);
+            if (policy_ranking) {
+                const GpuActionState::Proposal proposal{policy_placements[actions.size()], {}, 0};
+                const auto result = confirm(row.action, proposal, true);
+                const uint8_t label = result.valid && result.known ? result.label() : 0;
+                append_geometry_rejection(geometry_rejections, data.labels.size(), !result.valid);
+                data.x.insert(data.x.end(), row.x.begin(), row.x.end());
+                data.labels.push_back(label);
+                data.from.push_back(row.action.from);
+                data.to.push_back(row.action.to);
+                data.targets.resize(data.labels.size() * 9, 0.f);
+                actions.push_back(row.action);
+                winners.push_back(proposal);
+                core_choices.push_back(result.choice);
+                invalid_candidates += !result.valid;
+                queries += result.valid;
+                json observation = {{"from", row.action.from},
+                                    {"to", row.action.to},
+                                    {"candidate", "policy"},
+                                    {"known_mask", label},
+                                    {"geometry_rejected", !result.valid},
+                                    {"placement",
+                                     {proposal.placement.position.x, proposal.placement.position.y,
+                                      proposal.placement.position.z}}};
+                if (result.valid) {
+                    observation["source"] = measurement_json(result.source);
+                    observation["adjacent"] = measurement_json(result.adjacent);
+                }
+                state_trace["queries"].push_back(std::move(observation));
+                unknown |= !result.known;
+                if (unknown || cancel())
+                    break;
+                continue;
+            }
             bool found = false;
             uint8_t best_label = 0;
             double best = INFINITY;
@@ -801,9 +861,10 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
             trace.push_back(state_trace);
             break;
         }
-        std::vector<TeacherChoice> choices =
-            core_first ? core_choices : std::vector<TeacherChoice>(actions.size());
-        for (size_t i = 0; !core_first && i < actions.size() && !cancel(); ++i) {
+        std::vector<TeacherChoice> choices = core_first || policy_ranking
+                                                 ? core_choices
+                                                 : std::vector<TeacherChoice>(actions.size());
+        for (size_t i = 0; !core_first && !policy_ranking && i < actions.size() && !cancel(); ++i) {
             auto& label = data.labels[first + i];
             if ((label & 27) != 27)
                 continue;
@@ -927,6 +988,26 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                   {"training_started", false},
                   {"audit", neural_json(stats)}};
     index["seed"] = seed_result;
+    if (policy_ranking) {
+        std::ofstream f(output / "geometry-rejected.bin", std::ios::binary);
+        f.write("BLZRANK1", 8);
+        write_vector(f, geometry_rejections);
+        f.close();
+        if (!f)
+            throw std::runtime_error("policy geometry bitmap write failed");
+        index["geometry_rejected_sha256"] = file_sha256(output / "geometry-rejected.bin");
+        auto ranking = data.labels;
+        apply_policy_rank_masks(ranking, geometry_rejections);
+        uint32_t informative = 0, pairs = 0;
+        for (size_t s = 0; s < data.states(); ++s) {
+            const auto count = ranking_pairs(
+                std::span(ranking).subspan(data.offsets[s], data.offsets[s + 1] - data.offsets[s]));
+            informative += count != 0;
+            pairs += count;
+        }
+        index["ranking_states"] = informative;
+        index["ranking_pairs"] = pairs;
+    }
     index["invalid_candidates"] = invalid_candidates;
     if (complete)
         index["episode_sha256"] = file_sha256(output / "episode.bin");

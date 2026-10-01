@@ -24,7 +24,8 @@ class GpuActionState {
     std::vector<PlacementRecord>
     teacher_actions(const std::array<float, conditions>&, uint32_t count, uint32_t seed,
                     ActionCuda* policy = nullptr,
-                    TeacherSelection = TeacherSelection::GeometricRandom);
+                    TeacherSelection = TeacherSelection::GeometricRandom,
+                    std::vector<Placement>* decoded_policy = nullptr);
     struct Proposal {
         Placement placement;
         float target[9];
@@ -35,6 +36,8 @@ class GpuActionState {
     // next trial attempt (even an invalid trial), trial_batch, or state mutation;
     // counts/validity remain on the device. Returned views never own storage.
     std::vector<DeviceMeshView> trial_batch(Action, std::span<const Proposal>);
+    // Endpoint-only trial; the borrowed view has the same lifetime as trial_batch.
+    bool trial(Action, DeviceMeshView&);
     bool trial(Action, const Placement&, DeviceMeshView&);
     void commit(Action, const Placement&);
     Lod snapshot();
@@ -45,6 +48,7 @@ class GpuActionState {
     Lod execute(const std::array<float, conditions>&, size_t target, uint32_t budget, ActionCuda*,
                 NeuralRanking, uint32_t seed, uint8_t batch,
                 const std::function<bool(DeviceMeshView)>& gate, ActionStats*,
-                const std::function<bool()>& cancelled = {});
+                const std::function<bool()>& cancelled = {},
+                const std::function<void(GpuActionState&)>& observe = {});
 };
 } // namespace blitz::neural

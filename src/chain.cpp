@@ -712,7 +712,8 @@ SearchPass search_pass(MeshView source, const Settings& s, const Proposer& propo
                     if (hooks && hooks->propose_guarded)
                         candidate = hooks->propose_guarded(input, source, parent->lod.view(source),
                                                            result.reference_bounds, rs,
-                                                           audit_source, audit_adj);
+                                                           audit_source, audit_adj, search_source,
+                                                           search_adj);
                     else if (hooks)
                         candidate =
                             hooks->propose(input, rs, search_source, steps[level].transition);

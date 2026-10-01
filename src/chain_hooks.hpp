@@ -4,8 +4,10 @@ namespace blitz::detail {
 struct GenerationHooks {
     std::function<Lod(MeshView, const ReduceSettings&, const EvalSettings&, double)> propose;
     // Fixed source and preceding emitted LOD, never the last accepted local edit.
+    // Both search and audit gates must constrain committed local actions.
     std::function<Lod(MeshView, MeshView, MeshView, const Bounds&, const ReduceSettings&,
-                      const EvalSettings&, const EvalSettings&)>
+                      const EvalSettings&, const EvalSettings&, const EvalSettings&,
+                      const EvalSettings&)>
         propose_guarded;
     std::function<Measurement(MeshView, MeshView, const Bounds&, const EvalSettings&)> evaluate;
     std::function<bool(Result&)> confirm;

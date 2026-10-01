@@ -15,12 +15,12 @@ inline ActionProbe capture_actions(GpuActionState& state, const std::array<float
     if (model.architecture() != conditioned_placement_schema || c[3] || c[4] || c[5])
         throw std::invalid_argument("action probe requires v4 coverage models");
     ActionProbe out;
-    out.rows = state.teacher_actions(c, count, seed, &model, TeacherSelection::GeometricRandom);
+    out.rows = state.teacher_actions(c, count, seed, &model, TeacherSelection::GeometricRandom,
+                                     &out.placements);
     std::vector<float> features;
     features.reserve(out.rows.size() * placement_features);
     for (const auto& row : out.rows) {
         features.insert(features.end(), row.x.begin(), row.x.end());
-        out.placements.push_back(state.teacher_proposals(row.action, false).back().placement);
     }
     out.predictions = model.predict(features);
     return out;

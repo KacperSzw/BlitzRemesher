@@ -25,7 +25,8 @@ int main() try {
     hooks.confirm = [](Result&) { return true; };
     unsigned calls = 0;
     hooks.propose_guarded = [&](MeshView input, MeshView fixed, MeshView previous, const Bounds&,
-                                const ReduceSettings&, const EvalSettings&, const EvalSettings&) {
+                                const ReduceSettings&, const EvalSettings&, const EvalSettings&,
+                                const EvalSettings&, const EvalSettings&) {
         require(same_mesh_data(fixed, source.view()), "source reference changed during hook merge");
         require(same_mesh_data(previous, source.view()), "wrong first predecessor");
         ++calls;

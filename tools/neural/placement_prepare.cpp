@@ -1,5 +1,6 @@
 #include "neural/action_gpu.hpp"
 #include "neural/memory.hpp"
+#include "tools/neural/audit_settings.hpp"
 #include "tools/neural/teacher_benchmark.hpp"
 #include "training/json.hpp"
 #include "training/placement_teacher.hpp"
@@ -62,7 +63,8 @@ int main(int argc, char** argv) {
                 "[--simplifier-seed on|off] [--retained FRACTION] [--architecture 3|4] "
                 "[--preserve-uv on|off] [--previous-pixels N] [--teacher-selection "
                 "geometric-random|policy-mixed] [--policy-rollout-trials 0..4096] "
-                "[--teacher-strategy exhaustive|coverage-core-first]");
+                "[--teacher-strategy exhaustive|coverage-core-first] "
+                "[--teacher-target oracle|policy-placement] [--audit-settings JSON]");
         uint32_t states = 32, pool = 16, previous_steps = 0, seed = 101;
         double pixels = 128, minutes = 5, source_limit = 3, adjacent_limit = 3;
         NeuralOptions options;
@@ -125,6 +127,29 @@ int main(int argc, char** argv) {
             }
             if (k == "--teacher-strategy") {
                 episode.strategy = teacher_strategy_option(argv[i + 1]);
+                continue;
+            }
+            if (k == "--teacher-target") {
+                std::string_view value = argv[i + 1];
+                if (value != "oracle" && value != "policy-placement")
+                    throw std::invalid_argument(
+                        "teacher target must be oracle or policy-placement");
+                episode.policy_ranking = value == "policy-placement";
+                continue;
+            }
+            if (k == "--audit-settings") {
+                auto config = read_json(argv[i + 1]);
+                config.erase("audit_rankings");
+                auto unused_execution = options;
+                const auto settings = model_audit_settings(config, unused_execution);
+                EvalSettings audit;
+                audit.profile = settings.profile;
+                audit.weights = settings.weights;
+                audit.views = settings.audit_views;
+                audit.supersample = settings.audit_supersample;
+                audit.max_supersample = settings.max_supersample;
+                audit.max_changed_area = settings.max_changed_area;
+                episode.policy_audit = audit;
                 continue;
             }
             if (k == "--preserve-uv") {
@@ -217,6 +242,10 @@ int main(int argc, char** argv) {
                                  [] { return bool(stopped); }};
         request.architecture = episode.architecture;
         request.strategy = episode.strategy;
+        request.policy_ranking = episode.policy_ranking;
+        request.policy_audit = episode.policy_audit;
+        if (request.policy_ranking)
+            request.compact_data = false;
         request.policy_candidates = episode.policy_candidates;
         request.policy_rollout_trials = episode.policy_rollout_trials;
         request.previous_pixels = episode.previous_pixels;

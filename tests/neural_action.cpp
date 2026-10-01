@@ -4,6 +4,7 @@
 #include "neural/action_cache.hpp"
 #include "neural/audit_cache.hpp"
 #include "neural/audit_measurement.hpp"
+#include "training/policy_ranking.hpp"
 #include <iostream>
 #include <numeric>
 using namespace blitz;
@@ -11,6 +12,60 @@ using namespace blitz::neural;
 void check(bool value, const char* message) {
     if (!value)
         throw std::runtime_error(message);
+}
+void policy_label_contracts() {
+    using namespace blitz::neural::training;
+    std::vector<uint8_t> visual{31, 27, 0, 0, 8, 24, 31, 27, 0};
+    std::vector<uint8_t> rejected;
+    for (size_t i = 0; i < visual.size(); ++i)
+        append_geometry_rejection(rejected, i, i == 2 || i == 8);
+    apply_policy_rank_masks(visual, rejected);
+    check(visual[2] == 24 && visual[8] == 24 && visual[3] == 0 && visual[4] == 8,
+          "unknown audits became ranking negatives");
+    check(ranking_pairs(visual) == 10, "ranking pair count lost honest ties/rejections");
+    std::array<uint8_t, 3> tied{31, 31, 0};
+    check(!ranking_pairs(tied), "honest ties gained artificial ranking supervision");
+    auto rejects = [&](auto&& call, const char* reason) {
+        bool rejected = false;
+        try {
+            call();
+        } catch (const std::invalid_argument&) {
+            rejected = true;
+        }
+        check(rejected, reason);
+    };
+    check(ranking_observation_step(0, 8, 3) == 0 && ranking_observation_step(1, 8, 3) == 3 &&
+              ranking_observation_step(2, 8, 3) == 7,
+          "teacher schedule omitted middle or final trajectory states");
+    for (uint32_t iterations : {1u, 4u, 23u})
+        for (uint32_t requested : {1u, 7u, 32u}) {
+            const auto n = std::min(iterations, requested);
+            uint32_t previous = 0;
+            for (uint32_t sample = 0; sample < n; ++sample) {
+                const auto step = ranking_observation_step(sample, iterations, requested);
+                check(step < iterations && (!sample || step > previous),
+                      "teacher schedule duplicated or exceeded runtime states");
+                previous = step;
+            }
+            check(n == 1 || previous == iterations - 1, "teacher schedule missed late states");
+        }
+    rejects([] { ranking_observation_step(0, 0, 4); }, "empty trajectory schedule accepted");
+    rejects([] { ranking_observation_step(0, 3, 0); }, "empty observation budget accepted");
+    rejects([] { ranking_observation_step(3, 3, 8); }, "out-of-range observation accepted");
+    std::array<uint8_t, 1> corrupt{31}, bits{1};
+    rejects([&] { apply_policy_rank_masks(corrupt, bits); },
+            "geometry rejection accepted fabricated visual labels");
+    bits[0] = 128;
+    rejects([&] { apply_policy_rank_masks(corrupt, bits); },
+            "geometry bitmap accepted out-of-range tail bits");
+    rejects([&] { apply_policy_rank_masks(corrupt, {}); }, "missing geometry bitmap accepted");
+    corrupt[0] = PositionKnown;
+    bits[0] = 0;
+    rejects([&] { apply_policy_rank_masks(corrupt, bits); },
+            "rank-only data accepted a placement target");
+    std::array<uint8_t, 17> oversized{};
+    rejects([&] { ranking_pairs(oversized); }, "oversized rank pool accepted");
+    apply_policy_rank_masks({}, {});
 }
 Mesh plane(unsigned n) {
     Mesh m;
@@ -109,6 +164,7 @@ void action_stop_contracts() {
 int main() {
     try {
         action_stop_contracts();
+        policy_label_contracts();
         auto cache_mesh = plane(5);
         cache_mesh.materials.resize(cache_mesh.view().triangles(), 0);
         auto memo_source = cache_mesh.view(), memo_candidate = memo_source;
@@ -229,8 +285,8 @@ int main() {
                 check(!action_audit_known(invalid, e) && !audit_measurement_passed(invalid),
                       "invalid diagnostic became a positive label");
             }
-            for (auto field : {&Measurement::error, &Measurement::coverage,
-                               &Measurement::coverage_upper}) {
+            for (auto field :
+                 {&Measurement::error, &Measurement::coverage, &Measurement::coverage_upper}) {
                 Measurement invalid;
                 invalid.*field = INFINITY;
                 check(!action_audit_known(invalid, e) && !audit_measurement_passed(invalid),
@@ -466,15 +522,32 @@ int main() {
         settings.beam_width = 1;
         settings.research.output = OutputMode::Reuse;
         settings.research.chain = ChainMode::Direct;
+        settings.search_views = {2, 1, 347};
+        settings.audit_views = {4, 2, 349};
+        settings.search_supersample = 1;
+        settings.audit_supersample = 2;
+        settings.max_changed_area = .37;
         bool saw_previous = false;
         detail::GenerationHooks hooks;
         hooks.propose_guarded = [&](MeshView input, MeshView fixed, MeshView previous,
                                     const Bounds&, const ReduceSettings& rs, const EvalSettings& a,
-                                    const EvalSettings& b) {
+                                    const EvalSettings& b, const EvalSettings& search_a,
+                                    const EvalSettings& search_b) {
             check(same_mesh_data(fixed, chain_mesh.view()), "guarded source drifted");
             check(same_mesh_data(input, fixed), "direct proposal changed origin");
             saw_previous |= previous.triangles() < fixed.triangles();
             check(a.screen_size == b.screen_size, "source/adjacent cameras differ");
+            check(search_a.views.rotation_seed == settings.search_views.rotation_seed &&
+                      search_b.views.rotation_seed == settings.search_views.rotation_seed &&
+                      a.views.rotation_seed == settings.audit_views.rotation_seed &&
+                      b.views.rotation_seed == settings.audit_views.rotation_seed &&
+                      search_a.supersample == settings.search_supersample &&
+                      a.supersample == settings.audit_supersample && search_a.limit == a.limit &&
+                      search_b.limit == b.limit && search_a.max_changed_area == 1 &&
+                      search_b.max_changed_area == 1 &&
+                      a.max_changed_area == settings.max_changed_area &&
+                      b.max_changed_area == settings.max_changed_area,
+                  "guarded action omitted or conflated search and audit gates");
             ActionStats stats;
             return execute_actions(
                 input, {}, rs.target_triangles, 4,

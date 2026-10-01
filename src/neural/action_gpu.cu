@@ -1202,6 +1202,11 @@ __global__ void default_placements(DeviceMeshView m, const State* state, const E
 __global__ void assign_placement(const uint32_t* selected, Placement* proposals, Placement p) {
     proposals[selected[0]] = p;
 }
+__global__ void capture_policy_placements(const uint32_t* selected, const Placement* proposals,
+                                          GpuActionState::Proposal* output, uint32_t count) {
+    if (threadIdx.x < count)
+        output[threadIdx.x] = {proposals[selected[threadIdx.x]], {}, 0};
+}
 __global__ void assign_trial(const uint32_t* selected, Placement* proposals, Placement p,
                              DeviceTrialStatus* status, const uint32_t* faces) {
     proposals[selected[0]] = p;
@@ -1861,6 +1866,18 @@ Lod GpuActionState::trial(Action a) {
     p.trial(a);
     return p.download_trial();
 }
+bool GpuActionState::trial(Action a, DeviceMeshView& candidate) {
+    auto& p = *impl_;
+    DeviceScope scope(p.id);
+    if (p.placement)
+        throw std::logic_error("endpoint trial requires a reuse state");
+    p.trial(a);
+    p.read();
+    if (p.host.invalid_placement)
+        return false;
+    candidate = p.trial_view();
+    return true;
+}
 void GpuActionState::commit(Action a) {
     auto& p = *impl_;
     DeviceScope scope(p.id);
@@ -1898,7 +1915,8 @@ void GpuActionState::reset() {
 Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t target, uint32_t budget,
                             ActionCuda* network, NeuralRanking ranking, uint32_t seed,
                             uint8_t batch, const std::function<bool(DeviceMeshView)>& gate,
-                            ActionStats* statistics, const std::function<bool()>& cancelled) {
+                            ActionStats* statistics, const std::function<bool()>& cancelled,
+                            const std::function<void(GpuActionState&)>& observe) {
     if (!batch || batch > 64 || !gate || ranking > NeuralRanking::CurrentPlane)
         throw std::invalid_argument("invalid GPU action executor configuration");
     auto& p = *impl_;
@@ -1910,6 +1928,34 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
     uint64_t inference_ns = 0;
     uint32_t accepted_batches = 0;
     while (p.host.faces > target && p.host.trials < budget && !stop()) {
+        if (observe) {
+            // Entry read() synchronizes both copies of State. Teacher queries may
+            // alter counters, selection and trial scratch, but must never commit.
+            // The unconditional rank below rebuilds all consumed ranking scratch.
+            p.read();
+            const State saved = p.host;
+            const auto revision = p.mesh.view.revision;
+            const auto faces = p.mesh.view.faces;
+            const bool teacher_policy = p.teacher_policy;
+            auto restore = [&] {
+                p.host = saved;
+                p.state.upload(std::span{&p.host, 1});
+                p.mesh.view.faces = faces;
+                p.teacher_policy = teacher_policy;
+                p.selected_is_action = false;
+                // trial_revision stays monotonic: old teacher candidates must
+                // never alias subsequent runtime candidates in an audit cache.
+            };
+            try {
+                observe(*this);
+                if (p.mesh.view.revision != revision || p.mesh.view.faces != faces)
+                    throw std::logic_error("action observer committed or reset its state");
+            } catch (...) {
+                restore();
+                throw;
+            }
+            restore();
+        }
         auto start = std::chrono::steady_clock::now();
         p.rank(c, network, ranking, seed);
         inference_ns += uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1991,17 +2037,19 @@ std::vector<GpuActionState::Proposal> GpuActionState::teacher_proposals(Action a
         gpu::copy(out.data(), p.teacher.p, out.size() * sizeof(Proposal), cudaMemcpyDeviceToHost));
     return out;
 }
-std::vector<PlacementRecord> GpuActionState::teacher_actions(const std::array<float, conditions>& c,
-                                                             uint32_t count, uint32_t seed,
-                                                             ActionCuda* policy,
-                                                             TeacherSelection selection) {
+std::vector<PlacementRecord>
+GpuActionState::teacher_actions(const std::array<float, conditions>& c, uint32_t count,
+                                uint32_t seed, ActionCuda* policy, TeacherSelection selection,
+                                std::vector<Placement>* decoded_policy) {
     auto& p = *impl_;
     DeviceScope scope(p.id);
-    if (!p.placement || !count || count > 16 ||
-        (policy && !is_placement_schema(policy->architecture())) ||
+    if (!count || count > 16 || (policy && !is_placement_schema(policy->architecture())) ||
         selection > TeacherSelection::PolicyMixed ||
-        (selection == TeacherSelection::PolicyMixed && !policy))
+        (selection == TeacherSelection::PolicyMixed && !policy) ||
+        (decoded_policy && (!policy || !p.placement)))
         throw std::invalid_argument("invalid teacher pool/policy");
+    if (decoded_policy)
+        decoded_policy->clear();
     p.selected_is_action = false;
     p.read();
     count = std::min(count, p.host.actions);
@@ -2037,13 +2085,22 @@ std::vector<PlacementRecord> GpuActionState::teacher_actions(const std::array<fl
     }
     p.features(c, placement_features, p.selected.p, count,
                policy ? policy->architecture() : placement_schema);
-    if (policy) {
+    if (policy && p.placement) {
         p.ensure(p.prediction, size_t(count) * placement_outputs);
         policy->predict_device(p.features_buffer.p, p.prediction.p, count);
         decode_placements<<<1, 32, 0, gpu::stream()>>>(p.mesh.view, p.state.p, p.edits.p,
                                                        p.prediction.p, p.proposals.p, p.selected.p,
                                                        count, c[3] != 0 || c[4] != 0 || c[5] != 0);
         p.read();
+        if (decoded_policy) {
+            capture_policy_placements<<<1, 32, 0, gpu::stream()>>>(p.selected.p, p.proposals.p,
+                                                                   p.teacher.p, count);
+            std::vector<Proposal> copied(count);
+            check(gpu::copy(copied.data(), p.teacher.p, count * sizeof(Proposal),
+                            cudaMemcpyDeviceToHost));
+            for (const auto& proposal : copied)
+                decoded_policy->push_back(proposal.placement);
+        }
     }
     Buffer<Action> actions(p.device, count);
     teacher_records<<<1, 32, 0, gpu::stream()>>>(p.state.p, p.edits.p, p.selected.p, actions.p,

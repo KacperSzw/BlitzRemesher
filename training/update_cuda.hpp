@@ -45,6 +45,9 @@ struct AdamParameter {
 };
 struct UpdateSettings {
     float margin{1}, auxiliary{.25f}, penalty{1e-4f}, lr{.001f}, decay{.0001f}, max_norm{1};
+    // Controlled policy-alignment experiment: only output 0 and its last-layer
+    // weights change. The shared trunk and placement outputs remain frozen.
+    bool ranking_only{};
 };
 // Zero loss weights and a zero ranking margin are valid. Check scalars on the
 // host before capture or a direct launch; NaN can otherwise bypass hinge tests.
@@ -77,6 +80,7 @@ std::array<int32_t, 3> fused_mlp_algorithms(const FusedMlp*);
 // Counter-based sampling has no hidden RNG state. Version 1 is keyed by
 // (seed, completed update, batch lane, hierarchy draw), including rejection draws.
 inline constexpr uint32_t sampler_version = 1, update_checkpoint_version = 2;
+inline constexpr uint32_t ranking_loss_version = 2; // Equal weight per sampled state.
 void sample_update(SamplingView, const float*, const uint8_t*, float*, uint8_t*, uint32_t*,
                    UpdateState*, uint32_t, uint32_t, uint32_t, cudaStream_t);
 void sample_packed_update(SamplingView, const float*, const uint32_t*, const float*, const uint8_t*,

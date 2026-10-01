@@ -3,6 +3,7 @@
 #include "neural/action_cache.hpp"
 #include "neural/action_gpu.hpp"
 #include "neural/audit_measurement.hpp"
+#include "neural/generation.hpp"
 #include "neural/internal.hpp"
 #include "neural/memory.hpp"
 #include "neural/quantization.hpp"
@@ -120,9 +121,20 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
         *stats = {};
     if (!model.impl_)
         throw std::invalid_argument("invalid neural model");
+    return neural::generate_observed(source, settings, model.impl_->weights, model.impl_->options,
+                                     {}, stats);
+}
+Result neural::generate_observed(MeshView source, const Settings& settings,
+                                 const WeightsData& weights, const NeuralOptions& options,
+                                 const ActionObserver& observer, NeuralStats* stats) {
+    if (stats)
+        *stats = {};
 #ifndef BLITZ_CUDA
     (void)source;
     (void)settings;
+    (void)weights;
+    (void)options;
+    (void)observer;
     throw NeuralUnavailable("neural mode was not built");
 #else
     if (auto e = validate(source); !e.empty())
@@ -145,8 +157,6 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
         };
     NeuralStats local;
     auto& counters = stats ? *stats : local;
-    auto& options = model.impl_->options;
-    auto& weights = model.impl_->weights;
     neural::MemoryScope memory(options);
     neural::AuditSession session(options);
     using Clock = std::chrono::steady_clock;
@@ -286,7 +296,9 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
         hooks.propose_guarded = [&](MeshView input, MeshView fixed_source, MeshView previous,
                                     const Bounds& bounds, const ReduceSettings& rs,
                                     const EvalSettings& source_eval,
-                                    const EvalSettings& adjacent_eval) {
+                                    const EvalSettings& adjacent_eval,
+                                    const EvalSettings& source_search,
+                                    const EvalSettings& adjacent_search) {
             audit.bind_reference(previous);
             struct ReferenceScope {
                 neural::AuditCuda& audit;
@@ -314,14 +326,8 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
             try {
                 auto initial = input;
                 if (free && direct && options.draw_storage() != NeuralVertexStorage::Float32) {
-                    auto search = source_eval, search_adjacent = adjacent_eval;
-                    for (auto* e : {&search, &search_adjacent}) {
-                        e->views = s.search_views;
-                        e->supersample = s.search_supersample;
-                        e->max_changed_area = 1;
-                    }
-                    initial = packed_baseline(previous, source_eval, adjacent_eval, search,
-                                              search_adjacent)
+                    initial = packed_baseline(previous, source_eval, adjacent_eval, source_search,
+                                              adjacent_search)
                                   .view();
                 }
                 auto& owner = free ? placement_state : action_state;
@@ -349,6 +355,15 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
                 auto gate = [&](neural::DeviceMeshView candidate) {
                     if (s.cancelled && s.cancelled())
                         return false;
+                    // A collapse must remain eligible for the outer generator.
+                    // Search cameras differ from audit cameras; an audit-only
+                    // commit can poison every subsequent reduction in a proposal.
+                    auto x = evaluate_device(fixed_source, candidate, source_search);
+                    if (!x.complete || !x.passed)
+                        return false;
+                    auto y = evaluate_device(previous, candidate, adjacent_search);
+                    if (!y.complete || !y.passed)
+                        return false;
                     auto a = evaluate_device(fixed_source, candidate, source_eval);
                     if (!a.complete || !a.passed)
                         return false;
@@ -359,13 +374,31 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
                     candidate.shared_vertices = false;
                     candidate.data = copy_mesh(previous);
                     stats.stop_reason = NeuralActionStop::InfeasibleSeed;
-                } else
-                    candidate = state->execute(
+                } else {
+                    const auto condition =
                         neural::condition(source_eval, adjacent_eval.limit,
-                                          double(rs.target_triangles) / fixed_source.triangles()),
-                        rs.target_triangles, options.action_trials, action_network.get(),
-                        options.ranking, options.ranking_seed, options.action_batch, gate, &stats,
-                        s.cancelled);
+                                          double(rs.target_triangles) / fixed_source.triangles());
+                    const neural::ActionRequest request{fixed_source,
+                                                        previous,
+                                                        bounds,
+                                                        source_eval,
+                                                        adjacent_eval,
+                                                        source_search,
+                                                        adjacent_search,
+                                                        condition,
+                                                        rs.target_triangles,
+                                                        rs.output,
+                                                        uint32_t(counters.action_proposals.size())};
+                    std::function<void(neural::GpuActionState&)> observe;
+                    if (observer)
+                        observe = [&](neural::GpuActionState& current) {
+                            observer(current, request);
+                        };
+                    candidate =
+                        state->execute(condition, rs.target_triangles, options.action_trials,
+                                       action_network.get(), options.ranking, options.ranking_seed,
+                                       options.action_batch, gate, &stats, s.cancelled, observe);
+                }
             } catch (const neural::gpu::ResourceError&) {
                 diagnostic.stop_reason = NeuralActionStop::Resource;
                 diagnostic.final_triangles = diagnostic.start_triangles;

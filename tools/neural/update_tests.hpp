@@ -20,6 +20,83 @@ inline void update_contracts() {
         }
         check(rejected, reason);
     };
+    for (bool captured : {false, true}) {
+        ActionNetwork ranker(conditioned_placement_schema);
+        ranker->to(torch::kCUDA);
+        auto features = torch::randn({2, action_pool, placement_features}, gpu);
+        auto labels = torch::zeros({2, action_pool}, gpu.dtype(torch::kUInt8));
+        labels.select(1, 0).fill_(31);
+        labels.select(1, 1).fill_(24);
+        labels.select(1, 2).fill_(27);
+        std::vector<std::array<std::vector<uint32_t>, 4>> bins(1);
+        bins[0][0] = {0, 1};
+        SamplingTables sampling({{0}}, bins, 2);
+        UpdateSettings settings;
+        settings.ranking_only = true;
+        settings.decay = .2f;
+        ActionUpdate update(ranker, features, labels, sampling, 7, 971, settings,
+                            torch::zeros({2, action_pool, 9}, gpu));
+        for (auto& moment : update.optimizer.mean)
+            moment.fill_(.13f);
+        for (auto& moment : update.optimizer.variance)
+            moment.fill_(.17f);
+        auto before = update.optimizer.snapshot();
+        auto original = ranker->forward(features).detach().clone();
+        if (captured)
+            update.capture();
+        update.run(9);
+        auto after = update.optimizer.snapshot();
+        check(update.optimizer.state().step == 9, "rank-only update failed");
+        check(!torch::equal(before[4].select(0, 0), after[4].select(0, 0)),
+              "ranking weight row did not change");
+        for (size_t i = 0; i + 1 < before.size(); ++i) {
+            auto a = before[i], b = after[i];
+            if (i % 6 >= 4) {
+                a = a.slice(0, 1);
+                b = b.slice(0, 1);
+            }
+            check(torch::equal(a, b), "rank training changed frozen parameters or moments");
+        }
+        check(torch::equal(original.slice(2, 1), ranker->forward(features).slice(2, 1)),
+              "rank training changed frozen policy outputs");
+        std::stringstream stream;
+        torch::serialize::OutputArchive output;
+        update.optimizer.save(output);
+        output.save_to(stream);
+        torch::serialize::InputArchive input;
+        input.load_from(stream);
+        ActionNetwork other(conditioned_placement_schema);
+        other->to(torch::kCUDA);
+        {
+            torch::NoGradGuard guard;
+            auto p = ranker->parameters(), q = other->parameters();
+            for (size_t i = 0; i < p.size(); ++i)
+                q[i].copy_(p[i]);
+        }
+        DeviceAdam wrong(other->parameters());
+        rejects([&] { wrong.load(input); }, "rank checkpoint resumed full-policy Adam");
+        std::stringstream legacy_bytes;
+        torch::serialize::OutputArchive legacy;
+        legacy.write("version", torch::tensor(int64_t(update_checkpoint_version)));
+        legacy.write("sampler", torch::tensor(int64_t(sampler_version)));
+        legacy.write("ranking_only", torch::tensor(int64_t(1)));
+        legacy.save_to(legacy_bytes);
+        torch::serialize::InputArchive legacy_input;
+        legacy_input.load_from(legacy_bytes);
+        DeviceAdam new_objective(other->parameters(), settings);
+        rejects([&] { new_objective.load(legacy_input); },
+                "old pair-weighted optimizer silently resumed equal-state loss");
+        ActionUpdate restored(other, features, labels, sampling, 7, 971, settings,
+                              torch::zeros({2, action_pool, 9}, gpu));
+        restored.optimizer.load(input);
+        if (captured)
+            restored.capture();
+        update.run(2);
+        restored.run(2);
+        auto saved = update.optimizer.snapshot(), resumed = restored.optimizer.snapshot();
+        for (size_t i = 0; i < saved.size(); ++i)
+            check(torch::equal(saved[i], resumed[i]), "rank-only checkpoint restore differs");
+    }
     // Each public host entry must reject invalid scalar settings before any
     // device access. Null buffers deliberately make a missed launch guard fail.
     auto parameter = torch::ones({2}, gpu).requires_grad_();
@@ -183,6 +260,35 @@ inline void update_contracts() {
         check(gradient[0][2][2].item<float>() == 0 && gradient[0][3][1].item<float>() == 0 &&
                   gradient[1][3].abs().sum().item<float>() == 0,
               "unknown source/adjacent verdict became a negative");
+    }
+    // Repeating alternatives or changing the number of tied positives cannot
+    // alter a sampled state's total ranking weight.
+    for (unsigned positives : {1u, 3u}) {
+        auto scores = torch::zeros({2, 16, 12}, gpu);
+        auto labels = torch::zeros({2, 16}, gpu.dtype(torch::kUInt8));
+        labels[0].slice(0, 0, 4).fill_(24);
+        labels[0][0].fill_(28);
+        labels[1].fill_(24);
+        labels[1].slice(0, 0, positives).fill_(28);
+        auto targets = torch::zeros({2, 16, 9}, gpu);
+        auto control = torch::zeros({int64_t(sizeof(UpdateState))}, gpu.dtype(torch::kUInt8));
+        auto gradient = torch::empty_like(scores), losses = torch::empty({2}, gpu);
+        UpdateSettings config;
+        config.ranking_only = true;
+        config.penalty = 0;
+        config.margin = positives == 1 ? .7f : 1.3f;
+        placement_loss_update(scores.data_ptr<float>(), labels.data_ptr<uint8_t>(),
+                              targets.data_ptr<float>(), nullptr, gradient.data_ptr<float>(),
+                              losses.data_ptr<float>(), records<UpdateState>(control), 2, 16,
+                              config, c10::cuda::getCurrentCUDAStream());
+        check(std::abs(losses.sum().item<float>() - config.margin) < 2e-6,
+              "pair multiplicity changed equal-state ranking loss");
+        check(std::abs(gradient[0][0][0].item<float>() + .5f) < 2e-6 &&
+                  std::abs(gradient[1].slice(0, 0, positives).select(1, 0).sum().item<float>() +
+                           .5f) < 2e-6,
+              "state with more preference pairs dominated ranking gradient");
+        check(gradient.slice(2, 1).abs().sum().item<float>() == 0,
+              "ranking loss trained frozen policy channels");
     }
     // Test actual evolving bias correction, clipping and decoupled weight decay.
     for (float max_norm : {.4f, 1.7f}) {

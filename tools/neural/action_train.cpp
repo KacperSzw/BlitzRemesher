@@ -1,5 +1,6 @@
 #include "tools/neural/update_tests.hpp"
 #include "training/checkpoint.hpp"
+#include "training/policy_ranking.hpp"
 #include <c10/cuda/CUDACachingAllocator.h>
 #include <csignal>
 #include <iostream>
@@ -17,9 +18,10 @@ struct Dataset {
     std::vector<std::array<std::vector<uint32_t>, 4>> asset_bins;
     std::vector<std::vector<uint32_t>> categories;
     json provenance = json::array();
-    uint32_t states{}, architecture{};
+    std::string rank_target;
+    uint32_t states{}, architecture{}, observed_states{}, uninformative_states{};
 };
-Dataset dataset(const fs::path& directory) {
+Dataset dataset(const fs::path& directory, bool ranking_only, const std::string& policy_hash) {
     Dataset out;
     auto index = read_json(directory / "index.json");
     std::vector<fs::path> paths{directory};
@@ -42,16 +44,58 @@ Dataset dataset(const fs::path& directory) {
             j.at("contract_sha256") != file_sha256(path / "contract.json"))
             throw std::invalid_argument("incomplete or changed action dataset");
         auto data = load_actions(path / "actions.bin");
+        const auto contract = read_json(path / "contract.json");
+        const auto target = contract.value("teacher_target", "oracle");
+        const bool runtime_endpoint =
+            target == "runtime-endpoint-v1" || target == "runtime-endpoint-v2";
+        if (ranking_only != (target == "policy-placement-v1" || runtime_endpoint))
+            throw std::invalid_argument("teacher labels do not match the training objective");
+        if (ranking_only) {
+            if (!out.rank_target.empty() && out.rank_target != target)
+                throw std::invalid_argument("v4 ranking cannot mix endpoint and placement targets");
+            out.rank_target = target;
+            if (contract.at("policy_payload_sha256") != policy_hash ||
+                contract.at("teacher_version") != (target == "runtime-endpoint-v2" ? 9
+                                                   : runtime_endpoint              ? 8
+                                                                                   : 7) ||
+                contract.at("data_storage") != "fp32" ||
+                data.architecture != conditioned_placement_schema ||
+                j.at("geometry_rejected_sha256") != file_sha256(path / "geometry-rejected.bin"))
+                throw std::invalid_argument("frozen placement policy/data identity differs");
+            std::ifstream f(path / "geometry-rejected.bin", std::ios::binary);
+            char magic[8];
+            f.read(magic, 8);
+            if (!f || std::memcmp(magic, "BLZRANK1", 8))
+                throw std::invalid_argument("invalid geometry rejection bitmap");
+            auto bits = read_vector<uint8_t>(f, (data.labels.size() + 7) / 8);
+            if (f.peek() != EOF)
+                throw std::invalid_argument("geometry rejection bitmap tail");
+            apply_policy_rank_masks(data.labels, bits);
+        }
         if (j.at("schema") != data.architecture ||
             (out.architecture && out.architecture != data.architecture))
             throw std::invalid_argument("mixed action policy datasets");
         out.architecture = data.architecture;
         auto width = policy_inputs(data.architecture);
-        if (!data.states())
+        if (!data.states() && !runtime_endpoint)
             throw std::invalid_argument("action dataset has no states");
         out.provenance.push_back({{"asset", j.at("asset")},
                                   {"sha256", j.at("sha256")},
                                   {"contract_sha256", j.at("contract_sha256")}});
+        if (ranking_only)
+            out.provenance.back()["geometry_rejected_sha256"] = j.at("geometry_rejected_sha256");
+        std::vector<uint32_t> eligible;
+        for (uint32_t s = 0; s < data.states(); ++s) {
+            ++out.observed_states;
+            if (ranking_only && !ranking_pairs(std::span(data.labels)
+                                                   .subspan(data.offsets[s],
+                                                            data.offsets[s + 1] - data.offsets[s])))
+                ++out.uninformative_states;
+            else
+                eligible.push_back(s);
+        }
+        if (eligible.empty())
+            continue;
         if (uint64_t(out.states) + data.states() >
             (8ull << 30) / (action_pool * width * sizeof(float)))
             throw std::length_error("resident action dataset exceeds 8 GiB");
@@ -72,7 +116,7 @@ Dataset dataset(const fs::path& directory) {
             out.asset_bins.emplace_back();
         } else if (asset_categories[asset_id] != category)
             throw std::invalid_argument("asset appears in multiple categories");
-        for (uint32_t s = 0; s < data.states(); ++s) {
+        for (uint32_t s : eligible) {
             auto count = data.offsets[s + 1] - data.offsets[s];
             out.asset_bins[asset_id][std::min(3u, uint32_t(data.progress[s] * 4))].push_back(
                 out.states++);
@@ -189,9 +233,10 @@ int main(int argc, char** argv) {
             throw std::invalid_argument("blitz-neural-action-train DATASET RUN [--steps N] "
                                         "[--minutes N] [--batch N] [--seed N]");
         uint64_t steps = 10000, seed = 0xB1172026;
-        uint32_t batch = 512;
+        uint32_t batch = 512, memory_mib = 0;
         double minutes = 5;
         std::string backend = "captured";
+        bool ranking_only = false;
         fs::path initialize, warmstart;
         for (int i = 3; i < argc; i += 2) {
             if (i + 1 == argc)
@@ -203,7 +248,12 @@ int main(int argc, char** argv) {
                 minutes = std::stod(argv[i + 1]);
             else if (k == "--batch")
                 batch = uint32_t(std::stoul(argv[i + 1]));
-            else if (k == "--seed")
+            else if (k == "--gpu-memory-mib") {
+                const auto value = std::stoull(argv[i + 1]);
+                if (value < 128 || value > 65536)
+                    throw std::invalid_argument("GPU memory budget outside [128,65536] MiB");
+                memory_mib = uint32_t(value);
+            } else if (k == "--seed")
                 seed = std::stoull(argv[i + 1]);
             else if (k == "--backend")
                 backend = argv[i + 1];
@@ -211,11 +261,18 @@ int main(int argc, char** argv) {
                 initialize = argv[i + 1];
             else if (k == "--warmstart")
                 warmstart = argv[i + 1];
-            else
+            else if (k == "--objective") {
+                std::string_view value = argv[i + 1];
+                if (value != "joint" && value != "policy-ranking")
+                    throw std::invalid_argument("objective must be joint or policy-ranking");
+                ranking_only = value == "policy-ranking";
+            } else
                 throw std::invalid_argument("unknown action trainer option");
         }
         if (!initialize.empty() && !warmstart.empty())
             throw std::invalid_argument("choose model initialization or optimizer continuation");
+        if (ranking_only && (initialize.empty() || !warmstart.empty()))
+            throw std::invalid_argument("policy ranking requires its frozen initialization model");
         if (backend != "captured" && backend != "eager")
             throw std::invalid_argument("update backend must be captured or eager");
         if (!steps || steps > 1000000 || !batch || batch > 4096 || !std::isfinite(minutes) ||
@@ -230,11 +287,18 @@ int main(int argc, char** argv) {
         size_t free_bytes = 0, total_bytes = 0;
         if (cudaMemGetInfo(&free_bytes, &total_bytes) != cudaSuccess)
             throw std::runtime_error("CUDA memory query failed");
-        c10::cuda::CUDACachingAllocator::setMemoryFraction(
-            std::min(.5, double(12ull << 30) / total_bytes), 0);
+        const auto memory_bytes = memory_mib
+                                      ? std::min(uint64_t(memory_mib) << 20, uint64_t(total_bytes))
+                                      : std::min(uint64_t(total_bytes / 2), uint64_t(12) << 30);
+        c10::cuda::CUDACachingAllocator::setMemoryFraction(double(memory_bytes) / total_bytes, 0);
         fs::path directory = argv[1], run = argv[2];
         fs::create_directories(run);
-        auto data = dataset(directory);
+        std::string policy_hash;
+        if (ranking_only) {
+            const auto weights = load_weights(initialize);
+            policy_hash = sha256(std::as_bytes(std::span(weights.values)));
+        }
+        auto data = dataset(directory, ranking_only, policy_hash);
         auto width = policy_inputs(data.architecture), outputs = policy_outputs(data.architecture);
         json contract = {{"schema", data.architecture},
                          {"initialize_sha256", initialize.empty() ? "" : file_sha256(initialize)},
@@ -242,9 +306,12 @@ int main(int argc, char** argv) {
                          {"optimizer_schema", update_checkpoint_version},
                          {"sampler", sampler_version},
                          {"backend", backend},
+                         {"objective", ranking_only ? "policy-ranking-v2" : "joint"},
+                         {"teacher_target", data.rank_target},
                          {"data", data.provenance},
                          {"seed", seed},
                          {"batch", batch},
+                         {"allocator_budget_bytes", memory_bytes},
                          {"precision", "IEEE FP32"},
                          {"margin", 1},
                          {"auxiliary", .25},
@@ -294,9 +361,26 @@ int main(int argc, char** argv) {
                 at += size_t(parameter.numel());
             }
         }
+        std::vector<torch::Tensor> frozen;
+        if (ranking_only)
+            for (auto& p : model->parameters())
+                frozen.push_back(p.detach().clone());
+        auto verify_frozen_policy = [&] {
+            for (size_t i = 0; i < frozen.size(); ++i) {
+                auto actual = model->parameters()[i], before = frozen[i];
+                if (i >= 4) {
+                    actual = actual.slice(0, 1);
+                    before = before.slice(0, 1);
+                }
+                if (!torch::equal(actual, before))
+                    throw std::runtime_error("frozen placement policy changed");
+            }
+        };
         SamplingTables tables(data.categories, data.asset_bins, data.states);
-        ActionUpdate update(model, x, labels, tables, batch, uint32_t(seed), {}, targets, flags,
-                            conditions);
+        UpdateSettings update_settings;
+        update_settings.ranking_only = ranking_only;
+        ActionUpdate update(model, x, labels, tables, batch, uint32_t(seed), update_settings,
+                            targets, flags, conditions);
         auto& optimizer = update.optimizer;
         uint64_t step = 0;
         if (!warmstart.empty())
@@ -310,6 +394,7 @@ int main(int argc, char** argv) {
             if (step != latest.at("step").get<uint64_t>())
                 throw std::invalid_argument("action checkpoint step mismatch");
         }
+        verify_frozen_policy();
         optimizer.begin_segment();
         auto setup = std::chrono::steady_clock::now();
         if (backend == "captured")
@@ -320,7 +405,8 @@ int main(int argc, char** argv) {
         auto elapsed = [&] {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
         };
-        auto initial = model->parameters().front().detach().clone();
+        const size_t changed_parameter = ranking_only ? 4 : 0;
+        auto initial = model->parameters()[changed_parameter].detach().clone();
         uint64_t began = step;
         double last_loss = 0, first_loss = 0, gradient = 0, update_seconds = 0,
                checkpoint_seconds = 0;
@@ -364,7 +450,7 @@ int main(int argc, char** argv) {
                 throw std::runtime_error("action export parity failed; forensic bundle retained");
             ActionNetwork restored(data.architecture);
             restored->to(device);
-            DeviceAdam restored_optimizer(restored->parameters());
+            DeviceAdam restored_optimizer(restored->parameters(), update_settings);
             if (load_state(bundle / "checkpoint.pt", restored, restored_optimizer, device) != step)
                 throw std::runtime_error("action restore step mismatch");
             for (size_t i = 0; i < model->parameters().size(); ++i) {
@@ -376,7 +462,9 @@ int main(int argc, char** argv) {
                     !torch::equal(optimizer.variance[i], restored_optimizer.variance[i]))
                     throw std::runtime_error("action restore optimizer mismatch");
             }
-            double changed = (initial - model->parameters().front()).abs().max().item<double>();
+            double changed =
+                (initial - model->parameters()[changed_parameter]).abs().max().item<double>();
+            verify_frozen_policy();
             if (!std::isfinite(changed) || changed <= 0)
                 throw std::runtime_error("action parameters did not update");
             double correct = 0, eligible = 0;
@@ -413,6 +501,9 @@ int main(int argc, char** argv) {
                            {"preferred_membership", eligible ? correct / eligible : 0},
                            {"preferred_states", eligible},
                            {"states", data.states},
+                           {"observed_states", data.observed_states},
+                           {"uninformative_states", data.uninformative_states},
+                           {"placement_policy_frozen", ranking_only},
                            {"first_loss", first_loss},
                            {"last_loss", last_loss},
                            {"gradient_norm", gradient},
@@ -452,7 +543,10 @@ int main(int argc, char** argv) {
                 torch::save(update.input.flatten(0, 1).cpu(), bundle / "input.pt");
                 torch::save(update.prediction.flatten(0, 1).cpu(), bundle / "expected.pt");
                 torch::save(update.target.cpu(), bundle / "labels.pt");
-                if (is_placement_schema(data.architecture)) {
+                if (ranking_only)
+                    torch::save(update.target.bitwise_and(24).eq(24).cpu(),
+                                bundle / "ranking_known.pt");
+                else if (is_placement_schema(data.architecture)) {
                     torch::save(update.target.bitwise_and(SourceKnown).ne(0).cpu(),
                                 bundle / "source_known.pt");
                     torch::save(update.target.bitwise_and(AdjacentKnown).ne(0).cpu(),

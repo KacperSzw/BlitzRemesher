@@ -60,7 +60,7 @@ class DeviceAdam {
     std::vector<torch::Tensor> parameters, mean, variance;
     torch::Tensor control, descriptors, partial;
     UpdateSettings settings;
-    uint32_t total{};
+    uint32_t total{}, descriptor_count{};
     explicit DeviceAdam(std::vector<torch::Tensor> values, UpdateSettings config = {})
         : parameters(std::move(values)), settings(config) {
         if (parameters.empty())
@@ -70,6 +70,12 @@ class DeviceAdam {
         std::vector<AdamParameter> table;
         if (!device.is_cuda())
             throw std::invalid_argument("device optimizer requires CUDA parameters");
+        if (settings.ranking_only &&
+            (parameters.size() != 6 || parameters[4].dim() != 2 ||
+             parameters[4].size(0) != placement_outputs || parameters[5].dim() != 1 ||
+             parameters[5].size(0) != placement_outputs))
+            throw std::invalid_argument("ranking-only optimizer requires a placement MLP");
+        size_t parameter_index = 0;
         for (auto& p : parameters) {
             if (p.device() != device || p.scalar_type() != torch::kFloat32 || !p.is_contiguous() ||
                 uint64_t(total) + p.numel() > UINT32_MAX)
@@ -77,11 +83,19 @@ class DeviceAdam {
             p.mutable_grad() = torch::zeros_like(p);
             mean.push_back(torch::zeros_like(p));
             variance.push_back(torch::zeros_like(p));
-            table.push_back({p.data_ptr<float>(), p.grad().data_ptr<float>(),
-                             mean.back().data_ptr<float>(), variance.back().data_ptr<float>(),
-                             uint32_t(p.numel()), total});
-            total += uint32_t(p.numel());
+            // Descriptors borrow only the trained row. Frozen parameters and
+            // moments never enter norm reduction, weight decay or Adam updates.
+            if (!settings.ranking_only || parameter_index >= 4) {
+                const auto count = uint32_t(
+                    settings.ranking_only ? (parameter_index == 4 ? p.size(1) : 1) : p.numel());
+                table.push_back({p.data_ptr<float>(), p.grad().data_ptr<float>(),
+                                 mean.back().data_ptr<float>(), variance.back().data_ptr<float>(),
+                                 count, total});
+                total += count;
+            }
+            ++parameter_index;
         }
+        descriptor_count = uint32_t(table.size());
         control = torch::zeros({int64_t(sizeof(UpdateState))},
                                torch::TensorOptions().dtype(torch::kUInt8).device(device));
         descriptors = device_records<AdamParameter>(table, device);
@@ -105,7 +119,7 @@ class DeviceAdam {
             p.grad().zero_();
     }
     void update() {
-        adam_update(records<AdamParameter>(descriptors), uint32_t(parameters.size()), total,
+        adam_update(records<AdamParameter>(descriptors), descriptor_count, total,
                     partial.data_ptr<float>(), records<UpdateState>(control), settings,
                     c10::cuda::getCurrentCUDAStream());
         cuda_check(cudaGetLastError());
@@ -137,6 +151,9 @@ class DeviceAdam {
     void save(torch::serialize::OutputArchive& archive) {
         archive.write("version", torch::tensor(int64_t(update_checkpoint_version)));
         archive.write("sampler", torch::tensor(int64_t(sampler_version)));
+        archive.write("ranking_only", torch::tensor(int64_t(settings.ranking_only)));
+        archive.write("ranking_loss",
+                      torch::tensor(int64_t(settings.ranking_only ? ranking_loss_version : 0)));
         archive.write("control", control);
         for (size_t i = 0; i < mean.size(); ++i) {
             archive.write("mean" + std::to_string(i), mean[i]);
@@ -149,6 +166,18 @@ class DeviceAdam {
         archive.read("sampler", s);
         if (v.item<int64_t>() != update_checkpoint_version || s.item<int64_t>() != sampler_version)
             throw std::invalid_argument("incompatible device optimizer checkpoint");
+        torch::Tensor scope;
+        const auto ranking_only =
+            archive.try_read("ranking_only", scope) ? scope.item<int64_t>() : 0;
+        if (ranking_only != int64_t(settings.ranking_only))
+            throw std::invalid_argument("optimizer trainable scope changed");
+        if (settings.ranking_only) {
+            torch::Tensor loss_version;
+            const auto version =
+                archive.try_read("ranking_loss", loss_version) ? loss_version.item<int64_t>() : 1;
+            if (version != ranking_loss_version)
+                throw std::invalid_argument("optimizer ranking objective changed");
+        }
         auto copy = [&](const std::string& name, torch::Tensor& target) {
             torch::Tensor value;
             archive.read(name, value);

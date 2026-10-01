@@ -11,6 +11,9 @@ if(BLITZ_NEURAL_TOOLS)
   # Declare its toolkit dependency; a development shell's include path is not
   # available to an ordinary C++ compiler in the deployment container.
   target_link_libraries(blitz-neural-placement-prepare PRIVATE blitz_io CUDA::cudart CUDA::cublas)
+  add_executable(blitz-neural-policy-prepare tools/neural/policy_prepare.cpp)
+  target_include_directories(blitz-neural-policy-prepare PRIVATE src .)
+  target_link_libraries(blitz-neural-policy-prepare PRIVATE blitz_io CUDA::cudart CUDA::cublas)
   add_executable(blitz-neural-profile tools/neural/profile.cpp)
   target_include_directories(blitz-neural-profile PRIVATE src .)
   target_link_libraries(blitz-neural-profile PRIVATE blitz_io CUDA::cudart)

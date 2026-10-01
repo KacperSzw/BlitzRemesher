@@ -361,6 +361,7 @@ void chain_hook_contracts() {
             unsigned proposals = 0;
             hooks.propose_guarded = [&](MeshView input, MeshView fixed, MeshView previous,
                                         const Bounds&, const ReduceSettings& reduce,
+                                        const EvalSettings&, const EvalSettings&,
                                         const EvalSettings&, const EvalSettings&) {
                 require(same_mesh_data(fixed, source.view()), "proposal source reference changed");
                 const bool direct = same_mesh_data(input, fixed);

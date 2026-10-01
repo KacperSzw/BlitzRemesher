@@ -1,5 +1,6 @@
 #include "neural/action_gpu.hpp"
 #include "neural/cuda.cuh"
+#include "neural/generation.hpp"
 #include "tools/neural/action_probe.hpp"
 #include <chrono>
 #include <iostream>
@@ -669,22 +670,27 @@ void conditioned_teacher() {
     auto mesh = plane(5);
     NeuralOptions options;
     options.memory_mib = 128;
+    options.vertex_storage = NeuralVertexStorage::Float32;
     WeightsData weights;
     weights.architecture = conditioned_placement_schema;
     weights.values.resize(policy_weights(weights.architecture));
     weights.values[0] = 1;
+    weights.values[79] = .5f;
     weights.values[hidden * (placement_features + 1)] = 1;
     weights.values[hidden * (placement_features + 1) + hidden * (hidden + 1)] = 1;
+    weights.values[hidden * (placement_features + 1) + hidden * (hidden + 1) + 3 * hidden] = .125f;
     ActionCuda policy(weights, options, 7);
     for (bool preserve : {true, false}) {
         options.preserve_uv = preserve;
         GpuActionState state(mesh.view(), options, true);
         for (uint32_t count : {1u, 4u, 16u}) {
-            auto rows =
-                     state.teacher_actions({}, count, 827, &policy, TeacherSelection::PolicyMixed),
+            std::vector<Placement> decoded;
+            auto rows = state.teacher_actions({}, count, 827, &policy,
+                                              TeacherSelection::PolicyMixed, &decoded),
                  again =
                      state.teacher_actions({}, count, 827, &policy, TeacherSelection::PolicyMixed);
             require(rows.size() == count && again.size() == count, "mixed teacher lost legal rows");
+            require(decoded.size() == rows.size(), "decoded policy capture lost rows");
             for (size_t i = 0; i < rows.size(); ++i) {
                 require(rows[i].x[79] == float(preserve),
                         "v4 UV policy not represented in features");
@@ -692,6 +698,15 @@ void conditioned_teacher() {
                         "mixed teacher is not deterministic");
                 for (size_t j = 0; j < i; ++j)
                     require(rows[j].action != rows[i].action, "mixed teacher repeated an action");
+                const auto y = policy.predict(rows[i].x);
+                const auto a = mesh.positions[rows[i].action.from],
+                           b = mesh.positions[rows[i].action.to];
+                const double length =
+                    std::sqrt(double(a.x - b.x) * (a.x - b.x) + double(a.y - b.y) * (a.y - b.y) +
+                              double(a.z - b.z) * (a.z - b.z));
+                require(std::abs(decoded[i].position.x -
+                                 ((a.x + b.x) * .5 + std::clamp(y[3], -1.f, 1.f) * length)) < 2e-6,
+                        "teacher decoded before applying the UV condition");
             }
             auto full = state.placements({});
             std::vector<float> inputs;
@@ -708,6 +723,107 @@ void conditioned_teacher() {
                     "mixed teacher did not query the highest-ranked learned action");
         }
     }
+}
+void endpoint_teacher_contracts() {
+    auto mesh = plane(5);
+    NeuralOptions options;
+    options.memory_mib = 128;
+    options.vertex_storage = NeuralVertexStorage::Float32;
+    WeightsData weights;
+    weights.architecture = conditioned_placement_schema;
+    weights.values.resize(policy_weights(weights.architecture));
+    weights.values[0] = 1;
+    weights.values[hidden * (placement_features + 1)] = 1;
+    weights.values[hidden * (placement_features + 1) + hidden * (hidden + 1)] = 1;
+    ActionCuda policy(weights, options);
+    for (bool preserve : {true, false}) {
+        options.preserve_uv = preserve;
+        GpuActionState state(mesh.view(), options);
+        ActionState reference(mesh.view());
+        for (const auto selection :
+             {TeacherSelection::GeometricRandom, TeacherSelection::PolicyMixed})
+            for (uint32_t count : {1u, 4u, 16u}) {
+                const auto rows = state.teacher_actions({}, count, 137, &policy, selection);
+                require(rows.size() == count, "endpoint teacher lost rows");
+                for (const auto& row : rows) {
+                    require(row.x[79] == float(preserve), "endpoint teacher lost UV condition");
+                    DeviceMeshView candidate;
+                    require(state.trial(row.action, candidate), "legal endpoint trial rejected");
+                    std::vector<uint32_t> indices(size_t(candidate.faces) * 3);
+                    gpu::check(gpu::copy(indices.data(), candidate.indices,
+                                         indices.size() * sizeof(uint32_t),
+                                         cudaMemcpyDeviceToHost));
+                    const auto expected = reference.trial(row.action);
+                    require(indices == expected.data.indices,
+                            "endpoint device trial differs from CPU reference");
+                    require(state.view().faces == mesh.view().triangles(),
+                            "endpoint teaching changed its mesh");
+                }
+            }
+        std::vector<Placement> invalid;
+        bool rejected = false;
+        try {
+            state.teacher_actions({}, 1, 137, &policy, TeacherSelection::PolicyMixed, &invalid);
+        } catch (const std::invalid_argument&) {
+            rejected = true;
+        }
+        require(rejected, "endpoint teacher accepted learned-placement output");
+    }
+}
+void observer_execution_contracts() {
+    auto mesh = plane(5);
+    NeuralOptions options;
+    options.memory_mib = 128;
+    WeightsData weights;
+    weights.architecture = conditioned_placement_schema;
+    weights.values.resize(policy_weights(weights.architecture));
+    ActionCuda policy(weights, options);
+    auto gate = [](DeviceMeshView) { return true; };
+    for (bool preserve : {true, false})
+        for (uint8_t batch : {1, 16}) {
+            options.preserve_uv = preserve;
+            GpuActionState baseline(mesh.view(), options), observed(mesh.view(), options);
+            ActionStats before, after;
+            unsigned calls = 0;
+            auto query = [&](GpuActionState& state) {
+                ++calls;
+                const auto rows =
+                    state.teacher_actions({}, 4, 193, &policy, TeacherSelection::PolicyMixed);
+                for (const auto& row : rows) {
+                    DeviceMeshView candidate;
+                    require(state.trial(row.action, candidate), "observer endpoint trial rejected");
+                }
+            };
+            const auto a = baseline.execute({}, 8, 12, &policy, NeuralRanking::Learned, 97, batch,
+                                            gate, &before);
+            const auto b = observed.execute({}, 8, 12, &policy, NeuralRanking::Learned, 97, batch,
+                                            gate, &after, {}, query);
+            require(calls && a.data.indices == b.data.indices &&
+                        a.data.materials == b.data.materials,
+                    "observer changed endpoint execution");
+            require(before.ranked == after.ranked && before.trials == after.trials &&
+                        before.accepted == after.accepted && before.rejected == after.rejected &&
+                        before.accepted_batches == after.accepted_batches &&
+                        before.stop_reason == after.stop_reason,
+                    "teacher work changed runtime action counters");
+            observed.reset();
+            bool threw = false;
+            try {
+                observed.execute({}, 8, 12, &policy, NeuralRanking::Learned, 97, batch, gate,
+                                 &after, {}, [&](GpuActionState& state) {
+                                     query(state);
+                                     throw std::runtime_error("teacher stopped");
+                                 });
+            } catch (const std::runtime_error& error) {
+                threw = std::string_view(error.what()) == "teacher stopped";
+            }
+            require(threw, "observer exception was lost");
+            const auto resumed = observed.execute({}, 8, 12, &policy, NeuralRanking::Learned, 97,
+                                                  batch, gate, &after);
+            require(a.data.indices == resumed.data.indices && before.trials == after.trials &&
+                        before.ranked == after.ranked,
+                    "observer exception poisoned subsequent execution");
+        }
 }
 void action_probe_contracts() {
     using namespace blitz::neural::diagnostic;
@@ -1084,6 +1200,8 @@ int main(int argc, char** argv) {
         incremental_audits();
         sparse_teacher();
         conditioned_teacher();
+        endpoint_teacher_contracts();
+        observer_execution_contracts();
         action_probe_contracts();
         relaxed_uv_contracts();
         action_stop_contracts();

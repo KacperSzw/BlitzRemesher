@@ -152,7 +152,7 @@ class CheckpointWriter {
             [path, local, hook, ready, frozen = std::move(frozen), control = std::move(control),
              mean = std::move(mean), variance = std::move(variance), step, provenance,
              input = std::move(input), expected = std::move(expected), native = std::move(native),
-             journal_path = std::move(journal_path),
+             ranking_only = optimizer.settings.ranking_only, journal_path = std::move(journal_path),
              journal = std::move(journal)]() mutable -> json {
                 try {
                     auto start = std::chrono::steady_clock::now();
@@ -162,6 +162,9 @@ class CheckpointWriter {
                     frozen->save(m);
                     o.write("version", torch::tensor(int64_t(update_checkpoint_version)));
                     o.write("sampler", torch::tensor(int64_t(sampler_version)));
+                    o.write("ranking_only", torch::tensor(int64_t(ranking_only)));
+                    o.write("ranking_loss",
+                            torch::tensor(int64_t(ranking_only ? ranking_loss_version : 0)));
                     o.write("control", control);
                     for (size_t i = 0; i < mean.size(); ++i) {
                         o.write("mean" + std::to_string(i), mean[i]);

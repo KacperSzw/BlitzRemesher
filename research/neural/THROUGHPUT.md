@@ -387,3 +387,23 @@ memory instrumentation, retaining every check. This tests the context-synchroniz
 module-loading hypothesis documented in NVIDIA's
 [CUDA guide](https://docs.nvidia.com/cuda/archive/12.8.1/pdf/CUDA_C_Programming_Guide.pdf);
 it is not yet a diagnosis of the remote stall.
+
+The follow-up search found the same truthiness bug in the throughput and width
+comparison subprocesses. Both now use the bounded process runner; width selection
+also requires successful execution, independently of a complete-looking audit
+file. Replay, soak and preflight callbacks require explicit zero exits, and the
+long-run supervisor rejects cancellation even if its child exits gracefully.
+This follows the documented [Node signal-exit contract](https://nodejs.org/api/child_process.html#event-close).
+Tests launch real fixture processes that write complete-looking reports and then
+exit zero, nonzero or by signal; only the successful execution is eligible.
+
+A second packing boundary was in host cache serialization: an explicit valid
+domain could silently clamp positions outside that domain. A regression failed
+before the fix. Encoding now rejects those positions before publishing bytes,
+and decoding rejects exact-position exceptions outside the stored bounds. Tests
+cover the first representable value beyond lower/upper and zero-extent bounds,
+both compact and exact positions, malformed serialized exceptions, and valid
+round trips. Focused CTest and ASan/UBSan checks pass. The saved failure still
+produces identical labels and episodes across 1/4/8 lanes after this change.
+These host checks run during cache I/O, not as new kernels in the update loop.
+Additional raw evidence is in `evidence/packed-domain-local/neighbors`.

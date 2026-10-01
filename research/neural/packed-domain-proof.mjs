@@ -17,7 +17,7 @@ export async function replayPackedDomain(ctx,memory=16384){
       '--training-profile','coverage','--corpus','research/neural/corpus-v2/corpus.json','--training-selection','research/neural/corpus-v2/training.json',
       '--simplifier-seed','on','--retained','0.25','--model',model],directory+'.log',2.1);
     const index=read(directory+'/index.json');report.rows.push({batch,code,index});write(ctx.root+'/packed-replay.json',report);
-    if(code||!index.complete||!index.reference_confirmed||!index.seed.accepted||index.states!==16||!index.invalid_candidates)throw new Error('Packed failure replay did not complete the rejected-candidate boundary');
+    if(code!==0||!index.complete||!index.reference_confirmed||!index.seed.accepted||index.states!==16||!index.invalid_candidates)throw new Error('Packed failure replay did not complete the rejected-candidate boundary');
   }
   if(new Set(report.rows.map(r=>r.index.sha256)).size!==1||new Set(report.rows.map(r=>r.index.episode_sha256)).size!==1)throw new Error('Packed replay differs between serial and batched candidates');
   report.complete=true;write(ctx.root+'/packed-replay.json',report);return report;
@@ -33,6 +33,6 @@ export async function soakPackedDomain(ctx,{memory=16384,minutes=20}={}){
     '--corpus','research/neural/corpus-v2/corpus.json','--training-selection','research/neural/corpus-v2/training.json',
     '--curriculum','research/neural/corpus-v2/curriculum.json','--mesh-cache',ctx.root+'/mesh-cache'],directory+'.log',minutes+2.1);
   const report=read(directory+'/report.json');
-  if(code||!report.complete||report.learning_elapsed_ms<minutes*60000||report.failed_conditions_count||report.coverage_quality_failed||report.next_condition<1395)throw new Error('Packed soak did not pass the former failing condition with a complete learning window');
+  if(code!==0||!report.complete||report.learning_elapsed_ms<minutes*60000||report.failed_conditions_count||report.coverage_quality_failed||report.next_condition<1395)throw new Error('Packed soak did not pass the former failing condition with a complete learning window');
   return report;
 }

@@ -4,10 +4,21 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
 import {residentArguments,preparedLearningOptions,validatePreparedLearning} from '../research/neural/resident-cycle.mjs';
 import {pipelineValidationBudget,pretrainingAuthorization,actionAccrued} from '../research/neural/action-budget.mjs';
 import {replayPackedDomain,soakPackedDomain} from '../research/neural/packed-domain-proof.mjs';
 import {boundedProcess} from '../research/neural/bounded-process.mjs';
+test('comparison runner rejects signal exits even with complete-looking child artifacts',()=>{
+  const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-comparison-exit-')),binary=root+'/fixture.mjs';
+  fs.writeFileSync(binary,`#!${process.execPath}\nimport fs from 'node:fs';const out=process.argv[2];fs.mkdirSync(out+'/data/page',{recursive:true});fs.writeFileSync(out+'/data/page/index.json',JSON.stringify({sha256:'fixed labels'}));fs.writeFileSync(out+'/report.json',JSON.stringify({complete:true,datasets:['page']}));if(process.env.BLITZ_TEST_EXIT==='signal')process.kill(process.pid,'SIGTERM');else process.exit(Number(process.env.BLITZ_TEST_EXIT));\n`,{mode:0o700});
+  try{for(const status of ['0','7','signal']){
+    const out=root+'/'+status,result=spawnSync(process.execPath,[fileURLToPath(new URL('../research/neural/throughput.mjs',import.meta.url)),'smoke',out],{cwd:root,env:{...process.env,BLITZ_CYCLE_BINARY:binary,BLITZ_TEST_EXIT:status,BLITZ_VALIDATION_DEADLINE:String(Date.now()+30000)},encoding:'utf8',timeout:10000});
+    assert.equal(result.error,undefined);const report=JSON.parse(fs.readFileSync(out+'/report.json'));
+    assert.equal(result.status,status==='0'?0:1);assert.equal(report.complete,status==='0');assert.equal(report.rows.length,status==='0'?2:1);
+    if(status==='signal'){assert.equal(report.rows[0].code,null);assert.equal(report.rows[0].signal,'SIGTERM');}
+  }}finally{fs.rmSync(root,{recursive:true,force:true});}
+});
 test('validation subprocesses distinguish zero exit, nonzero exit, signal, timeout and cancellation',async()=>{
   const run=(source,options={})=>boundedProcess(process.execPath,['-e',source],{maximum:3000,...options});
   assert.equal((await run('process.exit(0)')).success,true);
@@ -18,21 +29,21 @@ test('validation subprocesses distinguish zero exit, nonzero exit, signal, timeo
   const running=new AbortController(),timer=setTimeout(()=>running.abort(),100);try{const cancelled=await run('setInterval(()=>{},1000)',{signal:running.signal,grace:100});assert.equal(cancelled.cancelled,true);assert.equal(cancelled.timed_out,false);assert.equal(cancelled.success,false);}finally{clearTimeout(timer);}
 });
 test('packed failure replay requires accepted seeds, rejected invalid candidates and identical serial/batched outputs',async()=>{
-  for(const failure of ['none','incomplete','seed','unexercised','labels','episode']){
+  for(const failure of ['none','incomplete','seed','unexercised','labels','episode','signal']){
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-packed-proof-'));let calls=0;
     const ctx={root,async execute(name,args){assert.equal(name,'blitz-neural-placement-prepare');const directory=args[1];fs.mkdirSync(directory,{recursive:true});++calls;
       const index={complete:failure!=='incomplete',reference_confirmed:true,seed:{accepted:failure!=='seed'},states:16,invalid_candidates:failure==='unexercised'?0:3,sha256:failure==='labels'?String(calls):'same-labels',episode_sha256:failure==='episode'?String(calls):'same-mesh'};
-      fs.writeFileSync(directory+'/index.json',JSON.stringify(index));return 0;
+      fs.writeFileSync(directory+'/index.json',JSON.stringify(index));return failure==='signal'?null:0;
     }};
     try{if(failure==='none'){assert.equal((await replayPackedDomain(ctx,1024)).complete,true);assert.equal(calls,3);}else await assert.rejects(()=>replayPackedDomain(ctx,1024),/replay/);}
     finally{fs.rmSync(root,{recursive:true,force:true});}
   }
 });
 test('soak gates elapsed learning, completed work and audit failures independently',async()=>{
-  for(const change of [{},{complete:false},{learning_elapsed_ms:1000},{failed_conditions_count:1},{coverage_quality_failed:true},{next_condition:1200}]){
+  for(const [code,change] of [[0,{}],[null,{}],[2,{}],[0,{complete:false}],[0,{learning_elapsed_ms:1000}],[0,{failed_conditions_count:1}],[0,{coverage_quality_failed:true}],[0,{next_condition:1200}]]){
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-packed-soak-'));
-    const ctx={root,async execute(name,args){assert.equal(name,'blitz-neural-cycle');fs.mkdirSync(args[0],{recursive:true});fs.writeFileSync(args[0]+'/report.json',JSON.stringify({complete:true,learning_elapsed_ms:20*60000,failed_conditions_count:0,coverage_quality_failed:false,next_condition:1700,...change}));return 0;}};
-    try{if(!Object.keys(change).length)assert.equal((await soakPackedDomain(ctx)).complete,true);else await assert.rejects(()=>soakPackedDomain(ctx),/former failing condition/);}
+    const ctx={root,async execute(name,args){assert.equal(name,'blitz-neural-cycle');fs.mkdirSync(args[0],{recursive:true});fs.writeFileSync(args[0]+'/report.json',JSON.stringify({complete:true,learning_elapsed_ms:20*60000,failed_conditions_count:0,coverage_quality_failed:false,next_condition:1700,...change}));return code;}};
+    try{if(code===0&&!Object.keys(change).length)assert.equal((await soakPackedDomain(ctx)).complete,true);else await assert.rejects(()=>soakPackedDomain(ctx),/former failing condition/);}
     finally{fs.rmSync(root,{recursive:true,force:true});}
   }
 });

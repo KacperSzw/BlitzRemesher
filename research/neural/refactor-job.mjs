@@ -24,7 +24,7 @@ async function execute(name,args,log,maximumMinutes,environment={}){
   const stop=()=>{terminate(child);hard??=setTimeout(()=>{try{process.kill(-child.pid,'SIGKILL');}catch(e){if(e.code!=='ESRCH')throw e;}},5000);};
   const timer=setTimeout(()=>{timedOut=true;stop();},Math.max(1,end-Date.now()));
   const memory=setInterval(()=>{let kib=0;for(const pid of fs.readdirSync('/proc').filter(p=>/^\d+$/.test(p))){try{const stat=fs.readFileSync(`/proc/${pid}/stat`,'utf8'),fields=stat.slice(stat.lastIndexOf(')')+2).split(' ');if(Number(fields[2])!==child.pid)continue;kib+=Number(fs.readFileSync(`/proc/${pid}/status`,'utf8').match(/^VmRSS:\s+(\d+)/m)?.[1]??0);}catch{}}if(kib>24*1024*1024){memoryExceeded=true;stop();}},1000);
-  try{const code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});if(memoryExceeded||timedOut||![0,2].includes(code))throw new Error(`${name} failed (exit=${code}, deadline=${timedOut}, memory=${memoryExceeded})`);return code;}
+  try{const code=await new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',resolve);});if(cancelled||memoryExceeded||timedOut||![0,2].includes(code))throw new Error(`${name} failed (exit=${code}, cancelled=${cancelled}, deadline=${timedOut}, memory=${memoryExceeded})`);return code;}
   finally{clearTimeout(timer);clearTimeout(hard);clearInterval(memory);active=undefined;fs.closeSync(fd);}
 }
 const result={started,deadline,complete:false,validation_passed:false,quality_proven:false};

@@ -31,7 +31,7 @@ export async function validatePreparedLearning(ctx,validation,plan=read('researc
   smoke.push('--minutes','5','--quality','off');
   const code=await ctx.execute('blitz-neural-cycle',smoke,ctx.root+'/expanded-preflight.log',5.1);
   proof.cycle=read(directory+'/report.json');write(ctx.root+'/preflight.json',proof);
-  if(code||!proof.cycle.complete||proof.cycle.failed_conditions_count||proof.cycle.next_condition!==read(plan.curriculum).conditions.length)throw new Error('Selected expanded training configuration failed preflight');
+  if(code!==0||!proof.cycle.complete||proof.cycle.failed_conditions_count||proof.cycle.next_condition!==read(plan.curriculum).conditions.length)throw new Error('Selected expanded training configuration failed preflight');
   for(const memory of [4096,options.memory]){
     const settings=ctx.root+'/model-audit-settings-'+memory+'.json';write(settings,{...read('research/neural/refactor-smoke.json'),profile:plan.profile,gpu_memory_mib:memory});
     const attempt={gpu_memory_mib:memory,rows:[]};

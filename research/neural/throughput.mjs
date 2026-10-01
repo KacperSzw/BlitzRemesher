@@ -2,21 +2,21 @@
 // worker scheduling; adaptive learning experiments use a separate mode.
 import fs from 'node:fs';
 import path from 'node:path';
-import {spawn} from 'node:child_process';
+import {boundedProcess} from './bounded-process.mjs';
 import {read,write} from './runpod-api.mjs';
 const [mode,directory]=process.argv.slice(2),root=path.resolve(directory??'');
 if(!['smoke','matrix','pilot','expanded','ablation','seeds'].includes(mode)||!directory||fs.existsSync(root))throw new Error('throughput.mjs smoke|matrix|pilot|expanded|ablation|seeds NEW_OUTPUT');
 fs.mkdirSync(root,{recursive:true});const start=Date.now(),deadline=Number(process.env.BLITZ_VALIDATION_DEADLINE??start+600000),memory=Number(process.env.BLITZ_VALIDATION_MEMORY_MIB??512);
-const binary=process.env.BLITZ_CYCLE_BINARY??'build/neural/blitz-neural-cycle',report={complete:false,score:null,mode,started:start,rows:[]};let active,stop=false;
-for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{stop=true;active?.kill('SIGTERM');});
+const binary=process.env.BLITZ_CYCLE_BINARY??'build/neural/blitz-neural-cycle',report={complete:false,score:null,mode,started:start,rows:[]},cancellation=new AbortController();
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>cancellation.abort());
 const assets=['ph_painted_wooden_bench','ph_sweet_potato'];const conditions=Array.from({length:6},(_,i)=>({asset:assets[i%2],pixels:i%2?64:32,previous_steps:0}));
 write(root+'/curriculum.json',{version:1,conditions});
 async function cycle(label,options,{allowFailure=false}={}){
-  if(stop||Date.now()+5000>=deadline)throw new Error('comparison deadline reached');const out=root+'/'+label;
+  if(cancellation.signal.aborted||Date.now()+5000>=deadline)throw new Error('comparison deadline reached');const out=root+'/'+label;
   const args=[out,'--minutes','3','--states',process.env.BLITZ_COMPARISON_STATES??'2','--updates','128','--quality','off','--training-profile','coverage','--update-backend','fused','--curriculum',root+'/curriculum.json','--gpu-memory-mib',String(memory),'--frozen-teacher','on',...options];
-  const fd=fs.openSync(out+'.log','w'),begin=Date.now();active=spawn(binary,args,{stdio:['ignore',fd,fd]});let hard;const timeout=setTimeout(()=>{active?.kill('SIGTERM');hard=setTimeout(()=>active?.kill('SIGKILL'),5000);},Math.min(Number(args[args.lastIndexOf('--minutes')+1])*60000+10000,deadline-Date.now()-5000));
-  try{const code=await new Promise((resolve,reject)=>{active.once('error',reject);active.once('close',resolve);});const row={label,args,code,wall_seconds:(Date.now()-begin)/1000,report:fs.existsSync(out+'/report.json')?read(out+'/report.json'):null};report.rows.push(row);write(root+'/report.json',report);if(code&&!allowFailure)throw new Error(label+' failed: '+code);return row;}
-  finally{clearTimeout(timeout);clearTimeout(hard);fs.closeSync(fd);active=undefined;}
+  const fd=fs.openSync(out+'.log','w'),begin=Date.now();
+  try{const result=await boundedProcess(binary,args,{stdio:['ignore',fd,fd],maximum:Math.min(Number(args[args.lastIndexOf('--minutes')+1])*60000+10000,deadline-Date.now()-5000),signal:cancellation.signal});const row={label,args,...result,wall_seconds:(Date.now()-begin)/1000,report:fs.existsSync(out+'/report.json')?read(out+'/report.json'):null};report.rows.push(row);write(root+'/report.json',report);if(!result.success&&!allowFailure)throw new Error(label+' failed: '+JSON.stringify(result));return row;}
+  finally{fs.closeSync(fd);}
 }
 try{
   if(mode==='pilot'){
@@ -35,6 +35,6 @@ try{
     const reference=hashes(report.rows[0]);for(const row of report.rows)if(JSON.stringify(reference)!==JSON.stringify(hashes(row)))throw new Error('fixed-work labels changed across worker/batch configurations');
     report.identical_labels=true;
   }
-  report.complete=report.rows.every(row=>row.code===0&&row.report?.complete===true);
+  report.complete=report.rows.every(row=>row.success&&row.report?.complete===true);
 }catch(error){report.error=String(error);process.exitCode=1;}
 finally{report.seconds=(Date.now()-start)/1000;write(root+'/report.json',report);console.log(JSON.stringify({complete:report.complete,seconds:report.seconds,error:report.error}));}

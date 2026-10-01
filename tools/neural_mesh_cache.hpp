@@ -7,6 +7,9 @@ namespace blitz::neural::training {
 struct PreparedMesh {
     Mesh source,draw;VertexBounds quantization;json provenance;
 };
+inline bool packed_position_in_bounds(Vec3 p,VertexBounds q){
+    return p.x>=q.low.x&&p.x<=q.low.x+q.extent.x&&p.y>=q.low.y&&p.y<=q.low.y+q.extent.y&&p.z>=q.low.z&&p.z<=q.low.z+q.extent.z;
+}
 inline void write_reference(std::ostream& f,const Mesh& m){
     f.write("BLZMREF2",8);write_vector(f,m.positions);write_vector(f,m.normals);write_vector(f,m.uv);write_vector(f,m.colors);write_vector(f,m.tangents);write_vector(f,m.indices);write_vector(f,m.materials);write_vector(f,m.double_sided);write_vector(f,m.exact_position_bits);
 }
@@ -18,7 +21,7 @@ inline Mesh read_reference(std::istream& f){
 }
 inline void write_packed_mesh(std::ostream& f,MeshView m,const VertexBounds* domain=nullptr){
     if(auto error=validate(m);!error.empty())throw std::invalid_argument(error);auto q=domain?*domain:vertex_bounds(m);if(!valid_vertex_bounds(q))throw std::invalid_argument("invalid packed bounds");std::vector<uint16_t> positions,uv;std::vector<uint32_t> normals,tangents;std::vector<ColorRGBA8> colors;
-    for(size_t i=0;i<m.positions.count;++i){auto p=m.positions[i];positions.insert(positions.end(),{pack_unorm16(p.x,q.low.x,q.extent.x),pack_unorm16(p.y,q.low.y,q.extent.y),pack_unorm16(p.z,q.low.z,q.extent.z)});}
+    for(size_t i=0;i<m.positions.count;++i){auto p=m.positions[i];if(!packed_position_in_bounds(p,q))throw std::invalid_argument("packed cache position outside fixed bounds");positions.insert(positions.end(),{pack_unorm16(p.x,q.low.x,q.extent.x),pack_unorm16(p.y,q.low.y,q.extent.y),pack_unorm16(p.z,q.low.z,q.extent.z)});}
     for(size_t i=0;i<m.normals.count;++i)normals.push_back(pack_direction(m.normals[i]));
     for(size_t i=0;i<m.uv.count;++i){auto v=m.uv[i];if(v.x< -8||v.x>8||v.y< -8||v.y>8)throw std::invalid_argument("packed cache UV outside [-8,8]");uv.insert(uv.end(),{pack_unorm16(v.x,-8,16),pack_unorm16(v.y,-8,16)});}
     for(size_t i=0;i<m.colors.count;++i)colors.push_back(m.colors[i]);
@@ -36,7 +39,7 @@ inline std::pair<Mesh,VertexBounds> read_packed_mesh(std::istream& f){
     for(auto v:normal)m.normals.push_back(unpack_direction(v));for(size_t i=0;i<uv.size();i+=2)m.uv.push_back({unpack_unorm16(uv[i],-8,16),unpack_unorm16(uv[i+1],-8,16)});m.colors=std::move(colors);
     for(auto v:tangent){auto t=unpack_direction(v);auto a=v>>30;if(a!=1&&a!=3)throw std::invalid_argument("packed tangent sign");m.tangents.push_back({t.x,t.y,t.z,a==3?-1.f:1.f});}
     m.indices=read_vector<uint32_t>(f,faces*3);m.materials=read_vector<uint16_t>(f,faces);m.double_sided=read_vector<uint8_t>(f,65536);
-    if(magic[7]=='2'){m.exact_position_bits=read_vector<uint32_t>(f,(vertices+31)/32);auto exact=read_vector<Vec3>(f,vertices);if(!m.exact_position_bits.empty()&&m.exact_position_bits.size()!=(n+31)/32)throw std::invalid_argument("packed precision bitmap size");size_t at=0;for(size_t i=0;i<n;++i)if(m.view().exact_position(i)){if(at==exact.size())throw std::invalid_argument("missing exact position");m.positions[i]=exact[at++];}if(at!=exact.size())throw std::invalid_argument("unused exact position");}
+    if(magic[7]=='2'){m.exact_position_bits=read_vector<uint32_t>(f,(vertices+31)/32);auto exact=read_vector<Vec3>(f,vertices);if(!m.exact_position_bits.empty()&&m.exact_position_bits.size()!=(n+31)/32)throw std::invalid_argument("packed precision bitmap size");size_t at=0;for(size_t i=0;i<n;++i)if(m.view().exact_position(i)){if(at==exact.size())throw std::invalid_argument("missing exact position");if(!packed_position_in_bounds(exact[at],q))throw std::invalid_argument("exact cache position outside fixed bounds");m.positions[i]=exact[at++];}if(at!=exact.size())throw std::invalid_argument("unused exact position");}
     if(f.peek()!=EOF)throw std::invalid_argument("packed mesh trailing data");if(auto error=validate(m.view());!error.empty())throw std::invalid_argument(error);return {std::move(m),q};
 }
 inline PreparedMesh prepared_mesh(const json& metadata,const fs::path& cache){

@@ -25,7 +25,7 @@ export async function benchmarkCoverage({root,execute,phase},{model,memory=16384
     const code=await execute('blitz-neural-cycle',[directory,'--states','2','--updates','1024','--batch','512','--seed','101',
       '--minutes','3','--gpu-memory-mib',String(memory),'--training-profile',v.profile??'coverage','--mask-only-coverage',v.mask,
       '--candidate-batch','2','--update-backend',v.backend,'--curriculum',curriculum,'--initialize',model,'--quality',quality?'on':'off'],directory+'.log',3.1);
-    const report=read(directory+'/report.json');if(code||!report.complete||report.step!==1024)throw new Error('Incomplete matched coverage cycle');
+    const report=read(directory+'/report.json');if(code!==0||!report.complete||report.step!==1024)throw new Error('Incomplete matched coverage cycle');
     const shard=directory+'/data/'+report.all_datasets[0],index=read(shard+'/index.json');
     const row={variant:v.name,repeat,seconds:report.seconds,phases:report.phases.map(p=>({phase:p.phase,seconds:p.seconds,update_seconds:p.update_seconds,capture_seconds:p.capture_seconds,checkpoint_seconds:p.checkpoint_seconds,append_seconds:p.append_seconds})),
       dataset_sha256:hash(shard+'/actions.bin'),model_payload:modelPayload(directory+'/'+report.checkpoint+'/model.blzn'),audit:index.audit,teacher_timings:index.timings,states:index.states};
@@ -61,7 +61,7 @@ export async function validateCoverage(ctx){const {root,execute,phase}=ctx,model
   const benchmark=await benchmarkCoverage(ctx,{model});
   phase('coverage-curriculum-validation');
   const code=await execute('blitz-neural-pilot-prepare',[root+'/packed-pilot','16384','--training-profile','coverage'],root+'/packed-pilot.log',10.1);
-  const pilot=read(root+'/packed-pilot/report.json');if(code||!pilotReady(pilot))throw new Error('Coverage curriculum is not ready');
+  const pilot=read(root+'/packed-pilot/report.json');if(code!==0||!pilotReady(pilot))throw new Error('Coverage curriculum is not ready');
   await execute('blitz-neural-hardware-profile',['ph_namaqualand_boulder_04',root+'/raster.json','128'],root+'/raster.log',1.5);
   const raster=read(root+'/raster.json');if(!raster.complete||raster.rows.some(r=>r.coverage_only&&r.coverage_changes))throw new Error('Mask raster coverage parity failed');
   const result={complete:true,model,model_sha256:hash(model),selected_backend:benchmark.selected_backend,benchmark,pilot,raster,checkpoint_kind:'shape_pretraining',release_quality_proven:false};

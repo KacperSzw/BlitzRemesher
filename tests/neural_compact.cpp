@@ -18,6 +18,12 @@ int main(){try{
             std::stringstream invalid(std::ios::in|std::ios::out|std::ios::binary);bool rejected=false;try{write_packed_mesh(invalid,source.view(),&bad);}catch(const std::invalid_argument&){rejected=true;}require(rejected&&invalid.str().empty(),"malformed bounds reached packing or partially published a cache");
             auto bytes=packed.str();std::memcpy(bytes.data()+8,&bad,sizeof(bad));std::stringstream corrupt(bytes,std::ios::in|std::ios::binary);rejected=false;try{read_packed_mesh(corrupt);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"malformed cache bounds reached decoding");
         }
+        for(auto p:std::array<Vec3,4>{{{std::nextafter(-1.f,-INFINITY),-2,0},{std::nextafter(2.f,INFINITY),-2,0},{0,std::nextafter(3.f,INFINITY),0},{0,0,std::nextafter(0.f,INFINITY)}}})for(bool exactPosition:{false,true}){
+            auto bad=source;bad.positions[1]=p;bad.exact_position_bits={exactPosition?2u:0u};std::stringstream invalid(std::ios::in|std::ios::out|std::ios::binary);bool rejected=false;
+            try{write_packed_mesh(invalid,bad.view(),&domain);}catch(const std::invalid_argument&){rejected=true;}require(rejected&&invalid.str().empty(),"packed cache silently clamps positions outside fixed bounds");
+        }
+        auto bytes=exceptions.str();Vec3 outside{3,-2,0};std::memcpy(bytes.data()+bytes.size()-sizeof(outside),&outside,sizeof(outside));std::stringstream corrupt(bytes,std::ios::in|std::ios::binary);bool escaped=false;
+        try{read_packed_mesh(corrupt);}catch(const std::invalid_argument&){escaped=true;}require(escaped,"exact cache position escaped fixed bounds");
         source.uv[0].x=std::nextafter(8.f,INFINITY);bool rejected=false;try{write_packed_mesh(again,source.view());}catch(const std::invalid_argument&){rejected=true;}require(rejected,"packed cache silently clamps UV");
     }
     for(uint32_t h=0;h<65536;++h){if((h&0x7c00)==0x7c00)continue;float f=half_float(uint16_t(h));_Float16 reference=std::bit_cast<_Float16>(uint16_t(h));require(f==float(reference),"half decode differs from compiler IEEE conversion");require(half_bits(std::bit_cast<uint32_t>(f))==h,"half finite round trip");}

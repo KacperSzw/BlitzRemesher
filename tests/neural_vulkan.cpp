@@ -10,12 +10,12 @@
 using namespace blitz;using namespace blitz::neural;
 static void require(bool value,const char* message){if(!value)throw std::runtime_error(message);}
 static Mesh fixture(){Mesh m;m.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0}};m.normals.assign(4,{0,0,1});m.uv={{-8,-8},{8,-8},{8,8},{-8,8}};m.tangents.assign(4,{1,0,0,-1});m.colors.assign(4,{31,127,255,47});m.indices={0,1,2,0,2,3};m.materials={65535,65535};return m;}
-static void draw_domain_contracts(){
+static void draw_domain_contracts(bool progress=false){
     auto mesh=fixture();auto box=bounds(mesh.view());NeuralOptions options;options.memory_mib=128;options.raster_backend=NeuralRasterBackend::Vulkan;
     gpu::Device device(options);GpuActionState state(mesh.view(),options,true);VulkanRaster raster(options);auto view=state.view();
     auto positions=gpu::upload_stream(device,mesh.view().positions);view.positions=positions.p;
     gpu::Buffer<AuditPixel> pixels(device,64*64);Camera camera{{1,0,0},{0,1,0},{0,0,1},box.radius*4,1,24/box.diameter(),false};
-    auto draw=[&]{raster.render(view,box,camera,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);};
+    unsigned draw_id=0;auto draw=[&]{if(progress)std::cout<<"domain draw "<<++draw_id<<std::endl;raster.render(view,box,camera,24,2,false,NeuralVertexStorage::Packed,pixels.p,nullptr);};
     auto reject=[&]{bool rejected=false;try{draw();}catch(const std::invalid_argument&){rejected=true;}require(rejected,"malformed packed device stream escaped validation");
         VertexBounds domain{view.quant_low,view.quant_extent};if(view.fixed_quantization&&!valid_vertex_bounds(domain)){rejected=false;try{GpuActionState bad(mesh.view(),options,true,&domain);}catch(const std::invalid_argument&){rejected=true;}require(rejected,"malformed fixed domain reached working mesh encoding");}};
     for(bool fixed:{false,true})for(float value:{INFINITY,-INFINITY,std::numeric_limits<float>::quiet_NaN()}){
@@ -70,13 +70,14 @@ static void mask_memory_contracts(){
     for(size_t i=0;i<mask.size();++i)require(mask[i].covered==full[i].covered&&mask[i].covered==((bits[i/32]>>(i%32))&1)&&!mask[i].visible,"instrumented mask/full coverage differs");
 }
 int main(int argc,char** argv){try{bool memory_boundaries=argc==2&&std::string_view(argv[1])=="--memcheck";if(argc!=1&&!memory_boundaries)throw std::invalid_argument("expected optional --memcheck");if(!neural_available())return 77;NeuralOptions options;options.memory_mib=512;options.raster_backend=NeuralRasterBackend::Vulkan;
-    draw_domain_contracts();packed_seed_domain();candidate_contracts(memory_boundaries);
+    auto stage=[&](const char* name,auto&& work){if(memory_boundaries)std::cout<<name<<" begin"<<std::endl;work();if(memory_boundaries)std::cout<<name<<" passed"<<std::endl;};
+    stage("draw domains",[&]{draw_domain_contracts(memory_boundaries);});stage("packed seeds",packed_seed_domain);stage("serial candidates",[&]{candidate_contracts(memory_boundaries);});
     // Each worker must retain the serial verdicts on an independent stream.
     MemoryBudget shared{size_t(384)<<20,0,0,0};std::barrier ready(2);
     auto worker=[&]{gpu::StreamScope stream;MemoryScope memory(shared);ready.arrive_and_wait();candidate_contracts(memory_boundaries);};
-    auto first=std::async(std::launch::async,worker),second=std::async(std::launch::async,worker);first.get();second.get();
+    stage("concurrent candidates",[&]{auto first=std::async(std::launch::async,worker),second=std::async(std::launch::async,worker);first.get();second.get();});
     require(shared.live==0&&shared.peak>0&&shared.peak<=shared.limit,"worker shared budget/lifetime contract");
-    if(memory_boundaries){mask_memory_contracts();std::cout<<"Vulkan mask, candidate boundaries and concurrent ownership memory contracts passed\n";return 0;}
+    if(memory_boundaries){stage("mask buffers",mask_memory_contracts);std::cout<<"Vulkan mask, candidate boundaries and concurrent ownership memory contracts passed\n";return 0;}
     auto mesh=fixture();auto original=mesh;auto b=bounds(mesh.view());Camera c{{1,0,0},{0,1,0},{0,0,1},b.radius*4,1,24/b.diameter(),false};
     for(auto storage:{NeuralVertexStorage::Float32,NeuralVertexStorage::Position16,NeuralVertexStorage::Packed}){
         options.vertex_storage=storage;auto image=raster_gpu(mesh.view(),b,c,24,2,false,options);unsigned visible=0,covered=0;

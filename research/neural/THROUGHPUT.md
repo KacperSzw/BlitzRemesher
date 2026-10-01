@@ -369,3 +369,21 @@ The next remote gate runs the saved failure, sanitizer checks and a separate
 failing policy. It must pass the former failing condition, duration and coverage
 gates before another two-hour run. This validation does not count toward those
 two hours and does not establish release shading quality.
+
+The first remote repair validation (`runpod-packed-validation-01`, `fb4943f`)
+passed all 32 CTest contracts, a 16,384-update checkpoint continuation and the
+action memory check. Its Vulkan memory check did not finish within five minutes;
+no sanitizer verdict was produced. The attempt was cancelled, collected and its
+resources deleted before the soak. It is not a passing validation.
+
+This exposed a supervisor bug: Node reports signal termination with `code=null`,
+which the old truthiness check treated as success. The bounded subprocess runner
+now records exit code, signal, timeout and cancellation separately, requires a
+clean zero exit, and kills the complete owned process group. Tests exercise real
+zero/nonzero exits, SIGTERM, timeout and cancellation. Instrumented Vulkan tests
+now log each stage and domain case. The complete local memory check passes with
+both loading modes. The next remote attempt loads modules/data eagerly during
+memory instrumentation, retaining every check. This tests the context-synchronizing
+module-loading hypothesis documented in NVIDIA's
+[CUDA guide](https://docs.nvidia.com/cuda/archive/12.8.1/pdf/CUDA_C_Programming_Guide.pdf);
+it is not yet a diagnosis of the remote stall.

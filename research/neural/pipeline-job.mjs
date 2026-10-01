@@ -1,6 +1,6 @@
 // Validation-only entry point. Long-run launch is deliberately a separate action.
 import fs from 'node:fs';
-import {spawn} from 'node:child_process';
+import {boundedProcess} from './bounded-process.mjs';
 import {read,write} from './runpod-api.mjs';
 import {replayPackedDomain,soakPackedDomain} from './packed-domain-proof.mjs';
 process.env.PATH='/usr/local/cuda/bin:'+process.env.PATH;
@@ -8,14 +8,13 @@ const [setup,latest,minutes]=process.argv.slice(2).map(Number),started=Date.now(
 if(![setup,latest,minutes].every(Number.isFinite)||started>=setup||![10,30].includes(minutes))throw new Error('Invalid pipeline validation deadline');
 const deadline=Math.min(latest,started+minutes*60000),config=read('/workspace/validation.json');
 fs.mkdirSync(root,{recursive:true});write('/workspace/results/setup-complete.json',{at:started,training_minutes:minutes,training_deadline_ms:deadline});
-const report={complete:false,score:null,started,deadline,mode:config.mode,next_training_launch:false,phases:[]};let active,cancelled=false;
-for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{cancelled=true;active?.kill('SIGTERM');});
+const report={complete:false,score:null,started,deadline,mode:config.mode,next_training_launch:false,phases:[]};const cancellation=new AbortController();let cancelled=false;
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>{cancelled=true;cancellation.abort();});
 async function execute(name,args,log,{maximum=300000,allowFailure=false,environment={}}={}){
   if(cancelled||Date.now()+5000>=deadline)throw new Error('Validation deadline reached');
-  const fd=fs.openSync(root+'/'+log,'w'),start=Date.now();active=spawn(name,args,{stdio:['ignore',fd,fd],env:{...process.env,...environment}});let hard;
-  const timer=setTimeout(()=>{active?.kill('SIGTERM');hard=setTimeout(()=>active?.kill('SIGKILL'),3000);},Math.min(maximum,deadline-Date.now()-5000));
-  try{const code=await new Promise((resolve,reject)=>{active.once('error',reject);active.once('close',resolve);});report.phases.push({name,args,log,code,seconds:(Date.now()-start)/1000});if(code&&!allowFailure)throw new Error(log+' failed: '+code);return code;}
-  finally{clearTimeout(timer);clearTimeout(hard);fs.closeSync(fd);active=undefined;write(root+'/report.json',report);}
+  const fd=fs.openSync(root+'/'+log,'w'),start=Date.now();
+  try{const result=await boundedProcess(name,args,{stdio:['ignore',fd,fd],env:{...process.env,...environment},maximum:Math.min(maximum,deadline-Date.now()-5000),signal:cancellation.signal});report.phases.push({name,args,log,environment,...result,seconds:(Date.now()-start)/1000});if(!result.success&&!allowFailure)throw new Error(log+' failed: '+JSON.stringify(result));return result.success?0:(result.code??1);}
+  finally{fs.closeSync(fd);write(root+'/report.json',report);}
 }
 const cycle='build/neural/blitz-neural-cycle';
 try{
@@ -25,7 +24,7 @@ try{
   report.replay=read(root+'/replay/report.json');
   if(config.mode==='packed-domain'){
     await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-action-gpu-tests'],'action-memcheck.log');
-    await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-vulkan-tests','--memcheck'],'vulkan-memcheck.log');
+    await execute('/usr/local/cuda/bin/compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-vulkan-tests','--memcheck'],'vulkan-memcheck.log',{environment:{CUDA_MODULE_LOADING:'EAGER',CUDA_MODULE_DATA_LOADING:'EAGER'}});
     await execute('build/neural/blitz-neural-vulkan-tests',[],'vulkan-validation.log',{environment:{VK_INSTANCE_LAYERS:'VK_LAYER_KHRONOS_validation'}});
     if(/Validation Error|VUID-|SYNC-HAZARD|was not found/.test(fs.readFileSync(root+'/vulkan-validation.log','utf8')))throw new Error('Vulkan validation layer failure');
     const context={root,execute:(name,args,log,minutes)=>execute('build/neural/'+name,args,log.slice(root.length+1),{maximum:minutes*60000})};

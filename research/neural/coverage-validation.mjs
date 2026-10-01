@@ -44,7 +44,7 @@ export async function validateCoverage(ctx){const {root,execute,phase}=ctx,model
   phase('coverage-contracts');
   // Setup already ran CTest. Repeat the critical memory and restart contracts
   // under the exact allocated driver/device before generating fresh examples.
-  await execute('compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-vulkan-tests','--memcheck'],root+'/mask-memcheck.log',3);
+  await execute('compute-sanitizer',['--tool','memcheck','--error-exitcode','1','build/neural/blitz-neural-vulkan-tests','--memcheck'],root+'/mask-memcheck.log',3,{CUDA_MODULE_LOADING:'EAGER',CUDA_MODULE_DATA_LOADING:'EAGER'});
   await execute('blitz-neural-vulkan-tests',[],root+'/vulkan-validation.log',3,{VK_INSTANCE_LAYERS:'VK_LAYER_KHRONOS_validation'});
   if(/Validation Error:/.test(fs.readFileSync(root+'/vulkan-validation.log','utf8')))throw new Error('Vulkan validation layer reported errors');
   await execute('blitz-neural-cycle',['--check'],root+'/resident-contracts.log',3);

@@ -7,6 +7,16 @@ import {fileURLToPath} from 'node:url';
 import {residentArguments,preparedLearningOptions,validatePreparedLearning} from '../research/neural/resident-cycle.mjs';
 import {pipelineValidationBudget,pretrainingAuthorization,actionAccrued} from '../research/neural/action-budget.mjs';
 import {replayPackedDomain,soakPackedDomain} from '../research/neural/packed-domain-proof.mjs';
+import {boundedProcess} from '../research/neural/bounded-process.mjs';
+test('validation subprocesses distinguish zero exit, nonzero exit, signal, timeout and cancellation',async()=>{
+  const run=(source,options={})=>boundedProcess(process.execPath,['-e',source],{maximum:3000,...options});
+  assert.equal((await run('process.exit(0)')).success,true);
+  const failed=await run('process.exit(7)');assert.equal(failed.code,7);assert.equal(failed.success,false);
+  const killed=await run("process.kill(process.pid,'SIGTERM')");assert.equal(killed.code,null);assert.equal(killed.signal,'SIGTERM');assert.equal(killed.success,false);
+  const timed=await run("process.on('SIGTERM',()=>process.exit(0));setInterval(()=>{},1000)",{maximum:150,grace:100});assert.equal(timed.timed_out,true);assert.equal(timed.success,false);
+  const controller=new AbortController();controller.abort();const stopped=await run('process.exit(0)',{signal:controller.signal});assert.equal(stopped.cancelled,true);assert.equal(stopped.success,false);
+  const running=new AbortController(),timer=setTimeout(()=>running.abort(),100);try{const cancelled=await run('setInterval(()=>{},1000)',{signal:running.signal,grace:100});assert.equal(cancelled.cancelled,true);assert.equal(cancelled.timed_out,false);assert.equal(cancelled.success,false);}finally{clearTimeout(timer);}
+});
 test('packed failure replay requires accepted seeds, rejected invalid candidates and identical serial/batched outputs',async()=>{
   for(const failure of ['none','incomplete','seed','unexercised','labels','episode']){
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'blitz-packed-proof-'));let calls=0;

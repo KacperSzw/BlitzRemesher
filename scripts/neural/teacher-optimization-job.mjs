@@ -12,6 +12,7 @@ import {
   optimizationCycleArguments,
   teacherStrategyGate,
   validateOptimizationPilot,
+  validateOptimizationCheckpoint,
 } from './teacher-optimization.mjs';
 
 const digest = (file) => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -186,8 +187,17 @@ export async function runTeacherOptimization({
           model_sha256: digest(checkpoint + '/model.blzn'),
           checkpoint_sha256: digest(checkpoint + '/checkpoint.pt'),
         };
-        if (latest.checkpoint_sha256 !== pilot.checkpoint_sha256)
-          throw new Error('checkpoint checksum differs from the published journal');
+        const index = read(checkpoint + '/index.json'),
+          verification = read(checkpoint + '/verification.json');
+        validateOptimizationCheckpoint({
+          latest,
+          index,
+          verification,
+          checkpointSha256: pilot.checkpoint_sha256,
+          modelSha256: pilot.model_sha256,
+          verificationSha256: digest(checkpoint + '/verification.json'),
+        });
+        pilot.verification = verification;
         report.pilots.push(pilot);
         persist();
       }

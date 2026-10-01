@@ -221,3 +221,25 @@ export function validateOptimizationPilot({
   )
     throw new Error('paired pilot incomplete, stale or numerically invalid');
 }
+
+export function validateOptimizationCheckpoint({
+  latest,
+  index,
+  verification,
+  checkpointSha256,
+  modelSha256,
+  verificationSha256,
+}) {
+  if (
+    latest.checkpoint_sha256 !== checkpointSha256 ||
+    index.complete !== true ||
+    index.step !== latest.step ||
+    index.checkpoint_sha256 !== checkpointSha256 ||
+    index.model_sha256 !== modelSha256 ||
+    index.files?.['checkpoint.pt'] !== checkpointSha256 ||
+    index.files?.['model.blzn'] !== modelSha256 ||
+    index.files?.['verification.json'] !== verificationSha256 ||
+    verification.passed !== true
+  )
+    throw new Error('checkpoint files or verification differ from the published journal');
+}

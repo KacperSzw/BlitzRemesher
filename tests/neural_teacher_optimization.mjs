@@ -13,6 +13,7 @@ import {
   optimizationCycleArguments,
   teacherStrategyGate,
   validateOptimizationPilot,
+  validateOptimizationCheckpoint,
 } from '../scripts/neural/teacher-optimization.mjs';
 import { profiles } from '../scripts/neural/runpod-profile.mjs';
 import { rentalDeadlines, storageMode } from '../scripts/neural/runpod-api.mjs';
@@ -332,4 +333,37 @@ test('pilot evidence must identify its seed, strategy, initializer and fresh opt
   assert.throws(() =>
     validateOptimizationPilot({ ...options, latest: { ...options.latest, complete: false } }),
   );
+});
+
+test('a verified optimizer checkpoint cannot authenticate a different exported model', () => {
+  const options = {
+    latest: { step: 128, checkpoint_sha256: 'checkpoint' },
+    index: {
+      complete: true,
+      step: 128,
+      checkpoint_sha256: 'checkpoint',
+      model_sha256: 'model',
+      files: {
+        'checkpoint.pt': 'checkpoint',
+        'model.blzn': 'model',
+        'verification.json': 'verification',
+      },
+    },
+    verification: { passed: true },
+    checkpointSha256: 'checkpoint',
+    modelSha256: 'model',
+    verificationSha256: 'verification',
+  };
+  assert.doesNotThrow(() => validateOptimizationCheckpoint(options));
+  for (const patch of [
+    { modelSha256: 'stale' },
+    { checkpointSha256: 'corrupt' },
+    { verificationSha256: 'changed' },
+    { verification: { passed: false } },
+    { latest: { ...options.latest, step: 256 } },
+  ])
+    assert.throws(
+      () => validateOptimizationCheckpoint({ ...options, ...patch }),
+      /published journal/,
+    );
 });

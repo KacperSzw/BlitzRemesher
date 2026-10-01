@@ -376,12 +376,12 @@ test('frozen optimization ICD choice is explicit and rejects unknown selections'
     );
 });
 
-test('only the named lifecycle overlay is accepted and missing provenance blocks native work', async (t) => {
-  assert.equal(
-    validateOptimizationRequest({ ...request(), baseline_overlay: 'worker-join-v1' })
-      .baseline_overlay,
-    'worker-join-v1',
-  );
+test('only named baseline corrections are accepted and missing provenance blocks native work', async (t) => {
+  for (const baseline_overlay of ['worker-join-v1', 'worker-join-seed-v2'])
+    assert.equal(
+      validateOptimizationRequest({ ...request(), baseline_overlay }).baseline_overlay,
+      baseline_overlay,
+    );
   for (const baseline_overlay of ['arbitrary-patch', true, null])
     assert.throws(
       () => validateOptimizationRequest({ ...request(), baseline_overlay }),

@@ -109,19 +109,26 @@ records them in its report, and pins the same selection for all stress,
 contract, baseline/candidate profile, learning and quality subprocesses. It does
 not change Vulkan implicit/explicit layers, teacher data, model or quality gates.
 
-## Lifecycle-matched baseline
+## Matched baseline corrections
 
 The frozen teacher request retains baseline revision `81fd926` and explicitly
-requests `baseline_overlay: "worker-join-v1"`. This is the historical teacher
-algorithm with the same owned-worker join retirement as the candidate, not the
-original unchanged baseline executable. The reviewed overlay changes only
-`training/workers.hpp`, adds the exact shared `training/worker_retirement.hpp`,
-and adds its `src/neural/teardown_trace.hpp` dependency. Teacher work, recovery
-conditions, labels and search strategy remain the historical implementation.
+requests `baseline_overlay: "worker-join-seed-v2"`. It applies the candidate's
+owned-worker join retirement and seed admission correction to the historical
+teacher. Both arms require a seed to pass the original-source, current-adjacent
+and optional destination-scale audits before accepting it. Packed starting states
+also satisfy the tighter source/adjacent limit. This prevents the comparison from
+using different admission rules after the CoffeeCart seed regression.
+
+The original `worker-join-v1` overlay remains unchanged for historical requests.
+Its three lifecycle files retain identical bytes in v2. The new version also
+changes the seed admission calls in `training/placement_teacher.hpp` and adds the
+exact shared `training/teacher_seed.hpp`; it does not add raster reuse or change
+the historical candidate search. The seed audit fields and admission contract
+remain part of strict parity, with no compatibility exception.
 
 Cloud preparation requires a clean checkout of the exact base commit. It checks
-the patch digest, its three-file allowlist, original file hashes, exact patch
-context, resulting file hashes and expected Git tree. Shared helper/header hashes
+the patch digest, the selected version's fixed file allowlist, original file hashes,
+exact patch context, resulting file hashes and expected Git tree. Shared helper/header hashes
 must match the candidate. The preparation then records the newly built executable
 digest in `baseline-build.json`; the experiment verifies that identity before
 native work and carries the full provenance in its report. The original base

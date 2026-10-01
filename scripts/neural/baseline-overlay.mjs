@@ -1,4 +1,4 @@
-// One reviewed lifecycle-only overlay for the frozen teacher benchmark baseline.
+// Explicit reviewed corrections for the frozen teacher benchmark baseline.
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -6,12 +6,31 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-const definitionFile = fileURLToPath(new URL('./baselines/worker-join-v1.json', import.meta.url));
-const allowed = [
+const retirementFiles = [
   'src/neural/teardown_trace.hpp',
   'training/worker_retirement.hpp',
   'training/workers.hpp',
 ];
+const overlays = {
+  'worker-join-v1': {
+    files: retirementFiles,
+    shared: retirementFiles.filter((file) => file !== 'training/workers.hpp'),
+    label: 'join-retirement overlay',
+  },
+  'worker-join-seed-v2': {
+    files: [
+      ...retirementFiles,
+      'training/placement_teacher.hpp',
+      'training/teacher_seed.hpp',
+    ].sort(),
+    shared: [
+      'src/neural/teardown_trace.hpp',
+      'training/worker_retirement.hpp',
+      'training/teacher_seed.hpp',
+    ],
+    label: 'join-retirement and seed-admission overlay',
+  },
+};
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (file) => hash(fs.readFileSync(file));
 const read = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -21,10 +40,11 @@ const git = (cwd, ...args) =>
 
 function definition(file) {
   const value = read(file);
+  const policy = overlays[value.id];
   if (
     value.version !== 1 ||
-    value.id !== 'worker-join-v1' ||
-    !isDeepStrictEqual(value.files?.map((f) => f.path).sort(), allowed) ||
+    !policy ||
+    !isDeepStrictEqual(value.files?.map((f) => f.path).sort(), policy.files) ||
     ![value.baseline_revision, value.original_tree, value.modified_tree].every((s) =>
       /^[a-f0-9]{40}$/.test(s),
     ) ||
@@ -40,9 +60,18 @@ function definition(file) {
 }
 
 function candidateHeaders(value, candidateRoot) {
-  for (const file of value.files.filter((f) => f.path !== 'training/workers.hpp'))
+  for (const file of value.files.filter((f) => overlays[value.id].shared.includes(f.path)))
     if (fileHash(path.join(candidateRoot, file.path)) !== file.after_sha256)
-      throw new Error('Baseline/candidate retirement header mismatch: ' + file.path);
+      throw new Error('Baseline/candidate shared header mismatch: ' + file.path);
+}
+
+function definitionPathFor(request, override) {
+  if (!Object.hasOwn(overlays, request.baseline_overlay))
+    throw new Error('Unknown fixed baseline overlay');
+  return (
+    override ??
+    fileURLToPath(new URL(`./baselines/${request.baseline_overlay}.json`, import.meta.url))
+  );
 }
 
 export function prepareBaselineOverlay({
@@ -50,7 +79,7 @@ export function prepareBaselineOverlay({
   request,
   candidateRoot,
   output,
-  definitionPath = definitionFile,
+  definitionPath,
 }) {
   if (git(checkout, 'status', '--porcelain', '--untracked-files=all'))
     throw new Error('Baseline overlay needs a clean source checkout');
@@ -68,7 +97,9 @@ export function prepareBaselineOverlay({
     label: original.revision,
   };
   if (request.baseline_overlay !== undefined) {
+    definitionPath = definitionPathFor(request, definitionPath);
     const value = definition(definitionPath);
+    const allowed = overlays[value.id].files;
     if (
       request.baseline_overlay !== value.id ||
       original.revision !== value.baseline_revision ||
@@ -84,7 +115,7 @@ export function prepareBaselineOverlay({
       .map((row) => row.split('\t')[2])
       .sort();
     if (!isDeepStrictEqual(edited, allowed))
-      throw new Error('Baseline overlay changes files outside its three-file allowlist');
+      throw new Error('Baseline overlay changes files outside its fixed allowlist');
     for (const file of value.files) {
       const source = path.join(checkout, file.path),
         before = fs.existsSync(source) ? fileHash(source) : null;
@@ -109,7 +140,7 @@ export function prepareBaselineOverlay({
     if (evidence.effective_tree !== value.modified_tree)
       throw new Error('Baseline overlay result tree mismatch');
     evidence.overlay = value;
-    evidence.label += ' + join-retirement overlay ' + value.id;
+    evidence.label += ' + ' + overlays[value.id].label + ' ' + value.id;
   }
   write(output, evidence);
   return evidence;
@@ -127,7 +158,7 @@ export function verifyBaselineBuild({
   binary,
   request,
   candidateRoot,
-  definitionPath = definitionFile,
+  definitionPath,
 }) {
   const evidence = read(evidenceFile);
   if (
@@ -138,6 +169,7 @@ export function verifyBaselineBuild({
   )
     throw new Error('Baseline build identity or executable checksum mismatch');
   if (request.baseline_overlay !== undefined) {
+    definitionPath = definitionPathFor(request, definitionPath);
     const value = definition(definitionPath);
     if (
       request.baseline_overlay !== value.id ||
@@ -146,7 +178,7 @@ export function verifyBaselineBuild({
       evidence.original.tree !== value.original_tree ||
       evidence.effective_tree !== value.modified_tree
     )
-      throw new Error('Baseline lifecycle overlay evidence mismatch');
+      throw new Error('Baseline overlay evidence mismatch');
     candidateHeaders(value, candidateRoot);
   } else if (evidence.overlay !== null || evidence.effective_tree !== evidence.original.tree)
     throw new Error('Unrequested baseline source overlay');

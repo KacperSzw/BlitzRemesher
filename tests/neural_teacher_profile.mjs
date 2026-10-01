@@ -152,6 +152,7 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
       ].map((k) => [k + '_seconds', 0.01]),
     );
     const audit = { complete: true, passed: true, error: changed === 'semantic' ? 0.2 : 0.1 };
+    const queries = coreFirst ? 30 : 50;
     const index = {
       schema: 4,
       status: 'complete',
@@ -161,7 +162,8 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
       requested_condition_available: changed !== 'unavailable',
       preceding_lod_emitted: c.previous_steps > 0,
       states: c.states + c.previous_steps,
-      queries: coreFirst ? 30 : 50,
+      queries: queries + Number(changed === 'query_counter'),
+      invalid_candidates: Number(changed === 'invalid_counter'),
       source_triangles: 100,
       teacher_triangles: 96,
       previous_triangles: c.previous_steps ? 98 : 100,
@@ -187,18 +189,35 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
       index.status = 'search_exhausted';
     }
     write(folder + '/index.json', index);
-    write(folder + '/trajectory.json', [
+    const trajectory = [
       {
         revision: c.previous_steps,
-        queries: Array.from({ length: index.queries }, () => ({ known_mask: 27 })),
-        candidate_search: [
-          {
-            from: 0,
-            to: 1,
-            queried_mask: coreFirst ? 1047 : 2047,
-            ...(coreFirst ? { expanded: false, exact_rejected_mask: 0 } : {}),
-          },
+        queries: Array.from({ length: queries }, (_, candidate) => ({
+          from: 0,
+          to: 1,
+          candidate: candidate % 11,
+          known_mask: 27,
+          source_error: 0.1,
+          adjacent_error: 0.1,
+          faces: 96,
+        })),
+        preferred: [
+          { from: 0, to: 1, margin: 0.1, triangles: 96 },
+          { from: 2, to: 3, margin: 0.1, triangles: 96 },
         ],
+        selected: { from: 0, to: 1, triangles: 96 },
+        ...(version === 6
+          ? {
+              candidate_search: [
+                {
+                  from: 0,
+                  to: 1,
+                  queried_mask: coreFirst ? 1047 : 2047,
+                  ...(coreFirst ? { expanded: false, exact_rejected_mask: 0 } : {}),
+                },
+              ],
+            }
+          : {}),
         ...(coreFirst
           ? {
               confirmations: [
@@ -213,7 +232,14 @@ function nativeArtifacts(binary, args, changed = '', version = 5) {
             }
           : {}),
       },
-    ]);
+    ];
+    if (changed === 'trace_query') trajectory[0].queries[0].source_error = 0.2;
+    if (changed === 'trace_query_order') trajectory[0].queries.reverse();
+    if (changed === 'trace_selected') trajectory[0].selected = { from: 2, to: 3, triangles: 96 };
+    if (changed === 'trace_preferred') trajectory[0].preferred.pop();
+    if (changed === 'trace_incomplete') trajectory[0].complete = false;
+    if (changed === 'trace_confirmations') trajectory[0].confirmations = [];
+    write(folder + '/trajectory.json', changed === 'trace_empty' ? [] : trajectory);
     write(folder + '/reuse.json', {
       duplicate_proposals: 1,
       identical_adjacent_audits: 2,
@@ -296,6 +322,16 @@ for (const failure of [
   'labels',
   'episode',
   'semantic',
+  'query_counter',
+  'invalid_counter',
+  'trace_query',
+  'trace_query_order',
+  'trace_selected',
+  'trace_preferred',
+  'trace_incomplete',
+  'trace_confirmations',
+  'trace_empty',
+  'missing_trace',
   'incomplete',
   'unavailable',
   'timing',

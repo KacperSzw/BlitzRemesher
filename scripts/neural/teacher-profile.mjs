@@ -36,6 +36,8 @@ const semanticFields = [
   'teacher_triangles',
   'previous_triangles',
   'states',
+  'queries',
+  'invalid_candidates',
   'accepted',
   'reference_confirmed',
   'requested_condition_available',
@@ -61,6 +63,27 @@ function normalizedTeacherContract(contract, request) {
   const normalized = { ...contract, teacher_version: 6, teacher_strategy: strategy };
   delete normalized.binary_sha256;
   return normalized;
+}
+
+function parityTrajectory(folder) {
+  const trajectory = read(path.join(folder, 'trajectory.json'));
+  if (
+    !Array.isArray(trajectory) ||
+    !trajectory.length ||
+    trajectory.some(
+      (state) =>
+        !state ||
+        !Number.isSafeInteger(state.revision) ||
+        state.revision < 0 ||
+        !Array.isArray(state.queries) ||
+        state.complete === false,
+    )
+  )
+    throw new Error('missing or incomplete teacher parity trajectory');
+  // Version 6 adds these search counters to exhaustive traces. Every common
+  // field, including query order, preferred ties and selected actions, remains
+  // part of parity; do not reduce the trace to its final geometry.
+  return trajectory.map(({ candidate_search, ...state }) => state);
 }
 
 function strategyDiagnostics(folder, index, strategy, previousSteps) {
@@ -198,6 +221,10 @@ export function validateTeacherRun(directory, request, binarySha256, comparison 
       index.states <= request.conditions[condition].previous_steps ||
       index.states >
         request.conditions[condition].states + request.conditions[condition].previous_steps ||
+      !Number.isSafeInteger(index.queries) ||
+      index.queries < 0 ||
+      !Number.isSafeInteger(index.invalid_candidates) ||
+      index.invalid_candidates < 0 ||
       index.audit?.resource_failures !== 0 ||
       index.timing_version !== 2 ||
       !stageFields.every((k) => finite(index.timings?.[k]))
@@ -268,6 +295,7 @@ export function validateTeacherRun(directory, request, binarySha256, comparison 
       episode_sha256: row.episode_sha256,
       contract: normalizedContract,
       semantics: Object.fromEntries(semanticFields.map((k) => [k, index[k]])),
+      ...(comparison === 'parity' ? { trajectory: parityTrajectory(folder) } : {}),
       ...(comparison === 'strategy'
         ? {
             diagnostics: strategyDiagnostics(

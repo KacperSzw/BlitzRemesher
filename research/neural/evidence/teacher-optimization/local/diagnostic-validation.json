@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "kind": "local diagnostic validation supplement",
+  "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+  "complete": true,
+  "training_started": false,
+  "remote_failure_reproduced": false,
+  "shutdown_fix_proven": false,
+  "performance_proven": false,
+  "quality_proven": false,
+  "score": null,
+  "native": {
+    "build": "passed",
+    "ctest": {
+      "passed": 45,
+      "failed": 0
+    },
+    "vulkan_validation": {
+      "errors": 0,
+      "vuid_messages": 0,
+      "synchronization_hazards": 0,
+      "warnings": 1189,
+      "warning_kind": "Undefined-Value-ShaderOutputNotConsumed-DynamicRendering"
+    },
+    "vulkan_compute_sanitizer_errors": 0,
+    "final_teardown_fixture": {
+      "workers": 2,
+      "rounds": 12,
+      "peak_bytes": 443841862,
+      "budget_bytes": 805306368,
+      "maximum_faces": 1176578,
+      "complete": true,
+      "traced_api_events": 3360,
+      "traced_api_events_outside_teardown": 0
+    }
+  },
+  "exploratory": {
+    "base_revision": "1c3bf34",
+    "exact_source_revision": null,
+    "initial_logger_also_traced_resize_drop": true,
+    "rounds": 48,
+    "variants": [
+      {
+        "variant": "concurrent-small-marked",
+        "rounds": 12,
+        "maximum_faces": 130050,
+        "complete": true
+      },
+      {
+        "variant": "concurrent-large-marked",
+        "rounds": 12,
+        "maximum_faces": 1176578,
+        "complete": true
+      },
+      {
+        "variant": "concurrent-large-unmarked",
+        "rounds": 12,
+        "maximum_faces": 1176578,
+        "complete": true
+      },
+      {
+        "variant": "serial-large-marked",
+        "rounds": 12,
+        "maximum_faces": 1176578,
+        "complete": true
+      }
+    ],
+    "source_record": "diagnostic-exploratory-teardown-diagnostic-results.json.gz"
+  },
+  "debugger": {
+    "host_gdb_probe": "captured",
+    "host_gdb_exec_inherited_permission": "captured",
+    "cuda_gdb_cpu_probe": "failed: target SIGABRT and debugger SIGSEGV; raw negative result preserved",
+    "scope": "Host-only probe and exec tests do not establish attach availability on a future rental",
+    "final_native_preflight": {
+      "complete": true,
+      "gpu_started": false,
+      "target_timed_out_as_requested": true,
+      "native_exit_code": 0,
+      "native_signal": null,
+      "captured_threads": 1,
+      "captured_frames": 4,
+      "capture_code": 0,
+      "capture_signal": null,
+      "elapsed_seconds": 1.224,
+      "record": "diagnostic-preflight-report.json.gz"
+    }
+  },
+  "limits": [
+    "Synthetic renderer/cache stress did not reproduce the remote stall and does not validate the full remote workload",
+    "Serialized teardown is a diagnostic control, not a production fix",
+    "No fixture elapsed times are promoted to performance measurements",
+    "The remote failure remains unresolved pending bounded diagnostic retry"
+  ],
+  "integrated_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+  "javascript": {
+    "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+    "integrated_ctest": {
+      "passed": 4,
+      "failed": 0
+    },
+    "scope": "Cloud, teacher-profile, native-stack and optimization contracts; explicit host GDB environment",
+    "individual_node_contracts": {
+      "passed": 85,
+      "failed": 0,
+      "skipped": 0,
+      "includes_actual_native_gdb": true,
+      "source_revision": "fee889d02d3cd71ad7828da7fed0377d9d4bd6cb",
+      "source_hashes_verified_against_integration": true,
+      "record": "diagnostic-js-validation.json.gz"
+    }
+  },
+  "final_diagnostic_abba": {
+    "complete": true,
+    "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+    "processes": 4,
+    "fresh_jobs": 16,
+    "matching_actual_payloads": true,
+    "matching_common_intermediate_trajectories": true,
+    "baseline_exec_wrapper_sha256": "7147035f46d09f253f2d05b8a008755e62e08c40963d31f42b7ebecb2c073418",
+    "process_speedup": null,
+    "timing_authority": "local_shared",
+    "performance_proven": false,
+    "first_optimized_trace_markers": [
+      {
+        "repeat": 1,
+        "first_stage": "benchmark.workers begin"
+      },
+      {
+        "repeat": 2,
+        "first_stage": "benchmark.workers begin"
+      }
+    ],
+    "scope": "One worker,512 MiB smoke; does not reproduce the two-worker A40 workload"
+  }
+}

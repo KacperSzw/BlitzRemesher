@@ -145,6 +145,269 @@
       "uncompressed_sha256": "3de375caf036792156fd6fcab76bebb725fe1042fee4bc4d897d6030efbe570f",
       "sha256": "aeac760341c4fd2d141baadc86fd1c4710abfb38b601e6940534d49370ca32a3",
       "bytes": 327
+    },
+    {
+      "file": "diagnostic-native-build.log.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-build.log",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "7f58e5cb2d93b30b6baa206d65854b192518d91c7b2c4d69af214582bf4a1a67",
+      "sha256": "c63566213db49f8d3a823eb8c1b6e014d2a6c5ecb53382572d17000b23d27294",
+      "bytes": 1868
+    },
+    {
+      "file": "diagnostic-native-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-ctest.log",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "b6546dc27a2b318e55e9637101d61d81ad86dfe1b89ab91c3544c5a534b95b6c",
+      "sha256": "0458b82222d10f771fdec11b60b147fd675f57149456384f5ac4b5a3d76d27ba",
+      "bytes": 1083
+    },
+    {
+      "file": "diagnostic-native-ctest.xml.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-ctest.xml",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "7839763a3dc22162416b3be4f813748aed10416cca63e68ea39d3971084b1038",
+      "sha256": "a7febcd958734ec440fcd1b6b61703287161e6482b206dc0c563b2aea80523ce",
+      "bytes": 5424
+    },
+    {
+      "file": "diagnostic-final-teardown.log.gz",
+      "source": "/tmp/blitz-teacher-teardown-final.log",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "546466df88d01a8204de2b8654bcb91ca687ff79ce65f0e8a85edad71a8da38d",
+      "sha256": "d48f377918ea84bca4ea8d91119c9f12a420045f678768a59d10b8a9fbfac7f6",
+      "bytes": 23100
+    },
+    {
+      "file": "diagnostic-vulkan-validation.log.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-vulkan-validation.log",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "f9d215192c12fc3ee1c0b263c9066f9d586cc1b853910d7577ae3510d671167e",
+      "sha256": "6dea724ebc13fe2e99cba4cdb097025443fd49feb97d57458158c2ff7d863796",
+      "bytes": 6297
+    },
+    {
+      "file": "diagnostic-vulkan-memcheck.log.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-vulkan-memcheck.log",
+      "source_revision": "060957bfe4875587199c80583e272854583cef0d",
+      "uncompressed_sha256": "161a174be270f79aee5405357f0f1327071cca3a4634784ac843e661bcc6587e",
+      "sha256": "4b46c9e91a479bd5181afa510ec2ae29f3c34fa205af8c5602e9d83910558cc2",
+      "bytes": 265
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-diagnostic-results.json.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-diagnostic-results.json",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "84d12d01724db236e94ce2cb9be02dd3c509ecad25cb4b6ba603a7427057fbf5",
+      "sha256": "fbe2cb9a35649ca735cf16d78cf5326853968f2a2099bbce599d18fa2910ee9a",
+      "bytes": 777
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-concurrent-marked.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-concurrent-marked.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "33d139de996411a4897c5e33ceb9b36290a785cde8f030f242be46b3385e06d5",
+      "sha256": "033afc9555bfa30600460f896e295c9b4fba2b0434dd25dc5da83ed57e100a14",
+      "bytes": 69870
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-concurrent-marked.out.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-concurrent-marked.out",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "47789db526aa2b2d3e40e94b877e10d3c7cffaadf67d8ab813760131e97b9e47",
+      "sha256": "f852cdcf39ca7a0569d7a150994cfd48fd14269cc6429e6db8ad1bec2bec6527",
+      "bytes": 113
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-concurrent-marked.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-concurrent-marked.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "c8ebfa28a7dffc84bc7b9a235565c120c64c71bf685e7671f1fa35bbf2028e79",
+      "sha256": "0e1b5a79abc2dbc932e0fbae2657827cc57773f4b6fe96174c522385d1bfb3a2",
+      "bytes": 71413
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-concurrent-marked.out.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-concurrent-marked.out",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "d65b05cfdde186b2504a0ac7c90cbb1576b9653a93006fe5a8f59776fef78db0",
+      "sha256": "6c88f0a06d0a2c083755955901f741c225a56f078391ae85c2bc64c6a663683d",
+      "bytes": 110
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-concurrent-unmarked.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-concurrent-unmarked.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "87943c8b1ea302afff952c5d13c9ba06def15032f522b482eb995d558ecd4d1c",
+      "sha256": "fdc423c87b3769df723aa1b74df6e889670d254ee8e20b09060a0bb0f6e0dbaf",
+      "bytes": 66
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-concurrent-unmarked.out.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-concurrent-unmarked.out",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "cbb5ac96bb8aea0e0ae6617f589a499ddc7704016d1ebeb65fcae583c1d78f84",
+      "sha256": "9e8b9403f37fbadc0238744376d5a99d898703876e1bc4bd9f7aaa2d41b523be",
+      "bytes": 118
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-serial-marked.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-serial-marked.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "02a0f00ac2c471603f5a9ed22ea2a9b4f3301b6c9b676522bce1650c374cc7d9",
+      "sha256": "e33fe3289ceca3c1f0440314da5841a39d3635d0d5d55d5feb56c3716d7b28d1",
+      "bytes": 70728
+    },
+    {
+      "file": "diagnostic-exploratory-teardown-large-serial-marked.out.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/teardown-large-serial-marked.out",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "a76f1a2a905cf49e18d3925d04c31a1e89bcd3813df63af3906b9b2db6dbc0ae",
+      "sha256": "c98ad6909c92095732c313a6758b02e0b6b2c0a059ffc5c619d1d8fc7ab57da5",
+      "bytes": 111
+    },
+    {
+      "file": "diagnostic-exploratory-debugger-probe-host.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/debugger-probe-host.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "9479a8bdac736f01e542ba39fbb5a068fa9dba2a9a24a52c7d24c3247a4f15e5",
+      "sha256": "425bf5c0d44127b361258e8649136631731a7f47622d189c1c184a778c843f1c",
+      "bytes": 398
+    },
+    {
+      "file": "diagnostic-exploratory-debugger-exec-host.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/debugger-exec-host.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "8f15be3e570cf551157dfd55ac681d0d03cbee8aa3b86ac18d83cd2350748f0e",
+      "sha256": "6f5d9caf6582b22e84ae27df397de473f8f58644eed69957896956dd2b8601c8",
+      "bytes": 452
+    },
+    {
+      "file": "diagnostic-exploratory-debugger-probe.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/debugger-probe.log",
+      "source_revision": null,
+      "base_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "source_state": "precommit diagnostic worktree; exact intermediate source not preserved",
+      "uncompressed_sha256": "75e37ca9b65cc9bb6d2afe64ea44aebb4df67fbf9f3ecbd15d1f3343e460d0a7",
+      "sha256": "7726424260f4fc09cbe97c2c6c8253ae75def9bdf480860e8e4dfcb9c1432c1e",
+      "bytes": 688
+    },
+    {
+      "file": "diagnostic-js-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-diagnostics-js-ctest.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "209c352bc2063c6d02e878abefccc89dc3b9d353f74a10112c7670d7c167a61c",
+      "sha256": "d2f5c34c1323cf14a1e615ecea4fb81b39cc42e73d326ee232eb7c4d0ea62f4b",
+      "bytes": 272
+    },
+    {
+      "file": "diagnostic-preflight-report.json.gz",
+      "source": "runs/neural/debugger-preflight-local-01/report.json",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "d637519b206a5cb839961903e6be8892cc9c46b032b408a07183b323280cb150",
+      "sha256": "121b5c812420069213053d98def1ea108895b90b0f6da0670a95d4290f45662f",
+      "bytes": 497
+    },
+    {
+      "file": "diagnostic-preflight-probe.log.gz",
+      "source": "runs/neural/debugger-preflight-local-01/probe.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "689aac90958afce10103047bddb64bb588fb00d383c2f0081a4a8b6a7d6ef48e",
+      "sha256": "64085d4b39364f4c98b478fea4e3c99cfe29810a1b383d38c4dcb832af2ec7dd",
+      "bytes": 81
+    },
+    {
+      "file": "diagnostic-preflight-threads.log.gz",
+      "source": "runs/neural/debugger-preflight-local-01/threads.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "942e23658c1963c7038eb49587e67fdaa79657f86478863aa9eea2300b985614",
+      "sha256": "a73066f6f3d3d12c0846617aceea007886eabc89834a6b68087f525e8e615baa",
+      "bytes": 337
+    },
+    {
+      "file": "diagnostic-abba-0-baseline.log.gz",
+      "source": "runs/neural/teacher-final-diagnostics-01/0-baseline.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "871182e6474a0bef5d307294d5d5fcce05aee9f754fe2921633b5c8af55faa6d",
+      "sha256": "30ea914259df91b9807ccdd75837b9cac643a78f1dee38d006e99b6077883f5e",
+      "bytes": 209
+    },
+    {
+      "file": "diagnostic-abba-1-optimized.log.gz",
+      "source": "runs/neural/teacher-final-diagnostics-01/1-optimized.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "eef610f2ef18b9ca245f412105aec0f784d6e1d81675d5dc939ec10203c079fa",
+      "sha256": "781402d7e55c79c80a16c11d52d4e947a0dbc2f8e70f8a5ead4b08285dfc9810",
+      "bytes": 1515
+    },
+    {
+      "file": "diagnostic-abba-2-optimized.log.gz",
+      "source": "runs/neural/teacher-final-diagnostics-01/2-optimized.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "6ac3c277a1de068470149f83674b96896bbe271e2ec8b02c3d8eb654d2e5292d",
+      "sha256": "eada3167b4359be029c516a574b0f0aad3969c5d85bb74028a50d770aee1f471",
+      "bytes": 1514
+    },
+    {
+      "file": "diagnostic-abba-3-baseline.log.gz",
+      "source": "runs/neural/teacher-final-diagnostics-01/3-baseline.log",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "fd5b32607efa56d360b6cb254f02047ed54aafaa1167a1cde4cfce99ed304475",
+      "sha256": "f1897ee3a13a059f50dfdd1ee4ea7f4afa4ed8c9d36bdff63468e2d20cdeff51",
+      "bytes": 213
+    },
+    {
+      "file": "diagnostic-final-parity.json.gz",
+      "source": "runs/neural/teacher-final-diagnostics-01/report.json",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "uncompressed_sha256": "affedb231bb80dfee9ad9dbe1e85173db9c9a344e3dd3a3ea43819d3b517c97c",
+      "sha256": "4115a51fc540148a6e5c8bc6cd938f8282787353ee6705b58bdb96f3c1499807",
+      "bytes": 8233
+    },
+    {
+      "file": "diagnostic-js-validation.json.gz",
+      "source": "runs/neural/teacher-timeout-validation-js-01/validation.json",
+      "source_revision": "fee889d02d3cd71ad7828da7fed0377d9d4bd6cb",
+      "uncompressed_sha256": "dc42359cb8e9af71e445e6f16a9549ee600d360951c9cb743120e7061e3b3c70",
+      "sha256": "ef0e6772f32fcc05050450f556d89625ec7c3d1df8e8e6b583ebf8b15d1ab72f",
+      "bytes": 850
+    },
+    {
+      "file": "diagnostic-js-tests.log.gz",
+      "source": "runs/neural/teacher-timeout-validation-js-01/tests.log",
+      "source_revision": "fee889d02d3cd71ad7828da7fed0377d9d4bd6cb",
+      "uncompressed_sha256": "1f1d25e154807cc7ad5b601a87e7f5da0f4bca180a538ff111348ca2b58520b1",
+      "sha256": "e8f5543188338ffcc8378e2754a8b577a193b24258366fba53fe0f3f75664849",
+      "bytes": 3186
+    },
+    {
+      "file": "diagnostic-validation.json",
+      "source": "derived from revision-scoped diagnostic logs in this manifest",
+      "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+      "sha256": "b825e6701119204775e99b6c50c5723660209074305e26b5209da2026e4e019a",
+      "bytes": 4312
     }
   ],
   "supplemental_validation": {
@@ -173,5 +436,13 @@
       "performance_authority": "shared-workstation smoke only",
       "does_not_cover": "two-worker A40 shutdown or full quality"
     }
+  },
+  "diagnostic_validation": {
+    "record": "diagnostic-validation.json",
+    "native_source_revision": "060957bfe4875587199c80583e272854583cef0d",
+    "javascript_source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+    "status": "local diagnostics complete; remote cause unresolved",
+    "remote_failure_reproduced": false,
+    "shutdown_fix_proven": false
   }
 }

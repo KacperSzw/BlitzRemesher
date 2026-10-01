@@ -899,6 +899,24 @@ test('requested capability learning precedes profiling and preserves failed hour
 });
 
 test('the verified capability hour and diagnostics survive a later negative strategy comparison', async (t) => {
+  // CTest runs from its build directory. This synthetic cycle owns its hashed
+  // inputs too, rather than accidentally borrowing files from the source cwd.
+  const originalCwd = process.cwd();
+  const workingTree = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-capability-cycle-'));
+  t.after(() => {
+    process.chdir(originalCwd);
+    fs.rmSync(workingTree, { recursive: true, force: true });
+  });
+  for (const [file, contents] of [
+    ['research/neural/teacher-optimization-curriculum.json', { fixture: 'curriculum' }],
+    ['research/neural/corpus-v2/corpus.json', { fixture: 'corpus' }],
+    ['research/neural/corpus-v2/training.json', { fixture: 'training selection' }],
+  ]) {
+    const target = path.join(workingTree, file);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, JSON.stringify(contents));
+  }
+  process.chdir(workingTree);
   for (const qualityComplete of [true, false]) {
     const options = experiment(t);
     options.request.capability_minutes = 60;
@@ -980,6 +998,7 @@ test('the verified capability hour and diagnostics survive a later negative stra
         };
       },
     });
+    assert.equal(report.error, undefined);
     assert.equal(comparisons, 2);
     assert.equal(report.capability.complete, true);
     assert.equal(report.capability.quality.complete, qualityComplete);
@@ -990,7 +1009,6 @@ test('the verified capability hour and diagnostics survive a later negative stra
     assert.equal(report.training_started, true);
     assert.equal(report.learning_gate.passed, false);
     assert.equal(report.pilots.length, 0);
-    assert.equal(report.error, undefined);
     assert.equal(fs.existsSync(report.capability.model), true);
   }
 });

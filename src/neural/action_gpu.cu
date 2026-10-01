@@ -1103,7 +1103,8 @@ __global__ void precision_cap(uint32_t* bits, const uint32_t* used, uint32_t wor
 __global__ void validate_placement(DeviceMeshView current, const State* state,
                                    const uint32_t* remap, const uint32_t* keep,
                                    const Vec3* positions, const Vec2* uv, uint32_t* invalid,
-                                   bool preserve_uv) {
+                                   bool preserve_uv, const uint32_t* geometry, uint32_t* slots,
+                                   uint32_t hash_capacity) {
     uint32_t f = blockIdx.x * blockDim.x + threadIdx.x;
     if (f >= state->faces || !keep[f])
         return;
@@ -1125,6 +1126,32 @@ __global__ void validate_placement(DeviceMeshView current, const State* state,
                y = area2(uv[next[0]], uv[next[1]], uv[next[2]]);
         if (!isfinite(y) || (fabs(x) > 1e-20 && x * y <= 0))
             atomicExch(invalid, 1u);
+    }
+    // Geometry IDs also anchor the original attribute charts. A placement must
+    // not silently merge two of these classes: rebuilding from its snapshot
+    // would then weld them and discover a different topology. Hash only live
+    // trial vertices; discarded source IDs and existing seam wedges are valid.
+    for (auto v : next) {
+        // Fold high FP32 bits before masking: integer-grid coordinates have
+        // zero low mantissa bits and otherwise cluster in a single bucket.
+        uint32_t hash = hash_position(positions[v]);
+        hash ^= hash >> 16;
+        hash *= 0x7feb352du;
+        hash ^= hash >> 15;
+        hash *= 0x846ca68bu;
+        hash ^= hash >> 16;
+        uint32_t at = hash & (hash_capacity - 1);
+        for (;;) {
+            uint32_t old = atomicCAS(slots + at, none, v);
+            if (old == none)
+                break;
+            if (same_position(positions[v], positions[old])) {
+                if (geometry[v] != geometry[old])
+                    atomicExch(invalid, 1u);
+                break;
+            }
+            at = (at + 1) & (hash_capacity - 1);
+        }
     }
 }
 __global__ void decode_placements(DeviceMeshView m, State* state, const Edit* edits,
@@ -1466,6 +1493,23 @@ struct GpuActionState::Impl {
             check(gpu::copy(original_indices.p, mesh.indices.p, mesh.indices.n * sizeof(uint32_t),
                             cudaMemcpyDeviceToDevice));
         }
+        if (mesh.precision.n) {
+            // Validate the effective initial representation too, including a
+            // resumed episode that never proposes an edit. UV welding above
+            // may change its referenced-ID denominator. Use scratch bits so
+            // validation does not modify the admitted mesh or reset snapshot.
+            precision_used.zero();
+            check(gpu::copy(trial_bits.p, mesh.precision.p, trial_bits.n * sizeof(uint32_t),
+                            cudaMemcpyDeviceToDevice));
+            precision_references<<<blocks(mesh.indices.n), 256, 0, gpu::stream()>>>(
+                mesh.indices.p, &state.p->faces, face_capacity, precision_used.p);
+            precision_cap<<<1, 256, 0, gpu::stream()>>>(
+                trial_bits.p, precision_used.p, uint32_t(trial_bits.n),
+                mesh.view.exact_position_bps, &state.p->invalid_placement);
+            read();
+            if (host.invalid_placement)
+                throw std::invalid_argument("initial mesh exceeds exact position cap");
+        }
         seams.zero();
         mark_seams<<<blocks(mesh.view.vertices), 256, 0, gpu::stream()>>>(mesh.view, geometry.p,
                                                                           seams.p, preserve_uv);
@@ -1617,9 +1661,10 @@ struct GpuActionState::Impl {
                 canonical.p, original_offsets.p, original_faces.p, trial_positions.p,
                 trial_normals.p, trial_uv.p, trial_colors.p, trial_tangents.p, packed_uv,
                 &state.p->invalid_placement);
+            check(gpu::memset(slots.p, 255, slots.n * sizeof(uint32_t)));
             validate_placement<<<blocks(face_capacity), 256, 0, gpu::stream()>>>(
                 mesh.view, state.p, remap.p, keep.p, trial_positions.p, trial_uv.p,
-                &state.p->invalid_placement, preserve_uv);
+                &state.p->invalid_placement, preserve_uv, geometry.p, slots.p, hash_capacity);
         }
         build_precision(trial_bits, &state.p->invalid_placement);
         check(cudaGetLastError());
@@ -2056,9 +2101,10 @@ std::vector<DeviceMeshView> GpuActionState::trial_batch(Action action,
             p.geometry.p, p.canonical.p, p.original_offsets.p, p.original_faces.p, slot.positions.p,
             slot.normals.p, slot.uv.p, slot.colors.p, slot.tangents.p, p.packed_uv,
             &slot.status.p->invalid);
+        check(gpu::memset(p.slots.p, 255, p.slots.n * sizeof(uint32_t)));
         validate_placement<<<blocks(p.face_capacity), 256, 0, gpu::stream()>>>(
             p.mesh.view, p.state.p, p.remap.p, p.keep.p, slot.positions.p, slot.uv.p,
-            &slot.status.p->invalid, p.preserve_uv);
+            &slot.status.p->invalid, p.preserve_uv, p.geometry.p, p.slots.p, p.hash_capacity);
         p.build_precision(slot.bits, &slot.status.p->invalid);
         auto view = p.mesh.view;
         view.exact_position_bits = slot.bits.p;

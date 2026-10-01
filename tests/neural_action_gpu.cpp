@@ -1,6 +1,7 @@
 #include "neural/action_gpu.hpp"
 #include "neural/cuda.cuh"
 #include "tools/neural/action_probe.hpp"
+#include <chrono>
 #include <iostream>
 using namespace blitz;
 using namespace blitz::neural;
@@ -361,6 +362,186 @@ void exact_position_contracts() {
     reuse.commit(drop->action);
     require(reuse.snapshot().data.indices.size() == m.indices.size() - 6,
             "reuse retained stale invalid flag or transferred precision to unchanged target");
+}
+void initial_precision_cap_contracts() {
+    auto mesh = plane(10);
+    mesh.normals.clear();
+    mesh.uv.clear();
+    mesh.colors.clear();
+    mesh.tangents.clear();
+    // All 100 vertices occur in faces, most in several corners. The denominator
+    // is unique referenced vertex IDs, not index count or allocated capacity.
+    mesh.exact_position_bits.resize(4);
+    auto quantization = vertex_bounds(mesh.view());
+    NeuralOptions options;
+    options.memory_mib = 128;
+    options.exact_position_bps = 500;
+    for (auto storage : {NeuralVertexStorage::Float32, NeuralVertexStorage::Packed}) {
+        options.vertex_storage = storage;
+        for (bool placement : {false, true}) {
+            mesh.exact_position_bits[0] = 31;
+            GpuActionState accepted(mesh.view(), options, placement, &quantization);
+            require(accepted.view().faces == mesh.view().triangles(),
+                    "initial precision cap rejected its inclusive boundary");
+            mesh.exact_position_bits[0] = 63;
+            bool rejected = false;
+            try {
+                GpuActionState excessive(mesh.view(), options, placement, &quantization);
+            } catch (const std::invalid_argument&) {
+                rejected = true;
+            }
+            require(rejected, "initial state admitted 6/100 exact vertices under a 5% cap");
+            options.exact_position_bps = 600;
+            GpuActionState higher(mesh.view(), options, placement, &quantization);
+            require(higher.view().faces == accepted.view().faces,
+                    "initial precision admission ignored a larger caller cap");
+            options.exact_position_bps = 500;
+        }
+    }
+    // An exact but unreferenced vertex must neither count as an exception nor
+    // increase the denominator. Constructor validation must not mutate input.
+    mesh.positions.push_back({0, 0, 0});
+    mesh.exact_position_bits[0] = 31;
+    mesh.exact_position_bits[3] |= 1u << 4;
+    auto before = mesh;
+    GpuActionState unused(mesh.view(), options, true, &quantization);
+    require(same_mesh_data(mesh.view(), before.view()), "precision admission mutated input");
+    mesh.exact_position_bits[0] = 63;
+    options.exact_position_bps = 595;
+    bool rejected = false;
+    try {
+        GpuActionState excessive(mesh.view(), options, true, &quantization);
+    } catch (const std::invalid_argument&) {
+        rejected = true;
+    }
+    require(rejected, "unreferenced capacity diluted the initial precision cap");
+    mesh.positions.back() = mesh.positions[11];
+    mesh.exact_position_bits[3] = 0;
+    *std::find(mesh.indices.begin(), mesh.indices.end(), 11u) = 100;
+    options.vertex_storage = NeuralVertexStorage::Float32;
+    options.preserve_uv = true;
+    GpuActionState separate_ids(mesh.view(), options, true, &quantization);
+    options.preserve_uv = false;
+    rejected = false;
+    try {
+        GpuActionState welded(mesh.view(), options, true, &quantization);
+    } catch (const std::invalid_argument&) {
+        rejected = true;
+    }
+    require(rejected, "initial precision cap counted IDs removed by UV welding");
+}
+void placement_coincidence_contracts() {
+    Mesh mesh;
+    mesh.positions = {{-1, 0, 0},   {1, 0, 0},  {1, 2, 0}, {-1, 2, 0},
+                      {0, -0.f, 0}, {0, -1, 0}, {1, -1, 0}};
+    mesh.indices = {0, 1, 2, 0, 2, 3, 4, 5, 6};
+    NeuralOptions options;
+    options.memory_mib = 128;
+    auto inventory = [](GpuActionState& state) {
+        std::vector<Vec3> positions(state.view().vertices);
+        gpu::check(gpu::copy(positions.data(), state.view().positions,
+                             positions.size() * sizeof(Vec3), cudaMemcpyDeviceToHost));
+        std::vector<std::array<float, 6>> keys;
+        for (auto& row : state.placements({})) {
+            auto a = positions[row.action.from], b = positions[row.action.to];
+            keys.push_back({a.x, a.y, a.z, b.x, b.y, b.z});
+        }
+        std::sort(keys.begin(), keys.end());
+        return keys;
+    };
+    for (auto storage : {NeuralVertexStorage::Float32, NeuralVertexStorage::Packed}) {
+        options.vertex_storage = storage;
+        GpuActionState state(mesh.view(), options, true);
+        auto rows = state.placements({});
+        auto row = std::find_if(rows.begin(), rows.end(), [](const auto& r) {
+            return r.action.from == 0 && r.action.to == 1;
+        });
+        require(row != rows.end(), "coincidence fixture has no legal edge");
+        auto action = row->action;
+        auto proposals = state.teacher_proposals(action, false);
+        auto midpoint = proposals[2];
+        // Use the exact decoded position, including the packed grid. Its signed
+        // zero may differ from the existing vertex, just as constructor hashing.
+        Vec3 collision;
+        gpu::check(gpu::copy(&collision, state.view().positions + 4, sizeof(collision),
+                             cudaMemcpyDeviceToHost));
+        midpoint.placement.position = collision;
+        midpoint.placement.position.y = 0.f;
+        auto original = state.snapshot().data;
+        DeviceMeshView trial;
+        if (state.trial(action, midpoint.placement, trial)) {
+            state.commit(action, midpoint.placement);
+            auto snapshot = state.snapshot().data;
+            GpuActionState fresh(snapshot.view(), options, true);
+            throw std::runtime_error("cross-class coincidence accepted: continued legal actions=" +
+                                     std::to_string(state.placements({}).size()) +
+                                     ", fresh=" + std::to_string(fresh.placements({}).size()));
+        }
+        auto safe = proposals[1];
+        // This endpoint is the old source position, now unreferenced by the
+        // collapsed component. It must not conflict with a discarded source ID.
+        safe.placement.position = original.positions[0];
+        require(state.trial(action, safe.placement, trial),
+                "discarded source position falsely collided");
+        std::array batch{safe, midpoint, safe};
+        auto views = state.trial_batch(action, batch);
+        for (size_t i = 0; i < views.size(); ++i) {
+            DeviceTrialStatus status;
+            gpu::check(
+                gpu::copy(&status, views[i].trial_status, sizeof(status), cudaMemcpyDeviceToHost));
+            require(bool(status.invalid) == (i == 1),
+                    "batched coincidence admission contaminated another candidate");
+        }
+        bool rejected = false;
+        try {
+            state.commit(action, midpoint.placement);
+        } catch (const std::invalid_argument&) {
+            rejected = true;
+        }
+        require(rejected && same_mesh_data(original.view(), state.snapshot().data.view()),
+                "rejected coincidence modified incumbent geometry");
+        state.commit(action, safe.placement);
+        auto snapshot = state.snapshot().data;
+        GpuActionState fresh(snapshot.view(), options, true);
+        require(inventory(state) == inventory(fresh),
+                "accepted placement changed legality after snapshot reconstruction");
+    }
+}
+void placement_trial_timing() {
+    auto mesh = plane(65);
+    mesh.uv.clear();
+    NeuralOptions options;
+    options.memory_mib = 128;
+    options.vertex_storage = NeuralVertexStorage::Float32;
+    GpuActionState state(mesh.view(), options, true);
+    auto action = state.placements({}).front().action;
+    auto proposal = state.teacher_proposals(action, false)[1];
+    std::array batch{proposal, proposal, proposal, proposal};
+    DeviceMeshView view;
+    auto trial = [&](bool batched) {
+        if (!batched) {
+            require(state.trial(action, proposal.placement, view), "timing trial rejected");
+            return;
+        }
+        auto views = state.trial_batch(action, batch);
+        for (auto& candidate : views) {
+            DeviceTrialStatus status;
+            gpu::check(
+                gpu::copy(&status, candidate.trial_status, sizeof(status), cudaMemcpyDeviceToHost));
+            require(!status.invalid, "timing batch rejected");
+        }
+    };
+    for (bool batched : {false, true}) {
+        for (unsigned i = 0; i < 4; ++i)
+            trial(batched);
+        auto start = std::chrono::steady_clock::now();
+        for (unsigned i = 0; i < 64; ++i)
+            trial(batched);
+        double seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        std::cout << "{\"vertices\":4225,\"faces\":8192,\"batch\":" << (batched ? 4 : 1)
+                  << ",\"iterations\":64,\"seconds\":" << seconds << "}\n";
+    }
 }
 void coupled_placement(const Mesh& mesh) {
     NeuralOptions options;
@@ -831,10 +1012,22 @@ void strided_upload() {
     for (size_t i = 0; i < a.size(); ++i)
         require(a[i].action == b[i].action && a[i].x == b[i].x, "strided upload changed features");
 }
-int main() {
+int main(int argc, char** argv) {
     try {
         if (!neural_available())
             return 77;
+        if (argc == 2) {
+            if (std::string_view(argv[1]) == "--initial-precision")
+                initial_precision_cap_contracts();
+            else if (std::string_view(argv[1]) == "--placement-coincidence")
+                placement_coincidence_contracts();
+            else if (std::string_view(argv[1]) == "--placement-timing")
+                placement_trial_timing();
+            else
+                throw std::invalid_argument("unknown GPU action contract selector");
+            std::cout << "GPU action admission contracts passed\n";
+            return 0;
+        }
         discarded_vertex_contracts();
         for (unsigned n : {5u, 7u}) {
             auto m = plane(n);
@@ -885,6 +1078,8 @@ int main() {
         executor();
         placement_contracts();
         exact_position_contracts();
+        initial_precision_cap_contracts();
+        placement_coincidence_contracts();
         coupled_placement(seam);
         incremental_audits();
         sparse_teacher();

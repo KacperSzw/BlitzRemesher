@@ -1,3 +1,4 @@
+#include "tools/neural/action_audit.hpp"
 #include "tools/neural/cycle_replay.hpp"
 #include "tools/neural/model_audit.hpp"
 #include "tools/neural/numeric_diagnosis.hpp"
@@ -19,6 +20,10 @@ int main(int argc, char** argv) {
         }
         if (!torch::cuda::is_available())
             return 77;
+        if (argc == 7 && std::string_view(argv[1]) == "--audit-actions") {
+            audit_actions(argv[2], argv[3], argv[4], argv[5], argv[6]);
+            return 0;
+        }
         if (argc == 6 && std::string_view(argv[1]) == "--audit-model") {
             audit_model(argv[2], argv[3], argv[4], argv[5]);
             return 0;
@@ -94,6 +99,7 @@ int main(int argc, char** argv) {
             "blitz-neural-diagnostics: --check | --check-checkpoint | --check-schema | "
             "--check-width N | --diagnose-checkpoint CHECKPOINT OUTPUT | --audit-model MANIFEST "
             "MODEL SETTINGS OUTPUT | --migrate-policy MODEL PROBE OUTPUT REPORT | "
+            "--audit-actions MANIFEST INITIAL FINAL SETTINGS OUTPUT | "
             "--compare-storage SHARDS OUTPUT MODEL | --benchmark-update SHARDS OUTPUT MODEL | "
             "--replay-checkpoint RUN OUTPUT UPDATES");
     } catch (const std::exception& e) {

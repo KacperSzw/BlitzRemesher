@@ -1,5 +1,6 @@
 #include "neural/action_gpu.hpp"
 #include "neural/cuda.cuh"
+#include "tools/neural/action_probe.hpp"
 #include <iostream>
 using namespace blitz;
 using namespace blitz::neural;
@@ -527,6 +528,86 @@ void conditioned_teacher() {
         }
     }
 }
+void action_probe_contracts() {
+    using namespace blitz::neural::diagnostic;
+    auto mesh = plane(5), input = copy_mesh(mesh.view());
+    NeuralOptions options;
+    options.memory_mib = 128;
+    WeightsData first, second;
+    first.architecture = second.architecture = conditioned_placement_schema;
+    first.values.resize(policy_weights(first.architecture));
+    const size_t middle = hidden * (placement_features + 1), last = middle + hidden * (hidden + 1);
+    first.values[hidden * placement_features] = 1;
+    first.values[middle] = 1;
+    first.values[last] = 1;
+    first.values[last + 3 * hidden] = .125f;
+    second = first;
+    // Identical heads, different backbones: swapping output weights cannot
+    // reproduce this test's two distinct scores and decoded XYZ placements.
+    second.values[hidden * placement_features] = 2;
+    ActionCuda a(first, options, 3), b(second, options, 3);
+    for (uint32_t count : {3u, 7u}) {
+        GpuActionState state(mesh.view(), options, true);
+        auto before = state.snapshot().data;
+        auto initial = capture_actions(state, {}, a, count, 937),
+             final = capture_actions(state, {}, b, count, 937);
+        require_same_actions(initial, final);
+        require(initial.rows.size() == count, "action probe lost the fixed pool");
+        auto order = ranked_actions(initial);
+        for (size_t i = 0; i < order.size(); ++i)
+            require(order[i] == i, "equal model scores changed the frozen pool order");
+        bool valid = false;
+        for (size_t i = 0; i < count; ++i) {
+            const auto edge = initial.rows[i].action;
+            auto from = mesh.positions[edge.from], to = mesh.positions[edge.to];
+            const auto midpoint = (from + to) * .5;
+            const auto extent = length(to - from);
+            for (unsigned model = 0; model < 2; ++model) {
+                const auto& probe = model ? final : initial;
+                require(probe.predictions[i * placement_outputs] == float(model + 1),
+                        "action probe rank came from the wrong backbone");
+                const auto& position = probe.placements[i].position;
+                require(std::abs(position.x - (midpoint.x + extent * .125 * (model + 1))) < 1e-6 &&
+                            std::abs(position.y - midpoint.y) < 1e-6 &&
+                            std::abs(position.z - midpoint.z) < 1e-6,
+                        "action probe placement came from the wrong full model");
+                DeviceMeshView candidate;
+                valid |= state.trial(edge, probe.placements[i], candidate);
+            }
+        }
+        require(valid, "action probe fixture supplied no valid edit");
+        auto again = capture_actions(state, {}, a, count, 937);
+        require_same_actions(initial, again);
+        for (size_t i = 0; i < count; ++i)
+            require(!std::memcmp(&initial.placements[i], &again.placements[i], sizeof(Placement)),
+                    "trial scratch contaminated captured model placements");
+        require(same_mesh_data(before.view(), state.snapshot().data.view()) &&
+                    same_mesh_data(input.view(), mesh.view()),
+                "independent action probes mutated working or input geometry");
+        final.rows.front().x[79] = 1 - final.rows.front().x[79];
+        bool rejected = false;
+        try {
+            require_same_actions(initial, final);
+        } catch (const std::runtime_error&) {
+            rejected = true;
+        }
+        require(rejected, "action probe accepted differently conditioned model inputs");
+    }
+    const std::array<size_t, 2> forward{0, 1}, reverse{1, 0};
+    std::array<ActionObservation, 2> observations{
+        {{0, true, false, false}, {12, true, true, true}}};
+    auto unknown = first_safe(forward, observations, 2),
+         safe = first_safe(reverse, observations, 2);
+    require(unknown.stop == ProbeStop::Unknown && unknown.trials == 1 &&
+                safe.stop == ProbeStop::SafeAction && safe.row == 1 && safe.trials == 1,
+            "action probe treated an earlier unknown as a rejected edit");
+    observations[0] = {0, false, true, false};
+    auto bounded = first_safe(forward, observations, 1),
+         complete = first_safe(forward, observations, 2);
+    require(bounded.stop == ProbeStop::TrialBudget && bounded.trials == 1 &&
+                complete.stop == ProbeStop::SafeAction && complete.row == 1 && complete.trials == 2,
+            "action probe ignored invalid edits or its declared trial budget");
+}
 void relaxed_uv_contracts() {
     auto source = plane(5);
     Mesh wedges;
@@ -808,6 +889,7 @@ int main() {
         incremental_audits();
         sparse_teacher();
         conditioned_teacher();
+        action_probe_contracts();
         relaxed_uv_contracts();
         action_stop_contracts();
         workspace_budget();

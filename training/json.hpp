@@ -149,6 +149,15 @@ inline const char* action_stop_name(blitz::NeuralActionStop reason) {
     }
     throw std::invalid_argument("invalid action stop reason");
 }
+inline nlohmann::json policy_rollout_outcome(blitz::NeuralActionStop reason,
+                                             uint64_t final_triangles, uint64_t target_triangles) {
+    // Completion records known execution; attainment is a separate geometry
+    // fact, including when cancellation is observed after reaching the target.
+    return {{"version", 1},
+            {"stop_reason", action_stop_name(reason)},
+            {"target_triangles", target_triangles},
+            {"target_reached", final_triangles <= target_triangles}};
+}
 inline nlohmann::json neural_json(const blitz::NeuralOptions& o) {
     return {{"origin", origin_name(o.origin)},
             {"preserve_uv", o.preserve_uv},

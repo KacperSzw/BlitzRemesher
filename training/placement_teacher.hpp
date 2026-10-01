@@ -328,19 +328,24 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
         };
         ActionStats rollout;
         const auto initial_faces = state.view().faces;
-        auto end = state.execute(condition(e, adjacent.limit, retained),
-                                 std::max<size_t>(1, size_t(source.triangles() * retained)),
+        const auto target_faces = std::max<size_t>(1, size_t(source.triangles() * retained));
+        auto end = state.execute(condition(e, adjacent.limit, retained), target_faces,
                                  rollout_trials, policy, NeuralRanking::Learned, seed,
                                  options.action_batch, gate, &rollout, cancel);
         seed_result["accepted"] = rollout.accepted > 0;
-        seed_result["policy"] = {{"payload_sha256", policy_hash},
-                                 {"initial_triangles", initial_faces},
-                                 {"final_triangles", state.view().faces},
-                                 {"ranked", rollout.ranked},
-                                 {"trials", rollout.trials},
-                                 {"accepted_actions", rollout.accepted},
-                                 {"accepted_batches", rollout.accepted_batches},
-                                 {"complete", !unknown && !cancel()}};
+        seed_result["policy"] = {
+            {"payload_sha256", policy_hash},
+            {"initial_triangles", initial_faces},
+            {"final_triangles", state.view().faces},
+            {"ranked", rollout.ranked},
+            {"trials", rollout.trials},
+            {"accepted_actions", rollout.accepted},
+            {"accepted_batches", rollout.accepted_batches},
+            {"outcome",
+             policy_rollout_outcome(rollout.stop_reason, state.view().faces, target_faces)},
+            // Known, noncancelled execution does not imply
+            // the requested retained fraction was reached.
+            {"complete", !unknown && !cancel()}};
         if (rollout.accepted && !unknown && !cancel()) {
             std::ofstream f(output / "policy-episode.bin", std::ios::binary);
             write_packed_mesh(f, end.view(source), &quantization);

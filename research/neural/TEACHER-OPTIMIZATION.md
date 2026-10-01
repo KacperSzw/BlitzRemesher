@@ -28,6 +28,12 @@ pruning and recomputes the winner over valid queried candidates. Resource,
 cancellation and unknown results never become negative labels. Exhaustive search
 remains the default; the model format and runtime acceptance rules are unchanged.
 
+Policy seeds record `policy.outcome`: the stop reason, integer triangle target,
+and whether the actual final triangle count reached that target. The existing
+`policy.complete` field means execution remained known and noncancelled; it does
+not mean the requested retained fraction was attained. This diagnostic object
+does not change labels, episode payloads or the teacher contract.
+
 ## Frozen comparison
 
 The resident baseline is commit `81fd92618c194b6b2838047fbddcd4c0bc4e7c8c`, before

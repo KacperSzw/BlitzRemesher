@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "attempt": "remote-attempt-01",
+  "run_directory": "runs/neural/teacher-optimization-02",
+  "source_revision": "5244fb34bbea9a6aa34910d54817ff357711adff",
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "recorded_against_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+  "status": "incomplete_process_after_all_teacher_jobs_consumed",
+  "complete": false,
+  "training_ready": false,
+  "quality_proven": false,
+  "strategy_promotable": false,
+  "score": null,
+  "performance_speedup": null,
+  "paired_learning_pilots": 0,
+  "full_quality_comparisons": 0,
+  "final_training": false,
+  "source_archive": {
+    "sha256": "67429f258d2e5ee9950b44c39ee87be19352c3fe1c278b9a792d0d83d678fe30",
+    "bytes": 203520000
+  },
+  "results_archive": {
+    "sha256": "65b8cfda53e4d4fe6550da911f29635de9a19b0b6163a39507c0d39a54b5e147",
+    "bytes": 137184725,
+    "committed": false,
+    "verified_at": "2026-10-01T11:23:01.055Z"
+  },
+  "device": {
+    "gpu": "NVIDIA A40",
+    "data_center": "EU-SE-1",
+    "gpu_hourly_quote_usd": 0.49,
+    "compute_capability": "8.6",
+    "reported_memory_mib": 46068,
+    "driver": "580.159.04",
+    "cuda_toolkit": "12.9.86"
+  },
+  "validation": {
+    "source_revision": "5244fb34bbea9a6aa34910d54817ff357711adff",
+    "remote_ctest": {
+      "passed": 43,
+      "failed": 0
+    },
+    "action_gpu_memcheck_errors": 0,
+    "vulkan_memcheck_errors": 0,
+    "vulkan_validation_errors": 0,
+    "supplemental_cancellation_cpu_contract": {
+      "passed": true,
+      "frozen_source_changed": false,
+      "source_manifest": "supplemental-cancellation-source.json.gz"
+    }
+  },
+  "teacher": {
+    "strategy": "exhaustive",
+    "workers": 2,
+    "candidate_batch": 4,
+    "warmup_jobs_per_process": 4,
+    "measured_jobs_per_process": 7,
+    "completed_jobs_both": 11,
+    "payload_and_common_trajectory_parity": true,
+    "baseline": {
+      "complete": true,
+      "total_wall_seconds": 7.127266108,
+      "measured_seconds": 4.695459457,
+      "binary_sha256": "b12ff63aade62e1a888d6c7bbf66b31441b57f4518212f105481c667a2db8a15"
+    },
+    "optimized": {
+      "complete": false,
+      "last_persisted_measured_seconds": 3.672229348,
+      "binary_sha256": "099654d09e01868767b2ab02b53de7976a20b468e3d2d5d2e14438294bb3b6ee",
+      "process_result": {
+        "code": null,
+        "signal": "SIGKILL",
+        "timed_out": true,
+        "cancelled": false,
+        "success": false
+      },
+      "runner_wall_seconds": 103.256
+    },
+    "blocked_stage": "After last result consumption; no persisted marker separates worker shutdown, main stream synchronization or enclosing scope cleanup",
+    "comparison": "Only the first baseline and optimized processes started; complete ABBA was not obtained"
+  },
+  "cleanup": {
+    "verified_collection_before_termination": true,
+    "compute_terminated": true,
+    "container_storage_released": true,
+    "ephemeral_storage_lost": false,
+    "provider_checked_at": "2026-10-01T11:35:50.314Z",
+    "pods": 0,
+    "network_volumes": 0,
+    "evidence": "provider-cleanup.json"
+  },
+  "cost": {
+    "authorization_id": "teacher-optimization-2026-10-01",
+    "grant_cap_usd": 3,
+    "started_at": "2026-10-01T11:04:41.869Z",
+    "terminated_at": "2026-10-01T11:23:03.296Z",
+    "elapsed_seconds": 1101.427,
+    "conservative_hourly_gpu_cap_usd": 0.55,
+    "hourly_storage_allowance_usd": 0.03,
+    "conservative_assumed_usd": 0.17745212777777777,
+    "rounded_up_assumed_usd": 0.1775,
+    "actual_provider_bill": false,
+    "initial_maximum_total_reservation_usd": 1.6533333333333335,
+    "remaining_grant_before_next_reserve_usd": 2.822547872222222
+  },
+  "next_gate": "Diagnose and regression-test shutdown, then complete the permitted bounded comparison and uncensored full development quality before adoption or final training"
+}

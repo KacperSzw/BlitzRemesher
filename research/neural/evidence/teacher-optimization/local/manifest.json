@@ -97,6 +97,81 @@
       "uncompressed_sha256": "c4ce9f008bd0bb4fc1626bebce007e204055b4f132fc268086a0ed8a0dd419e6",
       "sha256": "df9d121a46270af54fcfea4eb8ab1f81676a620a571eae20ea68921c6c34528d",
       "bytes": 6809
+    },
+    {
+      "file": "final-parity.json.gz",
+      "source": "runs/neural/teacher-final-parity-01/report.json",
+      "source_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "uncompressed_sha256": "98398a757c8fd89216e5856045aec4ba0c64cf604c74612af1fa264adfb455c7",
+      "sha256": "99f67ca64074ff7a61f709ee8bcfd7a907720460c9e0c6d5c68aa59f45a3c92d",
+      "bytes": 7790
+    },
+    {
+      "file": "final-cancellation-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-final-contracts.log",
+      "source_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "uncompressed_sha256": "b0ad3f081e5e606924bcfc152eb9a448a03d6c67c906de44ad267f306d2c8be6",
+      "sha256": "8ccce9a61037c400df56ea1b67479bd9798e61c97f06cc73390631315866ad3a",
+      "bytes": 242
+    },
+    {
+      "file": "cancellation-native-build.log.gz",
+      "source": "/tmp/blitz-teacher-cancellation-build.log",
+      "source_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+      "uncompressed_sha256": "af6865775f40de51d0e20ae46810b8bf906d4bfd30858d6a63c2b7e557821fbd",
+      "sha256": "c91b2fcd1c7e5619e866986610b381edb35c334a89af579b79d92da3dac18b4d",
+      "bytes": 1502
+    },
+    {
+      "file": "cancellation-validation.json.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-cancellation/build/cancellation-validation/validation.json",
+      "source_revision": "ababcb8ef305ffd71c2d68ecf3ab916d1f429d0e",
+      "uncompressed_sha256": "ca0b07abd21b0f8934e6ff8e47a7c298f21a720d203cd6daa7bf084c6ae65c1f",
+      "sha256": "e0b9ca521720dd6128b64f172b6b187b21cedb3cafa9b588aca58f5c56c4be0a",
+      "bytes": 522
+    },
+    {
+      "file": "cancellation-cpu-ctest.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-cancellation/build/cancellation-validation/cpu-ctest.log",
+      "source_revision": "ababcb8ef305ffd71c2d68ecf3ab916d1f429d0e",
+      "uncompressed_sha256": "f5191dacb034d0c6f0c0d7a3d42b04eccca29aeb5e01c604e99c2efe3ff3426b",
+      "sha256": "28acf0c060e983bd49e33ada7d4385d860a2ef139230d5761070fe877432fc60",
+      "bytes": 323
+    },
+    {
+      "file": "cancellation-sanitizer-ctest.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-cancellation/build/cancellation-validation/sanitize-ctest.log",
+      "source_revision": "ababcb8ef305ffd71c2d68ecf3ab916d1f429d0e",
+      "uncompressed_sha256": "3de375caf036792156fd6fcab76bebb725fe1042fee4bc4d897d6030efbe570f",
+      "sha256": "aeac760341c4fd2d141baadc86fd1c4710abfb38b601e6940534d49370ca32a3",
+      "bytes": 327
     }
-  ]
+  ],
+  "supplemental_validation": {
+    "source_revision": "1c3bf34b9dfb3906e73d8bf4725a94545c9b0da7",
+    "focused_integrated_ctest": {
+      "passed": 3,
+      "failed": 0
+    },
+    "cancellation_cpu_ctest": {
+      "passed": 2,
+      "failed": 0
+    },
+    "cancellation_asan_ubsan_ctest": {
+      "passed": 2,
+      "failed": 0
+    },
+    "native_teacher_cycle_compiled": true,
+    "final_parity": {
+      "complete": true,
+      "processes": 4,
+      "jobs": 16,
+      "matching_payloads": true,
+      "matching_common_trajectories": true,
+      "workers": 1,
+      "gpu_memory_mib": 512,
+      "performance_authority": "shared-workstation smoke only",
+      "does_not_cover": "two-worker A40 shutdown or full quality"
+    }
+  }
 }

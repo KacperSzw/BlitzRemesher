@@ -87,7 +87,7 @@ calling a partial comparison a quality result.
 
 ## Evidence status
 
-Integrated local validation passed 44/44 GPU/training CTests, 28/28 CPU tests and
+Earlier integrated local validation passed 44/44 GPU/training CTests, 28/28 CPU tests and
 28/28 ASan/UBSan tests. The updated cloud/profile/optimization CTests passed 3/3.
 Grouped Vulkan audits and the core-first resident teacher passed Compute Sanitizer
 with zero errors. [Checksummed local evidence](evidence/teacher-optimization/local/manifest.json)
@@ -108,8 +108,36 @@ bottleneck. The limited coffee rollout retained 99.7903% of triangles despite a
 The branch simplifier seed retained 49.9970%. These distinctions must remain
 visible when evaluating learning throughput and state coverage.
 
-The bounded A40 experiment started from immutable source `5244fb3` on 2026-10-01
-at 11:04:41 UTC, quoted at $0.49/hour. Its conservative maximum reservation is
-$1.6534 of the separate $3 grant, including storage allowance and reserve. Final
-remote measurements, remaining bottlenecks and verified resource cleanup are
-pending; no long training is authorized by this document.
+After the cancellation fix, local focused CTests passed 3/3 and the isolated
+cancellation/strategy contracts passed 2/2 in both CPU and ASan/UBSan builds.
+The teacher and resident cycle rebuilt. A final one-worker, 512 MiB ABBA smoke
+completed another 16 jobs with matching payloads and common intermediate
+trajectories. These supplementary records are in the same local manifest; they
+do not validate two-worker teardown on the A40.
+
+The first launched A40 attempt used immutable source `5244fb3`, quoted at
+$0.49/hour. Remote CTests passed 43/43, both Compute Sanitizer runs reported zero
+errors, and Vulkan validation passed. All 11 jobs in the first optimized process
+completed and were consumed. Independent checks of their actual action and
+episode bytes, normalized contracts, common trajectories and semantic counters
+match the baseline. The optimized process then stalled after the last persisted
+wave and was killed at its deadline. The existing report does not identify which
+shutdown or enclosing cleanup call blocked.
+
+[The failed-attempt evidence](evidence/teacher-optimization/remote-attempt-01/README.md)
+preserves raw reports, logs, the parity proof and the verified archive checksum.
+The complete ABBA comparison was not obtained; no remote speedup, strategy
+adoption or quality result is accepted. No paired learning pilot or final training
+started. The supplemental CPU cancellation contract also passed on that host
+without changing the frozen experiment source.
+
+Collection was verified before compute termination on 2026-10-01 at 11:23:03 UTC.
+An independent provider readback at 11:35:50 UTC showed zero Pods and zero network
+volumes. The rental ledger covers 1,101.427 seconds; charging the conservative
+$0.55/hour GPU cap plus $0.03/hour storage allowance gives $0.1775 rounded up.
+This is an estimate for the grant ledger, not a provider billing receipt.
+
+The remaining grant permits a bounded diagnostic retry. Shutdown diagnosis and a
+regression test come first, followed by complete representative teacher comparison
+and uncensored full development quality. The next recipe explicitly keeps
+`exhaustive`; long training remains disabled while those gates are unresolved.

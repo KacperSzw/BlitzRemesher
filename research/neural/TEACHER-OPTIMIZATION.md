@@ -261,3 +261,15 @@ not one simultaneous suite. The capability orchestration tests also passed 25/25
 from source, build and unrelated working directories. Raw logs and source scopes
 are preserved, without changing the prior remote failure or claiming a completed
 learning hour.
+
+The [fourth remote attempt](evidence/teacher-optimization/remote-attempt-04/README.md)
+passed 49/49 CTests, both memchecks, Vulkan validation and 48 join fixture rounds
+on an A40 with driver 595.91.07. The requested hour then started but stopped after
+about 110 seconds when CoffeeCart teacher shard 90 failed its final adjacent audit.
+History records 11,520 completed updates; the latest verified checkpoint remains
+step 6,272. These are separate facts, and neither means the hour completed.
+The failed shard, history, checkpoint verification and binary hashes are preserved.
+No subsequent LOD comparison or paired validation ran. Collection preceded
+termination, provider readback confirmed zero Pods and volumes, and conservative
+cumulative cost reached $0.75151035. Investigating the seeded audit failure and
+retrying the requested work remain necessary.

@@ -1,0 +1,34 @@
+{
+  "revision": "959f248e19f62169603a82674367c757eccb3a29",
+  "branch": "main",
+  "deployment": {
+    "id": "teacher-optimization-a40-hour",
+    "gpu": "NVIDIA A40",
+    "catalog_vram_gb": 48,
+    "device_memory_mib": 45000,
+    "compute_capability": "8.6",
+    "cuda_architecture": 86,
+    "minimum_driver": [
+      575,
+      51,
+      3
+    ],
+    "minimum_cuda": "12.9",
+    "host_ram_gb": 24,
+    "vcpus": 6,
+    "gpu_hourly_usd_cap": 0.55,
+    "container_disk_gb": 50,
+    "network_volume_gb": 20,
+    "setup_minutes": 30,
+    "training_minutes": 194,
+    "collection_minutes": 8,
+    "staged_rental_minutes": 150,
+    "staged_experiment_minutes": 110,
+    "graphics": true
+  },
+  "storage_mode": "container",
+  "experiment": "teacher-optimization",
+  "archive_sha256": "87903165a7b93f27b8640bc04ed191fb5a8817e30094bdc931a8eaca6662a65d",
+  "archive_bytes": 204584960,
+  "files": 30
+}

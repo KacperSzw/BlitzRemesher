@@ -1,4 +1,8 @@
 if(BUILD_TESTING)
+  add_executable(blitz-neural-teacher-cancellation-tests tests/neural_teacher_cancellation.cpp)
+  target_include_directories(blitz-neural-teacher-cancellation-tests PRIVATE . src include)
+  target_compile_features(blitz-neural-teacher-cancellation-tests PRIVATE cxx_std_20)
+  add_test(NAME neural-teacher-cancellation-contracts COMMAND blitz-neural-teacher-cancellation-tests)
   add_executable(blitz-neural-teacher-strategy-tests tests/neural_teacher_strategy.cpp)
   target_include_directories(blitz-neural-teacher-strategy-tests PRIVATE .)
   target_compile_features(blitz-neural-teacher-strategy-tests PRIVATE cxx_std_20)

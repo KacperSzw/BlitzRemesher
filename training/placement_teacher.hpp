@@ -6,6 +6,7 @@
 #include "training/action_data.hpp"
 #include "training/json.hpp"
 #include "training/packing.hpp"
+#include "training/teacher_cancellation.hpp"
 #include "training/teacher_labels.hpp"
 #include "training/teacher_strategy.hpp"
 #include "training/training_cache.hpp"
@@ -140,8 +141,10 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                               audit_seconds - confirmation_seconds - commit_seconds -
                               final_audit_seconds - output_seconds)}};
     };
+    TeacherCancellation cancellation;
     auto cancel = [&] {
-        return (request.cancelled && request.cancelled()) || seconds() > minutes * 60;
+        return cancellation.poll(
+            [&] { return (request.cancelled && request.cancelled()) || seconds() > minutes * 60; });
     };
     auto e = action_eval(
         previous_steps ? (previous_pixels ? previous_pixels : std::min(512., pixels * 2)) : pixels,
@@ -514,6 +517,9 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                                                 cutoff);
                             });
                             b = a;
+                            cancellation.observe(a);
+                            if (cancellation.stopped())
+                                return;
                             if (emitted || e.limit != adjacent.limit) {
                                 std::vector<DeviceMeshView> active;
                                 std::vector<size_t> lanes;
@@ -528,6 +534,7 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                                                                         bounds, adjacent, &stats,
                                                                         cutoff);
                                     });
+                                    cancellation.observe(values);
                                     for (size_t i = 0; i < lanes.size(); ++i)
                                         b[lanes[i]] = values[i];
                                 }
@@ -575,6 +582,10 @@ inline PlacementResult prepare_placements(const std::string& asset, const fs::pa
                         options.raster_backend == NeuralRasterBackend::Vulkan &&
                         options.candidate_batch > 1)
                         batch_candidates(pending, cutoff);
+                    // No validity result is available when a batch stops before
+                    // its first camera. Keep that stop out of geometry counts.
+                    if (cancellation.stopped())
+                        return q;
                     if (ready[index]) {
                         if (std::isfinite(cutoff) &&
                             ((e.max_changed_area > 0 &&

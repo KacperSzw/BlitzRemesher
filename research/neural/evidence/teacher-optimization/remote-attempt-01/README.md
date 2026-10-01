@@ -25,6 +25,14 @@ normalized. `job-artifacts.json.gz` preserves the original text and SHA-256 of
 all 88 index, contract, trajectory and reuse files. The two process reports and
 logs, experiment report and contract reports are stored verbatim as gzip files.
 
+`measured-job-analysis.json.gz` supplements those records with the seven completed
+measured conditions, excluding warmup from phase totals. Its two process-report
+hashes and 56 per-condition index, trajectory and payload hashes were independently
+checked against the collected files. Phase totals sum concurrent worker wall
+intervals, not GPU time or process wall time; per-job memory peaks sample the shared
+process budget. The analysis retains null speedup and unproven quality. Its shallow
+policy rollout states do not establish deeper training-state coverage.
+
 The 137,184,725-byte results archive remains in the ignored run directory; its
 verified SHA-256 is
 `65b8cfda53e4d4fe6550da911f29635de9a19b0b6163a39507c0d39a54b5e147`.

@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "attempt": "remote-attempt-02",
+  "run_directory": "runs/neural/teacher-optimization-03",
+  "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+  "baseline_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+  "recorded_against_revision": "8a73e5f21c17f0bd58bdd682fb1329e01d978668",
+  "status": "native_teardown_fixture_timed_out_before_contracts_or_teacher_comparison",
+  "complete": false,
+  "training_ready": false,
+  "quality_proven": false,
+  "strategy_promotable": false,
+  "score": null,
+  "performance_speedup": null,
+  "paired_learning_pilots": 0,
+  "full_quality_comparisons": 0,
+  "final_training": false,
+  "source_archive": {
+    "sha256": "dce978bd94bf72d5ec6d5371c886ebac428cbb0469584057238a3ac3bcef267d",
+    "bytes": 203735040
+  },
+  "results_archive": {
+    "sha256": "e488deb0204fcedcd64130bf4db761bc00ba3f1d14a3772da0f6e5fbe22e979c",
+    "bytes": 37156,
+    "committed": false,
+    "verified_at": "2026-10-01T12:08:14.551Z"
+  },
+  "device": {
+    "gpu": "NVIDIA A40",
+    "data_center": "EU-SE-1",
+    "gpu_hourly_quote_usd": 0.49,
+    "compute_capability": "8.6",
+    "reported_memory_mib": 46068,
+    "driver": "580.159.04",
+    "cuda_toolkit": "12.9.86"
+  },
+  "validation": {
+    "setup_build_complete": true,
+    "baseline_built": true,
+    "current_native_build_complete": true,
+    "remote_ctests_run": 0,
+    "remote_memcheck_runs": 0,
+    "teacher_comparison_processes": 0,
+    "debugger_preflight_complete": true,
+    "teardown_stress": {
+      "planned_rounds": 12,
+      "completed_rounds": [
+        {
+          "round": 0,
+          "peak_bytes": 444166214
+        },
+        {
+          "round": 1,
+          "peak_bytes": 444166214
+        }
+      ],
+      "stalled_round": 2,
+      "round_numbering": "zero-based",
+      "command": "build/neural/blitz-neural-vulkan-tests",
+      "args": ["--teardown"],
+      "process_result": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timed_out": true,
+        "cancelled": false,
+        "success": false
+      },
+      "diagnostic": {
+        "attempted": true,
+        "captured": true,
+        "pid": 3081,
+        "command": "gdb",
+        "output": "/workspace/results/teacher-optimization/teardown-stress.threads.log",
+        "maximum_ms": 5000,
+        "timed_out": false,
+        "cancelled": false,
+        "code": 0,
+        "signal": null,
+        "output_sha256": "d19f832c6fd6c9a3451339caafdbaa8a6726b989bda797aa654f98041228bd27",
+        "output_bytes": 8183,
+        "ptrace_denied": false,
+        "threads": 10,
+        "frames": 86
+      },
+      "observed_boundary": {
+        "finished_worker_cpp_resources": {
+          "thread_hash": "5794802552086514452",
+          "last_trace_microseconds": 6129259336870
+        },
+        "blocked_vkDestroyDevice": {
+          "thread_hash": "4086425109767686920",
+          "begin_trace_microseconds": 6129259336816
+        },
+        "stack_threads": {
+          "vkDestroyDevice": {
+            "gdb_thread": 8,
+            "lwp": 3106
+          },
+          "nvidia_thread_exit": {
+            "gdb_thread": 7,
+            "lwp": 3107
+          },
+          "nvidia_internal_thread_exit": {
+            "gdb_thread": 2,
+            "lwp": 3116
+          }
+        },
+        "interpretation": "One application worker finished its logged C++ resource teardown; the stack capture places that worker in NVIDIA EGL/GLSI thread-exit cleanup while the other application worker remains inside vkDestroyDevice. This establishes the observed overlap, not the proprietary lock cycle or a library ownership defect."
+      }
+    }
+  },
+  "icd": {
+    "vendor_manifest": "nvidia-icd.json",
+    "vendor_library": "libGLX_nvidia.so.0",
+    "selected_manifest": "nvidia-headless.json",
+    "selected_library": "libEGL_nvidia.so.0",
+    "selection_reason": "Frozen cloud-setup.sh explicitly rewrote the injected vendor ICD to EGL",
+    "glx_dependencies_missing": false,
+    "egl_dependencies_missing": false,
+    "primary_documentation": "https://download.nvidia.com/XFree86/Linux-x86_64/580.159.04/README/installedcomponents.html",
+    "documentation_summary": "Both libraries are supported Vulkan ICDs. The vendor default references GLX; NVIDIA recommends EGL when X11 client libraries are unavailable.",
+    "hypothesis": "Forced EGL selection is a candidate environment cause; GLX control with unchanged native implementation is pending. Neither a fix nor exclusive root cause is established."
+  },
+  "cleanup": {
+    "verified_collection_before_termination": true,
+    "compute_terminated": true,
+    "container_storage_released": true,
+    "ephemeral_storage_lost": false,
+    "provider_checked_at": "2026-10-01T12:11:56.678Z",
+    "pods": 0,
+    "network_volumes": 0,
+    "evidence": "provider-cleanup.json"
+  },
+  "cost": {
+    "authorization_id": "teacher-optimization-2026-10-01",
+    "grant_cap_usd": 3,
+    "started_at": "2026-10-01T11:53:44.209Z",
+    "terminated_at": "2026-10-01T12:08:16.267Z",
+    "elapsed_seconds": 872.058,
+    "conservative_hourly_gpu_cap_usd": 0.55,
+    "hourly_storage_allowance_usd": 0.03,
+    "conservative_assumed_usd": 0.14049823333333336,
+    "rounded_up_assumed_usd": 0.1405,
+    "prior_assumed_usd": 0.1774521277777778,
+    "cumulative_assumed_usd": 0.3179503611111112,
+    "actual_provider_bill": false,
+    "remaining_grant_before_next_reserve_usd": 2.6820496388888886
+  },
+  "next_gate": "Review and run the bounded vendor-GLX control on the affected driver; retain failure evidence. Complete reliable representative teacher comparison and uncensored full development quality before adoption or final training."
+}

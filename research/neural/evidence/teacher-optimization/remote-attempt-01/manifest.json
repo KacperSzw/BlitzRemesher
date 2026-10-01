@@ -155,8 +155,16 @@
     {
       "file": "README.md",
       "source": "evidence summary",
-      "sha256": "923c4155bc3c42dfde1700e05ddc9b472c3c0b5b53addefae8e93e658b5649b3",
-      "bytes": 2413
+      "sha256": "f6267afbf5fd103846da9d6867bd89006ccbe8fc963a9cf2c9ec67e2d5e57807",
+      "bytes": 2978
+    },
+    {
+      "file": "measured-job-analysis.json.gz",
+      "source": "runs/neural/teacher-remote-failed-job-analysis.json",
+      "uncompressed_sha256": "054a79fafd1b0a12862f6b7010bb8014972da2701679039a6c086281352b757c",
+      "sha256": "500d6827ac5ba2612372bc9c0897e7650c2e49d19295ea83a973084f0cf4676d",
+      "bytes": 12154,
+      "verification": "All 2 report hashes and 56 measured-job index, trajectory, actions and episode hashes independently matched the collected files; analysis has no accepted speedup or quality claim."
     }
   ]
 }

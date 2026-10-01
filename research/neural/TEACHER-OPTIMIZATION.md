@@ -137,7 +137,29 @@ volumes. The rental ledger covers 1,101.427 seconds; charging the conservative
 $0.55/hour GPU cap plus $0.03/hour storage allowance gives $0.1775 rounded up.
 This is an estimate for the grant ledger, not a provider billing receipt.
 
-The remaining grant permits a bounded diagnostic retry. Shutdown diagnosis and a
-regression test come first, followed by complete representative teacher comparison
-and uncensored full development quality. The next recipe explicitly keeps
-`exhaustive`; long training remains disabled while those gates are unresolved.
+The [second A40 attempt](evidence/teacher-optimization/remote-attempt-02/README.md)
+used frozen source `ec9660f`. Both native builds completed. The debugger preflight
+passed and ordinary GDB captured 10 threads with 86 frames when the teardown
+fixture stalled in its third round after two successful rounds. One worker had
+finished logged C++ resource destruction and was in NVIDIA EGL/GLSI thread-exit
+cleanup; the other remained inside `vkDestroyDevice`. This identifies an observed
+teardown boundary, without proving the proprietary lock cycle or a source ownership
+defect. The attempt stopped before contracts, teacher comparisons or learning.
+
+Cloud setup had replaced the injected vendor GLX ICD with EGL. Both captured
+dependency reports resolve all listed libraries. NVIDIA's
+[580.159.04 documentation](https://download.nvidia.com/XFree86/Linux-x86_64/580.159.04/README/installedcomponents.html)
+supports both ICDs, defaults to GLX, and recommends EGL when X11 client libraries
+are unavailable. Forced EGL is a candidate environment cause; the GLX control with unchanged native
+implementation is pending review and execution, with no fix yet established.
+
+The second archive was verified before compute termination at 12:08:16 UTC.
+Independent provider readback at 12:11:56 UTC again showed zero Pods and volumes.
+Its 872.058-second rental adds $0.1404982333 to the conservative grant ledger,
+bringing both attempts to $0.3179503611 before any further reservation. These are
+elapsed-time estimates at the GPU cap plus storage allowance, not invoices.
+
+The remaining grant permits a bounded diagnostic control. Reliable normal shutdown
+comes first, followed by complete representative teacher comparison and uncensored
+full development quality. The next recipe explicitly keeps `exhaustive`; long
+training remains disabled while those gates are unresolved.

@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "complete": false,
+  "evidence_collection_verified": true,
+  "kind": "failed second remote teacher optimization attempt with native thread capture",
+  "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
+  "archive_sha256": "e488deb0204fcedcd64130bf4db761bc00ba3f1d14a3772da0f6e5fbe22e979c",
+  "quality_proven": false,
+  "score": null,
+  "files": [
+    {
+      "file": "bootstrap.log.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/bootstrap.log",
+      "uncompressed_sha256": "5cbe32ab0694620587c61ac336136a8eb255f3e18050a1b34643ada7f231e6f4",
+      "sha256": "61ba97294bb084e2026ad4749a67bf5287cce18d203499de3b55c77a7928088c",
+      "bytes": 10752
+    },
+    {
+      "file": "baseline-binary.sha256.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/baseline-binary.sha256",
+      "uncompressed_sha256": "b1094617df87786f73782c2a56f846683f18756af321594f7ea3a6db6c4c85b7",
+      "sha256": "fa29ae5c3475cc2bd5b43aaf17e06f9dd47b611d34a6f9148b948b8b7f846860",
+      "bytes": 127
+    },
+    {
+      "file": "baseline-revision.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/baseline-revision",
+      "uncompressed_sha256": "b4875d24bc61a1c56df011ec9f45a825e02583e1b788d8a4d136dd4e737c98e3",
+      "sha256": "a1d2ac5627edaf44d1320752967cc1e81e22cf2abd9123ffdafe3fa54fae80b2",
+      "bytes": 59
+    },
+    {
+      "file": "git-revision.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/git-revision",
+      "uncompressed_sha256": "a4d9f98aff5a708ec9ffd974dcd2755dc9f12f9a9dff4d6222dd43c1e83873ef",
+      "sha256": "4f9c4ce0bdcd281a6f22b34e864a3e57c4dd4ba4f24c842f5a985d76438af7ae",
+      "bytes": 59
+    },
+    {
+      "file": "cuda-toolkit.txt.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/cuda-toolkit.txt",
+      "uncompressed_sha256": "77d7ef23109cd2437a8b9cf5efbc4e89996b816276077edb86143ee04f6d5269",
+      "sha256": "af2b3603f8b09a4cf56fa731606ba365d0a86cb1dd5d16e7d3ababa606fedba1",
+      "bytes": 180
+    },
+    {
+      "file": "deployment.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/deployment.json",
+      "uncompressed_sha256": "e1a32f9ece0442487ef63bfe0e22262511b9ca0b8c75676999c2f8fdb4e05045",
+      "sha256": "312d0fd1ad442abe56fcc752c78c328319095a2ba070469c261647b95f1c1aea",
+      "bytes": 375
+    },
+    {
+      "file": "gpu.csv.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/gpu.csv",
+      "uncompressed_sha256": "f27aead2cdf5542bd5c5b9faa25a8c83f745955d7926a3302c31f714e3b4309f",
+      "sha256": "14063e703e8c7207a414470d427b367592f0698f928ab9793a21b1f8a3ad818d",
+      "bytes": 55
+    },
+    {
+      "file": "vulkan.txt.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/vulkan.txt",
+      "uncompressed_sha256": "b848aec2031d8f10fb4fa6452d5da38d0b53fcc28be3b8fec975a53429762af9",
+      "sha256": "d42f675cbe1e81006c5a763114632551675a97e5561ac895e9efccc1726a3795",
+      "bytes": 748
+    },
+    {
+      "file": "graphics-libraries.txt.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/graphics-libraries.txt",
+      "uncompressed_sha256": "727b72d7454207ece9241f5d4f6156db78bf26f6ec2b4b8d01790d0098399f08",
+      "sha256": "5e7ba42e56faa39323b85ab66b45c009529837dfc93f0fad874cae2dd56838a8",
+      "bytes": 5582
+    },
+    {
+      "file": "packages.txt.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/packages.txt",
+      "uncompressed_sha256": "42eacae7ed35681ad3e323b5e88ad1933f5720e005ba3950380cbf2115bcdf6f",
+      "sha256": "3fc7496f9bb8241439d9b6c3a933058228a91ace7b7f187d9faa67f319a2e2ce",
+      "bytes": 6911
+    },
+    {
+      "file": "trainer-dependencies.txt.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/trainer-dependencies.txt",
+      "uncompressed_sha256": "cd2f0de1f54629c0f232828283473bbad54ec092651087d6f38a4dea1f526433",
+      "sha256": "f511c81c1d17a69b26a2a3982c0ffd8af19ba6203e28dd0ee15c92386305c586",
+      "bytes": 455
+    },
+    {
+      "file": "setup-complete.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/setup-complete.json",
+      "uncompressed_sha256": "a97d1fc47e80888f99fc56b3290ff54605a00d4382b2b5f8215712823ac2bd5e",
+      "sha256": "2ad278ea4372e2a82b6cfb10248d1b7bfe749aa630f1b56b955362c92427128f",
+      "bytes": 105
+    },
+    {
+      "file": "phase.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/phase.json",
+      "uncompressed_sha256": "f2eaae2fb5721346ff03d54338ccd799c5e76dc85c1169bda1eb74a36a79b27e",
+      "sha256": "22c8997737197a50421d415eee156643724b82e2ee04afdc51217b5e85286c48",
+      "bytes": 80
+    },
+    {
+      "file": "job.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/job.json",
+      "uncompressed_sha256": "2c321715d4b99fe48873116a4b32f4af2adb849abae6b9564d1c5c14783edc0c",
+      "sha256": "276bf24c7bd06c0fbef67555538b37505da4de4e294a4e38acb6eca60170b636",
+      "bytes": 137
+    },
+    {
+      "file": "job-exit-code.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/job-exit-code",
+      "uncompressed_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "sha256": "d381e5a9b7c1c71b5fb3fef202103bf4b6098ce288f148735de1ecf61d4e3b75",
+      "bytes": 22
+    },
+    {
+      "file": "nvidia-glx-dependencies.txt",
+      "source": "runs/neural/teacher-optimization-03/collected/results/nvidia-glx-dependencies.txt",
+      "sha256": "e691a022513b42186b06ed6c0043010f2fbcc39d8c87b410ecb9d3449bded3e7",
+      "bytes": 1368
+    },
+    {
+      "file": "nvidia-egl-dependencies.txt",
+      "source": "runs/neural/teacher-optimization-03/collected/results/nvidia-egl-dependencies.txt",
+      "sha256": "6bb91ad809567c1a382d6827ccb2170f00104aa470b9bd2374da492695757bfd",
+      "bytes": 477
+    },
+    {
+      "file": "nvidia-icd.json",
+      "source": "runs/neural/teacher-optimization-03/collected/results/nvidia-icd.json",
+      "sha256": "7bdb6f27d35b66fc848df6f94b8773bba30ea3a7f06f114100d14154a235a34b",
+      "bytes": 140
+    },
+    {
+      "file": "nvidia-headless.json",
+      "source": "runs/neural/teacher-optimization-03/collected/results/nvidia-headless.json",
+      "sha256": "15242d6b47f531bf279f11322f4accec76517a71898e96548d0cea8efad5b387",
+      "bytes": 124
+    },
+    {
+      "file": "teardown-stress.log.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/teardown-stress.log",
+      "uncompressed_sha256": "2537d0162df78d8229e9845242457f7880dc1459cc89d6a5a133419fc489f031",
+      "sha256": "b94e6a90b4e7ad390938ee5d4019d1e2605bb24e202da58f1d36141716347e08",
+      "bytes": 6378
+    },
+    {
+      "file": "teardown-stress.threads.log.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/teardown-stress.threads.log",
+      "uncompressed_sha256": "d19f832c6fd6c9a3451339caafdbaa8a6726b989bda797aa654f98041228bd27",
+      "sha256": "95da807255af7bdf445e5e25b5f5d14651eb5a4bb53bc5fcfd8e41ad46e922aa",
+      "bytes": 1292
+    },
+    {
+      "file": "experiment-report.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/report.json",
+      "uncompressed_sha256": "495e6ac29186ec18c37bc1d11ba2446c43fa2eda7ce4b940650ef7ed5ccc53ad",
+      "sha256": "468de725285e8ffa59a044da7222ec121ab966e522eaef1b507fc783a0d2777a",
+      "bytes": 1132
+    },
+    {
+      "file": "debugger-preflight-threads.log.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/debugger-preflight/threads.log",
+      "uncompressed_sha256": "a5359ae532d187190819f0578a94c9b7d1a71aafbd0631cecc839203d860b41f",
+      "sha256": "4a4ae1f5015844f8c4b2d7037ba8d87e3e2ed4d0fa4766c3ae89d489b70ee131",
+      "bytes": 261
+    },
+    {
+      "file": "debugger-preflight-probe.log.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/debugger-preflight/probe.log",
+      "uncompressed_sha256": "689aac90958afce10103047bddb64bb588fb00d383c2f0081a4a8b6a7d6ef48e",
+      "sha256": "64085d4b39364f4c98b478fea4e3c99cfe29810a1b383d38c4dcb832af2ec7dd",
+      "bytes": 81
+    },
+    {
+      "file": "debugger-preflight-report.json.gz",
+      "source": "runs/neural/teacher-optimization-03/collected/results/teacher-optimization/debugger-preflight/report.json",
+      "uncompressed_sha256": "7b5fc6bc37ec03408650b60557648f3b4b2c1aa00be25cfcd154d2671a8178fd",
+      "sha256": "cedd19a94433186f051b6e391c12bd69b5ca0d511f4d3c039ad13c459212e66d",
+      "bytes": 456
+    },
+    {
+      "file": "collection.json",
+      "source": "runs/neural/teacher-optimization-03/collection.json",
+      "sha256": "406516fcd59145886d3cc8fa54e0224b7e56e7a8bc3c5f9c6b430ed44f16ff5b",
+      "bytes": 126
+    },
+    {
+      "file": "provider-cleanup.json",
+      "source": "runs/neural/teacher-optimization-03/provider-cleanup.json",
+      "sha256": "e2a1823c5b195e5959f1ffceb5539a129b4e8f3650cbf112b717b9d0758f47d6",
+      "bytes": 544
+    },
+    {
+      "file": "prepared.json",
+      "source": "runs/neural/teacher-optimization-03/prepared.json",
+      "sha256": "42ba5fa85d963f7907537e652050425be1a8dd39a57b1efde9b364021b493bd5",
+      "bytes": 885
+    },
+    {
+      "file": "rental.json",
+      "source": "runs/neural/teacher-optimization-03/rental.json",
+      "sha256": "2e84f07c7beedba535b41fd6939a30aaec185d4b2c525adf007e2b99c870df4d",
+      "bytes": 1847,
+      "omitted_fields": ["endpoint"],
+      "original_sha256": "2059d5dbfacd5f595d64a35cb73e6bc1adb56dda5ac121564c3e9d8dee33340b"
+    },
+    {
+      "file": "README.md",
+      "source": "evidence summary",
+      "sha256": "6ad73a18a7261d4e1fc40fbaf76c2236a4babe5b0767537a655ac9436158089e",
+      "bytes": 3016
+    },
+    {
+      "file": "record.json",
+      "source": "derived from checked-in raw reports, rental/collection records and independent provider readback",
+      "sha256": "ece62ce1761eb04a9709f2ed4b712caa4bba127d2735f890672b79fc041f2eb7",
+      "bytes": 5639
+    }
+  ]
+}

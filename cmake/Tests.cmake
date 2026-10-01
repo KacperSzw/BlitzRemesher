@@ -1,4 +1,5 @@
 if(BUILD_TESTING)
+  find_package(Threads REQUIRED)
   add_executable(blitz-neural-worker-retirement-tests tests/neural_worker_retirement.cpp)
   target_include_directories(blitz-neural-worker-retirement-tests PRIVATE . src)
   target_compile_features(blitz-neural-worker-retirement-tests PRIVATE cxx_std_20)

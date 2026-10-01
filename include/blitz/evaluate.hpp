@@ -6,8 +6,17 @@ namespace blitz {
 enum class Profile:uint8_t { Coverage,Normals,Attributes };
 struct Weights { double normal{180.0/(10*3.14159265358979323846)},color{4},material{4}; };
 struct ViewSet { uint16_t orthographic{642},perspective{64}; uint32_t rotation_seed{0xB1172026}; };
+// Optional first failing appearance sample. Costs are squared metric components;
+// a missing compatible sample is not a bound on continuous appearance.
+struct EvaluationWitness {
+    uint32_t view{}; // At most 2*65535 configured views.
+    uint32_t x{},y{}; // Public attributed_distance also accepts wide rectangular rasters.
+    uint8_t direction:1{},present:1{},target_visible:1{};
+    uint8_t supersample{};
+    double spatial{},normal{},color{},material{};
+};
 struct PerformanceStats {
-    uint64_t reduction_ns{},raster_ns{},distance_ns{};
+    uint64_t reduction_ns{},raster_ns{},distance_ns{},appearance_peak_bytes{};
     uint64_t solve_attempts{},singular_solves{},nonfinite_solves{},position_fallbacks{},nonfinite_costs{};
     uint64_t coverage_rasters{},coverage_fields{},coverage_mask_hits{},coverage_field_hits{},coverage_cache_bypasses{};
     uint32_t coverage_cache_peak_bytes{}; // Charged payload and entry capacities; at most 256 MiB.
@@ -19,12 +28,14 @@ struct EvalSettings {
     bool force_two_sided{false},force_scalar{false};
     std::function<bool()> cancelled;
     PerformanceStats* performance{}; // Borrowed optional accumulator; evaluate() adds to it.
+    bool conservative_screen{}; // Coverage lower-bound rejection only; never a final audit.
+    EvaluationWitness* witness{}; // Borrowed, reset by evaluate(); optional diagnostics.
 };
 struct Measurement {
     double error{},coverage{},coverage_upper{},changed_area{},normal_degrees{};
     uint32_t worst_view{},changed_area_worst_view{},views_evaluated{};
     uint8_t supersample{}; // Sampling of worst_view; the area-worst view may refine differently.
-    bool complete{true},passed{true},resource_limited{};
+    bool complete{true},passed{true},resource_limited{},cancelled{};
 };
 struct Pixel {
     Vec3 normal{}; Vec4 color{};
@@ -36,7 +47,7 @@ struct Camera { Vec3 right,up,forward; double distance{},focal{},scale{}; bool p
 std::vector<Camera> cameras(const Bounds&,double,ViewSet);
 Raster rasterize(MeshView,const Bounds&,const Camera&,double,uint8_t,bool);
 double coverage_distance(const Raster&,const Raster&,uint8_t,bool force_scalar=false);
-double attributed_distance(const Raster&,const Raster&,const EvalSettings&,double);
+double attributed_distance(const Raster&,const Raster&,const EvalSettings&,double,bool* cancelled=nullptr);
 Measurement evaluate(MeshView,MeshView,const Bounds&,const EvalSettings&);
 const char* evaluator_backend(bool force_scalar=false);
 bool packed_coverage_enabled();

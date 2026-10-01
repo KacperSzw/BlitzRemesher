@@ -28,6 +28,7 @@ import {
 } from './action-budget.mjs';
 import { freshConditions } from './action-curriculum.mjs';
 import { coreValidationBudget, coreValidationProfiles } from './core-validation.mjs';
+import { readinessAssets, readinessModel, readinessManifest } from './teacher-readiness.mjs';
 
 const [command, directory] = process.argv.slice(2);
 if (!directory)
@@ -86,6 +87,16 @@ async function prepare() {
     throw new Error('Use a new directory for a new bundle');
   if (sync('git', ['status', '--porcelain', '--untracked-files=normal']))
     throw new Error('Commit changes before preparing the immutable rental bundle');
+  const readinessSource = core ? process.env.BLITZ_CORE_READINESS_MODEL : undefined;
+  const readiness = readinessSource
+    ? {
+        model: readinessModel(readinessSource),
+        manifest: readinessManifest,
+        manifest_sha256: await sha(path.join(root, readinessManifest)),
+        assets: readinessAssets(root).map((asset) => asset.id),
+        training_started: false,
+      }
+    : undefined;
   const revision = sync('git', ['rev-parse', 'HEAD']),
     branch = sync('git', ['branch', '--show-current']);
   // The new deployment ships the complete immutable local commit in a bundle.
@@ -120,7 +131,7 @@ async function prepare() {
       deployment.collection_minutes !== 5)
   )
     throw new Error(
-      'Core tests require hardware-validation-ada16 or hardware-validation-l40s (20+10+5 minutes)',
+      'Core tests require hardware-validation-ada16, hardware-validation-ada or hardware-validation-l40s (20+10+5 minutes)',
     );
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   const stage = dir + '/input';
@@ -163,6 +174,17 @@ async function prepare() {
       await copy(dataset + '/' + relative(asset.path), 'dataset/' + asset.path, asset.sha256);
   }
   const auditFiles = new Map();
+  if (readiness) {
+    await copy(readinessSource, 'readiness/model.blzn', readiness.model.sha256);
+    for (const asset of readinessAssets(root))
+      for (const file of asset.files) auditFiles.set(file.path, file.sha256);
+    write(stage + '/readiness/request.json', readiness);
+    files.push({
+      path: 'readiness/request.json',
+      sha256: await sha(stage + '/readiness/request.json'),
+      bytes: fs.statSync(stage + '/readiness/request.json').size,
+    });
+  }
   for (const [manifest, split] of [
     ['research/pilot.json', 'development'],
     ['research/corpus.json', 'validation'],
@@ -268,6 +290,8 @@ async function prepare() {
     'action-curriculum.mjs',
     'artifacts.mjs',
     'core-validation.mjs',
+    'teacher-readiness.mjs',
+    'bounded-process.mjs',
   ])
     fs.copyFileSync(root + '/scripts/neural/' + name, dir + '/control/' + name);
   write(dir + '/prepared.json', {
@@ -294,6 +318,7 @@ async function prepare() {
     archive_sha256: await sha(dir + '/input.tar'),
     archive_bytes: fs.statSync(dir + '/input.tar').size,
     files: files.length,
+    ...(readiness ? { teacher_readiness: readiness } : {}),
   });
   fs.rmSync(stage, { recursive: true });
   console.log(

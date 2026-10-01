@@ -1,5 +1,7 @@
 #include "blitz/remesher.hpp"
 #include "neural/internal.hpp"
+#include "appearance.hpp"
+#include "wedges.hpp"
 #include <bit>
 #include <numeric>
 #include <stdexcept>
@@ -38,17 +40,23 @@ struct Trace {std::vector<Vec3> positions;std::vector<uint32_t> faces,representa
 constexpr uint8_t Locked=1,Boundary=2,Used=4,MaterialSeen=8,LinkNeighbor=16,LinkOpposite=32;
 }
 ReductionStorage reduction_storage() {return {uint8_t(sizeof(Quadric)),uint8_t(sizeof(Candidate))};}
-static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* trace) {
+static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* trace,detail::Appearance* coupled_appearance=nullptr) {
     if(auto error=validate(source);!error.empty())throw std::invalid_argument(error);
     if(unsigned(settings.output)>1||unsigned(settings.objective)>3||!std::isfinite(settings.normal_weight)||settings.normal_weight<0
        ||!std::isfinite(settings.regularization)||settings.regularization<0
        ||!std::isfinite(settings.boundary_weight)||settings.boundary_weight<0||settings.boundary_weight>1e6)throw std::invalid_argument("invalid reduction settings");
+    if(unsigned(settings.appearance_stage)>3||!(settings.screen_size>0)||!std::isfinite(settings.screen_size))throw std::invalid_argument("invalid appearance settings");
+    for(double w:{settings.appearance_weights.normal,settings.appearance_weights.color})if(!std::isfinite(w)||w<0||w>1e12)throw std::invalid_argument("invalid appearance weight");
+    auto local_settings=settings;if(coupled_appearance)local_settings.appearance_stage=AppearanceStage::Off;
+    detail::Appearance local_appearance(source,local_settings);
+    auto& appearance=coupled_appearance?*coupled_appearance:local_appearance;
     Lod result;result.shared_vertices=settings.output==OutputMode::Reuse;
     auto stats=settings.statistics;
-    if(stats){*stats={};stats->initial_triangles=uint32_t(source.triangles());stats->final_triangles=stats->initial_triangles;}
+    if(stats){*stats={};stats->appearance_bytes=appearance.bytes();stats->initial_triangles=uint32_t(source.triangles());stats->final_triangles=stats->initial_triangles;}
     Mesh mesh=copy_mesh(source);const size_t n=mesh.positions.size();
     std::vector<uint32_t> history;
     if(trace){history.resize(n);std::iota(history.begin(),history.end(),0);trace->faces.resize(source.triangles());std::iota(trace->faces.begin(),trace->faces.end(),0);trace->positions=mesh.positions;}
+    if(trace&&settings.merge_wedges){trace->representatives.resize(n);if(stats)stats->appearance_bytes+=trace->representatives.capacity()*sizeof(uint32_t);}
     auto b=bounds(source);const double scale=b.diameter();
     std::vector<Vec3> p(n);std::vector<Quadric> q(n);
     std::vector<uint8_t> flags(n);
@@ -192,7 +200,22 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                 else if(stats)++stats->position_fallbacks;
                 x=(p[u]+p[v])*.5;if(sum.cost(x)<cost){point=x;cost=sum.cost(x);}
             }
-            if(!mesh.normals.empty()) {
+            if(appearance.active()) {
+                const double scale2=settings.screen_size*settings.screen_size;
+                auto total=[&](Vec3 p0){return sum.cost(p0)*scale2+appearance.cost(u,v,p0,p[u],p[v]);};
+                cost=total(point);
+                if(settings.appearance_stage==AppearanceStage::Position&&settings.output==OutputMode::Rebuild) {
+                    Quadric joint=sum;for(auto& a:joint.a)a*=scale2;appearance.add_reduced(joint,u,v);
+                    auto offer=[&](Vec3 x){auto value=total(x);if(std::isfinite(value)&&value<cost){point=x;cost=value;}};
+                    if(!((flags[u]|flags[v])&Boundary)) {
+                        Vec3 x;if(joint.solve(x,stats)&&length(x-(p[u]+p[v])*.5)<=2*length(p[u]-p[v]))offer(x);
+                        offer(p[u]);offer(p[v]);offer((p[u]+p[v])*.5);
+                    } else if(settings.boundary_placement&&boundary_edge) {
+                        double c0=joint.cost(p[u]),c1=joint.cost(p[v]),cm=joint.cost((p[u]+p[v])*.5),qa=2*(c0+c1-2*cm),qb=c1-c0-qa;
+                        offer(p[u]+(p[v]-p[u])*(qa>1e-30?std::clamp(-qb/(2*qa),0.,1.):.5));
+                    }
+                }
+            } else if(!mesh.normals.empty()) {
                 double bend=std::max(0.0,1-dot(normalized(mesh.normals[u]),normalized(mesh.normals[v])));
                 cost+=settings.normal_weight*bend*dot(p[u]-p[v],p[u]-p[v])*1e-3;
                 if(settings.objective==Objective::Visual)cost+=bend*bend*dot(p[u]-p[v],p[u]-p[v])*.05;
@@ -249,6 +272,10 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
             if(!valid||!removed||remaining<target+removed)continue;
             if(stats)++stats->collapsed;
             if(settings.output==OutputMode::Rebuild) {
+                if(settings.preserve_positions) {
+                    auto equal=[](Vec3 a,Vec3 b){return a.x==b.x&&a.y==b.y&&a.z==b.z;};
+                    if(!equal(c.point,p[u]))mesh.positions[u]=equal(c.point,p[v])?mesh.positions[v]:Vec3{float(double(c.point.x)*scale+b.center.x),float(double(c.point.y)*scale+b.center.y),float(double(c.point.z)*scale+b.center.z)};
+                }
                 auto edge=p[v]-p[u];double len2=dot(edge,edge);
                 double t=len2?std::clamp(dot(c.point-p[u],edge)/len2,0.0,1.0):.5;
                 if(!mesh.normals.empty())mesh.normals[u]=normalized(mesh.normals[u]*(1-t)+mesh.normals[v]*t);
@@ -263,6 +290,7 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
                     mesh.tangents[u]={float(a.x*(1-t)+z.x*t),float(a.y*(1-t)+z.y*t),float(a.z*(1-t)+z.z*t),a.w};
                 }
             }
+            appearance.collapse(u,v,c.point,p[u],p[v]);
             p[u]=c.point;q[u]+=q[v];map[v]=u;remaining-=removed;++collapsed;
             if(trace)history[v]=u;
             flags[u]|=Used;flags[v]|=Used;
@@ -285,15 +313,16 @@ static Lod reduce_impl(MeshView source,const ReduceSettings& settings,Trace* tra
     if(trace)for(uint32_t i=0;i<n;++i) {
         auto root=i;while(history[root]!=root){history[root]=history[history[root]];root=history[root];}
         trace->representatives[i]=root;
-        trace->positions[i]={float(double(p[root].x)*scale+b.center.x),float(double(p[root].y)*scale+b.center.y),float(double(p[root].z)*scale+b.center.z)};
+        trace->positions[i]=settings.preserve_positions?mesh.positions[root]:Vec3{float(double(p[root].x)*scale+b.center.x),float(double(p[root].y)*scale+b.center.y),float(double(p[root].z)*scale+b.center.z)};
     }
     if(std::equal(mesh.indices.begin(),mesh.indices.end(),source.indices.begin(),source.indices.end()))result.shared_vertices=true;
     if(!result.shared_vertices) {
-        for(size_t i=0;i<n;++i)mesh.positions[i]={float(double(p[i].x)*scale+b.center.x),float(double(p[i].y)*scale+b.center.y),float(double(p[i].z)*scale+b.center.z)};
+        if(!coupled_appearance)appearance.write(mesh);
+        if(!settings.preserve_positions)for(size_t i=0;i<n;++i)mesh.positions[i]={float(double(p[i].x)*scale+b.center.x),float(double(p[i].y)*scale+b.center.y),float(double(p[i].z)*scale+b.center.z)};
         for(auto& t:mesh.tangents){auto a=normalized({t.x,t.y,t.z});t.x=a.x;t.y=a.y;t.z=a.z;}
         compact(mesh);
     } else {
-        mesh.positions.clear();mesh.normals.clear();mesh.uv.clear();mesh.colors.clear();mesh.tangents.clear();
+        mesh.positions.clear();mesh.normals.clear();mesh.uv.clear();mesh.colors.clear();mesh.tangents.clear();mesh.exact_position_bits.clear();
     }
     if(stats)stats->final_triangles=uint32_t(mesh.indices.size()/3);
     result.data=std::move(mesh);return result;
@@ -320,7 +349,8 @@ Lod reduce(MeshView source,const ReduceSettings& settings) {
     if(geometric.positions.size()==source.positions.count)return reduce_impl(source,settings,nullptr);
     geometric.indices.reserve(source.indices.size());for(auto i:source.indices)geometric.indices.push_back(map[i]);
     geometric.materials.assign(source.materials.begin(),source.materials.end());geometric.double_sided.assign(source.double_sided.begin(),source.double_sided.end());
-    Trace trace;auto simplified=reduce_impl(geometric.view(),settings,&trace);
+    detail::Appearance appearance(source,settings,map,geometric.positions.size());
+    Trace trace;auto simplified=reduce_impl(geometric.view(),settings,&trace,&appearance);
     if(simplified.shared_vertices) {
         Lod l;l.data.indices.assign(source.indices.begin(),source.indices.end());l.data.materials.assign(source.materials.begin(),source.materials.end());return l;
     }
@@ -331,6 +361,8 @@ Lod reduce(MeshView source,const ReduceSettings& settings) {
         for(int k=0;k<3;++k)result.data.indices.push_back(source.indices[face*3+k]);
         if(!source.materials.empty())result.data.materials.push_back(source.material(face));
     }
+    appearance.write(result.data);
+    if(settings.merge_wedges)detail::merge_wedges(source,map,trace.representatives,trace.faces,result.data,settings.statistics);
     compact(result.data);return result;
 }
 }

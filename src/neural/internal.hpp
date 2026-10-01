@@ -108,7 +108,7 @@ struct AuditPredicate {
     double error_upper{}, changed_area{};
     uint32_t views{};
     uint8_t supersample{};
-    bool resource_limited{};
+    bool resource_limited{}, cancelled{};
 };
 struct CandidateAudit {
     AuditPredicate value;

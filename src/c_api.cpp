@@ -89,6 +89,7 @@ blitz_status blitz_settings_init(blitz_settings* out, size_t n) {
         out->abi_version = BLITZ_ABI_VERSION;
         out->levels = s.levels;
         out->triangle_overhead_bps = s.triangle_overhead_bps;
+        out->max_added_vertex_bytes_bps = s.max_added_vertex_bytes_bps.value_or(UINT32_MAX);
         out->profile = uint8_t(s.profile);
         out->objective = uint8_t(s.objective);
         out->beam_width = s.beam_width;
@@ -144,6 +145,9 @@ static blitz_status generate_impl(const blitz_mesh* m, const blitz_settings* c,
         blitz::Settings s;
         s.levels = c->levels;
         s.triangle_overhead_bps = c->triangle_overhead_bps;
+        s.max_added_vertex_bytes_bps = c->max_added_vertex_bytes_bps == UINT32_MAX
+                                           ? std::nullopt
+                                           : std::optional<uint32_t>(c->max_added_vertex_bytes_bps);
         s.profile = blitz::Profile(c->profile);
         s.objective = blitz::Objective(c->objective);
         s.beam_width = c->beam_width;
@@ -374,7 +378,36 @@ blitz_status blitz_result_storage(const blitz_result* r, blitz_storage_info* out
     if (!r || !out || out->struct_size != sizeof(*out))
         return BLITZ_INVALID_ARGUMENT;
     const auto& s = r->value.candidates[r->value.selection.selected].storage;
-    *out = {sizeof(*out), s.source_vertex_bytes, s.added_vertex_bytes, s.index_bytes, s.total()};
+    *out = {sizeof(*out),
+            s.source_vertex_bytes,
+            s.added_vertex_bytes,
+            s.index_bytes,
+            s.total(),
+            r->value.added_vertex_budget_bytes.value_or(UINT64_MAX),
+            r->value.max_added_vertex_bytes_bps.value_or(UINT32_MAX)};
+    return BLITZ_OK;
+}
+blitz_status blitz_result_runtime_lod_storage(const blitz_result* r, size_t i,
+                                              blitz_runtime_lod_storage_info* out) {
+    if (!r || !out || out->struct_size != sizeof(*out) || i >= r->runtime.size())
+        return BLITZ_INVALID_ARGUMENT;
+    uint64_t cumulative = 0;
+    for (size_t j = 0; j <= i; ++j) {
+        auto index = r->runtime[j];
+        const auto& lod = r->value.lods[index];
+        auto added = blitz::added_vertex_bytes(lod, r->value.source);
+        if (lod.source_prefix_vertices)
+            for (size_t k = 0; k < j; ++k) {
+                const auto& previous = r->value.lods[r->runtime[k]];
+                if (previous.source_prefix_vertices && previous.vertex_pool == lod.vertex_pool) {
+                    added = 0;
+                    break;
+                }
+            }
+        cumulative += added;
+        if (j == i)
+            *out = {sizeof(*out), index, added, uint64_t(lod.data.indices.size()) * 4, cumulative};
+    }
     return BLITZ_OK;
 }
 void blitz_result_destroy(blitz_result* r) {

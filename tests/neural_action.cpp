@@ -116,6 +116,9 @@ int main() {
             check(!action_audit_known(m, e), "partial passing views received a negative label");
             m.error = limit + .5;
             check(action_audit_known(m, e), "witnessed pixel failure was discarded");
+            m.cancelled = true;
+            check(!action_audit_known(m, e), "one-shot cancellation became a negative label");
+            m.cancelled = false;
             m.error = limit;
             m.changed_area = .5;
             check(action_audit_known(m, e), "witnessed area failure was discarded");

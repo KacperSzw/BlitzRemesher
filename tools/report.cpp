@@ -26,7 +26,13 @@ int main(int argc,char** argv) {
             auto research=c.value("research",json::object());auto placement=research.value("output",json(nullptr));
             std::string output_mode=c.value("output",placement.is_null()?std::string("auto"):placement.get<std::string>());
             std::string scenario=output_mode+"/"+c.at("profile").get<std::string>()+"/"+c.value("chain",research.value("chain",std::string("hybrid")))+", N="+std::to_string(c.at("levels").get<int>())+", budget="+std::to_string(c.at("candidate_budget").get<int>());
-            if(output_mode=="auto")scenario+=", overhead bps="+std::to_string(c.at("triangle_overhead_bps").get<int>());
+            if(output_mode=="auto") {
+                scenario+=", overhead bps="+std::to_string(c.at("triangle_overhead_bps").get<int>());
+                if(c.contains("max_added_vertex_bytes_bps")) {
+                    if(c.at("max_added_vertex_bytes_bps").is_null())scenario+=", vertex cap off";
+                    else scenario+=", vertex cap bps="+std::to_string(c.at("max_added_vertex_bytes_bps").get<uint32_t>());
+                }
+            }
             size_t failed=0;for(auto& row:fs::directory_iterator(dir/"rows"))if(row.path().extension()==".json")failed+=read(row.path()).value("failed",false);
             md<<"| ["<<label<<"]("<<fs::relative(dir,output).generic_string()<<"/summary.json) | "<<scenario<<" | "<<s.at("completed")<<"/"<<s.at("expected")<<" | ";
             if(s["score"].is_null())md<<"—";else md<<std::fixed<<std::setprecision(2)<<s["score"].get<double>();

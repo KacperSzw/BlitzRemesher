@@ -112,6 +112,14 @@ int main(int argc,char** argv) {
                 if(row.at("result").contains("runtime_levels")&&row.at("result").at("runtime_levels")!=json(active))
                     throw std::runtime_error("runtime selection disagrees with exact export bytes");
                 asset["runtime_levels"]=active;asset["runtime_lod_count"]=active.size();runtime+=active.size();
+                if(row.at("result").contains("runtime_storage")) {
+                    const auto& costs=row.at("result").at("runtime_storage");
+                    if(costs.size()!=active.size())throw std::runtime_error("runtime storage count mismatch");
+                    for(size_t i=0;i<active.size();++i)
+                        if(costs.at(i).at("scheduled_index")!=active[i])throw std::runtime_error("runtime storage index mismatch");
+                    asset["runtime_storage"]=costs;
+                    asset["added_vertex_budget_bytes"]=row.at("result").value("added_vertex_budget_bytes",json(nullptr));
+                }
                 asset["final_pixel_coverage_ratio"]=ratio(asset.at("lods").back().at("render_cost").at("covered_pixels").get<uint64_t>(),source_cost.covered_pixels);
             }catch(const std::exception& e){asset["diagnostic_failure"]=e.what();report["diagnostics_complete"]=false;}
             report["assets"].push_back(asset);std::cerr<<id<<" analyzed\n";

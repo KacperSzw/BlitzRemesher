@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { boundedProcess } from './bounded-process.mjs';
-import { write } from './artifacts.mjs';
+import { read, write } from './artifacts.mjs';
 import { coreValidationSteps, validateCoreTestLog } from './core-validation.mjs';
+import { runTeacherReadiness } from './teacher-readiness.mjs';
 
 export async function runCoreValidation({
   directory,
@@ -11,6 +12,8 @@ export async function runCoreValidation({
   signal,
   execute = boundedProcess,
   now = Date.now,
+  readinessModel,
+  readinessRequest,
 }) {
   const report = {
     experiment: 'core-validation',
@@ -20,6 +23,7 @@ export async function runCoreValidation({
     quality_proven: false,
     deadline,
     phases: [],
+    teacher_readiness: { requested: Boolean(readinessModel), performed: false },
   };
   fs.mkdirSync(directory, { recursive: true });
   try {
@@ -53,6 +57,24 @@ export async function runCoreValidation({
     }
     if (signal?.aborted || deadline <= now())
       throw new Error('core validation deadline/cancellation');
+    report.contracts_complete = true;
+    if (readinessModel) {
+      report.teacher_readiness = await runTeacherReadiness({
+        model: readinessModel,
+        directory: directory + '/teacher-readiness',
+        deadline,
+        signal,
+        execute,
+        now,
+        timingAuthority: 'isolated_remote',
+        expectedRequest: readinessRequest,
+      });
+      report.teacher_readiness.requested = true;
+      report.teacher_readiness.performed = true;
+      if (!report.teacher_readiness.complete) throw new Error('teacher readiness failed');
+    }
+    if (signal?.aborted || deadline <= now())
+      throw new Error('core validation deadline/cancellation');
     report.complete = true;
   } catch (error) {
     report.error = String(error);
@@ -82,7 +104,18 @@ async function main() {
     test_minutes: minutes,
     training_deadline_ms: deadline,
   });
-  const report = await runCoreValidation({ directory, deadline, signal: controller.signal });
+  const optionalReadiness = fs.existsSync('/workspace/readiness/request.json');
+  const report = await runCoreValidation({
+    directory,
+    deadline,
+    signal: controller.signal,
+    ...(optionalReadiness
+      ? {
+          readinessModel: '/workspace/readiness/model.blzn',
+          readinessRequest: read('/workspace/readiness/request.json'),
+        }
+      : {}),
+  });
   process.exitCode = report.complete ? 0 : 1;
   write('/workspace/results/job.json', {
     code: process.exitCode,

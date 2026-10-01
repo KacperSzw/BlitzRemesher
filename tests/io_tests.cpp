@@ -1,5 +1,6 @@
 #include "blitz/io.hpp"
 #include "../tools/neural/audit_settings.hpp"
+#include "shared_vertices.hpp"
 #include <fstream>
 #include <iostream>
 #include <bit>
@@ -56,11 +57,41 @@ int main() {
         Mesh m;m.positions={{0,0,0},{1,0,0},{0,1,0}};m.normals={{0,0,1},{0,0,1},{0,0,1}};m.uv={{0,0},{1,0},{0,1}};m.indices={0,1,2};
         save_ply(m.view(),dir/"triangle.ply");auto p=load_mesh(dir/"triangle.ply");CHECK(p.indices==m.indices);CHECK(p.uv[1].x==1);CHECK(p.normals[0].z==1);
         Result r;r.source=m.view();r.reference_bounds=bounds(m.view());r.max_changed_area=.5;
-        for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;r.lods.push_back(std::move(l));}
+        for(int i=0;i<3;++i){Lod l;l.data.indices=m.indices;l.schedule={80./(i+1),.75+i*.25,1.+i};r.lods.push_back(std::move(l));}
+        r.audit.profile=Profile::Attributes;r.audit.audit_views={7,2,135};r.audit.search_views={3,1,244};
+        r.audit.weights={2,3,4};r.audit.normal_importance={{{0,.5},{1,.75}}};r.audit.attribute_importance={{{0,.25},{1,1}}};
+        r.audit.search_supersample=2;r.audit.audit_supersample=4;r.audit.max_supersample=8;
+        r.adaptive_retry_attempted=true;r.adaptive_retry_selected=true;r.adaptive_retry_evaluations=3;
+        ProposalTrace retry_trace;retry_trace.pass=1;r.proposals.push_back(retry_trace);
+        auto diagnostic=result_json(r);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_attempted"]==true);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_selected"]==true);
+        CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_evaluations"]==3);
+        CHECK(diagnostic["proposals"][0]["pass"]=="adaptive_retry");
+        {
+            auto traced=r;traced.proposals.clear();
+            for(uint8_t strategy:{uint8_t(4),uint8_t(5)}) {
+                ProposalTrace proposal;proposal.strategy=strategy;proposal.origin=2;
+                proposal.pass=3;proposal.gate=strategy==4?9:10;traced.proposals.push_back(proposal);
+            }
+            auto combined=result_json(traced);CHECK(combined["version"]==3);
+            CHECK(combined["proposals"][0]["strategy"]=="neural_reuse");
+            CHECK(combined["proposals"][1]["strategy"]=="neural_compact");
+            CHECK(combined["proposals"][0]["origin"]=="tail_probe");
+            CHECK(combined["proposals"][1]["pass"]=="graph_2");
+            CHECK(combined["proposals"][0]["gate"]=="vertex_budget");
+            CHECK(combined["proposals"][1]["gate"]=="objective_bound");
+        }
         save_chain(r,dir/"gltf");auto g=load_mesh(dir/"gltf/chain.gltf");CHECK(g.indices.size()==3);CHECK(g.positions.size()==3);
         nlohmann::json manifest;std::ifstream(dir/"gltf/lods.json")>>manifest;CHECK(manifest["lods"][2]["gltf_mesh"]==0);
         CHECK(manifest["lods"].size()==3&&manifest["runtime_levels"]==nlohmann::json::array({0}));
+        CHECK(manifest["runtime_storage"].size()==1&&manifest["runtime_storage"][0]["index_bytes"]==12);
         CHECK(manifest["max_changed_area"]==.5);
+        CHECK(manifest["runtime_meshes"].size()==1&&manifest["runtime_meshes"][0]["scheduled_index"]==0);
+        CHECK(manifest["audit_contract"]["scope"]=="configured_cameras"&&manifest["audit_contract"]["texture_images_scored"]==false);
+        CHECK(manifest["audit_contract"]["profile"]=="attributes"&&manifest["audit_contract"]["audit_views"]["seed"]==135);
+        CHECK(manifest["audit_contract"]["weights"]["normal"]==2&&manifest["audit_contract"]["normal_importance"][1][1]==.75);
+        for(size_t i=0;i<3;++i)CHECK(manifest["lods"][i]["screen_pixels"]==80./(i+1)&&manifest["lods"][i]["transition_limit"]==.75+i*.25);
         nlohmann::json j;std::ifstream(dir/"gltf/chain.gltf")>>j;
         CHECK(j["meshes"].size()==1&&j["nodes"].size()==3&&j["nodes"][2]["mesh"]==0);
         // Collection-only foliage inspection must not relax the production
@@ -75,6 +106,9 @@ int main() {
         // Equal triangle counts do not imply equal render data. A winding change
         // keeps the borrowed vertex accessors but requires a separate mesh.
         r.lods[2].data.indices={0,2,1};save_chain(r,dir/"distinct");
+        std::ifstream(dir/"distinct/lods.json")>>manifest;
+        CHECK(manifest["runtime_meshes"].size()==2&&manifest["runtime_meshes"][1]["scheduled_index"]==2);
+        CHECK(manifest["runtime_meshes"][1]["screen_pixels"]==80./3&&manifest["runtime_meshes"][1]["shared_vertices"]==true);
         std::ifstream(dir/"distinct/chain.gltf")>>j;CHECK(j["meshes"].size()==2&&j["nodes"][2]["mesh"]==1);
         CHECK(j["meshes"][0]["primitives"][0]["attributes"]==j["meshes"][1]["primitives"][0]["attributes"]);
         g=load_gltf_mesh(dir/"distinct/chain.gltf",1);CHECK(g.indices==r.lods[2].data.indices);
@@ -113,6 +147,37 @@ int main() {
         }
         {NeuralOptions options;throws([&]{model_audit_settings(nlohmann::json{{"neural_origin","typo"}},options);});
             throws([&]{model_audit_settings(nlohmann::json{{"preserve_uv",1}},options);});}
+        for(int stage:{0,1,2,3})for(bool screen:{false,true}) {
+            auto parsed=settings_json(nlohmann::json{{"research",{{"appearance_stage",stage},{"conservative_screen",screen}}}});
+            CHECK(unsigned(parsed.research.appearance_stage)==unsigned(stage)&&parsed.research.conservative_screen==screen);
+            CHECK(settings_json(parsed)["research"]["appearance_stage"]==stage);
+        }
+        for(auto bad:nlohmann::json::array({-1,4,1.5,"1",true,nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"appearance_stage",bad}}}});});
+        for(auto bad:nlohmann::json::array({1,"true",nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"conservative_screen",bad}}}});});
+        for(auto key:{"density_targets","merge_wedges","shared_rebuild"}) {
+            for(bool enabled:{false,true}) {
+                auto controls=settings_json(nlohmann::json{{"research",{{key,enabled}}}});
+                CHECK((std::string(key)=="density_targets"?controls.research.density_targets:std::string(key)=="merge_wedges"?controls.research.merge_wedges:controls.research.shared_rebuild)==enabled);
+                CHECK(settings_json(controls)["research"][key]==enabled);
+            }
+            for(auto bad:nlohmann::json::array({1,"true",nullptr}))
+                throws([&]{settings_json(nlohmann::json{{"research",{{key,bad}}}});});
+        }
+        for(int passes:{0,1,3}) {
+            auto graph=settings_json(nlohmann::json{{"research",{{"graph_passes",passes}}}});
+            CHECK(graph.research.graph_passes==passes&&settings_json(graph)["research"]["graph_passes"]==passes);
+        }
+        for(auto bad:nlohmann::json::array({-1,4,1.5,"1",true,nullptr}))
+            throws([&]{settings_json(nlohmann::json{{"research",{{"graph_passes",bad}}}});});
+        CHECK(config["max_added_vertex_bytes_bps"]==2000&&config["triangle_overhead_bps"]==0);
+        for(auto cap:nlohmann::json::array({0,1000,2000,10000,nullptr})) {
+            auto decoded=settings_json(nlohmann::json{{"max_added_vertex_bytes_bps",cap}});
+            CHECK(settings_json(decoded)["max_added_vertex_bytes_bps"]==cap);
+        }
+        for(auto cap:nlohmann::json::array({-1,1.5,"2000",true,4294967295ull}))
+            throws([&]{settings_json(nlohmann::json{{"max_added_vertex_bytes_bps",cap}});});
         CHECK(!config.contains("output")&&!config.contains("chain"));
         throws([&]{settings_json(nlohmann::json{{"output","reuse"}});});
         auto legacy=settings_json(nlohmann::json{{"output","reuse"},{"chain","progressive"}},true);
@@ -148,6 +213,24 @@ int main() {
         auto& color_accessor=j["accessors"][color_index];CHECK(color_accessor["componentType"]==5121&&color_accessor["normalized"]==true);
         auto& color_view=j["bufferViews"][color_accessor["bufferView"].get<size_t>()];
         CHECK(color_view["byteLength"]==colors.colors.size()*4&&color_view["byteOffset"].get<size_t>()%4==0);
+        {
+            Mesh input;input.positions={{-1,-1,0},{1,-1,0},{1,1,0},{-1,1,0},{0,0,0},{.2f,0,0}};
+            input.indices={0,1,4,1,2,5,2,3,5,3,0,4,4,1,5,4,5,3};input.double_sided={1};
+            for(auto p:input.positions){input.normals.push_back({0,0,1});input.uv.push_back({(p.x+1)*.5f,(p.y+1)*.5f});input.colors.push_back({40,90,120,77});input.tangents.push_back({1,0,0,-1});}
+            detail::SourceVertices table(input.view(),true);Result mixed;mixed.source=input.view();mixed.reference_bounds=bounds(input.view());
+            Lod base;base.data.indices=input.indices;mixed.lods.push_back(base);
+            for(float x:{.1f,.3f}){Lod l;l.shared_vertices=false;l.data=input;l.data.indices={0,1,4,1,2,4,2,3,4,3,0,4};
+                l.data.positions[4]={x,0,0};l.data.uv[4]={(x+1)*.5f,.5f};compact(l.data);table.share(l);mixed.lods.push_back(std::move(l));}
+            detail::share_result_vertices(mixed);save_chain(mixed,dir/"mixed");
+            const uint64_t expected_bytes=8*(12+12+8+4+16)+(18+12+12)*4;
+            CHECK(std::filesystem::file_size(dir/"mixed/chain.bin")==expected_bytes&&storage_stats(mixed).total()==expected_bytes);
+            nlohmann::json gltf;std::ifstream(dir/"mixed/chain.gltf")>>gltf;
+            auto first=gltf["meshes"][0]["primitives"][0]["attributes"],second=gltf["meshes"][1]["primitives"][0]["attributes"],third=gltf["meshes"][2]["primitives"][0]["attributes"];
+            CHECK(second==third);
+            for(auto it=first.begin();it!=first.end();++it){auto a=gltf["accessors"][it.value().get<size_t>()],b=gltf["accessors"][second[it.key()].get<size_t>()];
+                CHECK(a["count"]==6&&b["count"]==8&&a["bufferView"]==b["bufferView"]);}
+            CHECK(load_mesh(dir/"mixed/chain.gltf").positions.size()==6);
+        }
         std::cout<<"Import, transforms, runtime mesh sharing, shared accessors and settings round trips passed\n";
     }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}
 }

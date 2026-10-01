@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
@@ -25,6 +26,25 @@ import {
   validateCoreTestLog,
 } from '../scripts/neural/core-validation.mjs';
 import { runCoreValidation } from '../scripts/neural/core-validation-job.mjs';
+import {
+  readinessModel,
+  readinessFixtures,
+  readinessManifest,
+  runTeacherReadiness,
+} from '../scripts/neural/teacher-readiness.mjs';
+// Teacher commands and their frozen manifest use repository-relative paths.
+// CTest starts this isolated Node process in its build directory.
+process.chdir(fileURLToPath(new URL('../', import.meta.url)));
+const checksum = (bytes) => crypto.createHash('sha256').update(bytes).digest('hex');
+function modelFixture(file, architecture = 4, width = 64) {
+  const weights = width * 129 + width * (width + 1) + 12 * (width + 1);
+  const bytes = Buffer.alloc(24 + weights * 4);
+  bytes.write('BLZNET02');
+  bytes.writeUInt32LE(architecture, 8);
+  bytes.writeUInt32LE(weights, 12);
+  bytes.writeUInt32LE(width, 20);
+  fs.writeFileSync(file, Buffer.concat([bytes, Buffer.from(checksum(bytes))]));
+}
 const deployment = {
     ...profiles.blackwell,
     gpu_hourly_usd_cap: 2.5,
@@ -445,6 +465,254 @@ test('REST handles empty deletions, missing resources, errors and cursor paginat
     (e) => e.status === 403 && !e.message.includes('secret'),
   );
 });
+test('readiness accepts only finite checksummed v4 models at supported widths', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-readiness-model-'));
+  try {
+    const model = directory + '/model.blzn';
+    for (const width of [64, 128, 256]) {
+      modelFixture(model, 4, width);
+      assert.deepEqual(readinessModel(model), {
+        architecture: 4,
+        width,
+        sha256: checksum(fs.readFileSync(model)),
+      });
+    }
+    modelFixture(model, 3);
+    assert.throws(() => readinessModel(model), /v4 model/);
+    modelFixture(model);
+    const corrupt = fs.readFileSync(model);
+    corrupt[30] ^= 1;
+    fs.writeFileSync(model, corrupt);
+    assert.throws(() => readinessModel(model), /checksum/);
+    corrupt.writeFloatLE(Infinity, 24);
+    fs.writeFileSync(
+      model,
+      Buffer.concat([corrupt.subarray(0, -64), Buffer.from(checksum(corrupt.subarray(0, -64)))]),
+    );
+    assert.throws(() => readinessModel(model), /nonfinite/);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+function teacherArtifacts(args, changed = false, indexChanges = {}) {
+  const output = args[1],
+    option = (name) => args[args.indexOf(name) + 1];
+  const states = 2 + Number(option('--previous-steps')),
+    rows = states * 4;
+  fs.mkdirSync(output, { recursive: true });
+  const header = Buffer.alloc(12);
+  header.write('BLZACT05');
+  header.writeUInt32LE(4, 8);
+  const vectors = [rows * 74, rows * 12, rows, rows, states + 1].map((count, i) => {
+    const width = [2, 1, 4, 1, 4][i],
+      bytes = Buffer.alloc(8 + count * width);
+    bytes.writeBigUInt64LE(BigInt(count));
+    if (i === 3 && changed) bytes[8] = 1;
+    if (i === 4)
+      for (let state = 0; state <= states; ++state) bytes.writeUInt32LE(state * 4, 8 + state * 4);
+    return bytes;
+  });
+  const payload = Buffer.concat([header, ...vectors]);
+  const contract = JSON.stringify({ batch: option('--candidate-batch') }),
+    episode = 'identical completed mesh';
+  fs.writeFileSync(output + '/actions.bin', payload);
+  fs.writeFileSync(output + '/contract.json', contract);
+  fs.writeFileSync(output + '/episode.bin', episode);
+  fs.writeFileSync(
+    output + '/index.json',
+    JSON.stringify({
+      schema: 4,
+      complete: true,
+      status: 'complete',
+      training_started: false,
+      requested_condition_available: true,
+      reference_confirmed: true,
+      preceding_lod_emitted: option('--previous-steps') === '1',
+      states,
+      queries: rows * 3,
+      sha256: checksum(payload),
+      contract_sha256: checksum(contract),
+      episode_sha256: checksum(episode),
+      timings: Object.fromEntries(
+        [
+          'load_and_session',
+          'packing_and_baseline',
+          'state_setup',
+          'features_and_proposals',
+          'candidate_build',
+          'candidate_audit',
+          'commit',
+          'other_preparation',
+        ].map((name) => [name + '_seconds', 0.01]),
+      ),
+      ...indexChanges,
+    }),
+  );
+}
+
+test('teacher readiness compares complete A/B/B/A payloads and preserves failures without training', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-readiness-'));
+  const clean = { code: 0, signal: null, timed_out: false, cancelled: false, success: true };
+  try {
+    const model = directory + '/model.blzn';
+    modelFixture(model);
+    for (const failure of [
+      'none',
+      'payload',
+      'predecessor',
+      'states',
+      'unknown',
+      'timeout',
+      'deadline',
+    ]) {
+      let clock = 1000,
+        runs = 0;
+      const batches = [],
+        deadline = 601000;
+      const execute = async (command, args, options) => {
+        assert.ok(options.maximum > 0 && options.maximum <= deadline - clock);
+        assert.equal(options.grace, 0);
+        if (command === 'nvidia-smi') {
+          fs.writeSync(
+            options.stdio[1],
+            '0, Fixture GPU, GPU-fixture, 580.0, 16384, 2048, 12, 1\n',
+          );
+          return clean;
+        }
+        assert.equal(command, 'build/neural/blitz-neural-placement-prepare');
+        const option = (name) => args[args.indexOf(name) + 1];
+        for (const [name, value] of Object.entries({
+          '--architecture': '4',
+          '--teacher-selection': 'policy-mixed',
+          '--states': '2',
+          '--pool': '4',
+          '--pixels': '64',
+          '--source-limit': '3',
+          '--adjacent-limit': '2',
+          '--gpu-memory-mib': '512',
+          '--audit-mode': 'sparse',
+          '--mask-only-coverage': 'on',
+          '--training-profile': 'coverage',
+          '--raster-backend': 'vulkan',
+          '--vertex-storage': 'packed',
+          '--model': model,
+          '--seed': '101',
+          '--corpus': readinessManifest,
+          '--training-selection': readinessManifest,
+        }))
+          assert.equal(option(name), value);
+        assert.ok(options.maximum <= 30000);
+        const previous = option('--previous-steps') === '1';
+        assert.equal(args.includes('--previous-pixels'), previous);
+        if (previous) assert.equal(option('--previous-pixels'), '128');
+        const batch = Number(option('--candidate-batch'));
+        batches.push(batch);
+        ++runs;
+        const changes =
+          failure === 'predecessor' && previous
+            ? {
+                requested_condition_available: false,
+                preceding_lod_emitted: false,
+                status: 'predecessor_unavailable',
+              }
+            : failure === 'states'
+              ? { states: 1 }
+              : failure === 'unknown'
+                ? { status: 'unknown_audit', complete: false }
+                : {};
+        teacherArtifacts(args, failure === 'payload' && batch === 4, changes);
+        clock += failure === 'deadline' ? deadline : batch === 1 ? 12000 : 6000;
+        return failure === 'timeout' ? { ...clean, timed_out: true } : clean;
+      };
+      const report = await runTeacherReadiness({
+        model,
+        directory: directory + '/' + failure,
+        execute,
+        deadline,
+        now: () => clock,
+      });
+      assert.equal(report.training_started, false);
+      assert.equal(report.score, null);
+      assert.equal(report.quality_proven, false);
+      assert.equal(report.complete, failure === 'none');
+      if (failure === 'none') {
+        assert.equal(report.runs.length, 8);
+        assert.deepEqual(batches, [1, 4, 4, 1, 1, 4, 4, 1]);
+        assert.equal(report.speedup, 2);
+        assert.equal(report.timing_authority, 'local_shared');
+        assert.equal(report.gpu_before.available, true);
+        assert.match(report.gpu_after.csv, /Fixture GPU/);
+        for (const run of report.runs) assert.equal(run.rows, (2 + run.previous_steps) * 4);
+      } else {
+        assert.equal(report.speedup, null);
+        assert.ok(report.comparisons.every((entry) => entry.speedup === null));
+        assert.ok(report.error);
+        if (failure === 'deadline') assert.equal(runs, 1);
+      }
+    }
+    const expired = await runTeacherReadiness({
+      model,
+      directory: directory + '/expired',
+      deadline: 1,
+      now: () => 2,
+      execute: () => assert.fail('expired readiness must not spawn'),
+    });
+    assert.equal(expired.complete, false);
+    assert.equal(expired.runs.length, 0);
+    const changed = await runTeacherReadiness({
+      model,
+      directory: directory + '/changed-model',
+      expectedRequest: { model: { sha256: 'different-model' } },
+      execute: () => assert.fail('changed immutable readiness inputs must not spawn'),
+    });
+    assert.equal(changed.complete, false);
+    assert.match(changed.error, /request checksum mismatch/);
+    assert.equal(changed.runs.length, 0);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('optional readiness shares the core test deadline and cannot turn incomplete work into success', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'blitz-core-readiness-'));
+  try {
+    const model = directory + '/model.blzn';
+    modelFixture(model);
+    let clock = 1000,
+      teacherCalls = 0;
+    const clean = { code: 0, signal: null, timed_out: false, cancelled: false, success: true };
+    const report = await runCoreValidation({
+      directory: directory + '/report',
+      deadline: 601000,
+      readinessModel: model,
+      now: () => clock,
+      execute: async (command, args, options) => {
+        assert.ok(options.maximum <= 601000 - clock);
+        if (command.includes('placement-prepare')) {
+          assert.equal(options.maximum, 1000);
+          ++teacherCalls;
+          teacherArtifacts(args);
+          clock = 601001;
+        } else if (command === 'ctest') fs.writeSync(options.stdio[1], '100% tests passed\n');
+        else if (command.endsWith('compute-sanitizer')) {
+          fs.writeSync(options.stdio[1], 'ERROR SUMMARY: 0 errors\n');
+          if (args.includes('build/neural/blitz-neural-vulkan-tests')) clock = 600000;
+        }
+        return clean;
+      },
+    });
+    assert.equal(report.contracts_complete, true);
+    assert.equal(report.complete, false);
+    assert.equal(report.teacher_readiness.complete, false);
+    assert.equal(report.teacher_readiness.speedup, null);
+    assert.equal(report.training_started, false);
+    assert.equal(teacherCalls, 1);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('core validation uses its separate cumulative grant and a 35 minute rental', () => {
   const now = 10_000_000,
     old = { experiment: 'gpu-refactor', name: 'previous-training', started_at: 0 };
@@ -615,7 +883,19 @@ test('core preparation bundles only committed source and carries self-contained 
   };
   try {
     fs.mkdirSync(root + '/scripts/neural', { recursive: true });
-    fs.writeFileSync(root + '/.gitignore', '/runs/\n');
+    fs.writeFileSync(root + '/.gitignore', '/runs/\n/data/\n');
+    const assets = readinessFixtures.map(({ asset }) => {
+      const file = 'data/' + asset + '.gltf',
+        bytes = Buffer.from(asset);
+      fs.mkdirSync(root + '/data', { recursive: true });
+      fs.writeFileSync(root + '/' + file, bytes);
+      return { id: asset, split: 'development', files: [{ path: file, sha256: checksum(bytes) }] };
+    });
+    fs.mkdirSync(root + '/research/neural', { recursive: true });
+    fs.writeFileSync(
+      root + '/' + readinessManifest,
+      JSON.stringify({ score_eligible: false, assets }),
+    );
     for (const name of [
       'runpod.mjs',
       'runpod-api.mjs',
@@ -624,6 +904,8 @@ test('core preparation bundles only committed source and carries self-contained 
       'action-curriculum.mjs',
       'artifacts.mjs',
       'core-validation.mjs',
+      'teacher-readiness.mjs',
+      'bounded-process.mjs',
     ])
       fs.copyFileSync(path.dirname(cli) + '/' + name, root + '/scripts/neural/' + name);
     local('git', ['init', '-q']);
@@ -639,6 +921,7 @@ test('core preparation bundles only committed source and carries self-contained 
     ]);
     const env = { ...process.env };
     delete env.BLITZ_RUNPOD_PROFILE;
+    delete env.BLITZ_CORE_READINESS_MODEL;
     local(process.execPath, [cli, 'prepare-core-validation', output], { env });
     const prepared = JSON.parse(fs.readFileSync(output + '/prepared.json'));
     assert.equal(prepared.experiment, 'core-validation');
@@ -649,6 +932,44 @@ test('core preparation bundles only committed source and carries self-contained 
     assert.ok(!/dataset|assets|model[.]blzn/.test(archive));
     local(process.execPath, [output + '/control/runpod.mjs', 'status', output], { env });
     assert.equal(fs.existsSync(output + '/rental.json'), false);
+    const model = directory + '/model.blzn',
+      optional = root + '/runs/neural/optional';
+    modelFixture(model);
+    local(process.execPath, [cli, 'prepare-core-validation', optional], {
+      env: { ...env, BLITZ_CORE_READINESS_MODEL: model },
+    });
+    const optionalPrepared = JSON.parse(fs.readFileSync(optional + '/prepared.json'));
+    assert.equal(optionalPrepared.teacher_readiness.model.sha256, checksum(fs.readFileSync(model)));
+    assert.equal(optionalPrepared.files, 3 + assets.length);
+    assert.equal(optionalPrepared.teacher_readiness.training_started, false);
+    const extract = directory + '/extracted';
+    fs.mkdirSync(extract);
+    local('tar', ['-xf', optional + '/input.tar', '-C', extract]);
+    const inputs = JSON.parse(fs.readFileSync(extract + '/inputs.json'));
+    assert.deepEqual(
+      inputs.files.map((file) => file.path).sort(),
+      [
+        'source.bundle',
+        'readiness/model.blzn',
+        'readiness/request.json',
+        ...assets.flatMap((asset) => asset.files.map((file) => 'assets/' + file.path)),
+      ].sort(),
+    );
+    for (const file of inputs.files)
+      assert.equal(file.sha256, checksum(fs.readFileSync(extract + '/' + file.path)));
+    modelFixture(model, 3);
+    const invalid = spawnSync(
+      process.execPath,
+      [cli, 'prepare-core-validation', root + '/runs/neural/invalid'],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...env, BLITZ_CORE_READINESS_MODEL: model },
+      },
+    );
+    assert.equal(invalid.status, 1);
+    assert.match(invalid.stderr, /v4 model/);
+    assert.equal(fs.existsSync(root + '/runs/neural/invalid'), false);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

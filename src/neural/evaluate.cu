@@ -1521,8 +1521,11 @@ AuditPredicate certify_rasters_cuda(const Raster& a, const Raster& b, const Eval
     if (a.width != b.width || !config.supersample || !capacity || !std::isfinite(config.limit) ||
         config.limit <= 0)
         throw std::invalid_argument("raster predicate settings");
-    if (config.cancelled && config.cancelled())
-        return {};
+    if (config.cancelled && config.cancelled()) {
+        AuditPredicate stopped;
+        stopped.cancelled = true;
+        return stopped;
+    }
     Device device(options, true);
     auto x = upload_raster(device, a), y = upload_raster(device, b);
     auto m = predicate_images(device, x, y, config, config.supersample, nullptr, capacity);
@@ -1933,6 +1936,7 @@ struct AuditCuda::Impl {
         for (uint32_t v = 0; v < views.size(); ++v) {
             view = v;
             if (config.cancelled && config.cancelled()) {
+                result.cancelled = true;
                 result.complete = false;
                 result.passed = false;
                 return result;
@@ -2120,6 +2124,7 @@ Measurement AuditCuda::evaluate(MeshView a, MeshView b, const Bounds& bounds,
     Measurement result;
     result.supersample = config.supersample;
     if (config.cancelled && config.cancelled()) {
+        result.cancelled = true;
         result.complete = false;
         result.passed = false;
         return result;
@@ -2201,7 +2206,8 @@ AuditPredicate AuditCuda::certify(MeshView a, DeviceMeshView b, const Bounds& bo
     p.views = m.views_evaluated;
     p.supersample = m.supersample;
     p.resource_limited = m.resource_limited;
-    if (!m.resource_limited && !(pruned && *pruned) && !(config.cancelled && config.cancelled())) {
+    p.cancelled = m.cancelled || (config.cancelled && config.cancelled());
+    if (!m.resource_limited && !p.cancelled && !(pruned && *pruned)) {
         if (m.complete && m.passed)
             p.verdict = AuditVerdict::Pass;
         else if (m.error > config.limit || m.changed_area > config.max_changed_area)
@@ -2274,8 +2280,13 @@ AuditCuda::certify_candidates(MeshView a, std::span<const DeviceMeshView> candid
             if (stats)
                 stats->gpu_evaluations += candidates.size();
             for (uint32_t view = 0; view < cameras_.size(); ++view) {
-                if (config.cancelled && config.cancelled())
+                if (config.cancelled && config.cancelled()) {
+                    for (auto& candidate : result) {
+                        candidate.value.cancelled = true;
+                        candidate.value.verdict = AuditVerdict::Unknown;
+                    }
                     return result;
+                }
                 std::vector<DeviceMeshView> active;
                 std::vector<Camera> cameras;
                 std::vector<size_t> ids;
@@ -2389,6 +2400,7 @@ Measurement AuditCuda::evaluate_device(MeshView a, DeviceMeshView b, const Bound
     Measurement result;
     result.supersample = config.supersample;
     if (config.cancelled && config.cancelled()) {
+        result.cancelled = true;
         result.complete = false;
         result.passed = false;
         return result;

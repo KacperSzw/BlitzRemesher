@@ -1,0 +1,60 @@
+{
+  "complete": true,
+  "offline": true,
+  "runs": [
+    {
+      "run": "chain-search-coverage-baseline",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-coverage-legacy-2",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-coverage-legacy-4",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-v3-coverage-graph-2",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-v3-coverage-graph-4",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-v3-coverage-topology-4",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-appearance-baseline",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-v3-appearance-graph-2",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-strict-baseline",
+      "rows": 8
+    },
+    {
+      "run": "chain-search-v3-strict-graph-2",
+      "rows": 8
+    }
+  ],
+  "checks": [
+    "geometry counts and bounds",
+    "stored normal streams",
+    "stable row order",
+    "scheduled and runtime slots",
+    "matched rotation",
+    "four display modes",
+    "five camera modes",
+    "actual target pixel size",
+    "mobile layout"
+  ],
+  "page_errors": [],
+  "network_requests": [],
+  "browser": "153.0.8010.36"
+}

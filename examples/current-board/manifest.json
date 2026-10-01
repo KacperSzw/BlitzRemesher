@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "policy": {
+    "max_added_vertex_bytes_bps": 2000,
+    "triangle_overhead_bps": 0
+  },
+  "assets": [
+    {
+      "id": "ph_moon_rock_02",
+      "name": "Moon rock",
+      "dir": "examples/moon-rock-budget",
+      "input": "data/polyhaven/moon_rock_02/source.gltf",
+      "input_gltf_sha256": "fada2419ab6de440c24081bf06545f37c41c3d4f8bb57fc4d1ba45bdb35baf5d",
+      "input_binary_sha256": "3ba6af10eebb46347e4e0c9d3e2a836d1328525d9d47e82b798a13d9ca2b216f",
+      "source_url": "https://polyhaven.com/a/moon_rock_02",
+      "license": "CC0-1.0",
+      "chain_sha256": "77d91682973e858b68617b244282bfdbac65abe896215fbec65ea3a957173ece",
+      "config": "research/vertex-budget/moon-rock.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "budget_bytes": 11820,
+      "storage": {
+        "added_vertex_bytes": 11360,
+        "index_bytes": 104040,
+        "source_vertex_bytes": 59104,
+        "total_bytes": 174504
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 1536,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_grass_bermuda_01",
+      "name": "Bermuda grass",
+      "dir": "examples/grass-bermuda-budget",
+      "input": "data/polyhaven/grass_bermuda_01/source.gltf",
+      "input_gltf_sha256": "a1e5bb7fcf33721dc4844d7acacab80759fccec659f1ea643f8701afc542e207",
+      "input_binary_sha256": "b98be48b43afb9d57f6c722d918a49996635064b829b16dc14ef4a48c0f04dae",
+      "source_url": "https://polyhaven.com/a/grass_bermuda_01",
+      "license": "CC0-1.0",
+      "chain_sha256": "fd49863795fc16fd4d9e4388ca3332a999190c7ac0749510f5c219b2899b3427",
+      "config": "research/vertex-budget/grass-bermuda.json",
+      "runtime_levels": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "budget_bytes": 5382,
+      "storage": {
+        "added_vertex_bytes": 3712,
+        "index_bytes": 29700,
+        "source_vertex_bytes": 26912,
+        "total_bytes": 60324
+      },
+      "tail_probe_evaluations": 7,
+      "tail_reserved_vertex_bytes": 1408,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_lambis_shell",
+      "name": "Lambis shell",
+      "dir": "examples/lambis-shell-budget",
+      "input": "data/polyhaven/lambis_shell/source.gltf",
+      "input_gltf_sha256": "3fbfbe990b12f33af079671bc9ea9b1dd46b50f823692b72aa0d89fe850328e3",
+      "input_binary_sha256": "3129e3a175dbeba8375b21b8f5dec3b559a173f116dc4c402d79afd8751df7aa",
+      "source_url": "https://polyhaven.com/a/lambis_shell",
+      "license": "CC0-1.0",
+      "chain_sha256": "d87af2ed0cc1d979636cbd30fce9bb6773ef79cda64309c0a8106a7c4becf6e1",
+      "config": "research/vertex-budget/lambis-shell.json",
+      "runtime_levels": [
+        0,
+        1,
+        3,
+        4,
+        7
+      ],
+      "budget_bytes": 47110,
+      "storage": {
+        "added_vertex_bytes": 43680,
+        "index_bytes": 358344,
+        "source_vertex_bytes": 235552,
+        "total_bytes": 637576
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 5856,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_metal_stool_02",
+      "name": "Metal stool",
+      "dir": "examples/metal-stool-budget",
+      "input": "data/polyhaven/metal_stool_02/source.gltf",
+      "input_gltf_sha256": "de8d603993443294b8a0aed48ea631ac38f2b15872491ea929551f72be726fcb",
+      "input_binary_sha256": "17127317d391eb90ce3446739463b1067cc490210db821769b7a46bd1ff02e1c",
+      "source_url": "https://polyhaven.com/a/metal_stool_02",
+      "license": "CC0-1.0",
+      "chain_sha256": "d77c687a5117bf97f2bb1b10105f1a19831d918cc04dfdff6028ebb7452d2bb6",
+      "config": "research/vertex-budget/metal-stool.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "budget_bytes": 28736,
+      "storage": {
+        "added_vertex_bytes": 23968,
+        "index_bytes": 220092,
+        "source_vertex_bytes": 143680,
+        "total_bytes": 387740
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 11456,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_potted_plant_04",
+      "name": "Potted plant",
+      "dir": "examples/potted-plant-budget",
+      "input": "data/polyhaven/potted_plant_04/source.gltf",
+      "input_gltf_sha256": "b3a3bc3e97da75844999c4da07b7104b6c023f729a7c045979929b9504184339",
+      "input_binary_sha256": "158c1d27503d4845eb3573f00c01ae3f4f77f1d6ca8754c67bf1762745946f7f",
+      "source_url": "https://polyhaven.com/a/potted_plant_04",
+      "license": "CC0-1.0",
+      "chain_sha256": "9e6097777d36e17fb8bdec068d3ba6f6a29db1c0362ffb02592e106066f20209",
+      "config": "research/vertex-budget/potted-plant.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        7
+      ],
+      "budget_bytes": 37644,
+      "storage": {
+        "added_vertex_bytes": 17216,
+        "index_bytes": 343080,
+        "source_vertex_bytes": 188224,
+        "total_bytes": 548520
+      },
+      "tail_probe_evaluations": 16,
+      "tail_reserved_vertex_bytes": 0,
+      "adaptive_retry_attempted": true,
+      "adaptive_retry_selected": true,
+      "adaptive_retry_evaluations": 62
+    },
+    {
+      "id": "ph_dead_quiver_trunk",
+      "name": "Dead quiver trunk",
+      "dir": "examples/dead-quiver-trunk-budget",
+      "input": "data/polyhaven/dead_quiver_trunk/source.gltf",
+      "input_gltf_sha256": "c130bce552d608057143e7f131f36e9c4e06a9b780947c85d4e5eb1cacfedbaf",
+      "input_binary_sha256": "2f2a74458c071801cde2287970a396d503ffe0ebf4dedc3c5f3b39024186c00a",
+      "source_url": "https://polyhaven.com/a/dead_quiver_trunk",
+      "license": "CC0-1.0",
+      "chain_sha256": "cdae9df3eb61a8baf5701f894d2f15fd8b4ff47989181f51f9e927f54fa9b86a",
+      "config": "research/vertex-budget/dead-quiver-trunk.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        5,
+        7
+      ],
+      "budget_bytes": 60704,
+      "storage": {
+        "added_vertex_bytes": 60480,
+        "index_bytes": 278688,
+        "source_vertex_bytes": 303520,
+        "total_bytes": 642688
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 192,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_painted_wooden_shelves",
+      "name": "Painted wooden shelves",
+      "dir": "examples/shelves-budget",
+      "input": "research/area-v3/trace-extracts/shelves-adaptive/meshes/ph_painted_wooden_shelves/chain.gltf",
+      "input_gltf_sha256": "6b30bf9461082ad616236c19759a60de880fd7ef269d6933cc81c1ce42110c01",
+      "input_binary_sha256": "5c1a5f4988f64ea3cc54946f8dba47aa1bd117fd2b94931c2d13e60afcf96ae9",
+      "source_url": "https://polyhaven.com/a/painted_wooden_shelves",
+      "license": "CC0-1.0",
+      "chain_sha256": "94a81fddd700cf61ef4ee7e7b230fe7359709b5b653c4b6374d27d6ed49fbd16",
+      "config": "research/vertex-budget/smoke-shelves.json",
+      "runtime_levels": [
+        0,
+        1,
+        3
+      ],
+      "budget_bytes": 3507,
+      "storage": {
+        "added_vertex_bytes": 2752,
+        "index_bytes": 11232,
+        "source_vertex_bytes": 17536,
+        "total_bytes": 31520
+      },
+      "tail_probe_evaluations": 6,
+      "tail_reserved_vertex_bytes": 3008,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_rock_face_02",
+      "name": "Rock face",
+      "dir": "examples/rock-face-budget",
+      "input": "data/polyhaven/rock_face_02/source.gltf",
+      "input_gltf_sha256": "ebeab82d463c89eb5f894b85807da111280a73b552d694257118f3f2d47bf760",
+      "input_binary_sha256": "cfa3dea8f0f91525b5dfe93d889acacf961d20f7174aae100eae2c6e101edf31",
+      "source_url": "https://polyhaven.com/a/rock_face_02",
+      "license": "CC0-1.0",
+      "chain_sha256": "9bcfe848f77ff399149cf131aeccfdf88b6217b5fd5d91d9981742bfb7413fbb",
+      "config": "research/vertex-budget/rock-face.json",
+      "runtime_levels": [
+        0,
+        1,
+        3,
+        4,
+        6,
+        7
+      ],
+      "budget_bytes": 104934,
+      "storage": {
+        "added_vertex_bytes": 101920,
+        "index_bytes": 848472,
+        "source_vertex_bytes": 524672,
+        "total_bytes": 1475064
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 5248,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_flower_gazania",
+      "name": "Gazania flower",
+      "dir": "examples/flower-gazania-budget",
+      "input": "data/polyhaven/flower_gazania/source.gltf",
+      "input_gltf_sha256": "73c7f4094f2ad78ddfbe6373f8372ddb736a5d9fc6485db08ae32301edc95a24",
+      "input_binary_sha256": "a3864c51fce2dacb01629a0c364730e5988ac5a7a937acc0e2635c946d786797",
+      "source_url": "https://polyhaven.com/a/flower_gazania",
+      "license": "CC0-1.0",
+      "chain_sha256": "56121c069e7edbedf0d4ab1c8259012e1727a4c1d64f0e462054655d9065c1b2",
+      "config": "research/vertex-budget/current-board-512-16.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        7
+      ],
+      "budget_bytes": 114314,
+      "storage": {
+        "added_vertex_bytes": 92808,
+        "index_bytes": 515100,
+        "source_vertex_bytes": 571572,
+        "total_bytes": 1179480
+      },
+      "tail_probe_evaluations": 16,
+      "tail_reserved_vertex_bytes": 52488,
+      "adaptive_retry_attempted": true,
+      "adaptive_retry_selected": true,
+      "adaptive_retry_evaluations": 62
+    },
+    {
+      "id": "ph_dry_branches_medium_01",
+      "name": "Dry branches",
+      "dir": "examples/dry-branches-budget",
+      "input": "data/polyhaven/dry_branches_medium_01/source.gltf",
+      "input_gltf_sha256": "23f328ded9be1e151ccd7994b303c70221551544c4857a71474c1c01a14b8a22",
+      "input_binary_sha256": "969da1e8cbb2d8201e7fa0fc0dac5b19ef354b32c3d8c62dd9faa7cb3833d8ca",
+      "source_url": "https://polyhaven.com/a/dry_branches_medium_01",
+      "license": "CC0-1.0",
+      "chain_sha256": "268144496df7a9e730b78fe7791eb1251317695c48ab89571170dab968eda154",
+      "config": "research/vertex-budget/current-board-512-16.json",
+      "runtime_levels": [
+        0,
+        1,
+        3,
+        4,
+        6,
+        7
+      ],
+      "budget_bytes": 72870,
+      "storage": {
+        "added_vertex_bytes": 72512,
+        "index_bytes": 483912,
+        "source_vertex_bytes": 364352,
+        "total_bytes": 920776
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 4064,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_food_apple_01",
+      "name": "Apple",
+      "dir": "examples/apple-budget",
+      "input": "data/polyhaven/food_apple_01/source.gltf",
+      "input_gltf_sha256": "6a7dc1cda1271c8b08e36e2b9fd44371b7149cca6262c71bc36d971cdac4325f",
+      "input_binary_sha256": "f14ff9647fdd9f5a59ef325f94154e91f1f14cc2563cd3fb572c4fe9ce5756ca",
+      "source_url": "https://polyhaven.com/a/food_apple_01",
+      "license": "CC0-1.0",
+      "chain_sha256": "06938f6be32a9e2fc11d5c6001b72f8bc735f1585a1f510433e6da90ffebf485",
+      "config": "research/vertex-budget/current-board-512-16.json",
+      "runtime_levels": [
+        0,
+        1,
+        4,
+        7
+      ],
+      "budget_bytes": 25721,
+      "storage": {
+        "added_vertex_bytes": 24224,
+        "index_bytes": 163128,
+        "source_vertex_bytes": 128608,
+        "total_bytes": 315960
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 6400,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_classic_laptop",
+      "name": "Classic laptop",
+      "dir": "examples/classic-laptop-budget",
+      "input": "data/polyhaven/classic_laptop/source.gltf",
+      "input_gltf_sha256": "c78867ed92356fe03fd90b56438f3b141b5f8654672da52c6df7868eb820cf78",
+      "input_binary_sha256": "0f1602f2fe856fd330e95df44af0fd9986aeac873343307c70e036041e789fb9",
+      "source_url": "https://polyhaven.com/a/classic_laptop",
+      "license": "CC0-1.0",
+      "chain_sha256": "e628e80415034f149d53b5b4b770f4094897f1cabc9de805c53834a62e932347",
+      "config": "research/vertex-budget/current-board-512-16.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        7
+      ],
+      "budget_bytes": 84364,
+      "storage": {
+        "added_vertex_bytes": 79552,
+        "index_bytes": 443544,
+        "source_vertex_bytes": 421824,
+        "total_bytes": 944920
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 6016,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    },
+    {
+      "id": "ph_wooden_picnic_table",
+      "name": "Picnic table",
+      "dir": "examples/picnic-table-budget",
+      "input": "data/polyhaven/wooden_picnic_table/source.gltf",
+      "input_gltf_sha256": "6b0dd9916fd87dba2e5baad06e20c0badf68bc68a5761a13854fa9a215c6bd50",
+      "input_binary_sha256": "1efd51c292843194fbd709452d56d06c9ddc770f43a013db57ca79bfc2731b01",
+      "source_url": "https://polyhaven.com/a/wooden_picnic_table",
+      "license": "CC0-1.0",
+      "chain_sha256": "9c64f8fd4bda592160fb98be7b80ea872c8f075972185be971e126501740c1f5",
+      "config": "research/vertex-budget/current-board-512-16.json",
+      "runtime_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        7
+      ],
+      "budget_bytes": 43571,
+      "storage": {
+        "added_vertex_bytes": 30528,
+        "index_bytes": 320316,
+        "source_vertex_bytes": 217856,
+        "total_bytes": 568700
+      },
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 17664,
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_selected": false,
+      "adaptive_retry_evaluations": 0
+    }
+  ]
+}

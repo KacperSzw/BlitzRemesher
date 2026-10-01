@@ -1,4 +1,5 @@
 #include "blitz/io.hpp"
+#include "shared_vertices.hpp"
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -216,7 +217,7 @@ Mesh stl(const fs::path& path) {
 json measurement(const Measurement& m) {
     return {{"error_px",m.error},{"coverage_px",m.coverage},{"coverage_upper_px",m.coverage_upper},{"changed_area",m.changed_area},
       {"normal_degrees",m.normal_degrees},{"worst_view",m.worst_view},{"changed_area_worst_view",m.changed_area_worst_view},{"views_evaluated",m.views_evaluated},
-      {"supersample",m.supersample},{"complete",m.complete},{"passed",m.passed},{"resource_limited",m.resource_limited},{"nonfinite_error",!std::isfinite(m.error)}};
+      {"supersample",m.supersample},{"complete",m.complete},{"passed",m.passed},{"resource_limited",m.resource_limited},{"cancelled",m.cancelled},{"nonfinite_error",!std::isfinite(m.error)}};
 }
 }
 Mesh load_mesh(const fs::path& p) {
@@ -247,28 +248,47 @@ void save_ply(MeshView m,const fs::path& path) {
     if(!f)fail("cannot write PLY");
 }
 json result_json(const Result& r) {
-    json j={{"version",2},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
+    json j={{"version",3},{"status",r.status==Status::Complete?"complete":r.status==Status::Cancelled?"cancelled":"budget_limited"},
       {"candidate_evaluations",r.candidate_evaluations},{"lods",json::array()}};
     auto storage=[](StorageStats s){return json{{"source_vertex_bytes",s.source_vertex_bytes},{"added_vertex_bytes",s.added_vertex_bytes},{"index_bytes",s.index_bytes},{"total_bytes",s.total()}};};
     j["storage"]=storage(storage_stats(r));j["triangle_overhead_bps"]=r.triangle_overhead_bps;
+    j["max_added_vertex_bytes_bps"]=r.max_added_vertex_bytes_bps?json(*r.max_added_vertex_bytes_bps):json(nullptr);
+    j["added_vertex_budget_bytes"]=r.added_vertex_budget_bytes?json(*r.added_vertex_budget_bytes):json(nullptr);
     j["max_changed_area"]=r.max_changed_area;
+    auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
+    auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
+    const auto& contract=r.audit;
+    j["audit_contract"]={{"profile",contract.profile==Profile::Coverage?"coverage":contract.profile==Profile::Normals?"normals":"attributes"},
+        {"scope","configured_cameras"},{"texture_images_scored",false},{"normal_maps_scored",false},
+        {"search_views",views(contract.search_views)},{"audit_views",views(contract.audit_views)},
+        {"search_supersample",contract.search_supersample},{"audit_supersample",contract.audit_supersample},{"max_supersample",contract.max_supersample},
+        {"weights",{{"normal",contract.weights.normal},{"color",contract.weights.color},{"material",contract.weights.material}}},
+        {"normal_importance",curve(contract.normal_importance)},{"attribute_importance",curve(contract.attribute_importance)}};
+    j["chain_objective"]=r.chain_objective==ChainObjective::WholeChain?"whole_chain":"tail_first";
+    j["audit_evaluations"]=r.audit_evaluations;
+    j["graph_search"]={{"passes_completed",r.graph_passes_completed},{"source_valid_candidates",r.graph_candidates},{"transition_edges",r.graph_edges},
+        {"pruned_candidates",r.graph_pruned_candidates},{"pruned_paths",r.graph_pruned_paths},{"progress",json::array()}};
+    for(auto p:r.search_progress)j["graph_search"]["progress"].push_back({{"pass",p.pass},{"candidate_evaluations",p.candidate_evaluations},{"audit_evaluations",p.audit_evaluations},
+        {"triangle_total",p.triangle_total},{"added_vertex_bytes",p.added_vertex_bytes},{"seconds",p.seconds}});
     j["reference_candidate"]=r.selection.reference;j["selected_candidate"]=r.selection.selected;
     j["candidates"]=json::array();for(auto& c:r.candidates)j["candidates"].push_back({{"triangles",c.triangles},{"storage",storage(c.storage)}});
-    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
+    if(!r.candidates.empty())for(uint16_t b:{0,200,500,1000}) {auto c=select_chain(r.candidates,b,r.added_vertex_budget_bytes,r.chain_objective);j["selection_sweep"].push_back({{"overhead_bps",b},{"reference",c.reference},{"selected",c.selected},{"storage",storage(r.candidates[c.selected].storage)}});}
     auto runtime=runtime_levels(r);j["runtime_levels"]=runtime;j["runtime_lod_count"]=runtime.size();
-    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections}};
+    j["runtime_storage"]=json::array();for(auto level:runtime_storage(r))j["runtime_storage"].push_back({{"scheduled_index",level.scheduled_index},{"added_vertex_bytes",level.added_vertex_bytes},{"index_bytes",level.index_bytes},{"cumulative_added_vertex_bytes",level.cumulative_added_vertex_bytes}});
+    j["proposal_diagnostics"]={{"duplicate_proposals",r.duplicate_proposals},{"component_builds",r.component_builds},{"component_unavailable",r.component_unavailable},{"topology_fallback_proposals",r.topology_fallback_proposals},{"transition_reconnections",r.transition_reconnections},{"vertex_budget_rejections",r.vertex_budget_rejections},{"tail_probe_evaluations",r.tail_probe_evaluations},{"tail_reserved_vertex_bytes",r.tail_reserved_vertex_bytes},
+        {"adaptive_retry_attempted",r.adaptive_retry_attempted},{"adaptive_retry_selected",r.adaptive_retry_selected},{"adaptive_retry_evaluations",r.adaptive_retry_evaluations}};
     if(!r.proposals.empty()) {
         j["proposals"]=json::array();
-        const char* origins[]={"direct","progressive"};const char* strategies[]={"quadric","endpoints","components","topology_fallback","neural_reuse","neural_compact"};
-        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable"};
-        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
+        const char* origins[]={"direct","progressive","tail_probe"};const char* strategies[]={"quadric","endpoints","components","topology_fallback","neural_reuse","neural_compact"};
+        const char* gates[]={"accepted","source_search","adjacent_search","source_audit","adjacent_audit","invalid","growth","duplicate","component_unavailable","vertex_budget","objective_bound"};
+        for(auto& p:r.proposals)j["proposals"].push_back({{"level",p.level},{"pass",p.pass>1?"graph_"+std::to_string(p.pass-1):p.pass?"adaptive_retry":"baseline"},{"origin",origins[p.origin]},{"strategy",strategies[p.strategy]},
             {"input_triangles",p.input_triangles},{"parent_triangles",p.parent_triangles},{"requested",p.requested},{"achieved",p.achieved},{"gate",gates[p.gate]},
             {"attempts",p.attempts},{"collapsed",p.collapsed},{"geometry_rejections",p.geometry_rejections},{"uv_rejections",p.uv_rejections},{"link_rejections",p.link_rejections},{"seconds",p.seconds}});
     }
     const char* stages[]={"source_search","adjacent_search","source_audit","adjacent_audit"};
     for(size_t i=0;i<4;++i)j["rejections"][stages[i]]={{"count",r.rejected_gates[i]},{"area_only_count",r.area_rejected_gates[i]},{"worst",r.rejected_gates[i]?measurement(r.worst_rejected[i]):json(nullptr)}};
     for(size_t index=0;index<r.lods.size();++index){auto& l=r.lods[index];auto v=l.view(r.source);auto d=uv_distortion(v);j["lods"].push_back({
-      {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},
+      {"reference_triangles",r.candidates.empty()?v.triangles():r.candidates[r.selection.reference].triangles[index]},{"triangles",v.triangles()},{"vertices",v.positions.count},{"shared_vertices",l.shared_vertices},{"source_prefix_vertices",l.source_prefix_vertices},
       {"screen_pixels",l.schedule.pixels},{"transition_limit",l.schedule.transition},{"source_limit",l.schedule.source},
       {"adjacent",measurement(l.adjacent)},{"source",measurement(l.source_error)},
       {"uv_diagnostics",{{"mean_density",d.mean_uv_density},{"max_density",d.max_uv_density},{"max_anisotropy",d.max_uv_anisotropy},
@@ -276,6 +296,8 @@ json result_json(const Result& r) {
     return j;
 }
 void save_chain(const Result& r,const fs::path& directory) {
+    std::shared_ptr<const Mesh> vertex_pool;
+    for(auto& l:r.lods)if(l.source_prefix_vertices){if(vertex_pool&&vertex_pool!=l.vertex_pool){auto packed=r;detail::share_result_vertices(packed);save_chain(packed,directory);return;}vertex_pool=l.vertex_pool;}
     fs::create_directories(directory);json j={{"asset",{{"version","2.0"},{"generator","BlitzRemesher"}}},{"scene",0},{"scenes",json::array({{{"nodes",json::array({0})}}})},
       {"nodes",json::array()},{"meshes",json::array()},{"accessors",json::array()},{"bufferViews",json::array()},{"materials",json::array()}};
     uint16_t maxmat=0;for(auto& l:r.lods)for(size_t f=0;f<l.data.indices.size()/3;++f)maxmat=std::max(maxmat,l.view(r.source).material(f));
@@ -303,10 +325,17 @@ void save_chain(const Result& r,const fs::path& directory) {
         Vec3 lo=v.positions[0],hi=lo;for(size_t i=1;i<v.positions.count;++i){auto p=v.positions[i];lo={std::min(lo.x,p.x),std::min(lo.y,p.y),std::min(lo.z,p.z)};hi={std::max(hi.x,p.x),std::max(hi.y,p.y),std::max(hi.z,p.z)};}
         j["accessors"][a["POSITION"].get<size_t>()]["min"]={lo.x,lo.y,lo.z};j["accessors"][a["POSITION"].get<size_t>()]["max"]={hi.x,hi.y,hi.z};return a;
     };
-    json shared=attributes(r.source);
+    json pooled,shared;
+    if(vertex_pool) {
+        pooled=attributes(vertex_pool->view());shared=pooled;
+        for(auto it=shared.begin();it!=shared.end();++it){auto a=j["accessors"][it.value().get<size_t>()];a["count"]=r.source.positions.count;
+            if(it.key()=="POSITION"){Vec3 lo=r.source.positions[0],hi=lo;for(size_t i=1;i<r.source.positions.count;++i){auto p=r.source.positions[i];lo={std::min(lo.x,p.x),std::min(lo.y,p.y),std::min(lo.z,p.z)};hi={std::max(hi.x,p.x),std::max(hi.y,p.y),std::max(hi.z,p.z)};}
+                a["min"]={lo.x,lo.y,lo.z};a["max"]={hi.x,hi.y,hi.z};}
+            it.value()=j["accessors"].size();j["accessors"].push_back(std::move(a));}
+    } else shared=attributes(r.source);
     const auto runtime=runtime_levels(r);
     for(auto i:runtime) {
-        auto v=r.lods[i].view(r.source);auto a=r.lods[i].shared_vertices?shared:attributes(v);json primitives=json::array();
+        auto v=r.lods[i].view(r.source);auto a=r.lods[i].shared_vertices?shared:r.lods[i].source_prefix_vertices?pooled:attributes(v);json primitives=json::array();
         std::map<uint16_t,std::vector<uint32_t>> groups;
         for(size_t f=0;f<v.triangles();++f)for(int k=0;k<3;++k)groups[v.material(f)].push_back(v.indices[f*3+k]);
         for(auto& [mat,indices]:groups){size_t offset=bytes.size();for(auto index:indices)append(bytes,index);
@@ -322,12 +351,16 @@ void save_chain(const Result& r,const fs::path& directory) {
     std::ofstream bin(directory/"chain.bin",std::ios::binary);bin.write(reinterpret_cast<char*>(bytes.data()),bytes.size());if(!bin)fail("cannot write glTF buffer");
     std::ofstream(directory/"chain.gltf")<<j.dump(2)<<'\n';auto manifest=result_json(r);manifest["gltf"]="chain.gltf";
     for(size_t i=0;i<r.lods.size();++i){manifest["lods"][i]["gltf_mesh"]=j["nodes"][i]["mesh"];manifest["lods"][i]["gltf_node"]=i;}
+    manifest["runtime_meshes"]=json::array();
+    for(size_t i=0;i<runtime.size();++i){auto slot=runtime[i];manifest["runtime_meshes"].push_back({{"gltf_mesh",i},{"scheduled_index",slot},
+        {"screen_pixels",r.lods[slot].schedule.pixels},{"shared_vertices",r.lods[slot].shared_vertices}});}
+    manifest["material_binding"]="primitive.material is the input material ID; the engine retains its material payload";
     std::ofstream(directory/"lods.json")<<manifest.dump(2)<<'\n';
 }
 json settings_json(const Settings& s) {
     auto curve=[](const Curve& c){json a=json::array();for(auto p:c.points)a.push_back({p.x,p.y});return a;};
     auto views=[](ViewSet v){return json{{"orthographic",v.orthographic},{"perspective",v.perspective},{"seed",v.rotation_seed}};};
-    return {{"levels",s.levels},{"triangle_overhead_bps",s.triangle_overhead_bps},
+    return {{"levels",s.levels},{"triangle_overhead_bps",s.triangle_overhead_bps},{"max_added_vertex_bytes_bps",s.max_added_vertex_bytes_bps?json(*s.max_added_vertex_bytes_bps):json(nullptr)},
       {"objective",s.objective==Objective::Quadric?"quadric":s.objective==Objective::Regularized?"regularized":s.objective==Objective::Visual?"visual":"topology_relaxed"},
       {"profile",s.profile==Profile::Coverage?"coverage":s.profile==Profile::Normals?"normals":"attributes"},{"pixels_per_meter",s.pixels_per_meter},
       {"meters_per_unit",s.meters_per_unit},{"base_pixels",s.base_pixels?json(*s.base_pixels):json(nullptr)},{"last_pixels",s.last_pixels},
@@ -335,12 +368,12 @@ json settings_json(const Settings& s) {
       {"normal_importance",curve(s.normal_importance)},{"attribute_importance",curve(s.attribute_importance)},{"weights",{{"normal",s.weights.normal},{"color",s.weights.color},{"material",s.weights.material}}},
       {"search_views",views(s.search_views)},{"audit_views",views(s.audit_views)},{"search_supersample",s.search_supersample},{"audit_supersample",s.audit_supersample},
       {"max_supersample",s.max_supersample},{"max_changed_area",s.max_changed_area},{"candidate_budget",s.candidate_budget},{"beam_width",s.beam_width},{"prune",s.prune},{"force_scalar",s.force_scalar},{"coupled_wedges",s.coupled_wedges},
-      {"research",{{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
+      {"research",{{"shared_rebuild",s.research.shared_rebuild},{"merge_wedges",s.research.merge_wedges},{"density_targets",s.research.density_targets},{"conservative_screen",s.research.conservative_screen},{"appearance_stage",unsigned(s.research.appearance_stage)},{"graph_passes",s.research.graph_passes},{"coverage_cache_mib",s.research.coverage_cache_mib},{"output",s.research.output?json(*s.research.output==OutputMode::Reuse?"reuse":"rebuild"):json(nullptr)},{"chain",s.research.chain==ChainMode::Direct?"direct":s.research.chain==ChainMode::Progressive?"progressive":"hybrid"},{"boundary_weight",s.research.boundary_weight},{"boundary_placement",s.research.boundary_placement},{"adaptive_targets",s.research.adaptive_targets},{"component_candidates",s.research.component_candidates},{"trace",s.research.trace},{"independent_seams",s.research.independent_seams},{"topology_fallback",s.research.topology_fallback}}}};
 }
 Settings settings_json(const json& original,bool legacy_research) {
     auto input=original;
     if(input.contains("output")||input.contains("chain")) {
-        if(!legacy_research)fail("output/chain are research controls in ABI 4; move them under research or use --legacy-config for archived experiments");
+        if(!legacy_research)fail("output/chain are research controls; move them under research or use --legacy-config for archived experiments");
         for(auto key:{"output","chain"})if(input.contains(key)){input["research"][key]=input[key];input.erase(key);}
     }
     Settings s;auto j=settings_json(s);for(auto it=input.begin();it!=input.end();++it){if(!j.contains(it.key()))fail("unknown setting: "+it.key());}
@@ -351,6 +384,12 @@ Settings settings_json(const json& original,bool legacy_research) {
     s.levels=byte("levels");s.beam_width=byte("beam_width");s.search_supersample=byte("search_supersample");s.audit_supersample=byte("audit_supersample");s.max_supersample=byte("max_supersample");
     if(!j.at("triangle_overhead_bps").is_number_integer())fail("triangle overhead must be integer basis points");
     int overhead=j.at("triangle_overhead_bps");if(overhead<0||overhead>10000)fail("triangle overhead out of range");s.triangle_overhead_bps=uint16_t(overhead);
+    if(!j.contains("max_added_vertex_bytes_bps"))s.max_added_vertex_bytes_bps=std::nullopt;
+    else {
+        const auto& cap=j.at("max_added_vertex_bytes_bps");
+        if(!cap.is_number_integer()||cap<0||cap>=UINT32_MAX)fail("added vertex budget must be integer basis points below UINT32_MAX or null");
+        s.max_added_vertex_bytes_bps=cap.get<uint32_t>();
+    }
     int budget=j.at("candidate_budget");if(budget<1||budget>65535)fail("invalid candidate budget");s.candidate_budget=uint16_t(budget);
     s.pixels_per_meter=j.at("pixels_per_meter");s.meters_per_unit=j.at("meters_per_unit");s.last_pixels=j.at("last_pixels");s.max_changed_area=j.at("max_changed_area");
     if(j.contains("base_pixels")&&!j["base_pixels"].is_null())s.base_pixels=j["base_pixels"];
@@ -364,6 +403,16 @@ Settings settings_json(const json& original,bool legacy_research) {
     const auto& cache=experimental.at("coverage_cache_mib");
     if(!cache.is_number_integer()||cache<0||cache>256)fail("coverage cache must be an integer in 0..256 MiB");
     s.research.coverage_cache_mib=cache.get<uint16_t>();
+    const auto& passes=experimental.at("graph_passes");
+    if(!passes.is_number_integer()||passes<0||passes>3)fail("graph passes must be an integer in 0..3");
+    s.research.graph_passes=passes.get<uint8_t>();
+    const auto& stage=experimental.at("appearance_stage");
+    if(!stage.is_number_integer()||stage<0||stage>3)fail("appearance stage must be an integer in 0..3");
+    s.research.appearance_stage=AppearanceStage(stage.get<uint8_t>());
+    s.research.conservative_screen=experimental.at("conservative_screen").get<bool>();
+    s.research.density_targets=experimental.at("density_targets").get<bool>();
+    s.research.merge_wedges=experimental.at("merge_wedges").get<bool>();
+    s.research.shared_rebuild=experimental.at("shared_rebuild").get<bool>();
     for(auto it=experimental.begin();it!=experimental.end();++it)if(!settings_json(Settings{}).at("research").contains(it.key()))fail("unknown research setting: "+it.key());
     auto research_mode=[&](const char* key,std::initializer_list<const char*> values){unsigned n=0;for(auto v:values){if(experimental.at(key)==v)return n;++n;}fail(std::string("unknown research ")+key);};
     if(experimental.contains("output")&&!experimental.at("output").is_null())s.research.output=OutputMode(research_mode("output",{"rebuild","reuse"}));

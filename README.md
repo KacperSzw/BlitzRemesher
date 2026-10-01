@@ -46,7 +46,9 @@ fallbacks remain visible.
 | `--preserve-uv on/off` | Chart/foldover preservation, or finite best-effort UVs with relaxed UV-specific restrictions |
 | `--action-trials`, `--action-batch` | Bounded neural search work; reaching a cap is reported separately from exhaustion |
 
-The neural coverage preset sets triangle overhead to zero. UV relaxation requires
+The neural coverage preset sets triangle overhead to zero and disables the classical
+added-vertex cap (`max_added_vertex_bytes_bps: null`), keeping triangle reduction
+primary across the whole chain. UV relaxation requires
 an explicitly UV-conditioned v4 policy; older models retain strict UV behavior.
 UV preservation does not score texture images or normal maps. Normals and
 attributes are optional quality requirements, not supervision supplied by a
@@ -83,8 +85,27 @@ ctest --test-dir build/core --output-on-failure
 
 The installed C and C++ interfaces preserve explicit ownership and borrowed
 read-only streams. The versioned neural C interface exposes backend selection,
-work budgets and diagnostics without changing the existing ABI-4 descriptors.
+work budgets and diagnostics alongside the ABI-5 mesh/settings/storage descriptors.
+C and C++ clients must rebuild for the current interfaces.
 Missing neural hardware is an explicit unavailable result.
+
+## Classical compatibility
+
+The classical generator and its C ABI remain available for existing integrations,
+teacher construction and independent controls. Its default added-vertex cap is
+20% of source vertex bytes, with zero triangle overhead. Under that cap, it
+prioritizes the final LOD, then earlier levels in reverse order. Setting the cap
+to `null` restores whole-chain triangle minimization; adding 500 basis points of
+triangle overhead restores the earlier resident-byte selection policy.
+
+Opt-in bounded graph search, appearance fitting and shared rebuilt vertex pools
+retain their upstream contracts. Every accepted chain still passes source and
+adjacent audits. The [classical guide](docs/CLASSICAL.md) documents these controls,
+ABI-5 ownership/storage queries, import/export behavior and reproduction commands.
+The [whole-chain board](examples/reduction-board/index.html),
+[appearance board](examples/appearance-board/index.html) and
+[rebuilt-storage board](examples/density-board/index.html) retain the classical
+measurements and failures; they are not evidence of neural model superiority.
 
 ## Development and evidence
 

@@ -1,0 +1,729 @@
+{
+  "version": 1,
+  "binary_sha256": "5271ca1969b855092ff097e2d90cd2717423831bb65b6964d18e4f9685de088e",
+  "source_binary_stamp": "research/appearance/builds/screen.json",
+  "files": [
+    {
+      "path": "data/polyhaven/metal_stool_02/source.gltf",
+      "sha256": "de8d603993443294b8a0aed48ea631ac38f2b15872491ea929551f72be726fcb"
+    },
+    {
+      "path": "data/polyhaven/dead_quiver_trunk/source.gltf",
+      "sha256": "c130bce552d608057143e7f131f36e9c4e06a9b780947c85d4e5eb1cacfedbaf"
+    },
+    {
+      "path": "research/appearance/replay/stool.json",
+      "sha256": "2d1ec4a50c689603bc468dd11d4f48a6ba99aee4b3735e1b061af7b986d13863"
+    },
+    {
+      "path": "research/appearance/replay/stool.json.50.ply",
+      "sha256": "fca2a71edc3d65e184b3e0b5599e48a57138124b58284d737b888b2b1ec152fb"
+    },
+    {
+      "path": "research/appearance/replay/stool.json.90.ply",
+      "sha256": "e2ec11ddc28ef4edf4a03f0bd650da59edf3140cedf514424022b225da2fc37e"
+    },
+    {
+      "path": "research/appearance/replay/stool.json.99.ply",
+      "sha256": "25c6ea556363cd0be84122e3a512a470e70eb8bcfd7375cf9378d973219c2545"
+    },
+    {
+      "path": "research/appearance/replay/trunk.json",
+      "sha256": "1c4ccb35e205fb63409bc803fd3ae4fb8d633af58a87874d5cae7997da0b0653"
+    },
+    {
+      "path": "research/appearance/replay/trunk.json.50.ply",
+      "sha256": "25e061a61b5a480909a7bb5ca0b71bb11549fe1db109d49bab3c4de25fe7a904"
+    },
+    {
+      "path": "research/appearance/replay/trunk.json.90.ply",
+      "sha256": "90d448b3ca681222e96e5d954440599f328ed815a135fc3993a5ab3323ed5464"
+    },
+    {
+      "path": "research/appearance/replay/trunk.json.99.ply",
+      "sha256": "b12d211dcbd1f9260667e103b54f251da8616b897fe78eed5214131fbae94bb1"
+    },
+    {
+      "path": "data/polyhaven/metal_stool_02/metal_stool_02.bin",
+      "sha256": "17127317d391eb90ce3446739463b1067cc490210db821769b7a46bd1ff02e1c"
+    },
+    {
+      "path": "data/polyhaven/dead_quiver_trunk/dead_quiver_trunk.bin",
+      "sha256": "2f2a74458c071801cde2287970a396d503ffe0ebf4dedc3c5f3b39024186c00a"
+    }
+  ],
+  "observations": [
+    {
+      "asset": "stool",
+      "key": "0.99/16/0",
+      "fail_to_pass": true,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.99/16/1",
+      "fail_to_pass": false,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.99/32/0",
+      "fail_to_pass": true,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.99/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.9/16/0",
+      "fail_to_pass": false,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.9/16/1",
+      "fail_to_pass": false,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.9/32/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.9/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.5/16/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.5/16/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.5/32/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "stool",
+      "key": "0.5/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.99/16/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.99/16/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.99/32/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.99/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          true
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.9/16/0",
+      "fail_to_pass": true,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          true
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          true
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.9/16/1",
+      "fail_to_pass": true,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          true
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.9/32/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.9/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": true,
+      "outcomes": [
+        [
+          2,
+          true
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.5/16/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.5/16/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.5/32/0",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    },
+    {
+      "asset": "trunk",
+      "key": "0.5/32/1",
+      "fail_to_pass": false,
+      "pass_to_fail": false,
+      "outcomes": [
+        [
+          2,
+          false
+        ],
+        [
+          4,
+          false
+        ],
+        [
+          8,
+          false
+        ],
+        [
+          16,
+          false
+        ],
+        [
+          32,
+          false
+        ]
+      ]
+    }
+  ]
+}

@@ -506,6 +506,7 @@ int benchmark_main(int argc, char** argv) {
                 row["numerics"] = {{"solve_attempts", work.solve_attempts},
                                    {"singular_solves", work.singular_solves},
                                    {"nonfinite_solves", work.nonfinite_solves},
+                                   {"appearance_peak_bytes", work.appearance_peak_bytes},
                                    {"position_fallbacks", work.position_fallbacks},
                                    {"nonfinite_costs", work.nonfinite_costs}};
                 row["coverage_cache"] = {{"rasters", work.coverage_rasters},
@@ -533,9 +534,10 @@ int benchmark_main(int argc, char** argv) {
                     output_hash +=
                         digest({reinterpret_cast<const std::byte*>(l.data.indices.data()),
                                 l.data.indices.size() * 4});
+                    const auto& positions = l.vertex_pool ? l.vertex_pool->positions : l.data.positions;
                     output_hash +=
-                        digest({reinterpret_cast<const std::byte*>(l.data.positions.data()),
-                                l.data.positions.size() * sizeof(Vec3)});
+                        digest({reinterpret_cast<const std::byte*>(positions.data()),
+                                positions.size() * sizeof(Vec3)});
                 }
                 row["output_sha256"] = digest(output_hash);
                 std::string attributes;

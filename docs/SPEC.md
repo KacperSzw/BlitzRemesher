@@ -9,7 +9,8 @@ The primary product direction is a standalone neural generator that minimizes
 triangles at each scheduled LOD within the configured source and adjacent visual
 limits. Level count, minimum screen size and both error policies are configurable.
 Coverage is the first training objective; normal and attribute auditing are
-selectable. Neural quality configurations use zero triangle overhead. Time and
+selectable. Neural quality configurations use zero triangle overhead and disable
+the classical added-vertex cap (`max_added_vertex_bytes_bps: null`). Time and
 resident bytes remain diagnostics and secondary choices after the visual and
 triangle objectives. Minutes of offline work are acceptable when they improve
 audited output. Classical reducers can supply teachers and independent controls;
@@ -19,14 +20,37 @@ These objectives describe bounded audited search, not a global optimum.
 Classical compatibility path: automatic hybrid generation remains supported.
 Both source and predecessor inputs,
 and both endpoint and repositioning reductions, propose audited candidates.
-The selected complete chain minimizes packed resident vertex/index bytes while
-each scheduled LOD uses at most floor(reference_triangles*(1+overhead)) triangles.
-The reference is one complete minimum-total-triangle path found by this run;
-it is not a global optimum. Default overhead is 500 basis points (5%), with
-0..10000 supported. The proposal pool is independent of overhead. Source vertex
-streams remain immutable; owned levels are compact. Source buffers count once,
+The selected complete chain obeys a cap on added packed vertex bytes. The default
+cap is 2000 basis points (20%) of the packed source vertex streams; zero forbids
+added vertex storage and null disables the cap. The cap counts each distinct
+consecutive runtime mesh once. With a cap, the reference is the audited path
+found by this run with the fewest triangles at the final LOD, breaking ties at
+each preceding LOD in reverse order, then by resident bytes. With the cap
+disabled, the reference minimizes total chain triangles. Neither is a global
+optimum. The default triangle overhead is zero, so the selected chain is this
+reference. With nonzero overhead, selection minimizes
+resident bytes subject to each scheduled LOD using at most
+floor(reference_triangles*(1+overhead)) triangles. Overhead supports 0..10000
+basis points. The proposal pool is independent of overhead. Source vertex
+streams remain immutable; ordinary owned levels are compact. Source buffers count once,
 exact consecutive runtime duplicates once, and all present attributes/u32 indices
 count. Forced output/origin modes remain research controls. See research/hybrid/PLAN.md.
+Forced output research controls bypass the production vertex cap and report it
+as disabled so archived placement experiments keep their original meaning.
+The experimental C++/CLI `research.graph_passes` control (0..3, default zero)
+adds bounded whole-chain improvement passes after this reference search.
+With it enabled, selection uses the equally weighted LOD1–N triangle total
+under the configured vertex cap. Source admission and transition edges are
+audited independently. Each layer retains at most `2*beam_width` additional
+geometries, four incoming predecessor geometries per candidate, and
+`4*beam_width` active paths, plus pinned source/incumbent paths. Dominance
+applies only at identical terminal geometry and preserves triangle counts,
+added bytes and resident bytes; nonzero overhead also preserves earlier
+per-slot counts. The complete incumbent is retained through interruption and
+allocation failure. This is a bounded search, with no optimality guarantee.
+Each graph pass uses at most `candidate_budget` reduction calls per transition;
+its optional topology-relaxed calls replace calls within this budget.
+Source/transition audit counts and complete-incumbent progress are exported.
 Borrowed reducer/proposer outputs address the input passed to that call. In
 progressive rebuild, compact IDs from the preceding LOD must not be interpreted
 against LOD0; preserve the referenced input for as long as the output needs it.
@@ -100,10 +124,34 @@ Representation failures yield no training labels; an unconfirmed final chain
 remains an explicit failed diagnostic. Packing does not relax visual limits.
 
 The classical quality preset allows 64 candidate evaluations/level, fast eight.
-Its automatic search reserves half the bounded beam for triangles and fills the rest by resident bytes,
+Its automatic search reserves half the bounded beam for triangles and fills the
+rest by least added vertex bytes when a cap is active, or resident bytes when disabled,
 with an exact source fallback. Counts
 must not increase with level. Cancellation returns a validated incumbent with
 an explicit completion status. Benchmarks use deterministic work budgets.
+With a positive vertex cap and the default reducer, up to eight deterministic
+compact tail probes run before the scheduled search. A probe must fit the cap
+and pass source and source-path transition audits at the final scheduled size.
+The smallest accepted tail reserves its actual packed vertex bytes for the
+last LOD; earlier levels can use only the remainder. At the last level, the
+reserved mesh is offered to every retained prefix and receives the usual
+source and adjacent audits. Probe work is additional to `candidate_budget`
+and included in `candidate_evaluations`; diagnostics record its count and
+reserved bytes. If no probe passes, no bytes are reserved. The source fallback
+also remains eligible for direct tail proposals. Rebuild requests are bounded
+by the remaining budget divided by three times the packed source vertex
+stride, so even a single proposal can probe a compact tail. Actual emitted
+bytes decide admission; target counts are only search hints.
+If the selected final scheduled LOD is an exact duplicate of its predecessor
+and at most half of a positive added-vertex budget was spent, automatic hybrid
+generation runs one additional search with adaptive triangle targets. This
+retry is skipped for a custom proposer or an already adaptive research run.
+Both passes use identical source, schedule, cameras, cap and visual gates.
+Their audited finalist pools are selected together, so the retry cannot replace
+a better chain from the first pass. Candidate and trace diagnostics count both
+passes; traces identify the pass, and the selected chain alone determines
+runtime meshes and storage. An interrupted or resource-limited retry keeps
+the first chain and reports an incomplete status.
 The opt-in research setting `topology_fallback` applies only to the quadric
 objective. If a quadric proposal stops more than four times above its requested
 triangle count with link-condition rejections, it tries at most one additional
@@ -128,6 +176,11 @@ category-balanced chain aggregate. Incomplete comparisons have no score.
 Cancelled packed generation retains a fully confirmed chain if available;
 otherwise it returns only unchanged LOD0 with Cancelled status. An unaudited
 scheduled raw-source chain is not a valid packed fallback.
+If an explicit added-vertex cap excludes every valid owned packed fallback and
+no audited reduced candidate fits, generation returns only unchanged LOD0 with
+`BudgetLimited` status. It does not fill scheduled levels with unaudited source
+duplicates. An unrelated inability to construct a valid representation remains
+an error.
 
 Public C ABI: strided borrowed streams, versioned descriptors, explicit status,
 opaque result ownership, read-only views and destruction inside the library.
@@ -136,8 +189,10 @@ Initial file formats: glTF/GLB, OBJ, PLY, STL. glTF output defaults to LOD0
 and includes a JSON LOD manifest; reuse output shares source accessors.
 
 Scheduled and runtime LOD counts are separate. Exact consecutive duplicates
-share a runtime mesh, exposed through C++ runtime_levels and additive C ABI
-queries. Scheduled nodes/manifest rows retain their original thresholds,
+share a runtime mesh, exposed through C++ runtime_levels and C ABI queries.
+Per-runtime-level added vertex and index bytes, and cumulative added vertex
+bytes, are exposed through C++ runtime_storage, JSON and the C ABI.
+Scheduled nodes/manifest rows retain their original thresholds,
 source checks and adjacent checks. No score denominator changes. No merge
 based only on triangle count or approximate visual similarity.
 
@@ -152,7 +207,7 @@ do not affect the visual gates or SCORE.
 
 Vertex colors use linear RGBA8 (0..255 per channel, 256 levels), including
 the strided C++ and C API streams. The C ABI version and shared-library
-compatibility version are 4; older descriptors are unsupported. The C settings
+compatibility version are 5; older descriptors are unsupported. The C settings
 descriptor includes `max_changed_area`; each C LOD record includes source and
 adjacent area errors and their worst-view indices.
 Import rounds normalized float/unsigned-16 colors to nearest with ties upward,
@@ -199,3 +254,61 @@ research executables and never dependencies of the shipped core.
 
 Complete when all interfaces/modes, corpus, reproducible reports and three
 recorded experiment rounds work end-to-end. Report limitations honestly.
+
+Experimental appearance proposals use C++/CLI research.appearance_stage 0..3:
+off, collapse ordering, wedge attribute fitting, and joint position fitting.
+All default to off. Affine original-face normal/RGB fields accumulate
+area-weighted double coefficients in contiguous per-wedge storage; only present,
+nonzero-weight channels allocate coefficients (11+4m doubles per wedge, m<=6).
+Geometry cost uses the scheduled pixels per input diameter and effective normal
+and color weights. This is a proposal surrogate, not a max-pixel error bound.
+Materials remain discrete. The coupled positional path retains original
+attribute wedges separately; it does not merge wedges across discontinuities.
+Ordinary vertex contractions accumulate their endpoint field coefficients.
+Ordering evaluates the existing emitted attributes. Fitting normalizes normals,
+rounds clamped linear RGB to RGBA8, retains alpha and tangent handedness, and
+orthogonalizes tangents to fitted normals. Position fitting eliminates the
+independent attribute variables before a 3x3 solve, retaining bounded geometric
+and boundary fallbacks. Reuse never writes source streams. Existing topology,
+orientation, UV and full source/transition acceptance gates continue to apply.
+
+research.conservative_screen defaults false. When enabled, only a coverage lower
+bound above the limit rejects a candidate at search cameras; clipped/uncertain
+views defer to the full configured audit. The screen does not certify appearance
+or area. Final audits and their sampling/refinement policy remain unchanged.
+An optional borrowed EvaluationWitness captures the first failing appearance
+sample and the best visible correspondence inside the spatial search radius;
+its squared metric components are diagnostics, not continuous error bounds.
+
+Experimental C++/CLI rebuilt-storage controls default to false:
+
+- `research.density_targets` estimates triangle requests from referenced input
+  vertices, then actual emitted triangles and packed vertex bytes. Each input,
+  placement and search slot owns its feedback. Over-budget predictions leave
+  1/16 headroom; stalled requests shrink. Failed appearance does not establish
+  monotonicity. Existing candidate/tail-probe budgets still apply, and actual
+  emitted storage decides admission.
+- `research.merge_wedges` merges contracted continuous interior corner fans.
+  Original seams, boundaries, nonmanifold edges, material changes, alpha and
+  tangent handedness remain separate. Area-weighted original-face fields fit
+  normal/RGB/UV values; boundary UVs stay fixed. A surviving UV reversal restores
+  its original fans and attributes locally, with at most four full checks before
+  reverting the entire postpass. The ordinary source/adjacent gates still apply.
+- In automatic generation, `research.shared_rebuild` matches complete emitted vertex tuples byte for byte
+  against the source. Only unmatched tuples consume the added-vertex cap. It
+  preserves untouched/endpoint world coordinates through normalization and uses
+  the ordinary triangle ladder without the rebuilt triangle-soup clamp. Source
+  positions, normals, UVs, RGBA and tangents retain their original bytes and IDs.
+  A mixed LOD addresses an immutable owned source prefix plus changed vertices;
+  all selected mixed LODs share one combined contiguous pool. Ordinary fully
+  rebuilt LODs remain compact. Source-only levels keep prefix accessors; glTF
+  writes the combined attribute buffer once. Runtime accounting charges its
+  added suffix once at the first mixed level. Result copies and LOD copies retain
+  shared pool ownership. Graph dominance also preserves allocation history:
+  a path cannot dominate another that owns a different reusable pool. Input
+  index/material spans still require the source
+  lifetime. If final packing runs out of memory, the valid uncombined incumbent
+  is returned with incomplete status. These controls do not change C ABI 5.
+
+These proposal/storage heuristics do not qualify a chain independently or
+establish optimality. Frozen trials and audits are in research/density.

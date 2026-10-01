@@ -1,0 +1,577 @@
+{
+  "version": 1,
+  "promoted": false,
+  "default": "unchanged",
+  "results": [
+    {
+      "id": "appearance-screen",
+      "complete": true,
+      "reduction_gate": false,
+      "observed_time_gate": false,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 127,
+              "area": 0.0005089058524173028
+            },
+            {
+              "level": 7,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 53,
+              "area": 0.000201450443190975
+            }
+          ]
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 5,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 256,
+              "area": 0.001087618550421996
+            },
+            {
+              "level": 5,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 19,
+              "area": 0.0007794768334899929
+            },
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 151,
+              "area": 0.001128668171557562
+            },
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 149,
+              "area": 0.001350337584396099
+            }
+          ]
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unchanged": false,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        }
+      ],
+      "independent_gate": false,
+      "qualified_reduced": [
+        "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652"
+      ]
+    },
+    {
+      "id": "appearance-ordering",
+      "complete": true,
+      "reduction_gate": false,
+      "observed_time_gate": false,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 127,
+              "area": 0.0005089058524173028
+            },
+            {
+              "level": 7,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 53,
+              "area": 0.000201450443190975
+            }
+          ]
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 210,
+              "area": 0.0014299332697807435
+            },
+            {
+              "level": 6,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 0,
+              "area": 0.0005331911490269261
+            },
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 148,
+              "area": 0.0022641509433962265
+            }
+          ]
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 5,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 328,
+              "area": 0.0012757502875666632
+            },
+            {
+              "level": 5,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 32,
+              "area": 0.0010384215991692627
+            },
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 151,
+              "area": 0.0011539095554700808
+            }
+          ]
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unchanged": false,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        }
+      ],
+      "independent_gate": false,
+      "qualified_reduced": [
+        "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652"
+      ]
+    },
+    {
+      "id": "appearance-attributes",
+      "complete": true,
+      "reduction_gate": false,
+      "observed_time_gate": false,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 127,
+              "area": 0.0005089058524173028
+            },
+            {
+              "level": 7,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 53,
+              "area": 0.000201450443190975
+            }
+          ]
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 210,
+              "area": 0.0014299332697807435
+            },
+            {
+              "level": 6,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 0,
+              "area": 0.0005331911490269261
+            },
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 148,
+              "area": 0.0022641509433962265
+            }
+          ]
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 5,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 328,
+              "area": 0.0012757502875666632
+            },
+            {
+              "level": 5,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 32,
+              "area": 0.0010384215991692627
+            },
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 151,
+              "area": 0.0011539095554700808
+            }
+          ]
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unchanged": false,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        }
+      ],
+      "independent_gate": false,
+      "qualified_reduced": [
+        "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652"
+      ]
+    },
+    {
+      "id": "appearance-position",
+      "complete": false,
+      "reduction_gate": false,
+      "observed_time_gate": false,
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 127,
+              "area": 0.0005089058524173028
+            },
+            {
+              "level": 7,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 53,
+              "area": 0.000201450443190975
+            }
+          ]
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 210,
+              "area": 0.0014299332697807435
+            },
+            {
+              "level": 6,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 0,
+              "area": 0.0005331911490269261
+            },
+            {
+              "level": 7,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 148,
+              "area": 0.0022641509433962265
+            }
+          ]
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unchanged": false,
+          "complete": true,
+          "passed": false,
+          "seed": 2702647335,
+          "failures": [
+            {
+              "level": 5,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 328,
+              "area": 0.0012757502875666632
+            },
+            {
+              "level": 5,
+              "comparison": "adjacent",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 32,
+              "area": 0.0010384215991692627
+            },
+            {
+              "level": 6,
+              "comparison": "source",
+              "resource_limited": false,
+              "error_px": null,
+              "nonfinite_error": true,
+              "view": 151,
+              "area": 0.0011539095554700808
+            }
+          ]
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unchanged": true,
+          "complete": true,
+          "passed": true,
+          "seed": 2702647335,
+          "failures": []
+        }
+      ],
+      "independent_gate": false,
+      "qualified_reduced": []
+    }
+  ],
+  "paired_timings": "not run: pilot usefulness gate required",
+  "validation": "not run: pilot usefulness gate required",
+  "held_out": "unused"
+}

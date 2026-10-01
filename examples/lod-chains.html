@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>BlitzRemesher — automatic LOD chain example</title>
+  <style>
+    :root { color-scheme: light; --ink: #172a34; --muted: #53646b; --paper: #f5f2eb; --card: #fffdf8; --line: #d9dedb; --accent: #d85832; --teal: #1e7775; }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 system-ui, sans-serif; }
+    a { color: inherit; text-underline-offset: 4px; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .shell { max-width: 1500px; margin: auto; padding: 0 clamp(20px, 4vw, 64px) 64px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px 0 20px; border-bottom: 1px solid var(--ink); }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .11em; font-size: 14px; }
+    .mark { display: grid; place-items: center; width: 34px; height: 34px; background: var(--accent); color: white; font-size: 26px; line-height: 1; }
+    .edition, .eyebrow, .kicker, dt { font: 700 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; letter-spacing: .12em; }
+    .edition { color: var(--muted); text-align: right; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(250px, .7fr); gap: clamp(24px, 5vw, 70px); align-items: end; padding: 52px 0 42px; }
+    .eyebrow { color: var(--teal); }
+    h1 { max-width: 900px; margin: 12px 0 18px; font-size: clamp(42px, 5vw, 76px); line-height: 1.04; letter-spacing: -.055em; font-weight: 680; }
+    h1 span { color: var(--accent); }
+    .lead { max-width: 780px; margin: 0; font-size: clamp(17px, 1.45vw, 21px); color: var(--muted); }
+    .hero-note { border-left: 3px solid var(--accent); padding-left: 20px; color: var(--muted); }
+    .hero-note strong { display: block; margin-bottom: 7px; color: var(--ink); font-size: 20px; line-height: 1.2; }
+    .hero-note p { margin: 0; }
+    .facts { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); background: var(--card); }
+    .fact { min-width: 0; padding: 22px; }
+    .fact + .fact { border-left: 1px solid var(--line); }
+    dt { color: var(--muted); }
+    dd { margin: 6px 0 0; font-size: clamp(24px, 2.3vw, 34px); font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
+    .fact small { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .method { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 40px 0; }
+    .step { min-width: 0; padding: 22px 24px; border: 1px solid var(--line); background: var(--card); }
+    .step .kicker { color: var(--teal); }
+    .step h2 { margin: 8px 0; font-size: 20px; letter-spacing: -.025em; line-height: 1.2; }
+    .step p { margin: 0; color: var(--muted); font-size: 14px; }
+    .pilot { padding: 0 0 42px; }
+    .pilot h2 { font-size: clamp(28px, 3vw, 42px); margin: 0 0 8px; letter-spacing: -.04em; }
+    .pilot p { max-width: 900px; margin: 0 0 18px; color: var(--muted); }
+    .pilot-table { overflow-x: auto; border: 1px solid var(--line); background: var(--card); }
+    .pilot table { width: 100%; border-collapse: collapse; min-width: 650px; text-align: left; }
+    .pilot th, .pilot td { padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .pilot th { color: var(--muted); font: 700 11px/1.5 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; }
+    .pilot tr:last-child td { border-bottom: 0; }
+    .pilot-links { margin-top: 13px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; }
+    .viewer-heading { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 16px; }
+    .viewer-heading h2 { margin: 6px 0 0; font-size: clamp(28px, 3vw, 42px); line-height: 1.1; letter-spacing: -.04em; }
+    .viewer-heading p { max-width: 660px; margin: 10px 0 0; color: var(--muted); }
+    .open { flex: none; display: inline-block; padding: 11px 16px; border: 1px solid var(--ink); background: var(--ink); color: white; text-decoration: none; font-size: 13px; font-weight: 700; }
+    .open:hover { background: var(--teal); border-color: var(--teal); }
+    iframe { display: block; width: 100%; height: min(82vh, 1080px); min-height: 650px; border: 1px solid var(--line); background: white; }
+    .caption { display: flex; justify-content: space-between; gap: 24px; padding: 15px 0 38px; color: var(--muted); font-size: 13px; }
+    .caption p { max-width: 690px; margin: 0; }
+    .scope { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 28px 32px; background: var(--ink); color: #f6f3eb; }
+    .scope .kicker { color: #9dc5c3; }
+    .scope h2 { margin: 8px 0; font-size: 18px; }
+    .scope p { margin: 0; color: #d4dddc; font-size: 14px; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding-top: 24px; color: var(--muted); font-size: 13px; }
+    footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+    @media (max-width: 850px) {
+      .hero { grid-template-columns: 1fr; padding: 36px 0 28px; }
+      .facts { grid-template-columns: repeat(2, 1fr); }
+      .fact:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .fact:nth-child(4) { border-top: 1px solid var(--line); }
+      .method { grid-template-columns: 1fr; padding: 28px 0; }
+      .viewer-heading, .caption, footer { flex-direction: column; align-items: start; }
+      .scope { grid-template-columns: 1fr; }
+      iframe { height: 78vh; min-height: 560px; }
+    }
+    @media (max-width: 480px) {
+      .edition { display: none; }
+      .facts { grid-template-columns: 1fr 1fr; }
+      .fact { padding: 16px; }
+      .scope { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="mark" aria-hidden="true">ϟ</span> BLITZREMESHER</div>
+      <div class="edition">Example / 20% vertex budget</div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <div class="eyebrow">Static opaque meshes · C++20 import pipeline</div>
+          <h1 id="page-title">Accepted algorithm.<br><span>Real LOD chains.</span></h1>
+          <p class="lead">The current automatic search caps added vertex storage at 20% of the packed source streams. It reserves a compact 16 px tail first, then ranks audited chains from the last LOD backward.</p>
+        </div>
+        <aside class="hero-note">
+          <strong>Watch the tradeoff.</strong>
+          <p>The shelves example below shows a compact final level after shared middle levels. The interactive board shows eight current-policy nature, rock, manufactured, and mixed meshes.</p>
+        </aside>
+      </section>
+
+      <dl class="facts" aria-label="Example at a glance">
+        <div class="fact"><dt>Added vertex cap</dt><dd>20%</dd><small>Of canonical source vertex bytes; configurable or disabled</small></div>
+        <div class="fact"><dt>Shelves example</dt><dd>4 → 3</dd><small>Scheduled audit slots → distinct runtime meshes</small></div>
+        <div class="fact"><dt>Default triangle slack</dt><dd>0%</dd><small>Nonzero allowance can trade triangles for resident bytes</small></div>
+        <div class="fact"><dt>Selection target</dt><dd>Tail first</dd><small>Fewest audited triangles from the last LOD backward</small></div>
+      </dl>
+
+      <section class="method" aria-label="How the accepted algorithm works">
+        <div class="step"><div class="kicker">01 / Propose</div><h2>Search both origins</h2><p>Try reductions from the source and the preceding LOD, using source vertices or compact rebuilt buffers.</p></div>
+        <div class="step"><div class="kicker">02 / Audit</div><h2>Check every transition</h2><p>Each returned reduction passes the configured source and previous-LOD screen-space error gates.</p></div>
+        <div class="step"><div class="kicker">03 / Select</div><h2>Reserve the tail budget</h2><p>Probe the final 16 px mesh first and reserve its vertex bytes. Earlier LODs spend the remainder; the selected audited chain favors the last LOD, then each preceding level.</p></div>
+      </section>
+
+      <section class="pilot" aria-labelledby="pilot-title">
+        <div class="kicker">Current policy / measured development example</div>
+        <h2 id="pilot-title">Shared middle, compact tail</h2>
+        <p>Painted wooden shelves, 524 source triangles, four scheduled levels. This bounded smoke check used eight proposals per level and finite coverage audits. The 20% budget was 3,507 added vertex bytes; the selected chain spent 2,752. It is one example, not a corpus score.</p>
+        <div class="pilot-table"><table><thead><tr><th>Audit slot</th><th>Triangles</th><th>Runtime mesh</th><th>Vertex storage</th><th>Added vertex bytes</th><th>Index bytes</th></tr></thead><tbody>
+          <tr><td>LOD 0</td><td>524</td><td>0</td><td>Source</td><td>0</td><td>6,288</td></tr>
+          <tr><td>LOD 1</td><td>376</td><td>1</td><td>Source</td><td>0</td><td>4,512</td></tr>
+          <tr><td>LOD 2</td><td>376</td><td>1</td><td>Same exact runtime mesh as LOD 1</td><td>0</td><td>0</td></tr>
+          <tr><td>LOD 3</td><td>36</td><td>3</td><td>New compact vertices</td><td>2,752</td><td>432</td></tr>
+        </tbody></table></div>
+        <div class="pilot-links"><a href="shelves-budget/chain.gltf">Exported glTF chain</a><a href="shelves-budget/lods.json">LOD manifest</a><a href="../research/vertex-budget/SMOKE.md">Settings and matched results</a></div>
+      </section>
+
+      <section id="chains" aria-labelledby="chains-title">
+        <div class="viewer-heading">
+          <div><div class="kicker">Current-policy interactive geometry</div><h2 id="chains-title">Inspect the new mesh LOD chains</h2><p>Moon rock now shares source vertices through LOD 3, then uses compact buffers. Drag any mesh to rotate its chain; switch between scheduled audit slots and distinct runtime meshes.</p></div>
+          <a class="open" href="current-board/index.html" target="_blank" rel="noopener">Open full board ↗</a>
+        </div>
+        <iframe title="Current BlitzRemesher board with eight measured 20% vertex-budget chains" src="current-board/index.html" loading="eager"></iframe>
+        <div class="caption"><p>All eight chains use the current 20% cap and zero triangle overhead with bounded pilot camera settings and eight proposals per level, plus dedicated tail probes.</p><p>These untextured views are for inspection; the exported result records the separate finite-camera audits.</p></div>
+      </section>
+
+      <section class="scope" aria-label="Example scope">
+        <div><div class="kicker">What the bound means</div><h2>Audited cameras, configured limits</h2><p>Acceptance applies to the configured source and adjacent views, profile, and screen sizes. It is not an all-view guarantee or a globally optimal triangle count.</p></div>
+        <div><div class="kicker">What these examples show</div><h2>Measured geometry</h2><p>All eight chains have complete source and adjacent audits. The board shows packed vertex and index costs for each distinct runtime mesh; it does not claim a corpus-wide quality result.</p></div>
+      </section>
+    </main>
+
+    <footer>
+      <span>BlitzRemesher · local, offline example</span>
+      <nav aria-label="Project references"><a href="../docs/SPEC.md">Current specification</a><a href="current-board/manifest.json">Current board provenance</a><a href="../research/hybrid/board/index.html">Earlier board</a></nav>
+    </footer>
+  </div>
+</body>
+</html>

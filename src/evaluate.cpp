@@ -214,15 +214,17 @@ template<class R> double coverage_distance_impl(const R& a,const R& b,uint8_t ss
 }
 double coverage_distance(const Raster& a,const Raster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
 double detail::coverage_distance(const CoverageRaster& a,const CoverageRaster& b,uint8_t ss,bool scalar) {return coverage_distance_impl(a,b,ss,scalar);}
-double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s,double limit) {
+double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s,double limit,bool* cancelled) {
+    if(cancelled)*cancelled=false;
     if(s.profile==Profile::Coverage || (s.weights.normal==0 && (s.profile!=Profile::Attributes||(s.weights.color==0&&s.weights.material==0))))return 0;
     if(a.width!=b.width||a.height!=b.height||!s.supersample||!std::isfinite(limit)||limit<0||a.pixels.size()!=size_t(a.width)*a.height||b.pixels.size()!=a.pixels.size())throw std::invalid_argument("invalid attributed raster settings");
     const double invs2=1.0/(s.supersample*s.supersample),limit2=limit*limit;
     double maximum=0;
+    uint8_t direction=0;
     auto directed=[&](const Raster& from,const Raster& to) {
         int radius=int(std::min(double(std::max(from.width,from.height)),std::ceil(limit*s.supersample)));
         for(int y=0;y<int(from.height);++y) {
-            if(s.cancelled&&s.cancelled())return inf;
+            if(s.cancelled&&s.cancelled()){if(cancelled)*cancelled=true;return inf;}
             for(int x=0;x<int(from.width);++x) {
                 auto& p=from.pixels[size_t(y)*from.width+x];if(!p.visible)continue;
                 double best=inf;auto& same=to.pixels[size_t(y)*to.width+x];
@@ -236,13 +238,34 @@ double attributed_distance(const Raster& a,const Raster& b,const EvalSettings& s
                         if(spatial>=best||spatial>limit2)continue;
                         best=std::min(best,sample_cost(p,q,spatial,s));
                     }
-                if(best>limit2)return inf;
+                if(best>limit2) {
+                    if(s.witness) {
+                        auto& w=*s.witness;w.present=true;w.x=uint32_t(x);w.y=uint32_t(y);w.direction=direction;w.supersample=s.supersample;
+                        // Report the best sample inside the spatial bound, even
+                        // when its attribute cost exceeds the acceptance limit.
+                        double nearest=inf;
+                        for(int yy=std::max(0,y-radius);yy<=std::min(int(to.height)-1,y+radius);++yy)
+                            for(int xx=std::max(0,x-radius);xx<=std::min(int(to.width)-1,x+radius);++xx) {
+                                auto& q=to.pixels[size_t(yy)*to.width+xx];if(!q.visible)continue;
+                                auto spatial=spatial_scalar(x,y,xx,yy,invs2);if(spatial>limit2)continue;
+                                auto cost=sample_cost(p,q,spatial,s);if(cost>=nearest)continue;
+                                nearest=cost;w.target_visible=true;w.spatial=spatial;
+                                auto normal=s;normal.profile=Profile::Normals;
+                                w.normal=sample_cost(p,q,0,normal);
+                                auto color=s;color.weights.normal=color.weights.material=0;
+                                w.color=sample_cost(p,q,0,color);
+                                w.material=cost-spatial-w.normal-w.color;
+                            }
+                    }
+                    return inf;
+                }
                 maximum=std::max(maximum,best);
             }
         }
         return maximum;
     };
-    if(!std::isfinite(directed(a,b))||!std::isfinite(directed(b,a)))return inf;
+    if(!std::isfinite(directed(a,b)))return inf;
+    direction=1;if(!std::isfinite(directed(b,a)))return inf;
     return std::sqrt(maximum);
 }
 template<class R> void finish_view(Measurement& current,const R& a,const R& c,const EvalSettings& s,uint8_t ss,double coverage) {
@@ -262,10 +285,16 @@ template<class R> void finish_view(Measurement& current,const R& a,const R& c,co
                 current.normal_degrees=std::max(current.normal_degrees,detail::metric_acos(std::clamp(dot(a.pixels[i].normal,c.pixels[i].normal),-1.0,1.0))*180/pi);
         }
         auto config=s;config.supersample=ss;
-        current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit));
+        current.error=current.coverage_upper>s.limit?current.coverage_upper:std::max(current.coverage_upper,attributed_distance(a,c,config,s.limit,&current.cancelled));
     }
     current.changed_area=total?double(changed)/total:0;
     current.passed=current.error<=s.limit&&current.changed_area<=s.max_changed_area;
+    if(s.conservative_screen) {
+        // A screen can reject only a proved coverage violation. Clipped or
+        // inconclusive views are deferred to the unchanged full audit.
+        current.error=(a.clipped||c.clipped)?0:std::max(0.0,current.coverage-2*std::sqrt(2.0)/ss-1e-6);
+        current.passed=current.error<=s.limit;
+    }
 }
 template<class R> void measure_view(Measurement& current,MeshView reference,MeshView candidate,const Bounds& b,const Camera& camera,const EvalSettings& s,uint8_t ss) {
     R a,c;
@@ -281,16 +310,17 @@ template<class R> void measure_view(Measurement& current,MeshView reference,Mesh
 }
 bool packed_coverage_enabled() {return true;}
 static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bounds& b,const EvalSettings& s,detail::CoverageCache* cache=nullptr,uint8_t reference_id=0,bool audit=false) {
+    if(s.witness)*s.witness={};
     Measurement result;result.supersample=s.supersample;
     detail::validate_evaluation_settings(b,s);
     auto views=cameras(b,s.screen_size,s.views);
     if(identical(reference,candidate))return result;
     for(uint32_t v=0;v<views.size();++v) {
-        if(s.cancelled&&s.cancelled()){result.complete=false;result.passed=false;return result;}
+        if(s.cancelled&&s.cancelled()){result.complete=false;result.passed=false;result.cancelled=true;return result;}
         Measurement current;current.worst_view=v;
         for(unsigned ss=s.supersample;;ss=std::min<unsigned>(s.max_supersample,ss*2)) {
             try {
-                if(s.profile==Profile::Coverage) {
+                if(s.profile==Profile::Coverage||s.conservative_screen) {
                     if(cache&&cache->enabled()) {
                         try {cache->measure(current,reference,candidate,views[v],s,uint8_t(ss),v,reference_id,audit);}
                         catch(const std::bad_alloc&) {
@@ -303,9 +333,10 @@ static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bou
             }
             catch(const std::length_error&) {result.complete=false;result.passed=false;result.resource_limited=true;result.error=inf;return result;}
             // Refine only coverage uncertainty; sampled appearance failures remain explicit.
-            if(current.passed||ss>=s.max_supersample||current.coverage-2*std::sqrt(2.0)/ss>s.limit
+            if(current.cancelled||s.conservative_screen||current.passed||ss>=s.max_supersample||current.coverage-2*std::sqrt(2.0)/ss>s.limit
               ||!std::isfinite(current.error)||current.coverage_upper<=s.limit)break;
         }
+        if(current.cancelled){result.cancelled=true;result.complete=false;result.passed=false;return result;}
         ++result.views_evaluated;
         if(current.error>result.error){result.worst_view=v;result.error=current.error;result.supersample=current.supersample;}
         result.coverage=std::max(result.coverage,current.coverage);
@@ -315,7 +346,7 @@ static Measurement evaluate_impl(MeshView reference,MeshView candidate,const Bou
             result.changed_area_worst_view=v;
         }
         result.normal_degrees=std::max(result.normal_degrees,current.normal_degrees);
-        if(!current.passed){result.passed=false;result.complete=false;return result;}
+        if(!current.passed){if(s.witness)s.witness->view=v;result.passed=false;result.complete=false;return result;}
     }
     return result;
 }

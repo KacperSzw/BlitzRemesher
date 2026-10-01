@@ -5,6 +5,7 @@ export const coreValidationAuthorization = Object.freeze({
 });
 export const coreValidationProfiles = Object.freeze([
   'hardware-validation-ada16',
+  'hardware-validation-ada',
   'hardware-validation-l40s',
 ]);
 export function coreValidationBudget({ states = [], rate, now = Date.now(), minutes = 35 }) {

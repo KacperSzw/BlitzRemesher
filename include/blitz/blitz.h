@@ -5,7 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define BLITZ_ABI_VERSION 4u
+#define BLITZ_ABI_VERSION 5u
 typedef enum blitz_status {
     BLITZ_OK = 0,
     BLITZ_INVALID_ARGUMENT = 1,
@@ -40,8 +40,9 @@ typedef struct blitz_curve_point {
 } blitz_curve_point;
 typedef struct blitz_settings {
     uint32_t struct_size, abi_version;
-    uint8_t levels, profile;        /* coverage/normals/attributes */
-    uint16_t triangle_overhead_bps; /* 100 = 1%; range 0..10000 */
+    uint8_t levels, profile;             /* coverage/normals/attributes */
+    uint16_t triangle_overhead_bps;      /* 100 = 1%; range 0..10000 */
+    uint32_t max_added_vertex_bytes_bps; /* source vertex byte ratio; UINT32_MAX disables */
     uint8_t objective, beam_width, search_supersample,
         audit_supersample; /* objective: quadric/regularized/visual/topology_relaxed */
     uint8_t max_supersample, prune, force_scalar, coupled_wedges;
@@ -74,8 +75,17 @@ typedef struct blitz_result blitz_result;
 typedef struct blitz_storage_info {
     uint32_t struct_size;
     uint64_t source_vertex_bytes, added_vertex_bytes, index_bytes, total_bytes;
+    uint64_t added_vertex_budget_bytes;  /* UINT64_MAX when disabled */
+    uint32_t max_added_vertex_bytes_bps; /* UINT32_MAX when disabled */
 } blitz_storage_info;
 blitz_status blitz_result_storage(const blitz_result*, blitz_storage_info*);
+typedef struct blitz_runtime_lod_storage_info {
+    uint32_t struct_size;
+    uint8_t scheduled_index;
+    uint64_t added_vertex_bytes, index_bytes, cumulative_added_vertex_bytes;
+} blitz_runtime_lod_storage_info;
+blitz_status blitz_result_runtime_lod_storage(const blitz_result*, size_t,
+                                              blitz_runtime_lod_storage_info*);
 uint32_t blitz_abi_version(void);
 blitz_status blitz_settings_init(blitz_settings*, size_t);
 /* Source streams must remain alive and unchanged until result destruction. Never frees source. */
@@ -88,7 +98,7 @@ size_t blitz_result_runtime_lod_count(const blitz_result*);
 size_t blitz_result_runtime_lod_index(const blitz_result*, size_t);
 blitz_status blitz_result_lod(const blitz_result*, size_t, blitz_lod_info*);
 void blitz_result_destroy(blitz_result*);
-/* Additive neural API; existing ABI-4 descriptors retain their sizes and layout. */
+/* Neural model/options versions are independent of the ABI-5 mesh/settings descriptors. */
 typedef struct blitz_neural_model blitz_neural_model;
 typedef struct blitz_neural_options {
     uint32_t struct_size, version;

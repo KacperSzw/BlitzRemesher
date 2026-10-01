@@ -7,11 +7,12 @@ int main(void) {
     float vertices[]={0,0,0,1,0,0,0,1,0};uint32_t indices[]={0,1,2};int stop=1;
     struct color_slot {uint8_t prefix;blitz_color_rgba8 color;uint8_t padding;} colors[]={
         {7,{0,128,255,13},8},{9,{255,0,17,255},10},{11,{24,31,128,0},12}};
-    CHECK(sizeof(blitz_color_rgba8)==4&&blitz_abi_version()==4&&BLITZ_ABI_VERSION==4);
+    CHECK(sizeof(blitz_color_rgba8)==4&&blitz_abi_version()==5&&BLITZ_ABI_VERSION==5);
     blitz_mesh m={0};m.struct_size=sizeof(m);m.abi_version=BLITZ_ABI_VERSION;m.positions=(blitz_stream){vertices,3,12};m.indices=indices;m.index_count=3;
     m.colors=(blitz_stream){&colors[0].color,3,sizeof(colors[0])};
     blitz_settings s;CHECK(blitz_settings_init(&s,sizeof(s))==BLITZ_OK);
     CHECK(s.struct_size==sizeof(s)&&s.abi_version==BLITZ_ABI_VERSION&&s.max_changed_area==1);
+    CHECK(s.max_added_vertex_bytes_bps==2000&&s.triangle_overhead_bps==0);
     CHECK(blitz_settings_init(&s,sizeof(s)-1)==BLITZ_INVALID_ARGUMENT);
     CHECK(blitz_settings_init(&s,sizeof(s))==BLITZ_OK);
     s.levels=2;s.base_pixels=32;s.last_pixels=8;s.cancelled=cancel;s.user_data=&stop;
@@ -28,6 +29,12 @@ int main(void) {
     blitz_storage_info storage={0};storage.struct_size=sizeof(storage);
     CHECK(blitz_result_storage(r,&storage)==BLITZ_OK);
     CHECK(storage.source_vertex_bytes==48&&storage.added_vertex_bytes==0&&storage.index_bytes==12&&storage.total_bytes==60);
+    CHECK(storage.added_vertex_budget_bytes==9);
+    CHECK(storage.max_added_vertex_bytes_bps==2000);
+    blitz_runtime_lod_storage_info runtime_storage={0};runtime_storage.struct_size=sizeof(runtime_storage);
+    CHECK(blitz_result_runtime_lod_storage(r,0,&runtime_storage)==BLITZ_OK);
+    CHECK(runtime_storage.scheduled_index==0&&runtime_storage.added_vertex_bytes==0&&runtime_storage.index_bytes==12);
+    CHECK(blitz_result_runtime_lod_storage(r,1,&runtime_storage)==BLITZ_INVALID_ARGUMENT);
     CHECK(blitz_result_storage(NULL,&storage)==BLITZ_INVALID_ARGUMENT);
     CHECK(colors[0].color.g==128&&colors[1].color.a==255&&colors[2].color.a==0&&colors[2].padding==12);
     CHECK(blitz_result_lod(r,2,&l)==BLITZ_INVALID_ARGUMENT);blitz_result_destroy(r);blitz_result_destroy(NULL);
@@ -40,7 +47,9 @@ int main(void) {
         CHECK(blitz_generate(&m,&s,&r,error,sizeof(error))==BLITZ_INVALID_ARGUMENT&&r==NULL);
     }
     s.max_changed_area=0;
+    s.max_added_vertex_bytes_bps=UINT32_MAX;
     CHECK(blitz_generate(&m,&s,&r,error,sizeof(error))==BLITZ_CANCELLED&&r!=NULL);
+    CHECK(blitz_result_storage(r,&storage)==BLITZ_OK&&storage.added_vertex_budget_bytes==UINT64_MAX);
     blitz_result_destroy(r);
     blitz_neural_options neural;blitz_neural_model* model=NULL;
     CHECK(blitz_neural_options_init(&neural,sizeof(neural))==BLITZ_OK);

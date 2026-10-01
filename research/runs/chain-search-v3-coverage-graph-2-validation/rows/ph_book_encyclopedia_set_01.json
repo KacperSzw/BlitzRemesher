@@ -1,0 +1,806 @@
+{
+  "attributes_sha256": "585ee11b69e0b6d9c486a651c4451c2f5616dc2c218489e59ae2f49dc822047f",
+  "canonical_attributes_sha256": "5e501ba53926d1e58c2fd3bf8010509b11bbcaa772df88e7ea84c2c89006fbe8",
+  "category": "manufactured",
+  "complete": true,
+  "coverage_cache": {
+    "bypasses": 49,
+    "field_hits": 3540,
+    "fields": 3542,
+    "mask_hits": 4173,
+    "peak_bytes": 264614256,
+    "rasters": 3753
+  },
+  "export_seconds": 0.008271869,
+  "fallback": false,
+  "final_ratio": 0.0019166196178646777,
+  "generation_seconds": 66.280163589,
+  "id": "ph_book_encyclopedia_set_01",
+  "last_three_ratio": 0.004477064947156766,
+  "load_seconds": 0.004314136,
+  "numerics": {
+    "nonfinite_costs": 0,
+    "nonfinite_solves": 0,
+    "position_fallbacks": 18138187,
+    "singular_solves": 13618188,
+    "solve_attempts": 26868496
+  },
+  "output_sha256": "4e6ab66b1e3f5a6157efb6e94f6501ae5f729a99fd6bfe2e243ca46498530e56",
+  "peak_rss_kib": 463712,
+  "ratio": 0.03703342092193012,
+  "result": {
+    "added_vertex_budget_bytes": 428819,
+    "audit_contract": {
+      "attribute_importance": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0
+        ]
+      ],
+      "audit_supersample": 4,
+      "audit_views": {
+        "orthographic": 12,
+        "perspective": 4,
+        "seed": 2971082790
+      },
+      "max_supersample": 8,
+      "normal_importance": [
+        [
+          0.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0
+        ]
+      ],
+      "normal_maps_scored": false,
+      "profile": "coverage",
+      "scope": "configured_cameras",
+      "search_supersample": 2,
+      "search_views": {
+        "orthographic": 6,
+        "perspective": 2,
+        "seed": 2971082788
+      },
+      "texture_images_scored": false,
+      "weights": {
+        "color": 4.0,
+        "material": 4.0,
+        "normal": 5.729577951308232
+      }
+    },
+    "audit_evaluations": [
+      138,
+      95,
+      104,
+      70
+    ],
+    "candidate_evaluations": 119,
+    "candidates": [
+      {
+        "storage": {
+          "added_vertex_bytes": 409248,
+          "index_bytes": 868152,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3421496
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          517,
+          258,
+          129
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 417568,
+          "index_bytes": 869352,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3431016
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          517,
+          258,
+          229
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 397568,
+          "index_bytes": 866604,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3408268
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          517,
+          258,
+          258
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 407136,
+          "index_bytes": 866784,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3418016
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          661,
+          661,
+          129
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 415456,
+          "index_bytes": 867984,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3427536
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          661,
+          661,
+          229
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 426496,
+          "index_bytes": 869196,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3439788
+        },
+        "triangles": [
+          67306,
+          4136,
+          4136,
+          4136,
+          4136,
+          661,
+          661,
+          330
+        ]
+      },
+      {
+        "storage": {
+          "added_vertex_bytes": 0,
+          "index_bytes": 807672,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 2951768
+        },
+        "triangles": [
+          67306,
+          67306,
+          67306,
+          67306,
+          67306,
+          67306,
+          67306,
+          67306
+        ]
+      }
+    ],
+    "chain_objective": "whole_chain",
+    "graph_search": {
+      "passes_completed": 1,
+      "progress": [
+        {
+          "added_vertex_bytes": 426496,
+          "audit_evaluations": 267,
+          "candidate_evaluations": 63,
+          "pass": 0,
+          "seconds": 44.511369212999995,
+          "triangle_total": 18196
+        },
+        {
+          "added_vertex_bytes": 409248,
+          "audit_evaluations": 407,
+          "candidate_evaluations": 119,
+          "pass": 1,
+          "seconds": 66.280137517,
+          "triangle_total": 17448
+        }
+      ],
+      "pruned_candidates": 25,
+      "pruned_paths": 11,
+      "source_valid_candidates": 41,
+      "transition_edges": 41
+    },
+    "lods": [
+      {
+        "adjacent": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "reference_triangles": 67306,
+        "screen_pixels": 512.0,
+        "shared_vertices": true,
+        "source": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 0,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "source_limit": 0.0,
+        "transition_limit": 0.0,
+        "triangles": 67306,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 1204,
+          "max_anisotropy": null,
+          "max_density": 9.553558618400459,
+          "mean_density": 2.5771639210484354,
+          "negative_winding_faces": 65650
+        },
+        "vertices": 67003
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.0029797407451588533,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 1.25,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "reference_triangles": 4136,
+        "screen_pixels": 312.0674954763457,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.0029797407451588533,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 1.25,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "source_limit": 2.0,
+        "transition_limit": 2.0,
+        "triangles": 4136,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 149,
+          "max_anisotropy": null,
+          "max_density": 1145.9067282039082,
+          "mean_density": 0.863795197001347,
+          "negative_winding_faces": 3942
+        },
+        "vertices": 10425
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "reference_triangles": 4136,
+        "screen_pixels": 190.2072690095294,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.002824384975076983,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 0.75,
+          "coverage_upper_px": 1.4571077811865474,
+          "error_px": 1.4571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 13
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 4136,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 149,
+          "max_anisotropy": null,
+          "max_density": 1145.9067282039082,
+          "mean_density": 0.863795197001347,
+          "negative_winding_faces": 3942
+        },
+        "vertices": 10425
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "reference_triangles": 4136,
+        "screen_pixels": 115.93262902578006,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.0026809172311486836,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 0.5,
+          "coverage_upper_px": 1.2071077811865474,
+          "error_px": 1.2071077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 10
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 4136,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 149,
+          "max_anisotropy": null,
+          "max_density": 1145.9067282039082,
+          "mean_density": 0.863795197001347,
+          "negative_winding_faces": 3942
+        },
+        "vertices": 10425
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.0,
+          "changed_area_worst_view": 0,
+          "complete": true,
+          "coverage_px": 0.0,
+          "coverage_upper_px": 0.0,
+          "error_px": 0.0,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 0,
+          "worst_view": 0
+        },
+        "reference_triangles": 4136,
+        "screen_pixels": 70.661728875124,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.003465299534795405,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 0.25,
+          "coverage_upper_px": 0.9571077811865476,
+          "error_px": 0.9571077811865476,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 0
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 4136,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 149,
+          "max_anisotropy": null,
+          "max_density": 1145.9067282039082,
+          "mean_density": 0.863795197001347,
+          "negative_winding_faces": 3942
+        },
+        "vertices": 10425
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.07030456852791878,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 5
+        },
+        "reference_triangles": 517,
+        "screen_pixels": 43.0688061642354,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.07397572078907436,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 5
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 517,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 110180.98665801318,
+          "max_density": 5.289995859655235,
+          "mean_density": 0.18600260564283877,
+          "negative_winding_faces": 517
+        },
+        "vertices": 1303
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.11122661122661123,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 1.25,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 14
+        },
+        "reference_triangles": 258,
+        "screen_pixels": 26.25073139224442,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.1498189002304906,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 1.25,
+          "coverage_upper_px": 1.9571077811865474,
+          "error_px": 1.9571077811865474,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 14
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 258,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 26058.337005680783,
+          "max_density": 5.2899929474868905,
+          "mean_density": 0.21728152163985306,
+          "negative_winding_faces": 258
+        },
+        "vertices": 696
+      },
+      {
+        "adjacent": {
+          "changed_area": 0.13309352517985612,
+          "changed_area_worst_view": 6,
+          "complete": true,
+          "coverage_px": 0.9013878188659973,
+          "coverage_upper_px": 1.6084956000525448,
+          "error_px": 1.6084956000525448,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 8
+        },
+        "reference_triangles": 129,
+        "screen_pixels": 16.0,
+        "shared_vertices": false,
+        "source": {
+          "changed_area": 0.2340966921119593,
+          "changed_area_worst_view": 13,
+          "complete": true,
+          "coverage_px": 1.0606601717798212,
+          "coverage_upper_px": 1.7677679529663688,
+          "error_px": 1.7677679529663688,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": true,
+          "resource_limited": false,
+          "supersample": 4,
+          "views_evaluated": 16,
+          "worst_view": 6
+        },
+        "source_limit": 3.0,
+        "transition_limit": 2.0,
+        "triangles": 129,
+        "uv_diagnostics": {
+          "degenerate_uv_faces": 0,
+          "max_anisotropy": 20047.536249601122,
+          "max_density": 3.2611530134438613,
+          "mean_density": 0.22343175592827563,
+          "negative_winding_faces": 129
+        },
+        "vertices": 365
+      }
+    ],
+    "max_added_vertex_bytes_bps": 2000,
+    "max_changed_area": 0.5,
+    "proposal_diagnostics": {
+      "adaptive_retry_attempted": false,
+      "adaptive_retry_evaluations": 0,
+      "adaptive_retry_selected": false,
+      "component_builds": 0,
+      "component_unavailable": 0,
+      "duplicate_proposals": 16,
+      "tail_probe_evaluations": 8,
+      "tail_reserved_vertex_bytes": 31680,
+      "topology_fallback_proposals": 0,
+      "transition_reconnections": 47,
+      "vertex_budget_rejections": 33
+    },
+    "reference_candidate": 0,
+    "rejections": {
+      "adjacent_audit": {
+        "area_only_count": 0,
+        "count": 0,
+        "worst": null
+      },
+      "adjacent_search": {
+        "area_only_count": 0,
+        "count": 25,
+        "worst": {
+          "changed_area": 0.1147500415269722,
+          "changed_area_worst_view": 1,
+          "complete": false,
+          "coverage_px": 2.576941016011038,
+          "coverage_upper_px": 2.930495406604312,
+          "error_px": 2.930495406604312,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 2,
+          "worst_view": 1
+        }
+      },
+      "source_audit": {
+        "area_only_count": 1,
+        "count": 2,
+        "worst": {
+          "changed_area": 0.3331306990881459,
+          "changed_area_worst_view": 1,
+          "complete": false,
+          "coverage_px": 2.675116819879087,
+          "coverage_upper_px": 3.028671210472361,
+          "error_px": 3.028671210472361,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 8,
+          "views_evaluated": 4,
+          "worst_view": 3
+        }
+      },
+      "source_search": {
+        "area_only_count": 0,
+        "count": 23,
+        "worst": {
+          "changed_area": 0.17973973256924547,
+          "changed_area_worst_view": 1,
+          "complete": false,
+          "coverage_px": 7.516648189186454,
+          "coverage_upper_px": 8.930862751559548,
+          "error_px": 8.930862751559548,
+          "nonfinite_error": false,
+          "normal_degrees": 0.0,
+          "passed": false,
+          "resource_limited": false,
+          "supersample": 2,
+          "views_evaluated": 2,
+          "worst_view": 1
+        }
+      }
+    },
+    "runtime_levels": [
+      0,
+      1,
+      5,
+      6,
+      7
+    ],
+    "runtime_lod_count": 5,
+    "runtime_storage": [
+      {
+        "added_vertex_bytes": 0,
+        "cumulative_added_vertex_bytes": 0,
+        "index_bytes": 807672,
+        "scheduled_index": 0
+      },
+      {
+        "added_vertex_bytes": 333600,
+        "cumulative_added_vertex_bytes": 333600,
+        "index_bytes": 49632,
+        "scheduled_index": 1
+      },
+      {
+        "added_vertex_bytes": 41696,
+        "cumulative_added_vertex_bytes": 375296,
+        "index_bytes": 6204,
+        "scheduled_index": 5
+      },
+      {
+        "added_vertex_bytes": 22272,
+        "cumulative_added_vertex_bytes": 397568,
+        "index_bytes": 3096,
+        "scheduled_index": 6
+      },
+      {
+        "added_vertex_bytes": 11680,
+        "cumulative_added_vertex_bytes": 409248,
+        "index_bytes": 1548,
+        "scheduled_index": 7
+      }
+    ],
+    "selected_candidate": 0,
+    "selection_sweep": [
+      {
+        "overhead_bps": 0,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 409248,
+          "index_bytes": 868152,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3421496
+        }
+      },
+      {
+        "overhead_bps": 200,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 409248,
+          "index_bytes": 868152,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3421496
+        }
+      },
+      {
+        "overhead_bps": 500,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 409248,
+          "index_bytes": 868152,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3421496
+        }
+      },
+      {
+        "overhead_bps": 1000,
+        "reference": 0,
+        "selected": 0,
+        "storage": {
+          "added_vertex_bytes": 409248,
+          "index_bytes": 868152,
+          "source_vertex_bytes": 2144096,
+          "total_bytes": 3421496
+        }
+      }
+    ],
+    "status": "complete",
+    "storage": {
+      "added_vertex_bytes": 409248,
+      "index_bytes": 868152,
+      "source_vertex_bytes": 2144096,
+      "total_bytes": 3421496
+    },
+    "triangle_overhead_bps": 0,
+    "version": 3
+  },
+  "run_sha256": "9aee4ece07cb68427225e87c446f51e9974f72c641266e27b5c9fef6ba98162b",
+  "seconds": 66.309246397,
+  "source_files": [
+    {
+      "bytes": 2547932,
+      "path": "data/polyhaven/book_encyclopedia_set_01/book_encyclopedia_set_01.bin",
+      "sha256": "bbc726698b6e40ab5537b73e082f7bb4db97b9e6f978f52cdaf763dddc85d9ba",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/book_encyclopedia_set_01/book_encyclopedia_set_01.bin"
+    },
+    {
+      "bytes": 55011,
+      "path": "data/polyhaven/book_encyclopedia_set_01/source.gltf",
+      "sha256": "89eb80fffd619ebbe5043d632bd8cf25b2d68a3614aee2f356e850c69ae498ba",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/book_encyclopedia_set_01/book_encyclopedia_set_01_1k.gltf"
+    }
+  ],
+  "stage_seconds": {
+    "distance": 12.436853972000002,
+    "raster": 43.240689957,
+    "reduction": 10.514747101000001
+  }
+}

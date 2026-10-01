@@ -1,0 +1,50 @@
+{
+  "kind": "normal-main-integration-validation",
+  "date": "2026-10-01",
+  "parents": {
+    "neural": "111f010734d077e3457976072f8658b1e699c60e",
+    "main": "6ec4da2fa7ede132c75d38fa80f63248dc43418d",
+    "common_base": "7466a9e96843db6b39408c7c38d3090e5a4d9125"
+  },
+  "scope": {
+    "merge": "normal merge preserving both histories",
+    "project_version": "0.5.0",
+    "c_abi_version": 5,
+    "neural_preset_added_vertex_cap": null,
+    "classical_default_added_vertex_bytes_bps": 2000,
+    "training_started": false,
+    "quality_comparison": false
+  },
+  "local_cpu": {
+    "configure": "nix develop --command cmake -S . -B build/integration-cpu -G Ninja -DCMAKE_BUILD_TYPE=Release -DBLITZ_ACQUISITION=ON -DBLITZ_CUDA=OFF -DBLITZ_NEURAL_TRAIN=OFF",
+    "build": "nix develop --command cmake --build build/integration-cpu -j2",
+    "build_passed": true,
+    "focused_tests": { "passed": 9, "failed": 0 },
+    "full_tests": {
+      "passed": 28,
+      "failed": 0,
+      "command": "nix develop --command ctest --test-dir build/integration-cpu --output-on-failure -j2",
+      "verification": "27 initial successes retained; corrected cloud test rerun passed from the CTest build directory",
+      "cloud_rerun_command": "nix develop --command ctest --test-dir build/integration-cpu --output-on-failure -R '^neural-cloud-contracts$'",
+      "cloud_node_subtests": { "passed": 23, "failed": 0 }
+    },
+    "initial_full_tests": {
+      "passed": 27,
+      "failed": 1,
+      "failure": "neural-cloud-contracts: two new readiness fixtures assumed repository working directory; all C++ tests and other Node contracts passed"
+    }
+  },
+  "integration_contracts": [
+    "ABI-5 classical descriptors and runtime storage queries retain neural API additions",
+    "classical graph, tail, appearance, density and wedge capabilities remain available",
+    "neural hooks share audited chain search, memory caps and final confirmation",
+    "neural mode rejects unsupported classical research controls",
+    "zero vertex cap rejects owned candidates; sufficient cap admits audited reduction",
+    "cap-infeasible packed fallback returns BudgetLimited with unchanged source LOD0 only",
+    "unrelated representation infeasibility remains an explicit error",
+    "one-shot cancellation is latched and never treated as a known training negative",
+    "shared pools and wedge transforms preserve per-vertex exact-position metadata",
+    "packed precision bitmap bytes are charged separately from shared vertex stride"
+  ],
+  "pending_validation": ["merged sanitizer", "merged GPU", "bounded remote core and teacher readiness"]
+}

@@ -1,0 +1,1350 @@
+{
+  "version": 1,
+  "pilot_ids": [
+    "ph_painted_wooden_shelves",
+    "ph_metal_stool_02",
+    "ph_grass_bermuda_01",
+    "ph_dead_quiver_trunk",
+    "ph_moon_rock_02",
+    "ph_rock_face_02",
+    "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+    "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7"
+  ],
+  "runs": [
+    {
+      "id": "chain-search-coverage-baseline",
+      "run_sha256": "59a242543462931e350e17c4a3cbba979e6367865c7466a839bf417a8a55709f",
+      "binary_sha256": "7621705deaf27270d73c33a779710f88c547da50e068ca39be2184a323e0ed97",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "62925dd75d12583aef6f42568b3756fa99c3e3f9bad0fdad1c929a9732c6b4ca",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "508db093e1d01c13e2a73ed3b247594f324b30ec72f797eca1cc926ca51ed7d8",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "fed2ed97277af8288a16ea59c8078b3c3fd96ab5a71e6214edb62b9ca4969e9d",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "4dc42331dfd746c83c8f4848ccfdf31be7396987d2957a8f79782982b4f0cf47",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "c85dd8885c5604267534e6681007a5a44ca283a13cbfceff0b497f20d44932d2",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "985a625e81f082a545b477859713e641d78d035d053b3a4323146e5c75f1a3e1",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "ce68d05845693c8467a334b76b54da98e312cf1df9f7542ba5e21f6bd6558a4b",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "7f2e0c2a5c3e31c4bb2f76ad9a7a33796d39409eacdb2c93a0193a64d663bed7",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-coverage-legacy-2",
+      "run_sha256": "649e4070f7750d898fe8c82af3e4b6f07c23ff9c764349f2bae589d8fca479bb",
+      "binary_sha256": "7621705deaf27270d73c33a779710f88c547da50e068ca39be2184a323e0ed97",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 16,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "62925dd75d12583aef6f42568b3756fa99c3e3f9bad0fdad1c929a9732c6b4ca",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "ab79f12f4f7216f889500c9802bf48b333b31f5b2597398c64854c5835e72562",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "1568a68b2a2fd819feaf91b51c4ff4e42299a292e784e2ca12658dc05e8b67be",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "56a7ca2113221bb2a18b85e5e640046e8275443ddb2e51210324d911ab136f8f",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "840f20af00157dab69daa8248174fa75fb50350ffa4fa26319e14416a58e7082",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "b2d3cc5c2da67ebb1cbd36b6571e959740d06e0628ae52f431ab555ec9acc2bb",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "7e400ced16d65ff7a39858b5112da382414317b34ebf86e5f074f6e4d21797a6",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "1465e06148fdc7bc52d9521a3c69104a195e9c11ddd24855a698ca7f0e095e29",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-coverage-legacy-4",
+      "run_sha256": "282260e5920c8b5923779e2590cd419c576597ba7b7d70db795fa0badb4c5cc9",
+      "binary_sha256": "7621705deaf27270d73c33a779710f88c547da50e068ca39be2184a323e0ed97",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 32,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "45340a7424a3c2d493fdf4045a1e727c9769ca5fa69d4d70eb9a564c2a1346fe",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "76f8f2ac9dc0e84a8a5641fc91e2ec708ddc786515849aaa21e0155d7fee96bf",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "164645b33cbd89d5cf0ba62c7cc4d4d2eec3dbd2443a3841ba3bcf7c16175dd8",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "847a0df50e4b2e3d23cf5a6b5913a3a3a5b9f6cd923dc4d5384e2ca1e63e1c98",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "8e65cbfd80a78ec46cf82c5f0f4a6232bb9065c8a603e5dde80a7d1b6c8dcb16",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "c317e57172ab48b90d51eaab88ba7fcb9cf445cef93618f978c81efe374fb138",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "f45dbcb3051bd2ea5131c12e65ac0e686082d634d82b79ccb4c3d0b11faa048c",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "8217ab13c04205512299902939eaacd3231505490e92ce0e1cda5e4dfec4033d",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-v3-coverage-graph-2",
+      "run_sha256": "52237b8bc5bbb275f8a9a2f9f6b0228cffa94887b5ca5492f91901eba2ed831f",
+      "binary_sha256": "2c54933d583427df25dec061660fd928ceb9a9f381939faca6ddbf596c6545ee",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "76e205354cae5aaaaf0a3ec845765897e0cf2cb2e84665aa2e7347bac8510dee",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "0ddb38da061fde43a64f649c310e976ee0cb2c6e93d2462a5587f923a54ad9da",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "9791d990c7e52eadd2fab4139be81b9e08f8e0123d95f2480fcb24d30909bd1a",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "2efa9709c351be7665c23cdfa6a711e1c7e82f9cddb3ac8892c2d47df88abd7f",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "fb98271eb6f8f6b658b69c83918bb3dba0d47d51ef9d4c6a8cd691387987e2c9",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "0d2ae67ec519dc50b56dce9d1e5bb62b55a662d3ad59d43e1e38e2352c93003d",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "b937f4ab69ac2e91beca897b12440e271aa11f9deaed838c562ea34247bbfe79",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "076127e7178182c1de86179cc515c370bec4445f9a1ffb9b5d3b063b50b20d45",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-v3-coverage-graph-4",
+      "run_sha256": "661c1c76c4066145bed8717e48afe0046ba126b29956cf599a16721bcb6d5253",
+      "binary_sha256": "2c54933d583427df25dec061660fd928ceb9a9f381939faca6ddbf596c6545ee",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "graph_passes": 3,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "76e205354cae5aaaaf0a3ec845765897e0cf2cb2e84665aa2e7347bac8510dee",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "f45381e81036e056255675a594b124b4fdf2f48631874c886edcd59ab52ed880",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "9791d990c7e52eadd2fab4139be81b9e08f8e0123d95f2480fcb24d30909bd1a",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "0c94de8282f746ddf999337b53a20d2582c183ab4d1fb4f72cef50e949a74b96",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "0dbb7a4f701383182b8f213415107b89a7d9960b00a805c37530a9f4ec32d2dd",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "90a76f75a68ea856a10ec13049a079a03591c279b2b0a680452e97d060369c18",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "95108d33508aa3a56a2d2ce12e8a819a516657af2007d4e4032f4c2f234e4702",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "62f171f97f64990c2b138654fd696977facb9cb05552b5d47d15009d973cb207",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-v3-coverage-topology-4",
+      "run_sha256": "a18ac07bf90d905e8a1d6abb9a0829aa244f2a28eb5c8e6ffb03e140f1bbba6e",
+      "binary_sha256": "2c54933d583427df25dec061660fd928ceb9a9f381939faca6ddbf596c6545ee",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "graph_passes": 3,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": true,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "76e205354cae5aaaaf0a3ec845765897e0cf2cb2e84665aa2e7347bac8510dee",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "f76c05fdd8b0db61635349f6470d3255204cb5dc11181bb562c7773081aee454",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "9791d990c7e52eadd2fab4139be81b9e08f8e0123d95f2480fcb24d30909bd1a",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "c8038d041171f89949d3d2b6f951d5d4c1c65e8d967190ad2f304163d5beabc9",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "0dbb7a4f701383182b8f213415107b89a7d9960b00a805c37530a9f4ec32d2dd",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "2a23e4448b9ddc812f4d95d639a4e1194d9ff12ea5ee08d6e80515b47cc91a7f",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "95108d33508aa3a56a2d2ce12e8a819a516657af2007d4e4032f4c2f234e4702",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "a80d158221deaa80c40d77d8722b4f2610cad8419622b86fd481ee07dfd40bd4",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-appearance-baseline",
+      "run_sha256": "1d7c7f157a677f3b92a7feca6b9dc380cfe6b5c3192eb0e7657c48d92dc9d4e5",
+      "binary_sha256": "7621705deaf27270d73c33a779710f88c547da50e068ca39be2184a323e0ed97",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "fb387fe767bb21d355cfedd4294c019350293cff0a2e0d785297c75e4c655978",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "fdcb598c013e1690c5c909ad1456da3a3ecf24d43d2149e5cf2c2e74c07ed206",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "418b795cddf4a332583a75e7972771e094156fdca8282d0a3e6c9e7df6e8036b",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "31857f717878f788535133a7844f6740832e9e5eeba90d32435073f52ac53982",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "62722a80ba8d89a75ad8cb616e5e0181491693c0b92b1fb54d952f7d32282f82",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "eb21d7baf66fbfa9407cab30ce8b57b03c24687b50df4143d54d9135f24b42a2",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "9762271899872a74675084bc95bc627d509a35ad651cc5e9f58a72726947fc8e",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "9723967710c63b555978d73201b0108b1d64de6cf8e67213c600c23a38ab68b7",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-v3-appearance-graph-2",
+      "run_sha256": "ae4620396810bcc74d17ee7fd1ffe39efb1304425d435ef15c49960e7435b485",
+      "binary_sha256": "2c54933d583427df25dec061660fd928ceb9a9f381939faca6ddbf596c6545ee",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.5,
+        "max_lod0_delta_px": 3,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "attributes",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "fb387fe767bb21d355cfedd4294c019350293cff0a2e0d785297c75e4c655978",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "fdcb598c013e1690c5c909ad1456da3a3ecf24d43d2149e5cf2c2e74c07ed206",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "418b795cddf4a332583a75e7972771e094156fdca8282d0a3e6c9e7df6e8036b",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "31857f717878f788535133a7844f6740832e9e5eeba90d32435073f52ac53982",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "62722a80ba8d89a75ad8cb616e5e0181491693c0b92b1fb54d952f7d32282f82",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "eb21d7baf66fbfa9407cab30ce8b57b03c24687b50df4143d54d9135f24b42a2",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "9762271899872a74675084bc95bc627d509a35ad651cc5e9f58a72726947fc8e",
+          "qualified": true
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "9723967710c63b555978d73201b0108b1d64de6cf8e67213c600c23a38ab68b7",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-strict-baseline",
+      "run_sha256": "0d5caac230955c7b876bae5e159d9be09a85727043eb805a3f118ece36061e11",
+      "binary_sha256": "7621705deaf27270d73c33a779710f88c547da50e068ca39be2184a323e0ed97",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.25,
+        "max_lod0_delta_px": 2,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "dab031a8b18abddbe65e158d7bb13978c9d14b77c3cb26cec9c38e5e240a2b49",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "ccbc6cab111be3b4d7410459b47332c04620216876f8158ea73170cd73addf3a",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "7c2242cefc42a79c743c5d653e87ffb663e04698ff941005d73a2b64c23c2c5e",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "6253b20a4ca9356eaabd707e02483fbc34d096364b56feb236267d6f604ee62f",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "d26b6751bdcb72f75c96cd9954c6e9336cfd182a030119a6d87e0ec8a6aab6ac",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "87bf548e755635cc6fec53ad91e9d80f397fac7efac2d8aaed45cfbc59db597b",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "4b3cfc14a5527ae6e326b1d535a91e8cdfd18e2454bf93b90e872f9ac76d0ec7",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "862bb92bf1aaf24a311a0ae0f569304ef43538f085931d8fbfe273505fb2b69e",
+          "qualified": false
+        }
+      ]
+    },
+    {
+      "id": "chain-search-v3-strict-graph-2",
+      "run_sha256": "9eba3fbe98e50ac58192a2927a0df588bfd3de182d5342e2fbfbfe8a7994f11f",
+      "binary_sha256": "2c54933d583427df25dec061660fd928ceb9a9f381939faca6ddbf596c6545ee",
+      "config": {
+        "attribute_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "audit_supersample": 4,
+        "audit_views": {
+          "orthographic": 12,
+          "perspective": 4,
+          "seed": 2971082790
+        },
+        "base_pixels": 512,
+        "beam_width": 2,
+        "candidate_budget": 8,
+        "coupled_wedges": true,
+        "force_scalar": false,
+        "last_pixels": 16,
+        "levels": 8,
+        "max_added_vertex_bytes_bps": 2000,
+        "max_changed_area": 0.25,
+        "max_lod0_delta_px": 2,
+        "max_supersample": 8,
+        "meters_per_unit": 1,
+        "normal_importance": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "objective": "quadric",
+        "pixels_per_meter": 512,
+        "profile": "coverage",
+        "prune": true,
+        "research": {
+          "adaptive_targets": false,
+          "boundary_placement": false,
+          "boundary_weight": 0,
+          "chain": "hybrid",
+          "component_candidates": false,
+          "coverage_cache_mib": 256,
+          "graph_passes": 1,
+          "independent_seams": false,
+          "output": null,
+          "topology_fallback": false,
+          "trace": false
+        },
+        "search_supersample": 2,
+        "search_views": {
+          "orthographic": 6,
+          "perspective": 2,
+          "seed": 2971082788
+        },
+        "transition": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "triangle_overhead_bps": 0,
+        "weights": {
+          "color": 4,
+          "material": 4,
+          "normal": 5.729577951308232
+        }
+      },
+      "assets": [
+        {
+          "id": "ph_painted_wooden_shelves",
+          "unavailable": false,
+          "chain_sha256": "9b805f83533d42a34ca9cf16b280ccfc291869a2412c38c59c91f5941d567814",
+          "qualified": false
+        },
+        {
+          "id": "ph_metal_stool_02",
+          "unavailable": false,
+          "chain_sha256": "7ee009fb30f4b196b8345a3e21fd13834fa539049a19c52af9237026754b496a",
+          "qualified": false
+        },
+        {
+          "id": "ph_grass_bermuda_01",
+          "unavailable": false,
+          "chain_sha256": "f3943616d2f5ce67a68e25ba911877679178e16fc288a7a983254e7604ab236f",
+          "qualified": false
+        },
+        {
+          "id": "ph_dead_quiver_trunk",
+          "unavailable": false,
+          "chain_sha256": "84746fedfba57f53dc12f9924aecd4e085dd02273abe6e7c27e77b58d60d2373",
+          "qualified": false
+        },
+        {
+          "id": "ph_moon_rock_02",
+          "unavailable": false,
+          "chain_sha256": "d26b6751bdcb72f75c96cd9954c6e9336cfd182a030119a6d87e0ec8a6aab6ac",
+          "qualified": false
+        },
+        {
+          "id": "ph_rock_face_02",
+          "unavailable": false,
+          "chain_sha256": "fb721c60f7dad6d7c55f80fcd99efce91d838fa05eeaf02dfaffc0d6ef4be6e4",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_6c69a6bb-55e6-4356-8725-120ff7f8d652",
+          "unavailable": false,
+          "chain_sha256": "4b3cfc14a5527ae6e326b1d535a91e8cdfd18e2454bf93b90e872f9ac76d0ec7",
+          "qualified": false
+        },
+        {
+          "id": "si_3d_package_e7514eea-3f12-490d-a2d0-999f2a1a70f7",
+          "unavailable": false,
+          "chain_sha256": "f9668ee0af13aa42ae1632b5b4c0872d58c26b02da3f10ad24407208a9c5a559",
+          "qualified": false
+        }
+      ]
+    }
+  ]
+}

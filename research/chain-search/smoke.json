@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "selection": "Two development assets per category: smallest and median among sources at most 150k triangles, selected before reduction measurements. Pilot only.",
+  "assets": [
+    {
+      "bytes": 185769,
+      "category": "manufactured",
+      "colors": false,
+      "diameter": 0.6605415366862926,
+      "files": [
+        {
+          "bytes": 182872,
+          "path": "data/polyhaven/metal_stool_02/metal_stool_02.bin",
+          "sha256": "17127317d391eb90ce3446739463b1067cc490210db821769b7a46bd1ff02e1c",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/metal_stool_02/metal_stool_02.bin"
+        },
+        {
+          "bytes": 2897,
+          "path": "data/polyhaven/metal_stool_02/source.gltf",
+          "sha256": "de8d603993443294b8a0aed48ea631ac38f2b15872491ea929551f72be726fcb",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_stool_02/metal_stool_02_1k.gltf"
+        }
+      ],
+      "geometry_sha256": "8704c6c1c324abbe548d946903af76059f02cf2b62884c0308cc45277836baf9",
+      "id": "ph_metal_stool_02",
+      "import_status": "ok",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "normals": true,
+      "opaque": true,
+      "path": "data/polyhaven/metal_stool_02/source.gltf",
+      "provider": "polyhaven",
+      "source_group": "polyhaven:metal_stool",
+      "source_identity": "metal_stool_02",
+      "source_url": "https://polyhaven.com/a/metal_stool_02",
+      "split": "development",
+      "triangles": 6532,
+      "uv": true,
+      "vertices": 4490,
+      "woody": false
+    }
+  ]
+}

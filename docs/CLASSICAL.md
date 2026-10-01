@@ -1,5 +1,9 @@
 # Classical generation and compatibility
 
+This guide retains the classical generator and upstream experiment contracts.
+For the primary neural path, see [the main README](../README.md) and
+[neural architecture](NEURAL.md).
+
 C++20 library and command-line tool for static, opaque game-mesh LOD chains.
 It searches for fewer triangles under explicit screen-space transition and
 LOD0 error limits. Every returned reduction passes the configured camera
@@ -13,7 +17,22 @@ The meshes are enlarged to show each LOD; labels give their target screen sizes.
 
 [Automatic hybrid research](../research/hybrid/REPORT.md) compares resident buffer
 bytes and triangle counts, with measured bake times and independent tail checks.
-[Open the current offline board](../research/hybrid/board/index.html).
+[Open the whole-chain reduction board](../examples/reduction-board/index.html):
+fixed eight-asset rows, coverage/appearance/strict presets, recorded settings,
+triangle and bake-progress curves, independent-audit status, and engine exports.
+[Results and promotion decision](../research/chain-search/DECISION.md).
+[Appearance experiment board](../examples/appearance-board/index.html) compares
+conservative screening, appearance ordering, wedge fitting and position fitting
+under the same quality limits. [Measurements](../research/appearance/REPORT.md) and
+[qualification](../research/appearance/DECISION.md) keep failed results visible.
+[Rebuilt-storage board](../examples/density-board/index.html) compares indexed
+targets, interior wedge merging and source sharing under those same limits.
+[Measured outcomes and decision](../research/density/DECISION.md).
+[Earlier 13-model vertex-budget gallery](../examples/current-board/index.html).
+[Open the algorithm and LOD chain example](../examples/lod-chains.html).
+The [earlier hybrid board](../research/hybrid/board/index.html) records uncapped
+and forced-placement research runs; its Moon rock chain is rebuilt at every
+level after LOD0.
 [Previous shared/rebuilt comparisons](../research/vegetation/REPORT.md) remain archived.
 These experiments score opaque card geometry; texture opacity and shading remain
 outside their contract.
@@ -48,7 +67,7 @@ contract and must not be described as the default quality audit.
 Use [the experimental changed-area preset](../configs/quality-area-0.5.json) to cap
 coverage change at 50% on every configured full audit view while retaining the
 default camera and pixel-distance settings. It sets triangle overhead to zero,
-so final selection favors the fewest triangles across the audited LOD chain:
+so final selection uses the capped tail-first priority described below:
 
     build/release/blitz simplify model.glb --config configs/quality-area-0.5.json --out output/model
 
@@ -82,13 +101,36 @@ material graph. Engine integrations retain their own material payloads.
 
 ## Controls
 
-- Automatic hybrid chooses the smallest resident vertex/index payload within
-  `triangle_overhead_bps` of a triangle-minimizing reference chain found by the
-  search. Default 500 means 5%; each LOD must satisfy its own integer bound.
-  Set 0 for no per-level triangle overhead. This is a bounded search, not a global optimum.
+- Experimental C++/CLI `research.graph_passes` accepts 0..3. Zero retains the
+  incumbent search described below. Each extra pass builds a bounded candidate
+  graph, independently audits source admission and predecessor transitions,
+  and minimizes the equally weighted sum of LOD1–N triangles. The complete
+  incumbent remains eligible. This requires automatic hybrid output, respects
+  the same vertex and visual limits, and adds at most `candidate_budget`
+  reduction calls per transition per pass. Audit work is counted separately;
+  twice the proposals does not mean twice the bake time. Topology fallback
+  replaces calls inside this graph budget. The [frozen experiment](../research/chain-search/PLAN.md)
+  and [reproduction guide](../research/chain-search/README.md) describe its bounds.
+- Automatic hybrid limits newly allocated vertex streams to
+  `max_added_vertex_bytes_bps` of the packed source vertex streams. Default
+  2000 means 20%; 0 permits only source vertex storage and `null` disables the
+  cap. The cap applies to distinct runtime LOD meshes across the complete chain.
+  With a cap, the default `triangle_overhead_bps=0` prioritizes the final audited
+  LOD's triangle count, then each earlier LOD in reverse order. The search first
+  reserves the bytes of an audited compact final mesh, then lets earlier LODs
+  spend the remainder. Up to eight tail probes add work beyond the per-level
+  candidate budget per pass. If the final LOD repeats its predecessor while at
+  least half the cap remains unused, one adaptive-target retry runs and the
+  better audited chain wins. This can add a second bounded bake on stalled
+  assets; the byte cap and visual limits stay the same. With the cap disabled,
+  selection minimizes total chain
+  triangles. Nonzero overhead permits a smaller resident payload when every
+  scheduled LOD stays within its integer triangle allowance. This is a bounded search.
 - Both original-source and preceding-LOD proposals undergo source and transition
   audits. Shared levels preserve source vertex bytes and IDs; owned levels are compact.
-  The reference and selected candidate costs and a 0/2/5/10% selection sweep are recorded.
+  The reference and selected candidate costs, budget rejections, per-runtime-level
+  storage, and a 0/2/5/10% selection sweep are recorded. Set the vertex cap to
+  `null` and triangle overhead to 500 to restore the previous automatic policy.
 - Profiles: coverage, normals, attributes. The pixel-distance metric measures
   foreground displacement. `max_changed_area` independently caps `1 - mask IoU`
   for conservative, supersampled opaque coverage on each full audit view.
@@ -128,9 +170,10 @@ Forced whole-chain placements (`research.output`) and proposal origins
 the C descriptor. Archived top-level output/chain JSON requires the explicit
 `--legacy-config` simplify option; normal `--config` rejects it. C++ clients must rebuild.
 
-LOD0 is always unchanged. Cancellation returns an exact, validated source
-chain with cancelled status; the implementation does not yet preserve a
-partially optimized prefix on cancellation. Success means the configured
+LOD0 is always unchanged. Graph exploration keeps its last complete, validated
+incumbent on cancellation or allocation failure and reports incomplete status.
+Before a complete incumbent exists, cancellation returns the exact source chain.
+Success means the configured
 search and audit finished, not that no better reduction exists.
 
 ## Engine integration
@@ -139,7 +182,16 @@ The C++ entry point is blitz::generate(MeshView, Settings). MeshView borrows
 strided streams; Result owns rebuilt vertices and output indices. Keep the
 source alive and unchanged until all result views are finished.
 
-The versioned [C API](include/blitz/blitz.h) exposes plain descriptors,
+In automatic generation, experimental `research.shared_rebuild` stores byte-identical source vertices
+once and adds only changed tuples. Mixed LODs use one immutable vertex pool;
+`Lod::view(result.source)` returns the correct streams and indices. The glTF
+export shares that pool across runtime meshes, and the memory ledger charges
+its added suffix once. `research.density_targets` and `research.merge_wedges`
+are separate opt-in proposal controls. See [contracts](SPEC.md) and
+[experiment](../research/density/PLAN.md). C++ consumers must rebuild for the new
+`Lod` layout; C ABI 5 is unchanged.
+
+The versioned [C API](../include/blitz/blitz.h) exposes plain descriptors,
 explicit status/error buffers and an opaque result handle:
 
 1. Initialize blitz_settings with blitz_settings_init.
@@ -152,9 +204,18 @@ Scheduled slots retain their source and transition audit records. For engine
 runtime selection, use `blitz_result_runtime_lod_count` and
 `blitz_result_runtime_lod_index` (C++: `runtime_levels`) to skip exact
 consecutive duplicates. The returned indices address the scheduled slots;
+`blitz_result_runtime_lod_storage` (C++: `runtime_storage`) reports added
+vertex bytes, index bytes and cumulative added vertex bytes at each runtime
+level. `blitz_result_storage` also reports the chain's added vertex budget.
 use each retained slot's original screen threshold. Equal triangle counts
 alone never cause a merge. glTF export shares one mesh and buffer payload for
 each identical consecutive group, while `lods.json` preserves every audit.
+Its `runtime_meshes` rows explicitly map runtime mesh IDs to the first scheduled
+slot and its original pixel threshold. `audit_contract` records the profile,
+weights, importance curves, camera seeds, and sampling used for those checks.
+Engine material bindings use each glTF primitive's original material ID;
+retain the engine's material payload. Independent qualification is recorded
+separately and is never implied by a successful export.
 
 `blitz/render_cost.hpp` exposes optional, deterministic CPU geometry
 diagnostics: projected tiny triangles, zero-sample primitives, per-primitive
@@ -172,6 +233,7 @@ The frozen [corpus manifest](../research/corpus.json) records 120 assets,
 checksums, provenance, item-level scan rights and grouped 80/20/20 splits.
 Meshes are stored in data and excluded from Git. Replay the exact inputs:
 
+    # Configure with -DBLITZ_ACQUISITION=ON to build the optional corpus tool.
     build/release/blitz-corpus data research/corpus.json
     build/release/blitz corpus-check data/manifest.json research/corpus-check.json
 
@@ -264,9 +326,11 @@ Installed CMake consumers use find_package(BlitzRemesher CONFIG REQUIRED)
 and link Blitz::remesher. BUILD_SHARED_LIBS=ON builds shared libraries.
 The C++ package propagates its C++20 requirement to consumers.
 
-Version 0.4 uses C ABI 4 and shared-library compatibility version 4. C callers
-must rebuild and reinitialize the enlarged `blitz_settings` descriptor;
-`blitz_lod_info` now reports both coverage-area measurements and worst views.
+Version 0.5 uses C ABI 5 and shared-library compatibility version 5. C callers
+must rebuild and reinitialize the enlarged `blitz_settings` descriptor. Its
+vertex budget uses `UINT32_MAX` to disable the cap. The enlarged storage record
+and new runtime storage query report the budget and per-mesh costs.
+Version 0.4 added coverage-area measurements and worst views to `blitz_lod_info`.
 Version 0.3 replaced
 `output_mode`/`chain_mode` with `triangle_overhead_bps`; use
 `blitz_result_storage` and per-LOD `reference_triangles` to inspect the result. C++ colors
@@ -288,7 +352,7 @@ coverage raster/field builds, cache hits/bypasses and peak charged cache bytes;
 the caller supplies the borrowed pointer. The benchmark runner enables it,
 records the compiled storage configuration, and hashes canonical input attributes.
 C++ consumers must rebuild for the enlarged research settings and statistics.
-The coverage cache leaves the C descriptor and ABI version 4 unchanged.
+The coverage cache and experimental graph controls leave the C descriptor and ABI version 5 unchanged.
 Protocol v2 results must be compared with freshly rerun v2 baselines.
 Measured speed, memory, quality changes and the complete validation matrix are
 in [the precision report](../research/precision/REPORT.md).

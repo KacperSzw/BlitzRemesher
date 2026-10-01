@@ -209,6 +209,7 @@ void graph_contracts() {
     // Cancellation while confirming a GPU finalist must retain the exact incumbent
     // and report cancellation even when the minimum-triangle reference was rejected.
     Settings s;
+    s.max_added_vertex_bytes_bps = std::nullopt;
     s.levels = 2;
     s.base_pixels = 24;
     s.last_pixels = 12;
@@ -333,6 +334,7 @@ void graph_contracts() {
 void chain_hook_contracts() {
     const auto source = grid(4);
     Settings settings;
+    settings.max_added_vertex_bytes_bps = std::nullopt;
     settings.levels = 5;
     settings.base_pixels = 32;
     settings.last_pixels = 8;
@@ -780,6 +782,7 @@ void cuda_contracts() {
     require(restored.values == weights.values, "model roundtrip");
     NeuralModel model(path.c_str(), options);
     Settings config;
+    config.max_added_vertex_bytes_bps = std::nullopt;
     config.levels = 3;
     config.base_pixels = 24;
     config.last_pixels = 12;
@@ -800,6 +803,11 @@ void cuda_contracts() {
     require(result.status == Status::Cancelled &&
                 same_mesh_data(result.lods.back().view(m.view()), m.view()),
             "neural cancellation lost exact incumbent");
+    unsigned one_shot_polls = 0;
+    config.cancelled = [&] { return ++one_shot_polls == 1; };
+    result = generate_neural(m.view(), config, model);
+    require(result.status == Status::Cancelled && one_shot_polls == 1,
+            "neural generation forgot an observed one-shot cancellation");
     blitz_neural_options coptions;
     blitz_neural_options_init(&coptions, sizeof(coptions));
     blitz_neural_model* cmodel = nullptr;
@@ -863,6 +871,38 @@ void cuda_contracts() {
         for (auto origin : {NeuralOrigin::Source, NeuralOrigin::Previous, NeuralOrigin::Both}) {
             controls.origin = origin;
             NeuralModel policy(path.c_str(), controls);
+            if (origin == NeuralOrigin::Source)
+                for (unsigned field = 0; field < 6; ++field) {
+                    auto unsupported = schedule;
+                    switch (field) {
+                    case 0:
+                        unsupported.research.graph_passes = 1;
+                        break;
+                    case 1:
+                        unsupported.research.appearance_stage = AppearanceStage(1);
+                        break;
+                    case 2:
+                        unsupported.research.density_targets = true;
+                        break;
+                    case 3:
+                        unsupported.research.merge_wedges = true;
+                        break;
+                    case 4:
+                        unsupported.research.shared_rebuild = true;
+                        break;
+                    default:
+                        unsupported.research.conservative_screen = true;
+                        break;
+                    }
+                    bool rejected = false;
+                    try {
+                        generate_neural(small.view(), unsupported, policy);
+                    } catch (const std::invalid_argument&) {
+                        rejected = true;
+                    }
+                    require(rejected,
+                            "neural generation silently ignored a classical research control");
+                }
             NeuralStats diagnostic;
             auto chain = generate_neural(small.view(), schedule, policy, &diagnostic);
             require(chain.status == Status::Complete && diagnostic.action_diagnostics_version == 1,
@@ -959,7 +999,13 @@ void cuda_contracts() {
     EvalSettings stopped;
     stopped.cancelled = [] { return true; };
     auto cancelled = evaluate_cuda(m.view(), altered.view(), b, stopped, options);
-    require(!cancelled.complete && !cancelled.passed, "CUDA cancellation ignored");
+    require(!cancelled.complete && !cancelled.passed && cancelled.cancelled,
+            "CUDA cancellation ignored");
+    unsigned cancelled_polls = 0;
+    stopped.cancelled = [&] { return ++cancelled_polls == 2; };
+    cancelled = evaluate_cuda(m.view(), altered.view(), b, stopped, options);
+    require(cancelled.cancelled && !cancelled.complete && !cancelled.passed,
+            "CUDA audit lost an observed one-shot cancellation");
     EvalSettings huge;
     huge.screen_size = 1024;
     huge.supersample = 8;

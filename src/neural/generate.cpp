@@ -129,8 +129,19 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
     if (auto e = validate(settings); !e.empty())
         throw std::invalid_argument(e);
     if (settings.research.component_candidates || settings.research.independent_seams ||
-        settings.research.topology_fallback)
+        settings.research.topology_fallback || settings.research.graph_passes ||
+        settings.research.appearance_stage != AppearanceStage::Off ||
+        settings.research.density_targets || settings.research.merge_wedges ||
+        settings.research.shared_rebuild || settings.research.conservative_screen)
         throw std::invalid_argument("CPU research proposal options are unsupported in neural mode");
+    Settings s = settings;
+    bool cancellation_seen = false;
+    if (settings.cancelled)
+        s.cancelled = [&] {
+            if (!cancellation_seen)
+                cancellation_seen = settings.cancelled();
+            return cancellation_seen;
+        };
     NeuralStats local;
     auto& counters = stats ? *stats : local;
     auto& options = model.impl_->options;
@@ -148,13 +159,12 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
     std::unique_ptr<neural::ActionCuda> action_network;
     if (weights.architecture == neural::schema) {
         g = neural::graph(source);
-        embedding = neural::encode_mesh_cuda(g, weights, options, settings.cancelled);
+        embedding = neural::encode_mesh_cuda(g, weights, options, s.cancelled);
     } else
         action_network = std::make_unique<neural::ActionCuda>(weights, options);
     counters.encode_ns = nanos(start);
     // All proposals use the shared source encoding. The conditioned head predicts a
     // complete retention/representative field for each requested size and target.
-    Settings s = settings;
     s.research.chain = options.origin == NeuralOrigin::Source     ? ChainMode::Direct
                        : options.origin == NeuralOrigin::Previous ? ChainMode::Progressive
                                                                   : ChainMode::Hybrid;
@@ -416,7 +426,8 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
                            close(cpu.coverage_upper, gpu.coverage_upper) &&
                            cpu.changed_area == gpu.changed_area &&
                            close(cpu.normal_degrees, gpu.normal_degrees));
-            bool stopped = s.cancelled && s.cancelled();
+            bool stopped = output.cancelled || cpu.cancelled || gpu.cancelled ||
+                           (s.cancelled && s.cancelled());
             auto invalid = [](const Measurement& m) {
                 return std::isnan(m.error) || std::isnan(m.coverage) ||
                        std::isnan(m.coverage_upper) || !std::isfinite(m.changed_area) ||

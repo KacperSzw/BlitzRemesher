@@ -121,12 +121,16 @@ static Mesh candidate_fixture() {
     mesh.double_sided = {1};
     return mesh;
 }
-static void candidate_contracts(bool memory_boundaries = false) {
-    auto mesh = candidate_fixture();
+static NeuralOptions candidate_options() {
     NeuralOptions options;
     options.memory_mib = 256;
     options.raster_backend = NeuralRasterBackend::Vulkan;
     options.view_batch = 1;
+    return options;
+}
+static void candidate_contracts(bool memory_boundaries = false) {
+    auto mesh = candidate_fixture();
+    const auto options = candidate_options();
     AuditSession session(options);
     GpuActionState state(mesh.view(), options, true);
     AuditCuda audit(options, mesh.view());
@@ -657,18 +661,78 @@ int main(int argc, char** argv) {
         stage("grouped candidate rasters", [&] { grouped_candidate_contracts(memory_boundaries); });
         // Each worker must retain the serial verdicts on an independent stream.
         MemoryBudget shared{size_t(384) << 20, 0, 0, 0};
-        std::barrier ready(2);
-        auto worker = [&] {
-            gpu::StreamScope stream;
-            MemoryScope memory(shared);
-            ready.arrive_and_wait();
-            candidate_contracts(memory_boundaries);
-        };
         stage("concurrent candidates", [&] {
-            auto first = std::async(std::launch::async, worker),
-                 second = std::async(std::launch::async, worker);
-            first.get();
-            second.get();
+            training::WorkerRetirement retirement;
+            std::vector<std::thread> threads;
+            std::mutex mutex;
+            std::condition_variable changed;
+            std::barrier ready(2);
+            std::array<std::exception_ptr, 2> failures;
+            std::exception_ptr startup_error;
+            uint8_t initialized = 0;
+            bool begin = false, abort = false;
+            auto worker = [&](uint8_t id) {
+                try {
+                    gpu::StreamScope stream;
+                    MemoryScope memory(shared);
+                    // The nested candidate session borrows this worker-owned
+                    // renderer. Keep it alive until the owner permits OS exit.
+                    AuditSession session(candidate_options());
+                    bool run;
+                    {
+                        std::unique_lock lock(mutex);
+                        ++initialized;
+                        changed.notify_all();
+                        changed.wait(lock, [&] { return begin || abort; });
+                        run = !abort;
+                    }
+                    try {
+                        if (run) {
+                            ready.arrive_and_wait();
+                            candidate_contracts(memory_boundaries);
+                        }
+                    } catch (...) {
+                        failures[id] = std::current_exception();
+                    }
+                    try {
+                        gpu::check(cudaStreamSynchronize(stream.value));
+                    } catch (...) {
+                        if (!failures[id])
+                            failures[id] = std::current_exception();
+                    }
+                    retirement.park(id);
+                } catch (...) {
+                    std::lock_guard lock(mutex);
+                    startup_error = std::current_exception();
+                    changed.notify_all();
+                }
+            };
+            try {
+                training::start_worker_threads(threads, 2, worker, [&] {
+                    std::unique_lock lock(mutex);
+                    changed.wait(lock,
+                                 [&] { return startup_error || initialized == threads.size(); });
+                    if (startup_error)
+                        std::rethrow_exception(startup_error);
+                });
+                {
+                    std::lock_guard lock(mutex);
+                    begin = true;
+                }
+                changed.notify_all();
+            } catch (...) {
+                {
+                    std::lock_guard lock(mutex);
+                    abort = true;
+                }
+                changed.notify_all();
+                retirement.join(threads);
+                throw;
+            }
+            retirement.join(threads);
+            for (auto failure : failures)
+                if (failure)
+                    std::rethrow_exception(failure);
         });
         require(shared.live == 0 && shared.peak > 0 && shared.peak <= shared.limit,
                 "worker shared budget/lifetime contract");

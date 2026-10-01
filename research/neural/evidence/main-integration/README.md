@@ -30,7 +30,8 @@ No training session was launched; synthetic optimizer contract tests ran.
 The [teacher measurements](remote/teacher-analysis.json) identify candidate audits
 (49.59%) and exact confirmations (23.17%) as the largest batch-4 post-load costs.
 Batch 4 measured 1.48x post-load speedup but only 1.04x process speedup on these two
-small fixtures. Loading, session setup and work outside the teacher timer matter;
-these observations do not establish production throughput. Profile representative
-larger meshes, both UV modes and rollout64 before a long training run. Keep exact
-audits and full-chain quality controls as acceptance requirements.
+small fixtures. Loading, session setup and work outside the standalone teacher
+timer matter; resident training already reuses workers and GPU sessions. These
+observations do not establish production throughput. Profile warm resident jobs,
+representative larger meshes, both UV modes and rollout64 before a long training
+run. Keep exact audits and full-chain quality controls as acceptance requirements.

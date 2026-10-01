@@ -85,7 +85,8 @@
   },
   "node_contracts": {
     "passed": 73,
-    "total": 73
+    "total": 73,
+    "code_revision": "af0fb43ccfb972bdf59c3ff76cd08946031a0b53"
   },
   "local_teacher_readiness": {
     "complete": true,
@@ -155,7 +156,7 @@
     "before_final_training": [
       "Measure representative larger meshes, both UV modes and the 64-trial policy rollout",
       "Compare candidate batching and worker concurrency with identical audited outputs and fixed budgets",
-      "Profile model loading, device/session setup and teardown before considering persistent teacher processes; the current process/teacher timing gap does not isolate these costs",
+      "Measure warm jobs in the existing resident teacher workers, which already reuse GPU streams/audit sessions/action storage; standalone process setup and teardown costs do not project directly onto resident training",
       "Demonstrate complete-chain quality in matched development controls before model-capacity changes"
     ],
     "remote_microfixtures": {
@@ -176,7 +177,9 @@
     "ctest_passed": 1,
     "ctest_total": 1,
     "storage_modes": ["network", "core-only-container"],
-    "malformed_metadata_does_not_block_termination": true
+    "malformed_metadata_does_not_block_termination": true,
+    "code_revision": "af0fb43ccfb972bdf59c3ff76cd08946031a0b53",
+    "profile_recheck_revision": "4729907b5eefd204a46786deab1c8c7bdc415cac"
   },
   "remote_validation": {
     "complete": true,
@@ -209,5 +212,6 @@
       "layer": "VK_LAYER_KHRONOS_validation",
       "note": "Remote log contains only the passing contract message; local warning count is retained separately."
     }
-  }
+  },
+  "code_revision_scope": "Local C++ runtime/training build and sanitizer evidence; later commits change cloud orchestration, profiles and documentation. Remote validation records its own exact frozen revision."
 }

@@ -408,6 +408,334 @@
       "source_revision": "ec9660f8b7b60d87f9dcc4b2595cbd4e3a9254ee",
       "sha256": "b825e6701119204775e99b6c50c5723660209074305e26b5209da2026e4e019a",
       "bytes": 4312
+    },
+    {
+      "file": "headless-initial-untraced.log.gz",
+      "source": "/tmp/blitz-teacher-headless-glx-stress.log",
+      "uncompressed_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "f61f27bd17de546264aa58f40f3aafaac7021e0ef69c17f6b1b4cd7664a037ec",
+      "bytes": 20
+    },
+    {
+      "file": "headless-traced-control-report.json.gz",
+      "source": "runs/neural/teacher-headless-glx-local-01/report.json",
+      "uncompressed_sha256": "fcab168096226d03f0d243b02ea0c73bede7d870d4413ecce62cda32c5cdb7e2",
+      "sha256": "cdda9dbffbccddec7e7ad340f63414691dce7c6b57207e3335d807178350b74e",
+      "bytes": 93
+    },
+    {
+      "file": "headless-traced-control-process.log.gz",
+      "source": "runs/neural/teacher-headless-glx-local-01/process.log",
+      "uncompressed_sha256": "f1a0ef41cc03b28cb808086457ced1d47c0da8febc2b213483a9a6ad792bacc0",
+      "sha256": "a53d0a037711e69c77b432cb38763ffd7f41e85679b1c9e903942e7102d92259",
+      "bytes": 23277
+    },
+    {
+      "file": "headless-untraced-failure-report.json.gz",
+      "source": "runs/neural/teacher-headless-glx-local-02/report.json",
+      "uncompressed_sha256": "0fe46eedd807c2678bb01f2adfd739908ae7984bb0d1a00b96d407dd410cbbdc",
+      "sha256": "9ffafaef3ba4cdbad39558b18a2d6fa5f3e48bda1f37882ea846e31d68447807",
+      "bytes": 399
+    },
+    {
+      "file": "headless-untraced-failure-process.log.gz",
+      "source": "runs/neural/teacher-headless-glx-local-02/process.log",
+      "uncompressed_sha256": "a86ff249d60961db00af7228bd332816667e825936326b3b39727c3e921053aa",
+      "sha256": "ad3fa3ffb609aa592297f882e53070d063a684c95140c2bb99de3166eb39887f",
+      "bytes": 70
+    },
+    {
+      "file": "headless-untraced-failure-threads.log.gz",
+      "source": "runs/neural/teacher-headless-glx-local-02/threads.log",
+      "uncompressed_sha256": "7e660b1c819e7f7a081299874b5041d1007679fbd7d9bb956b2c1b2862980e03",
+      "sha256": "d94cd19ab7cd87abb0b81dd4592278d487383d2ca4e9897df6d90a9573453af9",
+      "bytes": 1733
+    },
+    {
+      "file": "headless-destroy-lock-control-report.json.gz",
+      "source": "runs/neural/teacher-headless-glx-destroy-serial-01/report.json",
+      "uncompressed_sha256": "3c43a6a9ad0dee280e6930c4e70fec15102c1c96e87566ddfcabebadee71dda4",
+      "sha256": "2d776f935cbdeff350ee6c656389893e4f5e52b37742788e9052fb75821f08fc",
+      "bytes": 111
+    },
+    {
+      "file": "headless-destroy-lock-control-process.log.gz",
+      "source": "runs/neural/teacher-headless-glx-destroy-serial-01/process.log",
+      "uncompressed_sha256": "30077316c0aaee5c35b2ecde68f46ebf26c76ead08962c4e391ec9f1be3403f7",
+      "sha256": "22a353a7dddcc67e175a6e4aeaa160c45a2459dbd1f05345fc0917c7caa1ce67",
+      "bytes": 149
+    },
+    {
+      "file": "headless-join-report.json.gz",
+      "source": "runs/neural/teacher-headless-glx-join-01/report.json",
+      "uncompressed_sha256": "d15b0360deb043b36d60a459ff9ddfbd30745136325cab17baa08298a1792d7c",
+      "sha256": "e245afae5c8868480c1ed3346fb932c901212b06384d5031ed32b4aedcf2e556",
+      "bytes": 253
+    },
+    {
+      "file": "headless-join-process-0.log.gz",
+      "source": "runs/neural/teacher-headless-glx-join-01/process-0.log",
+      "uncompressed_sha256": "9cd5f95eee9beaff4bff835cd1d643349ce1791d1d9fc09ddc8695e55136ab4c",
+      "sha256": "236eea5711c9af2348b4f7443756b3f3f5bc82beb71bb6ad1ad4f262e3dad72d",
+      "bytes": 148
+    },
+    {
+      "file": "headless-join-process-1.log.gz",
+      "source": "runs/neural/teacher-headless-glx-join-01/process-1.log",
+      "uncompressed_sha256": "ed640b0f735aac91f1966638740860d5baecf3df0ce8c932d3943ac08a58b6b1",
+      "sha256": "97ab5a5c2dcd39190bf122082aa834cea88672f4fda684eeb2f167c92d1a2211",
+      "bytes": 24537
+    },
+    {
+      "file": "headless-join-process-2.log.gz",
+      "source": "runs/neural/teacher-headless-glx-join-01/process-2.log",
+      "uncompressed_sha256": "b64a06290fd884ade4394480ba4aefad917f3a61550c1221ef9820d2708043d2",
+      "sha256": "0f8404ebfffd40b9001f374c52170868be0f2fe8a202c85bc11014ecf5de9f91",
+      "bytes": 152
+    },
+    {
+      "file": "headless-join-process-3.log.gz",
+      "source": "runs/neural/teacher-headless-glx-join-01/process-3.log",
+      "uncompressed_sha256": "63c4b9993c2c795b744a775580a224da47f86c3f25edfc9250fc70fe476ba8ec",
+      "sha256": "e333317a1973e344dfe7485a4a4950b2b2da08203f5cca4abdc069907e48d547",
+      "bytes": 24492
+    },
+    {
+      "file": "headless-join-memcheck.log.gz",
+      "source": "/tmp/blitz-teacher-join-memcheck.log",
+      "uncompressed_sha256": "612d5babb66ed846af471625adcacf1ac60b856d9dd851eda666ccbd802e660b",
+      "sha256": "762104dc97f1c817700d05264e4cb2931d6a151f0e5d8342add3b8c1a483ebbf",
+      "bytes": 152
+    },
+    {
+      "file": "headless-selected-icd.json.gz",
+      "source": "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json",
+      "uncompressed_sha256": "9cf4e2b69b577d7e9612b0dab26be1533c6a8336c2da78cadf5359e40aa11d4c",
+      "sha256": "bc053c08e261e1b58c38e6b1a8efb66ad2501adbaf819c64b64c33e98b38b01f",
+      "bytes": 180
+    },
+    {
+      "file": "rollout-outcome-cpu.log.gz",
+      "source": "/tmp/blitz-rollout-outcome-cpu-test.log",
+      "uncompressed_sha256": "7b31a541c5a05c94e4fa06f963df5be18eb7bd7fcd4f5f279a2be13dc8ac0410",
+      "sha256": "2da1e0a15898dafcd6252a178fe6bcace4abae9d3338922d43f966ef2b1a292f",
+      "bytes": 187
+    },
+    {
+      "file": "rollout-outcome-sanitizer.log.gz",
+      "source": "/tmp/blitz-rollout-outcome-asan-test.log",
+      "uncompressed_sha256": "2d45a3ced1593926021798bf160a6f550e14b4109966f0d4b611c062af7cd594",
+      "sha256": "df382f0c0cac4c3d7d9121b4d80c1821cbabd02e34a2a679e86440aaee8efb97",
+      "bytes": 190
+    },
+    {
+      "file": "retirement-contract-cpu.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/worker-retirement-ctest.log",
+      "uncompressed_sha256": "77febbbfc56aa29fdc1fcdc2392cf23e54a5b7feb9ca8b9723bf6a7364b37360",
+      "sha256": "6489650f4bc792d36d6206b4122a742fe28e8dce322e402967c91eb5cd9847ee",
+      "bytes": 193
+    },
+    {
+      "file": "retirement-contract-sanitizer.log.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-teacher-audit/build/neural/worker-retirement-asan-ubsan.log",
+      "uncompressed_sha256": "a2d6aa4a6b29d6fa654c3f39e90711f4203656f90c1d1da5ea2f3ecae5d72ad6",
+      "sha256": "e048757238c2df720e4b68e0053acf9edc2e32653c5cdea6693cf61a39b509a7",
+      "bytes": 55
+    },
+    {
+      "file": "lifecycle-validation.json",
+      "source": "derived local process reports, native stacks, controller-recorded environment and explicitly attributed external-review summary",
+      "sha256": "f50c736b446e7d81a276a1b593af22c20586ee26609660de564ce01d5b7473df",
+      "bytes": 17914
+    },
+    {
+      "file": "retirement-integrated-build.log.gz",
+      "source": "/tmp/blitz-teacher-retirement-build.log",
+      "uncompressed_sha256": "546514cc50e65986a6f89dfd76a204374cf7dc3e558897973318aa67a99d6d85",
+      "sha256": "e98c6ae5a941088dfee8b80b7742709f826ace5a585389aa312a78cbbd43f97f",
+      "bytes": 1886
+    },
+    {
+      "file": "retirement-integrated-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-retirement-ctest.log",
+      "uncompressed_sha256": "f91348b25f881d5148772582c3979505807bc6964e17a3b005d596ee56eb4d65",
+      "sha256": "095405ee3b76b7e5443f4fb0b3b51d3b0e7319db8304afb12b466006d017c930",
+      "bytes": 1148
+    },
+    {
+      "file": "retirement-integrated-ctest.xml.gz",
+      "source": "/tmp/blitz-teacher-retirement-ctest.xml",
+      "uncompressed_sha256": "e7891aae255329d85eef19b02bc476be4cbb56f1d258a3a3b8dcce7d7732ae36",
+      "sha256": "d844d05594049ae726934e620e5f454cd3446c7641f8f662939c4a69a2199757",
+      "bytes": 5986
+    },
+    {
+      "file": "retirement-integrated-cpu.log.gz",
+      "source": "/tmp/blitz-teacher-retirement-cpu-test.log",
+      "uncompressed_sha256": "aaca3f27be0589233468abc7aac3fc7cafb26067845a0b46bfd6cf146d8df3e4",
+      "sha256": "4bb1ab1ca2c18e9b29c1e2f752e2611d86ad7e1304cde1235340aa6d290720ac",
+      "bytes": 222
+    },
+    {
+      "file": "retirement-integrated-sanitizer.log.gz",
+      "source": "/tmp/blitz-teacher-retirement-asan-test.log",
+      "uncompressed_sha256": "0ddc40e789ccfeb0ec0944e6278452054bc0cc388ca29318fafba0f310713b9e",
+      "sha256": "9f441535fa7bf660080588516d4832a17cb3994e434da017688a4a5686413b80",
+      "bytes": 225
+    },
+    {
+      "file": "retirement-owned-fixture-ctest.log.gz",
+      "source": "/tmp/blitz-teacher-owned-fixture-ctest.log",
+      "uncompressed_sha256": "1062aa4e9f4efe8853c1e4e808dc3a3a6c7f6e8abb68dfbc3c8fc408a37b6b10",
+      "sha256": "339b660176500563cc4a00a126e19dbd54644f2dc8a384c9e7766459148668e8",
+      "bytes": 186
+    },
+    {
+      "file": "retirement-owned-fixture-validation.log.gz",
+      "source": "/tmp/blitz-teacher-owned-fixture-validation.log",
+      "uncompressed_sha256": "4d0eef1a309cec13545bff5fd8bfdcbccdee6be689435cdc440bbaa6134fb3c9",
+      "sha256": "5405c1574e2222fca64e151f98241f2a9531728f93f90b5029793e5ba122bf33",
+      "bytes": 6351
+    },
+    {
+      "file": "retirement-owned-fixture-memcheck.log.gz",
+      "source": "/tmp/blitz-teacher-owned-fixture-memcheck.log",
+      "uncompressed_sha256": "161a174be270f79aee5405357f0f1327071cca3a4634784ac843e661bcc6587e",
+      "sha256": "4b46c9e91a479bd5181afa510ec2ae29f3c34fa205af8c5602e9d83910558cc2",
+      "bytes": 265
+    },
+    {
+      "file": "retirement-baseline-overlay.json.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-cloud-icd/scripts/neural/baselines/worker-join-v1.json",
+      "uncompressed_sha256": "9726fe3f11d16fad582635685afb760bf7bba355908bbc4b834f75d1b997df25",
+      "sha256": "acdf82f830aa4eb09bbfbbdd004ee24eb6a0ce87a7f8741ad6a32b31e6268a6b",
+      "bytes": 500
+    },
+    {
+      "file": "retirement-baseline-overlay.patch.gz",
+      "source": "/home/kacper/Projects/BlitzRemesher-cloud-icd/scripts/neural/baselines/worker-join-v1.patch",
+      "uncompressed_sha256": "ae9ae3f0479a73312bd0d56ee1798cef15bb7ac9d1b1a6594f94b04264af2988",
+      "sha256": "0bfe6309d16bfe48267848ca76a93f4a15d331f4e006f1e0ea9cf5ca53a5491d",
+      "bytes": 5198
+    },
+    {
+      "file": "retirement-strategy-report.json.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/report.json",
+      "uncompressed_sha256": "427343617ba509a21c522da9d4c121e77a6ee83ddec1891914619d101df81e5a",
+      "sha256": "e9355b19bc084b58310a9c077629b935a8c2a09ce2769c02495ba0bbb8c0a3c6",
+      "bytes": 29800
+    },
+    {
+      "file": "retirement-strategy-0-baseline.log.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/0-baseline.log",
+      "uncompressed_sha256": "63943671dfa41e8d62a0a55dee627870ac288d36972900217b57f0b0202b190c",
+      "sha256": "7b2f4e555b40c4a4a17d9e5d008b6604ce67cf938effa819cc051fe4d894aada",
+      "bytes": 249
+    },
+    {
+      "file": "retirement-strategy-1-optimized.log.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/1-optimized.log",
+      "uncompressed_sha256": "7f8e0f8b80948b849c8259455ff2bb033784657775f6274a80f8f3b3facd06c2",
+      "sha256": "32a1ba2215fee8606c9d7d4082e72e4cda3ea99408ec7e650796590df2a50c40",
+      "bytes": 249
+    },
+    {
+      "file": "retirement-strategy-2-optimized.log.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/2-optimized.log",
+      "uncompressed_sha256": "6e610c50b695eff362c73a5778540c5c084d96eed9fd9e9a4b9663b6a7015f22",
+      "sha256": "4e81c8e9d5a2769a9ef90f7e6b898967648730fc4367a8c5007b7c8cdf16e14e",
+      "bytes": 246
+    },
+    {
+      "file": "retirement-strategy-3-baseline.log.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/3-baseline.log",
+      "uncompressed_sha256": "32dfe73d584b6e19bf04974f0aded752c4b4d5505d02d8ae5306221de7558b7c",
+      "sha256": "679e9b468e2f0f86e03a75f2a00232ec875d200b45325751774e92158fb7d5f7",
+      "bytes": 250
+    },
+    {
+      "file": "retirement-strategy-request-baseline.json.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/request-baseline.json",
+      "uncompressed_sha256": "10eedd02ae1a86e907b89096ca82a4f09a58ae7388ffd1bc4410deb5430a5d65",
+      "sha256": "3f4ab702f876b9bdaee32d8dae321a401bb2b15c037bbfb0491eee48080faa49",
+      "bytes": 629
+    },
+    {
+      "file": "retirement-strategy-request-optimized.json.gz",
+      "source": "runs/neural/teacher-retirement-strategy-local-01/request-optimized.json",
+      "uncompressed_sha256": "96bbfacbb006b616ff78d32e32ae2ed317817291e12fc73ba0ef4c1cbdd9d281",
+      "sha256": "1a15b28dfcae86ddbfce92401ff8ef6ecf73a532ac81ac7b2bc4d5f74f84a509",
+      "bytes": 629
+    },
+    {
+      "file": "retirement-parity-report.json.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/report.json",
+      "uncompressed_sha256": "13a5aa7ce3684dbae59ac051abe327de49b06f765b6e2f17e9396b90cdb2c367",
+      "sha256": "8b80b757c2aa6eb16ecc499c64bb7d48d588a9d4ac43c3748c6eaba81bdca886",
+      "bytes": 14114
+    },
+    {
+      "file": "retirement-parity-0-baseline.log.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/0-baseline.log",
+      "uncompressed_sha256": "232537d74cffb0455522219bc28d74fdffe54561606c6e1a247aa671e98e12a3",
+      "sha256": "4ada7ca9a7ba316beba06363e0ca3e9dbfb801def01bb15353a5f1943d462471",
+      "bytes": 243
+    },
+    {
+      "file": "retirement-parity-1-optimized.log.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/1-optimized.log",
+      "uncompressed_sha256": "6f97da9b2806f32b7708e1c54a22871eecbc538f2e7e5074528c74dfbffc2854",
+      "sha256": "a66a7c69e4b30c4a64a04cb4dde9560a1d6eda6e1290c1df24563800a3073f19",
+      "bytes": 237
+    },
+    {
+      "file": "retirement-parity-2-optimized.log.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/2-optimized.log",
+      "uncompressed_sha256": "3ec4d0aa5fd5c16d3de17a61f13241888d70bfe245b50ac47233709f7d39bee3",
+      "sha256": "61276f511467cfacadb83afd8ede2932f2fe02de0893cbcc1e4da835be6f4a32",
+      "bytes": 241
+    },
+    {
+      "file": "retirement-parity-3-baseline.log.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/3-baseline.log",
+      "uncompressed_sha256": "98ee657f1df61fde0dd61dceeae10966ad7fb797e401d0109f1c88dfde127e7d",
+      "sha256": "09b484478b1afbdb368110f7e3b4720684c77d3017550b39cbbebe13593a6861",
+      "bytes": 236
+    },
+    {
+      "file": "retirement-parity-request.json.gz",
+      "source": "runs/neural/teacher-retirement-parity-local-01/request.json",
+      "uncompressed_sha256": "6a166423f1fb1e6e4bafe7c4a22902a2274dfcb7dd805a3ac7483db443648d88",
+      "sha256": "ce670857468a68abd3c353ea77f04d068c92726e420aa8120985dcb088a6608a",
+      "bytes": 612
+    },
+    {
+      "file": "retirement-baseline-preparation-baseline-build.json.gz",
+      "source": "runs/neural/baseline-join-preparation-01/baseline-build.json",
+      "uncompressed_sha256": "20e4d6385dd3ea3dd13f37ad517f3ba93a744e04c2e9d40b0323b96c76921006",
+      "sha256": "286bda2002c3c764df602dd8f5098743e26e73035a1206676a8b72a9d87ff3c7",
+      "bytes": 687
+    },
+    {
+      "file": "retirement-baseline-preparation-build.log.gz",
+      "source": "runs/neural/baseline-join-preparation-01/build.log",
+      "uncompressed_sha256": "cf84a20d2eaf29fbd8e47666a9989f057728c0237238294c73f4e017b25d50df",
+      "sha256": "0a104451f5f77d351c61d4cde5ad78ff2d4cff7f4fdc433aba15a03a73646e37",
+      "bytes": 2768
+    },
+    {
+      "file": "retirement-baseline-preparation-contracts.log.gz",
+      "source": "runs/neural/baseline-join-preparation-01/contracts.log",
+      "uncompressed_sha256": "8e54c0940b67f6362271c08a569ff97c3b54b0d6b0482b01aa7ff764ca7fd02e",
+      "sha256": "1f062247f78db8b63b09006bc4b8e5f06b21bf577adaaef999e0ebdf6ef1307f",
+      "bytes": 3259
+    },
+    {
+      "file": "retirement-baseline-preparation-validation.json.gz",
+      "source": "runs/neural/baseline-join-preparation-01/validation.json",
+      "uncompressed_sha256": "8094ad36df6c98b5e87edd625fc33df36a3763fff95a72e90ea80311bee50c54",
+      "sha256": "e8a5027b4886f8e3bee5d0a70f62f1c24af99576cfcd592dc5628f8bfc77a711",
+      "bytes": 745
     }
   ],
   "supplemental_validation": {
@@ -444,5 +772,16 @@
     "status": "local diagnostics complete; remote cause unresolved",
     "remote_failure_reproduced": false,
     "shutdown_fix_proven": false
+  },
+  "lifecycle_validation": {
+    "record": "lifecycle-validation.json",
+    "local_original_stall_reproduced": true,
+    "owned_worker_fixture_rounds": 48,
+    "owned_worker_memcheck_rounds": 12,
+    "integrated_native_ctest_passed": 48,
+    "production_two_worker_processes": 8,
+    "public_caller_thread_retirement_verified": false,
+    "remote_fix_validation": "pending",
+    "quality_proven": false
   }
 }

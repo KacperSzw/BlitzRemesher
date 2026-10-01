@@ -156,8 +156,8 @@ Cloud setup had replaced the injected vendor GLX ICD with EGL. Both captured
 dependency reports resolve all listed libraries. NVIDIA's
 [580.159.04 documentation](https://download.nvidia.com/XFree86/Linux-x86_64/580.159.04/README/installedcomponents.html)
 supports both ICDs, defaults to GLX, and recommends EGL when X11 client libraries
-are unavailable. Forced EGL is a candidate environment cause; the GLX control with unchanged native
-implementation is pending review and execution, with no fix yet established.
+are unavailable. At that point forced EGL was a candidate environment cause;
+the subsequent local control below shows that selecting GLX alone is insufficient.
 
 The second archive was verified before compute termination at 12:08:16 UTC.
 Independent provider readback at 12:11:56 UTC again showed zero Pods and volumes.
@@ -165,7 +165,36 @@ Its 872.058-second rental adds $0.1404982333 to the conservative grant ledger,
 bringing both attempts to $0.3179503611 before any further reservation. These are
 elapsed-time estimates at the GPU cap plus storage allowance, not invoices.
 
-The remaining grant permits a bounded diagnostic control. Reliable normal shutdown
-comes first, followed by complete representative teacher comparison and uncensored
-full development quality. The next recipe explicitly keeps `exhaustive`; long
-training remains disabled while those gates are unresolved.
+The unchanged native fixture also stalled locally on the RTX 2080 with driver
+595.71.05, no display server variables, and the explicitly selected vendor GLX ICD.
+Ordinary GDB captured 12 threads and 123 frames: one worker was inside
+`vkDestroyDevice` while another was in NVIDIA thread-exit cleanup. The GLX-selected
+driver still used internal EGL components. A traced run and a destructor-lock
+control each passed 12 rounds, but those successes do not establish safe thread
+retirement. The exact proprietary lock cycle remains unproved.
+
+The owned teacher pool now starts workers sequentially through readiness, joins a
+failed new worker before retiring existing workers, and waits for every active
+worker to quiesce before permitting one retirement at a time through OS thread
+join. This covers driver thread-local cleanup after C++ destructors. Four fresh
+headless GLX processes, alternating tracing off/on/off/on, passed 48 fixture rounds;
+12 more rounds passed Compute Sanitizer with zero errors. These results concern
+the owned teacher pool and join fixture. They do not verify arbitrary caller-owned
+threads using public neural sessions or establish a general driver fix.
+
+The integrated native suite passed 48/48 tests at `58381e5`; the focused retirement
+and rollout-outcome contracts passed 2/2 in both CPU and ASan/UBSan builds. Separate
+two-worker strategy and lifecycle-overlay parity smokes completed normal shutdown
+in all four processes each. They preserve the raw reports and distinguish strict
+reuse parity from strategy-dependent query/pruning changes. Shared-workstation
+timings are diagnostic only, and the tiny rollout remains short of its requested
+triangle target. Subsequent normal concurrent-fixture lifetime hardening at
+`6b64051` passed its focused CTest, Vulkan validation and Compute Sanitizer with
+zero errors. [Local lifecycle evidence](evidence/teacher-optimization/local/lifecycle-validation.json)
+preserves the failure stacks, controls, exact revisions and validation scope,
+including an attributed external-review summary whose exact response was not saved.
+
+The remaining grant permits bounded remote validation of the owned-worker fix.
+Complete representative teacher comparison, paired learning and uncensored full
+development quality are still required. The next recipe explicitly keeps
+`exhaustive`; long training remains disabled while those gates are unresolved.

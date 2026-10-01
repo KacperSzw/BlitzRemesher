@@ -1,0 +1,473 @@
+{
+  "version": 1,
+  "kind": "local headless teardown reproduction and owned-worker retirement checks",
+  "recorded_against_revision": "58381e53ade86d7951bd3046e3cc92947ce0b45f",
+  "training_started": false,
+  "quality_proven": false,
+  "performance_speedup": null,
+  "score": null,
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 2080",
+    "driver": "595.71.05",
+    "headless": true,
+    "selected_icd_manifest": "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json",
+    "selected_library": "/nix/store/jvw27qs9lrnmm2yxnvld8kdfg031jfx5-nvidia-x11-595.71.05/lib/libGLX_nvidia.so.0",
+    "environment_reported_by_controller": {
+      "VK_DRIVER_FILES": "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json",
+      "VK_ICD_FILENAMES": "unset or empty",
+      "DISPLAY": "unset",
+      "WAYLAND_DISPLAY": "unset"
+    },
+    "selected_manifest_artifact": "headless-selected-icd.json.gz",
+    "note": "The explicit GLX ICD selection does not imply absence of internal EGL driver use; the captured stacks include libEGL_nvidia and libnvidia-eglcore."
+  },
+  "unchanged_native_controls": {
+    "source_revision": "950558b4392358493baa448b80bb77ee56d0c463",
+    "native_diagnostic_source_revision": "060957bfe4875587199c80583e272854583cef0d",
+    "fixture_binary_sha256": "d205ee38d3ef46ed6c0d1b3d1c03b388c6d16cae758d4756d4f5fdd2deae4268",
+    "prepare_binary_sha256": "7147035f46d09f253f2d05b8a008755e62e08c40963d31f42b7ebecb2c073418",
+    "binary_digest_provenance": "Recorded by controller before rebuilding; binaries are not committed with this supplement",
+    "initial_untraced": {
+      "args": ["--teardown"],
+      "teardown_trace": false,
+      "maximum_ms": 45000,
+      "exit_code": 124,
+      "empty_log": true,
+      "stack_captured": false,
+      "process_status_source": "controller report; preserved log has no content"
+    },
+    "traced_control": {
+      "args": ["--teardown"],
+      "teardown_trace": true,
+      "process": {
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true
+      },
+      "completed_rounds": 12,
+      "peak_bytes": 444351174
+    },
+    "untraced_reproduction": {
+      "args": ["--teardown"],
+      "teardown_trace": false,
+      "maximum_ms": 45000,
+      "process": {
+        "code": null,
+        "signal": "SIGTERM",
+        "timed_out": true,
+        "cancelled": false,
+        "success": false,
+        "diagnostic": {
+          "attempted": true,
+          "captured": true,
+          "pid": 484997,
+          "command": "/nix/store/8mrm74p1aryvkqn4mcw7wci2xck4mazi-gdb-host-cpu-only-17.2/bin/gdb",
+          "output": "runs/neural/teacher-headless-glx-local-02/threads.log",
+          "maximum_ms": 5000,
+          "timed_out": false,
+          "cancelled": false,
+          "code": 0,
+          "signal": null,
+          "output_sha256": "7e660b1c819e7f7a081299874b5041d1007679fbd7d9bb956b2c1b2862980e03",
+          "output_bytes": 15181,
+          "ptrace_denied": false,
+          "threads": 12,
+          "frames": 123
+        },
+        "elapsed_ms": 45863.124595
+      },
+      "completed_round_markers": 0,
+      "observed_boundary": {
+        "device_destroy": {
+          "gdb_thread": 10,
+          "lwp": 485000,
+          "frames": [
+            "__pthread_clockjoin_ex",
+            "libnvidia-eglcore",
+            "vkDestroyDevice",
+            "VulkanRaster::Impl::destroy"
+          ]
+        },
+        "thread_exit": {
+          "gdb_thread": 11,
+          "lwp": 484999,
+          "frames": [
+            "__pthread_mutex_lock_full",
+            "libnvidia-glsi",
+            "libnvidia-eglcore",
+            "libEGL_nvidia",
+            "__nptl_deallocate_tsd"
+          ]
+        }
+      }
+    },
+    "destructor_lock_control": {
+      "args": ["--teardown-serial"],
+      "teardown_trace": false,
+      "process": {
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true,
+        "elapsed_ms": 10252.2243
+      },
+      "completed_rounds": 12,
+      "peak_bytes": 444351174,
+      "interpretation": "Successful diagnostic control narrows the observed race window but does not cover vendor TLS cleanup after the C++ lock is released."
+    }
+  },
+  "owned_worker_retirement": {
+    "fixture_and_helper_revision": "2ee0f52f4cc79aa80a5fc138a744435ffd13a39a",
+    "production_teacher_revision": "b98494a2d3179b2c235822da246408fde439988f",
+    "binary_sha256": "c28bef9d61a6e1319b7cc20edf4bbac219ab7ad947198c4b7974216f058fa77d",
+    "fixture_args": ["--teardown-join"],
+    "fresh_processes": [
+      {
+        "process": 0,
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true,
+        "elapsed_ms": 10615.870106,
+        "traced": false,
+        "completed_rounds": 12,
+        "peak_bytes": 444536134
+      },
+      {
+        "process": 1,
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true,
+        "elapsed_ms": 17942.477975,
+        "traced": true,
+        "completed_rounds": 12,
+        "peak_bytes": 444351174
+      },
+      {
+        "process": 2,
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true,
+        "elapsed_ms": 22018.630891,
+        "traced": false,
+        "completed_rounds": 12,
+        "peak_bytes": 434553742
+      },
+      {
+        "process": 3,
+        "code": 0,
+        "signal": null,
+        "timed_out": false,
+        "cancelled": false,
+        "success": true,
+        "elapsed_ms": 22351.233842,
+        "traced": true,
+        "completed_rounds": 12,
+        "peak_bytes": 434590734
+      }
+    ],
+    "completed_rounds": 48,
+    "memcheck": {
+      "completed_rounds": 12,
+      "errors": 0,
+      "log": "headless-join-memcheck.log.gz"
+    },
+    "cpu_contracts": {
+      "source_revision": "4d7f2d9b4d33175f96d35c7d959a29a043c2d3cb",
+      "passed": 1,
+      "failed": 0,
+      "artifact": "retirement-contract-cpu.log.gz"
+    },
+    "asan_ubsan_contract": {
+      "source_revision": "4d7f2d9b4d33175f96d35c7d959a29a043c2d3cb",
+      "passed": true,
+      "artifact": "retirement-contract-sanitizer.log.gz",
+      "command": "g++ -std=c++20 -g -O1 -fsanitize=address,undefined -fno-omit-frame-pointer -pthread -I. -Isrc tests/neural_worker_retirement.cpp; ASAN_OPTIONS=detect_leaks=1 timeout 30s <test-binary>"
+    },
+    "build_configuration_note": "The first helper CTest build was CUDA-enabled. A fresh CPU-only configure exposed missing Threads package discovery, fixed by 8b3893c. The subsequent integrated CPU and ASan/UBSan runs below include that fix.",
+    "scope": "TeacherWorkers and the explicit join fixture. All initialized workers quiesce, then each permitted worker is joined through OS/TLS exit before the next retires. Startup waits for each worker to be ready; a failed newest worker is joined before earlier initialized workers retire.",
+    "public_caller_thread_retirement_verified": false,
+    "limitation": "This does not serialize arbitrary caller-owned threads using public neural sessions, nor establish a general NVIDIA driver fix.",
+    "production_integrated_validation": {
+      "source_revision": "58381e53ade86d7951bd3046e3cc92947ce0b45f",
+      "native_build_completed": true,
+      "native_ctest": {
+        "passed": 48,
+        "failed": 0,
+        "seconds": 53.97
+      },
+      "cpu_focused_ctest": {
+        "passed": 2,
+        "failed": 0
+      },
+      "asan_ubsan_focused_ctest": {
+        "passed": 2,
+        "failed": 0
+      },
+      "scope": "Full headless native suite plus focused retirement/outcome CPU and sanitizer contracts."
+    },
+    "normal_concurrent_fixture_hardening": {
+      "source_revision": "6b6405196433ee1dbdd8f27f20bad2cf00c00858",
+      "change": "Keep each initialized outer AuditSession alive through owned worker retirement; retain concurrent work and candidate assertions.",
+      "focused_ctest": {
+        "passed": 1,
+        "failed": 0
+      },
+      "vulkan_validation_errors": 0,
+      "compute_sanitizer_errors": 0,
+      "scope": "Test-fixture lifetime hardening after the full 48-test suite; product C++ unchanged."
+    }
+  },
+  "rollout_telemetry": {
+    "revision": "9c8556a6ca9df15dcdfe4865a040fb3001772429",
+    "cpu_passed": 1,
+    "asan_ubsan_passed": 1,
+    "meaning": "The additive policy.outcome object separates actual target attainment and executor stop reason from known noncancelled completion; no labels or episode bytes are changed."
+  },
+  "external_review": {
+    "reviewer": "Prophet",
+    "reference": "root tool cell 481",
+    "record_kind": "controller-attributed summary; exact returned response was not persisted",
+    "original_response_preserved": false,
+    "input_attachment": {
+      "source": "runs/neural/teacher-prophet-teardown/source-and-stacks.txt",
+      "sha256": "a817d256f68acc5c15bf192f258da3a634e63ccfce63a0a8e7d423c61190448e",
+      "bytes": 139007,
+      "committed": false
+    },
+    "findings": [
+      "No demonstrated Vulkan/CUDA ownership defect; concurrent vkDestroyDevice and NVIDIA thread-local cleanup are the strongest localization, but the proprietary lock cycle is unproved.",
+      "A C++ destructor mutex does not cover later vendor TLS cleanup; retirement through OS join covers owned worker threads.",
+      "eglReleaseThread is not a proven Vulkan TLS barrier and may change embedding EGL state.",
+      "An unmodified GLX control is legitimate, although the external review favored the join diagnostic first."
+    ],
+    "implementation_decision": "A suggested startup mutex was not adopted because partially constructed worker resources can unwind before thread TLS exits. The implementation instead starts workers sequentially through readiness and joins a failed newest thread before earlier workers retire.",
+    "subsequent_evidence": "The later local GLX reproduction disproves ICD selection alone as a sufficient mitigation for the exercised fixture; it does not prove which proprietary locks form the stall."
+  },
+  "remaining_gates": [
+    "Complete remote representative teacher parity/throughput with the same reviewed lifecycle overlay in both compared binaries, paired learning and uncensored full development quality before strategy adoption or final training.",
+    "Retain the explicit limitation for arbitrary caller-owned public sessions."
+  ],
+  "production_two_worker_smokes": [
+    {
+      "mode": "strategy",
+      "source_revision": "58381e53ade86d7951bd3046e3cc92947ce0b45f",
+      "report": "retirement-strategy-report.json.gz",
+      "complete": true,
+      "workers": 2,
+      "gpu_memory_mib": 512,
+      "training_started": false,
+      "optimizer_updates": 0,
+      "binary_sha256": {
+        "baseline": "6e7599b4e61eed588a8b0396319f03ce30f83f99f4c110e65173c90306b40db5",
+        "optimized": "6e7599b4e61eed588a8b0396319f03ce30f83f99f4c110e65173c90306b40db5"
+      },
+      "processes": [
+        {
+          "variant": "baseline",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "optimized",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "optimized",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "baseline",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        }
+      ],
+      "jobs": 24,
+      "measured_jobs": 8,
+      "timing_authority": "local_shared",
+      "measured_ratio": 1.0734965382545072,
+      "performance_claim": false,
+      "strict_repeats": true,
+      "matching_payloads": true,
+      "matching_common_semantics": null,
+      "strategy_changes": [
+        {
+          "condition": 0,
+          "semantics_changed": false,
+          "baseline_queries": 12,
+          "optimized_queries": 12
+        },
+        {
+          "condition": 1,
+          "semantics_changed": true,
+          "baseline_queries": 124,
+          "optimized_queries": 55
+        }
+      ],
+      "policy_rollout": {
+        "initial_triangles": 2042,
+        "final_triangles": 2002,
+        "trials": 16,
+        "complete": true,
+        "outcome": {
+          "stop_reason": "trial_budget",
+          "target_reached": false,
+          "target_triangles": 1531,
+          "version": 1
+        }
+      },
+      "diagnostic_environment": {
+        "requested_preset": {
+          "BLITZ_TEARDOWN_TRACE": "1",
+          "BLITZ_ALLOW_DEBUGGER_ATTACH": "1"
+        },
+        "effective_override": {
+          "BLITZ_TEARDOWN_TRACE": "0"
+        },
+        "provenance": "Controller explicitly supplied execute:(command,args,options)=>boundedProcess(command,args,{...options,env:{...process.env,...options.env,BLITZ_TEARDOWN_TRACE:\"0\"}}). Raw report preserves requested preset trace=1; effective child trace=0 is recorded here separately. Debugger permission remains enabled. All process logs lack teardown trace records."
+      },
+      "limitations": "Two tiny conditions on a shared workstation; not the full frozen seven-condition workload, isolated performance or development quality. Ratios must not be compared against earlier differently sized smokes."
+    },
+    {
+      "mode": "parity",
+      "source_revision": "58381e53ade86d7951bd3046e3cc92947ce0b45f",
+      "report": "retirement-parity-report.json.gz",
+      "complete": true,
+      "workers": 2,
+      "gpu_memory_mib": 512,
+      "training_started": false,
+      "optimizer_updates": 0,
+      "binary_sha256": {
+        "baseline": "4105a7b2c1f3b955b576813198867d5a13a0c2e6d2a05d7ff02254ba467ecd9b",
+        "optimized": "6e7599b4e61eed588a8b0396319f03ce30f83f99f4c110e65173c90306b40db5"
+      },
+      "processes": [
+        {
+          "variant": "baseline",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "optimized",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "optimized",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        },
+        {
+          "variant": "baseline",
+          "code": 0,
+          "signal": null,
+          "timed_out": false,
+          "cancelled": false,
+          "success": true,
+          "jobs": 6,
+          "measured_jobs": 2
+        }
+      ],
+      "jobs": 24,
+      "measured_jobs": 8,
+      "timing_authority": "local_shared",
+      "measured_ratio": 1.4253055224187108,
+      "performance_claim": false,
+      "strict_repeats": null,
+      "matching_payloads": true,
+      "matching_common_semantics": true,
+      "strategy_changes": null,
+      "policy_rollout": {
+        "initial_triangles": 2042,
+        "final_triangles": 2002,
+        "trials": 16,
+        "complete": true,
+        "legacy_outcome_absent": true
+      },
+      "diagnostic_environment": {
+        "requested_preset": {
+          "BLITZ_TEARDOWN_TRACE": "1",
+          "BLITZ_ALLOW_DEBUGGER_ATTACH": "1"
+        },
+        "effective_override": {
+          "BLITZ_TEARDOWN_TRACE": "0"
+        },
+        "provenance": "Controller explicitly supplied execute:(command,args,options)=>boundedProcess(command,args,{...options,env:{...process.env,...options.env,BLITZ_TEARDOWN_TRACE:\"0\"}}). Raw report preserves requested preset trace=1; effective child trace=0 is recorded here separately. Debugger permission remains enabled. All process logs lack teardown trace records."
+      },
+      "limitations": "Two tiny conditions on a shared workstation; not the full frozen seven-condition workload, isolated performance or development quality. Ratios must not be compared against earlier differently sized smokes."
+    }
+  ],
+  "baseline_lifecycle_overlay": {
+    "base_revision": "81fd92618c194b6b2838047fbddcd4c0bc4e7c8c",
+    "tree": "351b6d59b2f3bcef1e374a2cba25fa05d7b161ab",
+    "patch_sha256": "ae9ae3f0479a73312bd0d56ee1798cef15bb7ac9d1b1a6594f94b04264af2988",
+    "binary_sha256": "4105a7b2c1f3b955b576813198867d5a13a0c2e6d2a05d7ff02254ba467ecd9b",
+    "descriptor": "retirement-baseline-overlay.json.gz",
+    "patch": "retirement-baseline-overlay.patch.gz",
+    "scope": "Explicit lifecycle-only baseline patch; original 81fd926 alone was not the tested executable.",
+    "preparation_validation": {
+      "source_revision": "c711f5820cdaad343abde86255a88962dbdcc5dd",
+      "original_work_loop_unchanged": true,
+      "node_contracts": {
+        "passed": 98,
+        "failed": 0,
+        "skipped": 0
+      },
+      "native_baseline_build_completed": true,
+      "record": "retirement-baseline-preparation-validation.json.gz",
+      "binary_provenance": "retirement-baseline-preparation-baseline-build.json.gz"
+    }
+  },
+  "smoke_artifact_verification": {
+    "method": "Read-only integrated validateTeacherRun on every process, independently SHA-256 both actual actions.bin and episode.bin for every completed job.",
+    "processes": 8,
+    "jobs": 48,
+    "actual_payload_hashes": 96,
+    "passed": true
+  }
+}

@@ -28,8 +28,10 @@ NVIDIA's documentation for
 [driver 580.159.04](https://download.nvidia.com/XFree86/Linux-x86_64/580.159.04/README/installedcomponents.html)
 supports both as Vulkan ICDs: GLX is the vendor default, and EGL is recommended
 when X11 client libraries are unavailable. Forced EGL selection is therefore a
-candidate environment cause. An GLX control with unchanged native implementation is pending review
-and execution; neither a fix nor an exclusive root cause is established.
+candidate environment cause at the time of this attempt. The later
+[local GLX reproduction and retirement controls](../local/lifecycle-validation.json)
+show that ICD selection alone is insufficient for the exercised fixture. They
+preserve this failure and do not establish an exclusive proprietary root cause.
 
 The 37,156-byte results archive remains in the ignored run directory. Its verified
 SHA-256 is `e488deb0204fcedcd64130bf4db761bc00ba3f1d14a3772da0f6e5fbe22e979c`.

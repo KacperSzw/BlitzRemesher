@@ -64,6 +64,17 @@ int main() {
         r.adaptive_retry_attempted=true;r.adaptive_retry_selected=true;r.adaptive_retry_evaluations=3;
         ProposalTrace retry_trace;retry_trace.pass=1;r.proposals.push_back(retry_trace);
         auto diagnostic=result_json(r);
+        // Packed generation may retain only immutable LOD0 on cancellation or
+        // an infeasible storage cap. Such results have no LOD chain to select.
+        for(auto status:{Status::Cancelled,Status::BudgetLimited}) {
+            auto incomplete=r;incomplete.status=status;incomplete.lods.resize(1);
+            incomplete.candidates={{{uint32_t(m.view().triangles())},storage_stats(incomplete)}};
+            auto summary=result_json(incomplete);
+            CHECK(summary["status"]==(status==Status::Cancelled?"cancelled":"budget_limited"));
+            CHECK(summary["lods"].size()==1&&summary["runtime_lod_count"]==1);
+            CHECK(summary["candidates"][0]["triangles"].size()==1);
+            CHECK(summary["selection_sweep"].empty());
+        }
         CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_attempted"]==true);
         CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_selected"]==true);
         CHECK(diagnostic["proposal_diagnostics"]["adaptive_retry_evaluations"]==3);

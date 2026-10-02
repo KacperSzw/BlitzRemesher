@@ -123,6 +123,7 @@ int main() {
         settings.max_supersample = 2;
         settings.max_changed_area = 1;
         settings.research.output = OutputMode::Reuse;
+        uint64_t sparse_passes = 0, sparse_fallbacks = 0;
         for (bool preserve : {true, false})
             for (uint8_t batch : {1, 16}) {
                 options.preserve_uv = preserve;
@@ -184,8 +185,25 @@ int main() {
                             require(!source.resource_limited && !previous.resource_limited &&
                                         !sx.resource_limited && !sy.resource_limited,
                                     "observer exceeded small-fixture memory budget");
+                            // The runtime gate consumes only a threshold verdict;
+                            // teacher margins still require the exact measurements.
+                            for (const auto& [reference, config, exact] :
+                                 {std::tuple{request.source, a, source},
+                                  std::tuple{request.previous, b, previous},
+                                  std::tuple{request.source, search_a, sx},
+                                  std::tuple{request.previous, search_b, sy}}) {
+                                const auto predicate = audit.certify(
+                                    reference, candidate, request.bounds, config, &private_stats);
+                                require(!predicate.resource_limited && !predicate.cancelled &&
+                                            predicate.verdict != AuditVerdict::Unknown &&
+                                            (predicate.verdict == AuditVerdict::Pass) ==
+                                                (exact.complete && exact.passed),
+                                        "runtime four-gate certificate differs from exact audit");
+                            }
                         });
                     }
+                    sparse_passes += private_stats.gpu_sparse_passes;
+                    sparse_fallbacks += private_stats.gpu_sparse_fallbacks;
                 };
                 const auto result =
                     generate_observed(mesh.view(), settings, weights, options, observe, &after);
@@ -220,6 +238,117 @@ int main() {
                             "observer changed proposal execution");
                 }
             }
+        require(sparse_passes && sparse_fallbacks,
+                "runtime parity fixture did not exercise certificates and exact fallbacks");
+        settings.cancelled = {};
+        options.action_batch = 1;
+        for (bool preserve : {true, false}) {
+            options.preserve_uv = preserve;
+            weights.use = ModelUse::Unrestricted;
+            const auto control = generate_observed(mesh.view(), settings, weights, options, {});
+            weights.use = ModelUse::EndpointReuseOnly;
+            const auto endpoint = generate_observed(mesh.view(), settings, weights, options, {});
+            require(control.status == Status::Complete && endpoint.status == control.status &&
+                        endpoint.lods.size() == control.lods.size(),
+                    "endpoint scope changed valid reuse completion");
+            for (size_t i = 0; i < control.lods.size(); ++i)
+                require(same_mesh_data(control.lods[i].view(mesh.view()),
+                                       endpoint.lods[i].view(mesh.view())) &&
+                            control.lods[i].source_error.error ==
+                                endpoint.lods[i].source_error.error &&
+                            control.lods[i].adjacent.error == endpoint.lods[i].adjacent.error,
+                        "model scope tag changed reuse geometry or measurements");
+            for (auto output : {std::optional<OutputMode>{}, std::optional{OutputMode::Rebuild}}) {
+                auto invalid = settings;
+                invalid.research.output = output;
+                uint32_t observations = 0;
+                NeuralStats stats;
+                bool rejected = false;
+                try {
+                    generate_observed(
+                        mesh.view(), invalid, weights, options,
+                        [&](GpuActionState&, const ActionRequest&) { ++observations; }, &stats);
+                } catch (const std::invalid_argument&) {
+                    rejected = true;
+                }
+                require(rejected && !observations && !stats.action_trials,
+                        "endpoint scope permitted repositioning or rejected after mutation");
+            }
+        }
+        {
+            weights.use = ModelUse::Unrestricted;
+            ActionCuda policy(weights, options);
+            require(policy.model_use() == ModelUse::Unrestricted,
+                    "inference initializer scope differs");
+            gpu::Device device(options);
+            gpu::Buffer<float> refreshed(device, weights.values.size());
+            refreshed.upload(weights.values);
+            policy.refresh_device(refreshed.p, refreshed.n, ModelUse::EndpointReuseOnly);
+            GpuActionState state(mesh.view(), options, true);
+            const auto before = state.snapshot();
+            require(policy.model_use() == ModelUse::EndpointReuseOnly,
+                    "native refresh lost endpoint model scope");
+            uint32_t observations = 0;
+            bool execute_rejected = false, teacher_rejected = false;
+            try {
+                state.execute(
+                    {}, 1, 1, &policy, NeuralRanking::Learned, 101, 1,
+                    [](DeviceMeshView) { return true; }, nullptr, {},
+                    [&](GpuActionState&) { ++observations; });
+            } catch (const std::invalid_argument&) {
+                execute_rejected = true;
+            }
+            try {
+                state.teacher_actions({}, 2, 101, &policy, TeacherSelection::PolicyMixed);
+            } catch (const std::invalid_argument&) {
+                teacher_rejected = true;
+            }
+            require(
+                execute_rejected && teacher_rejected && !observations,
+                "free-placement executor admitted endpoint policy or observed before rejection");
+            require(same_mesh_data(state.snapshot().view(mesh.view()), before.view(mesh.view())),
+                    "rejected endpoint policy mutated free-placement state");
+        }
+        {
+            ActionCuda collector(weights, options), candidate(weights, options);
+            GpuActionState state(mesh.view(), options);
+            const auto before = state.snapshot();
+            require(state.actions({}).size() > 16,
+                    "support fixture does not distinguish a pool from the full action set");
+            const auto pool =
+                state.teacher_actions({}, 16, 101, &collector, TeacherSelection::PolicyMixed);
+            const auto member = [&](Action action) {
+                return std::any_of(pool.begin(), pool.end(), [&](const PlacementRecord& row) {
+                    return row.action == action;
+                });
+            };
+            uint32_t rescored = 0, traced = 0;
+            RankingSupport support{collector,
+                                   [&](const SupportedRanking& result) {
+                                       ++rescored;
+                                       require(
+                                           result.pool == pool.size() && member(result.supported) &&
+                                               result.global_in_support == member(result.global) &&
+                                               result.supported_score <= result.global_score,
+                                           "supported ranking disagrees with the collector pool");
+                                   },
+                                   101};
+            ActionStats stats;
+            state.execute(
+                {}, 1, 64, &candidate, NeuralRanking::Learned, 101, 1,
+                [](DeviceMeshView) { return false; }, &stats, {}, {},
+                [&](const ActionTrial& trial) {
+                    ++traced;
+                    require(trial.actions.size() == 1 && member(trial.actions.front()),
+                            "clipped rollout tried an unsupported action");
+                },
+                &support);
+            require(
+                rescored == 1 && traced == pool.size() && stats.trials == pool.size() &&
+                    !stats.accepted &&
+                    same_mesh_data(state.snapshot().view(mesh.view()), before.view(mesh.view())),
+                "support exhaustion leaked into global actions or changed rejected geometry");
+        }
         std::cout << "runtime observer contracts passed\n";
         return 0;
     } catch (const std::exception& error) {

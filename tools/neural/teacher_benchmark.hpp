@@ -186,7 +186,7 @@ inline int prepare_teacher_jobs(const fs::path& plan_path, const fs::path& outpu
                 if (cancelled())
                     throw std::runtime_error("benchmark deadline before wave");
                 auto wave_start = std::chrono::steady_clock::now();
-                workers.wave(frozen.p, frozen.n, ready.value);
+                workers.wave(frozen.p, frozen.n, ready.value, weights.use);
                 const auto begin_id = next_id;
                 for (uint32_t j = 0; j < size; ++j) {
                     auto condition = warmup ? 0u : first + j;

@@ -33,6 +33,7 @@ struct CompensatedLinear : torch::autograd::Function<CompensatedLinear> {
 struct ActionNetworkImpl : torch::nn::Module {
     std::vector<torch::nn::Linear> layers;
     uint32_t architecture, hidden_width;
+    ModelUse use{ModelUse::Unrestricted};
     explicit ActionNetworkImpl(uint32_t version = action_schema, uint32_t width = 64)
         : architecture(version), hidden_width(width) {
         if (!policy_weights(version, width))
@@ -58,6 +59,7 @@ inline WeightsData export_actions(ActionNetwork& model, const json& provenance) 
     WeightsData w;
     w.architecture = model->architecture;
     w.hidden_width = model->hidden_width;
+    w.use = model->use;
     w.provenance = provenance.dump();
     for (auto& p : model->parameters()) {
         auto cpu = p.detach().to(torch::kCPU).contiguous();

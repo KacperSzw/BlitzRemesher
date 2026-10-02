@@ -63,16 +63,22 @@ WeightsData load_weights(const std::filesystem::path& file, std::string* hash) {
     if (!f)
         throw std::invalid_argument("cannot open neural model: " + file.string());
     auto size = f.tellg();
-    if (size < 84 || size > std::streamoff(88 + policy_weights(placement_schema, 256) * 4 + 65536))
+    if (size < 84 ||
+        size > std::streamoff(92 + policy_weights(conditioned_placement_schema, 256) * 4 + 65536))
         throw std::invalid_argument("neural model size invalid");
     std::vector<std::byte> data(static_cast<size_t>(size));
     f.seekg(0);
     if (!f.read(reinterpret_cast<char*>(data.data()), size))
         throw std::invalid_argument("truncated neural model");
-    bool shaped = !std::memcmp(data.data(), "BLZNET02", 8);
+    const bool scoped = !std::memcmp(data.data(), "BLZNET03", 8);
+    bool shaped = scoped || !std::memcmp(data.data(), "BLZNET02", 8);
     uint32_t width = shaped ? get_u32(data, 20) : 64;
-    size_t header = shaped ? 24 : 20;
+    size_t header = scoped ? 28 : shaped ? 24 : 20;
     auto architecture = get_u32(data, 8);
+    const auto use = scoped ? get_u32(data, 24) : uint32_t(ModelUse::Unrestricted);
+    if (scoped && (use != uint32_t(ModelUse::EndpointReuseOnly) ||
+                   architecture != conditioned_placement_schema))
+        throw std::invalid_argument("incompatible neural model use scope");
     size_t count = architecture == schema ? (width == 64 ? weight_count : 0)
                                           : policy_weights(architecture, width);
     if ((!shaped && std::memcmp(data.data(), magic, 8)) || !count || get_u32(data, 12) != count)
@@ -87,6 +93,7 @@ WeightsData load_weights(const std::filesystem::path& file, std::string* hash) {
     WeightsData w;
     w.architecture = architecture;
     w.hidden_width = width;
+    w.use = ModelUse(use);
     w.provenance.assign(reinterpret_cast<const char*>(data.data() + header), provenance);
     w.values.resize(count);
     for (size_t i = 0; i < count; ++i) {
@@ -103,15 +110,20 @@ void save_weights(const std::filesystem::path& file, const WeightsData& w) {
                                             : policy_weights(w.architecture, w.hidden_width);
     if (!count || w.values.size() != count || w.provenance.size() > 65536)
         throw std::invalid_argument("invalid model weight dimensions or provenance");
+    if (w.use > ModelUse::EndpointReuseOnly ||
+        (w.use == ModelUse::EndpointReuseOnly && w.architecture != conditioned_placement_schema))
+        throw std::invalid_argument("incompatible neural model use scope");
     std::vector<std::byte> data;
     for (char c : magic)
         data.push_back(std::byte(c));
     put_u32(data, w.architecture);
     put_u32(data, uint32_t(count));
     put_u32(data, uint32_t(w.provenance.size()));
-    if (w.hidden_width != 64) {
-        data[7] = std::byte{'2'};
+    if (w.use != ModelUse::Unrestricted || w.hidden_width != 64) {
+        data[7] = std::byte(w.use == ModelUse::Unrestricted ? '2' : '3');
         put_u32(data, w.hidden_width);
+        if (w.use != ModelUse::Unrestricted)
+            put_u32(data, uint32_t(w.use)); // Explicit four-byte little-endian header field.
     }
     for (char c : w.provenance)
         data.push_back(std::byte(c));

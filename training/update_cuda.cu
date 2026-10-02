@@ -270,7 +270,7 @@ __global__ void placement_gradient(const float* y, const uint8_t* labels, const 
         if (joint) {
             bool preferred = label & 4;
             float score = prediction[j * 12], inverse = 1.f / max(1u, state->pairs);
-            if (settings.ranking_only) {
+            if (settings.ranking()) {
                 uint32_t known = 0, best = 0;
                 for (uint32_t k = 0; k < pool; ++k) {
                     const bool valid = (mask[k] & 24) == 24;
@@ -293,8 +293,7 @@ __global__ void placement_gradient(const float* y, const uint8_t* labels, const 
                 }
         }
         for (unsigned h = 0; h < 3; ++h)
-            if ((!settings.ranking_only || h == 0) &&
-                (h ? bool(label & (h == 1 ? 8 : 16)) : joint)) {
+            if ((!settings.ranking() || h == 0) && (h ? bool(label & (h == 1 ? 8 : 16)) : joint)) {
                 float z = prediction[j * 12 + h],
                       inverse = 1.f / max(1u, h ? state->known[h - 1] : state->valid),
                       weight = settings.penalty * inverse / 3;
@@ -311,7 +310,7 @@ __global__ void placement_gradient(const float* y, const uint8_t* labels, const 
                 }
             }
         for (unsigned group = 0; group < 3; ++group)
-            if (!settings.ranking_only && (label & (32u << group))) {
+            if (!settings.ranking() && (label & (32u << group))) {
                 float inverse = 1.f / (max(1u, state->known[group + 2]) * 3.f);
                 for (unsigned k = 0; k < 3; ++k) {
                     unsigned channel = group * 3 + k;

@@ -1,5 +1,6 @@
 #pragma once
 #include "training/compact.hpp"
+#include "training/trainable_scope.hpp"
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -45,15 +46,16 @@ struct AdamParameter {
 };
 struct UpdateSettings {
     float margin{1}, auxiliary{.25f}, penalty{1e-4f}, lr{.001f}, decay{.0001f}, max_norm{1};
-    // Controlled policy-alignment experiment: only output 0 and its last-layer
-    // weights change. The shared trunk and placement outputs remain frozen.
-    bool ranking_only{};
+    TrainableScope scope{TrainableScope::Joint};
+    __host__ __device__ bool ranking() const {
+        return scope != TrainableScope::Joint;
+    }
 };
 // Zero loss weights and a zero ranking margin are valid. Check scalars on the
 // host before capture or a direct launch; NaN can otherwise bypass hinge tests.
 inline void validate_update_settings(const UpdateSettings& settings) {
-    if (!std::isfinite(settings.margin) || settings.margin < 0 ||
-        !std::isfinite(settings.auxiliary) || settings.auxiliary < 0 ||
+    if (settings.scope > TrainableScope::EndpointScorer || !std::isfinite(settings.margin) ||
+        settings.margin < 0 || !std::isfinite(settings.auxiliary) || settings.auxiliary < 0 ||
         !std::isfinite(settings.penalty) || settings.penalty < 0 || !std::isfinite(settings.lr) ||
         settings.lr <= 0 || settings.lr > 1 || !std::isfinite(settings.decay) ||
         settings.decay < 0 || settings.decay > 1 || !std::isfinite(settings.max_norm) ||
@@ -80,6 +82,7 @@ std::array<int32_t, 3> fused_mlp_algorithms(const FusedMlp*);
 // Counter-based sampling has no hidden RNG state. Version 1 is keyed by
 // (seed, completed update, batch lane, hierarchy draw), including rejection draws.
 inline constexpr uint32_t sampler_version = 1, update_checkpoint_version = 2;
+inline constexpr uint32_t endpoint_checkpoint_version = 3;
 inline constexpr uint32_t ranking_loss_version = 2; // Equal weight per sampled state.
 void sample_update(SamplingView, const float*, const uint8_t*, float*, uint8_t*, uint32_t*,
                    UpdateState*, uint32_t, uint32_t, uint32_t, cudaStream_t);

@@ -13,7 +13,8 @@ inline WeightsData blend_ranking(const WeightsData& initial, const WeightsData& 
                                  double fraction) {
     const auto width = initial.hidden_width;
     const auto count = policy_weights(initial.architecture, width);
-    if (initial.architecture != conditioned_placement_schema || !count ||
+    if (initial.use != ModelUse::Unrestricted || trained.use != ModelUse::Unrestricted ||
+        initial.architecture != conditioned_placement_schema || !count ||
         trained.architecture != initial.architecture || trained.hidden_width != width ||
         initial.values.size() != count || trained.values.size() != count ||
         !std::isfinite(fraction) || fraction < 0 || fraction > 1)

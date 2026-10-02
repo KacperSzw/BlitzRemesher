@@ -53,6 +53,28 @@ struct SamplingTables {
         }
     }
 };
+inline void write_update_header(torch::serialize::OutputArchive& archive, TrainableScope scope) {
+    const bool endpoint = scope == TrainableScope::EndpointScorer;
+    archive.write("version", torch::tensor(int64_t(endpoint ? endpoint_checkpoint_version
+                                                            : update_checkpoint_version)));
+    archive.write("sampler", torch::tensor(int64_t(sampler_version)));
+    if (endpoint)
+        archive.write("trainable_scope", torch::tensor(int64_t(scope)));
+    else
+        archive.write("ranking_only", torch::tensor(int64_t(scope == TrainableScope::RankingRow)));
+    archive.write("ranking_loss", torch::tensor(int64_t(
+                                      scope == TrainableScope::Joint ? 0 : ranking_loss_version)));
+}
+inline ModelUse trained_model_use(const ActionNetwork& model, TrainableScope scope) {
+    if (scope == TrainableScope::EndpointScorer) {
+        if (model->architecture != conditioned_placement_schema)
+            throw std::invalid_argument("endpoint scorer requires UV-conditioned v4 architecture");
+        return ModelUse::EndpointReuseOnly;
+    }
+    if (scope == TrainableScope::Joint && model->use == ModelUse::EndpointReuseOnly)
+        throw std::invalid_argument("joint updates cannot train an endpoint scorer");
+    return model->use;
+}
 // All tensors own their storage. Descriptors borrow tensor addresses and must be
 // rebuilt if those addresses change. Loading copies into existing allocations.
 class DeviceAdam {
@@ -70,11 +92,14 @@ class DeviceAdam {
         std::vector<AdamParameter> table;
         if (!device.is_cuda())
             throw std::invalid_argument("device optimizer requires CUDA parameters");
-        if (settings.ranking_only &&
+        if (settings.ranking() &&
             (parameters.size() != 6 || parameters[4].dim() != 2 ||
              parameters[4].size(0) != placement_outputs || parameters[5].dim() != 1 ||
              parameters[5].size(0) != placement_outputs))
-            throw std::invalid_argument("ranking-only optimizer requires a placement MLP");
+            throw std::invalid_argument("ranking optimizer requires a placement MLP");
+        if (settings.scope == TrainableScope::EndpointScorer &&
+            (parameters[0].dim() != 2 || parameters[0].size(1) != placement_features))
+            throw std::invalid_argument("endpoint scorer requires UV-conditioned v4 features");
         size_t parameter_index = 0;
         for (auto& p : parameters) {
             if (p.device() != device || p.scalar_type() != torch::kFloat32 || !p.is_contiguous() ||
@@ -83,11 +108,12 @@ class DeviceAdam {
             p.mutable_grad() = torch::zeros_like(p);
             mean.push_back(torch::zeros_like(p));
             variance.push_back(torch::zeros_like(p));
-            // Descriptors borrow only the trained row. Frozen parameters and
-            // moments never enter norm reduction, weight decay or Adam updates.
-            if (!settings.ranking_only || parameter_index >= 4) {
-                const auto count = uint32_t(
-                    settings.ranking_only ? (parameter_index == 4 ? p.size(1) : 1) : p.numel());
+            // Frozen rows never enter norm reduction, weight decay or Adam.
+            // Endpoint scoring trains the trunk and only the score output row.
+            if (settings.scope != TrainableScope::RankingRow || parameter_index >= 4) {
+                const auto count = uint32_t(settings.ranking() && parameter_index >= 4
+                                                ? (parameter_index == 4 ? p.size(1) : 1)
+                                                : p.numel());
                 table.push_back({p.data_ptr<float>(), p.grad().data_ptr<float>(),
                                  mean.back().data_ptr<float>(), variance.back().data_ptr<float>(),
                                  count, total});
@@ -149,11 +175,7 @@ class DeviceAdam {
         control.copy_(saved[i]);
     }
     void save(torch::serialize::OutputArchive& archive) {
-        archive.write("version", torch::tensor(int64_t(update_checkpoint_version)));
-        archive.write("sampler", torch::tensor(int64_t(sampler_version)));
-        archive.write("ranking_only", torch::tensor(int64_t(settings.ranking_only)));
-        archive.write("ranking_loss",
-                      torch::tensor(int64_t(settings.ranking_only ? ranking_loss_version : 0)));
+        write_update_header(archive, settings.scope);
         archive.write("control", control);
         for (size_t i = 0; i < mean.size(); ++i) {
             archive.write("mean" + std::to_string(i), mean[i]);
@@ -164,14 +186,26 @@ class DeviceAdam {
         torch::Tensor v, s;
         archive.read("version", v);
         archive.read("sampler", s);
-        if (v.item<int64_t>() != update_checkpoint_version || s.item<int64_t>() != sampler_version)
+        const auto version = v.item<int64_t>();
+        if ((version != update_checkpoint_version && version != endpoint_checkpoint_version) ||
+            s.item<int64_t>() != sampler_version)
             throw std::invalid_argument("incompatible device optimizer checkpoint");
         torch::Tensor scope;
-        const auto ranking_only =
-            archive.try_read("ranking_only", scope) ? scope.item<int64_t>() : 0;
-        if (ranking_only != int64_t(settings.ranking_only))
+        TrainableScope stored;
+        if (version == endpoint_checkpoint_version) {
+            archive.read("trainable_scope", scope);
+            if (scope.item<int64_t>() != int64_t(TrainableScope::EndpointScorer))
+                throw std::invalid_argument("invalid endpoint optimizer scope");
+            stored = TrainableScope::EndpointScorer;
+        } else {
+            const auto row = archive.try_read("ranking_only", scope) ? scope.item<int64_t>() : 0;
+            if (row != 0 && row != 1)
+                throw std::invalid_argument("invalid legacy optimizer scope");
+            stored = row ? TrainableScope::RankingRow : TrainableScope::Joint;
+        }
+        if (stored != settings.scope)
             throw std::invalid_argument("optimizer trainable scope changed");
-        if (settings.ranking_only) {
+        if (settings.ranking()) {
             torch::Tensor loss_version;
             const auto version =
                 archive.try_read("ranking_loss", loss_version) ? loss_version.item<int64_t>() : 1;
@@ -228,6 +262,7 @@ class ActionUpdate {
           placements_(std::move(placements)), batch_(batch),
           width_(policy_inputs(model->architecture)), outputs_(policy_outputs(model->architecture)),
           optimizer(model->parameters(), settings) {
+        const auto model_use = trained_model_use(model_, settings.scope);
         if (!batch || batch > 4096 || x_.dim() != 3 || x_.size(0) < 1 ||
             x_.size(1) != action_pool ||
             x_.size(2) != (flags_.defined() ? packed_width(width_) : width_) ||
@@ -266,6 +301,7 @@ class ActionUpdate {
         ids = torch::zeros({batch}, x_.options().dtype(torch::kInt32));
         losses_ = torch::empty({batch}, x_.options());
         derivative_ = torch::zeros({batch, action_pool, outputs_}, x_.options());
+        model_->use = model_use;
     }
     void eager() {
         auto stream = c10::cuda::getCurrentCUDAStream();

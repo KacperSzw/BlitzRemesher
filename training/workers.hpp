@@ -43,6 +43,7 @@ class TeacherWorkers {
     std::exception_ptr worker_error_;
     const float* weights_{};
     size_t weight_count_{};
+    ModelUse policy_use_{ModelUse::Unrestricted};
     cudaEvent_t policy_ready_{};
     uint64_t wave_{};
     const std::chrono::steady_clock::time_point origin_{std::chrono::steady_clock::now()};
@@ -103,7 +104,7 @@ class TeacherWorkers {
                     try {
                         if (installed != wave) {
                             gpu::check(cudaStreamWaitEvent(stream.value, policy_ready_));
-                            policy.refresh_device(weights_, weight_count_);
+                            policy.refresh_device(weights_, weight_count_, policy_use_);
                             installed = wave;
                         }
                         gpu::check(cudaEventCreate(&begin));
@@ -266,12 +267,13 @@ class TeacherWorkers {
         retirement_.join(threads_);
         teardown_trace("workers.shutdown", this, "end");
     }
-    void wave(const float* weights, size_t count, cudaEvent_t ready) {
+    void wave(const float* weights, size_t count, cudaEvent_t ready, ModelUse use) {
         std::lock_guard lock(mutex_);
         if (in_flight_)
             throw std::logic_error("policy changed while teacher jobs still borrow it");
         weights_ = weights;
         weight_count_ = count;
+        policy_use_ = use;
         policy_ready_ = ready;
         ++wave_;
     }

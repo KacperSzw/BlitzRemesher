@@ -182,13 +182,15 @@ struct ActionCuda::Impl {
     Device device;
     Buffer<float> weights, input, a, b, output;
     uint32_t batch, architecture, hidden_width;
+    ModelUse use;
     int id;
     Impl(const WeightsData& w, const NeuralOptions& options, uint32_t count)
         : device(options), weights(device, w.values.size()),
           input(device, size_t(count) * policy_inputs(w.architecture)),
           a(device, size_t(count) * w.hidden_width), b(device, size_t(count) * w.hidden_width),
           output(device, size_t(count) * policy_outputs(w.architecture)), batch(count),
-          architecture(w.architecture), hidden_width(w.hidden_width), id(options.device) {
+          architecture(w.architecture), hidden_width(w.hidden_width), use(w.use),
+          id(options.device) {
         weights.upload(w.values);
         check(cudaSetDevice(device.previous));
     }
@@ -217,14 +219,19 @@ ActionCuda::~ActionCuda() {
 uint32_t ActionCuda::architecture() const {
     return impl_->architecture;
 }
-void ActionCuda::refresh_device(const float* weights, size_t count) {
+ModelUse ActionCuda::model_use() const {
+    return impl_->use;
+}
+void ActionCuda::refresh_device(const float* weights, size_t count, ModelUse use) {
     auto& p = *impl_;
-    if (!weights || count != p.weights.n)
+    if (!weights || count != p.weights.n || use > ModelUse::EndpointReuseOnly ||
+        (use == ModelUse::EndpointReuseOnly && p.architecture != conditioned_placement_schema))
         throw std::invalid_argument("resident inference weight layout");
     NeuralOptions options;
     options.device = p.id;
     Device guard(options);
     check(gpu::copy(p.weights.p, weights, count * sizeof(float), cudaMemcpyDeviceToDevice));
+    p.use = use;
 }
 void ActionCuda::predict_device(const float* input, float* output, uint32_t rows) {
     auto& p = *impl_;

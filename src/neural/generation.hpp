@@ -22,5 +22,5 @@ using ExecutionObserver = std::function<void(const ActionRequest&, const ActionT
 // Internal entry for native teachers; the public generator supplies no observer.
 Result generate_observed(MeshView, const Settings&, const WeightsData&, const NeuralOptions&,
                          const ActionObserver&, NeuralStats* = nullptr,
-                         const ExecutionObserver& = {});
+                         const ExecutionObserver& = {}, const RankingSupport* = nullptr);
 } // namespace blitz::neural

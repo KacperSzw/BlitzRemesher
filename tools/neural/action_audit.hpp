@@ -32,6 +32,9 @@ inline void audit_actions(const fs::path& manifest_path, const fs::path& initial
     if (initial_weights.architecture != conditioned_placement_schema ||
         final_weights.architecture != conditioned_placement_schema)
         throw std::invalid_argument("action audit requires two v4 models");
+    if (initial_weights.use != ModelUse::Unrestricted ||
+        final_weights.use != ModelUse::Unrestricted)
+        throw std::invalid_argument("free-placement audit requires unrestricted models");
     std::set<std::string> identities;
     for (const auto& asset : manifest.at("assets")) {
         if (asset.at("split") != "development" ||

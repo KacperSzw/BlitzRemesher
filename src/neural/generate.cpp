@@ -127,9 +127,15 @@ Result generate_neural(MeshView source, const Settings& settings, const NeuralMo
 Result neural::generate_observed(MeshView source, const Settings& settings,
                                  const WeightsData& weights, const NeuralOptions& options,
                                  const ActionObserver& observer, NeuralStats* stats,
-                                 const ExecutionObserver& execution) {
+                                 const ExecutionObserver& execution,
+                                 const RankingSupport* support) {
     if (stats)
         *stats = {};
+    neural::validate_model_output(weights, settings.research.output);
+    if (support && (settings.research.output != OutputMode::Reuse || options.action_batch != 1 ||
+                    options.ranking != NeuralRanking::Learned ||
+                    weights.architecture != neural::conditioned_placement_schema))
+        throw std::invalid_argument("ranking support requires sequential v4 learned reuse");
 #ifndef BLITZ_CUDA
     (void)source;
     (void)settings;
@@ -137,6 +143,7 @@ Result neural::generate_observed(MeshView source, const Settings& settings,
     (void)options;
     (void)observer;
     (void)execution;
+    (void)support;
     throw NeuralUnavailable("neural mode was not built");
 #else
     if (auto e = validate(source); !e.empty())
@@ -342,17 +349,17 @@ Result neural::generate_observed(MeshView source, const Settings& settings,
                 }
                 auto* state = owner.get();
                 state->reset();
-                auto evaluate_device = [&](MeshView reference, neural::DeviceMeshView candidate,
-                                           const EvalSettings& config) {
+                auto certify_device = [&](MeshView reference, neural::DeviceMeshView candidate,
+                                          const EvalSettings& config) {
                     auto t = Clock::now();
                     auto bounded = config;
                     bounded.max_supersample = neural::bounded_refinement(config);
                     if (bounded.max_supersample < config.max_supersample)
                         ++counters.bounded_audits;
-                    auto result = audit.evaluate(reference, candidate, bounds, bounded, &counters);
+                    auto result = audit.certify(reference, candidate, bounds, bounded, &counters);
                     resource |= result.resource_limited;
                     counters.gpu_audit_ns += nanos(t);
-                    return result;
+                    return result.verdict == neural::AuditVerdict::Pass;
                 };
                 uint8_t failed_gate = 0;
                 auto gate = [&](neural::DeviceMeshView candidate) {
@@ -365,20 +372,16 @@ Result neural::generate_observed(MeshView source, const Settings& settings,
                     // Search cameras differ from audit cameras; an audit-only
                     // commit can poison every subsequent reduction in a proposal.
                     failed_gate = 1;
-                    auto x = evaluate_device(fixed_source, candidate, source_search);
-                    if (!x.complete || !x.passed)
+                    if (!certify_device(fixed_source, candidate, source_search))
                         return false;
                     failed_gate = 2;
-                    auto y = evaluate_device(previous, candidate, adjacent_search);
-                    if (!y.complete || !y.passed)
+                    if (!certify_device(previous, candidate, adjacent_search))
                         return false;
                     failed_gate = 3;
-                    auto a = evaluate_device(fixed_source, candidate, source_eval);
-                    if (!a.complete || !a.passed)
+                    if (!certify_device(fixed_source, candidate, source_eval))
                         return false;
                     failed_gate = 4;
-                    auto b = evaluate_device(previous, candidate, adjacent_eval);
-                    if (!b.complete || !b.passed)
+                    if (!certify_device(previous, candidate, adjacent_eval))
                         return false;
                     failed_gate = 0;
                     return true;
@@ -415,7 +418,7 @@ Result neural::generate_observed(MeshView source, const Settings& settings,
                     candidate = state->execute(
                         condition, rs.target_triangles, options.action_trials, action_network.get(),
                         options.ranking, options.ranking_seed, options.action_batch, gate, &stats,
-                        s.cancelled, observe, trace);
+                        s.cancelled, observe, trace, support);
                 }
             } catch (const neural::gpu::ResourceError&) {
                 diagnostic.stop_reason = NeuralActionStop::Resource;

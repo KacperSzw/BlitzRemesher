@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { comparePolicyRanking } from '../scripts/neural/policy-ranking-quality.mjs';
 import { rankingSupport } from '../scripts/neural/policy-ranking-support.mjs';
+import { evaluateSequentialPilot } from '../scripts/neural/sequential-pilot.mjs';
 
 test('teacher support retains absent UV modes and reports sampler-weighted pair imbalance', () => {
   const shard = (asset, category, preserve_uv, n, preferred) => ({
@@ -129,5 +130,91 @@ test('both audits require finite measurements within test-owned pixel and area l
         change(bad.rows[1].lods[2][reference]);
         assert.throws(() => comparePolicyRanking(before, bad));
       }
+  }
+});
+
+function pilotFixture(minimum = 0.1, maximum = 0.02, sourceLimit = 200) {
+  const gate = {
+    version: 1,
+    seeds: [17, 29],
+    uv_modes: [true, false],
+    minimum_relative_retained_improvement: minimum,
+    maximum_relative_per_lod_increase: maximum,
+  };
+  const manifest = { assets: [{ id: 'a', category: 'rocks' }] };
+  const prepare = (counts, preserve_uv, model) => {
+    const result = audit(counts);
+    result.model_sha256 = String(model).repeat(64);
+    Object.assign(result.execution_settings, {
+      action_batch: 1,
+      preserve_uv,
+      source_preparation: {
+        algorithm: 'quadric-coupled-rebuild-merged-v1',
+        maximum_triangles: sourceLimit,
+      },
+    });
+    for (const row of result.rows)
+      row.prepared_source = { triangles: 100, parent_triangles: 1000, sha256: 'f'.repeat(64) };
+    return result;
+  };
+  const audits = gate.seeds.flatMap((seed, i) =>
+    gate.uv_modes.map((preserve_uv) => ({
+      seed,
+      preserve_uv,
+      before: prepare([80, 60], preserve_uv, 'a'),
+      after: prepare([64, 40], preserve_uv, i ? 'c' : 'b'),
+    })),
+  );
+  return { gate, manifest, audits };
+}
+
+test('small-source gate requires every seed and UV mode with stable model identities', () => {
+  const { gate, manifest, audits } = pilotFixture();
+  assert.equal(evaluateSequentialPilot(gate, manifest, audits).passed, true);
+  for (const matrix of [audits.slice(1), [...audits.slice(1), audits[1]]])
+    assert.throws(() => evaluateSequentialPilot(gate, manifest, matrix), /Incomplete|Duplicate/);
+  for (const [index, side] of [
+    [1, 'after'],
+    [2, 'before'],
+  ]) {
+    const changed = structuredClone(audits);
+    changed[index][side].model_sha256 = 'd'.repeat(64);
+    assert.throws(() => evaluateSequentialPilot(gate, manifest, changed), /model changed/);
+  }
+});
+
+test('small-source gate retains per-LOD regressions and failed seeds despite aggregate gains', () => {
+  for (const [minimum, maximum] of [
+    [0.08, 0.02],
+    [0.2, 0.05],
+  ]) {
+    const { gate, manifest, audits } = pilotFixture(minimum, maximum);
+    audits[0].after.rows[1].lods[1].triangles = 88;
+    audits[0].after.rows[1].lods[2].triangles = 10;
+    const result = evaluateSequentialPilot(gate, manifest, audits);
+    assert.equal(result.complete, true);
+    assert.equal(result.passed, false);
+    assert.equal(result.score, null);
+    assert.ok(result.comparisons[0].relative_retained_improvement > minimum);
+    assert.ok(result.comparisons[0].worst_relative_lod_increase > maximum);
+  }
+});
+
+test('small-source gate rejects altered source domains, UV modes and work settings', () => {
+  for (const sourceLimit of [128, 256]) {
+    const { gate, manifest, audits } = pilotFixture(0.1, 0.02, sourceLimit);
+    for (const change of [
+      (a) => (a.expected_assets[0].id = 'other'),
+      (a) => (a.execution_settings.preserve_uv = false),
+      (a) => (a.execution_settings.action_batch = 2),
+      (a) => (a.execution_settings.source_preparation.maximum_triangles = 50),
+      (a) => (a.rows[1].prepared_source.sha256 = ''),
+      (a) => (a.rows[1].prepared_source.triangles = 99),
+      (a) => (a.complete = false),
+    ]) {
+      const changed = structuredClone(audits);
+      change(changed[0].after);
+      assert.throws(() => evaluateSequentialPilot(gate, manifest, changed));
+    }
   }
 });

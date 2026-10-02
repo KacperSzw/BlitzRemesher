@@ -6,6 +6,27 @@
 #include <system_error>
 #include <unistd.h>
 namespace blitz::neural::training {
+inline ModelUse checkpoint_model_use(torch::serialize::InputArchive& all) {
+    torch::serialize::InputArchive optimizer;
+    all.read("optimizer", optimizer);
+    torch::Tensor version, scope, use;
+    optimizer.read("version", version);
+    const auto v = version.item<int64_t>();
+    if (v != update_checkpoint_version && v != endpoint_checkpoint_version)
+        throw std::invalid_argument("unsupported model checkpoint optimizer version");
+    const bool endpoint = v == endpoint_checkpoint_version;
+    if (endpoint) {
+        optimizer.read("trainable_scope", scope);
+        if (scope.item<int64_t>() != int64_t(TrainableScope::EndpointScorer))
+            throw std::invalid_argument("invalid endpoint checkpoint scope");
+    }
+    if (!all.try_read("model_use", use))
+        return endpoint ? ModelUse::EndpointReuseOnly : ModelUse::Unrestricted;
+    const auto value = use.item<int64_t>();
+    if (value < 0 || value > int64_t(ModelUse::EndpointReuseOnly) || (endpoint && value != 1))
+        throw std::invalid_argument("invalid checkpoint model use");
+    return ModelUse(value);
+}
 inline void restore_model(torch::serialize::InputArchive& archive, ActionNetwork& model,
                           torch::Device device) {
     ActionNetwork restored(model->architecture, model->hidden_width);
@@ -23,8 +44,10 @@ inline void load_checkpoint_model(const fs::path& path, ActionNetwork& model,
                                   torch::Device device) {
     torch::serialize::InputArchive all, m;
     all.load_from(path.string(), device);
+    const auto use = checkpoint_model_use(all);
     all.read("model", m);
     restore_model(m, model, device);
+    model->use = use;
 }
 inline void save_state(const fs::path& path, ActionNetwork& model, DeviceAdam& optimizer,
                        uint64_t step) {
@@ -33,6 +56,8 @@ inline void save_state(const fs::path& path, ActionNetwork& model, DeviceAdam& o
     optimizer.save(o);
     all.write("model", m);
     all.write("optimizer", o);
+    all.write("model_use",
+              torch::tensor(int64_t(trained_model_use(model, optimizer.settings.scope))));
     all.write("step", torch::tensor(int64_t(step)));
     auto temp = path;
     temp += ".part";
@@ -43,10 +68,16 @@ inline uint64_t load_state(const fs::path& path, ActionNetwork& model, DeviceAda
                            torch::Device device) {
     torch::serialize::InputArchive all, m, o;
     all.load_from(path.string(), device);
+    const auto use = checkpoint_model_use(all);
+    if ((optimizer.settings.scope == TrainableScope::Joint && use == ModelUse::EndpointReuseOnly) ||
+        (optimizer.settings.scope == TrainableScope::EndpointScorer &&
+         use != ModelUse::EndpointReuseOnly))
+        throw std::invalid_argument("checkpoint model use differs from update scope");
     all.read("model", m);
     all.read("optimizer", o);
     restore_model(m, model, device);
     optimizer.load(o);
+    model->use = use;
     torch::Tensor step;
     all.read("step", step);
     auto n = step.item<int64_t>();
@@ -125,6 +156,7 @@ class CheckpointWriter {
         auto began = std::chrono::steady_clock::now();
         torch::NoGradGuard guard;
         ActionNetwork frozen(model->architecture, model->hidden_width);
+        frozen->use = trained_model_use(model, optimizer.settings.scope);
         auto source = model->parameters(), target = frozen->parameters();
         for (size_t i = 0; i < source.size(); ++i)
             target[i].copy_(source[i].detach().cpu());
@@ -152,7 +184,7 @@ class CheckpointWriter {
             [path, local, hook, ready, frozen = std::move(frozen), control = std::move(control),
              mean = std::move(mean), variance = std::move(variance), step, provenance,
              input = std::move(input), expected = std::move(expected), native = std::move(native),
-             ranking_only = optimizer.settings.ranking_only, journal_path = std::move(journal_path),
+             scope = optimizer.settings.scope, journal_path = std::move(journal_path),
              journal = std::move(journal)]() mutable -> json {
                 try {
                     auto start = std::chrono::steady_clock::now();
@@ -160,11 +192,7 @@ class CheckpointWriter {
                     fs::create_directories(local);
                     torch::serialize::OutputArchive all, m, o;
                     frozen->save(m);
-                    o.write("version", torch::tensor(int64_t(update_checkpoint_version)));
-                    o.write("sampler", torch::tensor(int64_t(sampler_version)));
-                    o.write("ranking_only", torch::tensor(int64_t(ranking_only)));
-                    o.write("ranking_loss",
-                            torch::tensor(int64_t(ranking_only ? ranking_loss_version : 0)));
+                    write_update_header(o, scope);
                     o.write("control", control);
                     for (size_t i = 0; i < mean.size(); ++i) {
                         o.write("mean" + std::to_string(i), mean[i]);
@@ -172,6 +200,7 @@ class CheckpointWriter {
                     }
                     all.write("model", m);
                     all.write("optimizer", o);
+                    all.write("model_use", torch::tensor(int64_t(frozen->use)));
                     all.write("step", torch::tensor(int64_t(step)));
                     all.save_to((local / "checkpoint.pt.part").string());
                     fs::rename(local / "checkpoint.pt.part", local / "checkpoint.pt");

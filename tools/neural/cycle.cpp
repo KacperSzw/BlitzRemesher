@@ -457,7 +457,8 @@ int main(int argc, char** argv) {
                 torch::from_blob(w.values.data(), {int64_t(w.values.size())}, torch::kFloat32)
                     .to(device);
             cuda_check(cudaEventRecord(policy_ready.value, learner.current_stream()));
-            teachers.wave(frozen_policy.data_ptr<float>(), w.values.size(), policy_ready.value);
+            teachers.wave(frozen_policy.data_ptr<float>(), w.values.size(), policy_ready.value,
+                          w.use);
             for (const auto& descriptor : wave.at("jobs")) {
                 auto id = descriptor.at("id").get<uint32_t>();
                 if (id < iteration || (id == iteration && !report["active_training"].is_null()))

@@ -4,7 +4,9 @@
 #include "tools/neural/audit_settings.hpp"
 #include "training/data.hpp"
 #include "training/json.hpp"
+#include "training/mesh_cache.hpp"
 #include <set>
+#include <sstream>
 namespace blitz::neural::training {
 inline void audit_model(const fs::path& manifest_path, const fs::path& model_path,
                         const fs::path& settings_path, const fs::path& output) {
@@ -13,6 +15,33 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
     auto manifest = read_json(manifest_path), config = read_json(settings_path);
     const bool trace_execution = config.value("trace_execution", false);
     config.erase("trace_execution");
+    const auto support_config = config.value("ranking_support", json());
+    config.erase("ranking_support");
+    fs::path collector_path;
+    uint32_t support_seed = 101;
+    if (!support_config.is_null()) {
+        if (!support_config.is_object() || support_config.size() != 3 ||
+            !support_config.contains("collector") || !support_config.at("collector").is_string() ||
+            support_config.value("pool", 0) != 16 || !support_config.contains("seed") ||
+            !support_config.at("seed").is_number_unsigned() ||
+            support_config.at("seed").get<uint64_t>() > UINT32_MAX)
+            throw std::invalid_argument("ranking support requires collector, pool 16 and u32 seed");
+        collector_path = support_config.at("collector").get<std::string>();
+        support_seed = support_config.at("seed").get<uint32_t>();
+    }
+    const auto preparation = config.value("source_preparation", json());
+    config.erase("source_preparation");
+    uint32_t source_limit = 0;
+    if (!preparation.is_null()) {
+        if (!preparation.is_object() || preparation.size() != 1 ||
+            !preparation.contains("maximum_triangles") ||
+            !preparation.at("maximum_triangles").is_number_unsigned())
+            throw std::invalid_argument("source preparation requires maximum_triangles");
+        const auto limit = preparation.at("maximum_triangles").get<uint64_t>();
+        if (limit < 4 || limit > UINT32_MAX)
+            throw std::invalid_argument("source preparation triangle limit outside [4,u32]");
+        source_limit = uint32_t(limit);
+    }
     std::vector<NeuralRanking> rankings{NeuralRanking::Constant, NeuralRanking::Learned};
     if (auto it = config.find("audit_rankings"); it != config.end()) {
         if (!it->is_array() || it->empty())
@@ -38,6 +67,16 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
     execution.erase("ranking");
     execution["audit_rankings"] = json::array();
     execution["trace_execution"] = trace_execution;
+    if (!collector_path.empty())
+        execution["ranking_support"] = {{"collector_sha256", file_sha256(collector_path)},
+                                        {"pool", 16},
+                                        {"seed", support_seed},
+                                        {"selection", "frozen collector PolicyMixed"}};
+    if (source_limit)
+        execution["source_preparation"] = {
+            {"algorithm", "quadric-coupled-rebuild-merged-v1"},
+            {"maximum_triangles", source_limit},
+            {"reference", "derived mesh is the new LOD0; no parent fidelity claim"}};
     for (auto ranking : rankings)
         execution["audit_rankings"].push_back(ranking_name(ranking));
     auto hash = [](const json& value) {
@@ -73,6 +112,12 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
     gpu::StreamScope stream;
     MemoryScope memory(options);
     AuditSession session(options);
+    std::unique_ptr<ActionCuda> collector;
+    if (!collector_path.empty())
+        collector = std::make_unique<ActionCuda>(load_weights(collector_path), options);
+    const fs::path sources_directory = output.string() + ".sources";
+    if (source_limit && !fs::create_directory(sources_directory))
+        throw std::invalid_argument("model audit source directory exists");
     for (const auto& asset : manifest.at("assets")) {
         if (asset.at("split") != "development" && asset.at("split") != "validation")
             throw std::invalid_argument("model comparison cannot tune on release holdout");
@@ -80,11 +125,59 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
             if (f.at("sha256") != file_sha256(f.at("path").get<std::string>()))
                 throw std::invalid_argument("model audit source changed");
         auto mesh = load_mesh(asset.at("path").get<std::string>());
+        json prepared;
+        if (source_limit) {
+            const auto parent_triangles = mesh.view().triangles();
+            if (parent_triangles > source_limit) {
+                ReduceSettings reduction;
+                reduction.target_triangles = source_limit;
+                reduction.output = OutputMode::Rebuild;
+                reduction.coupled_wedges = true;
+                reduction.merge_wedges = true;
+                const auto reduced = reduce(mesh.view(), reduction);
+                mesh = copy_mesh(reduced.view(mesh.view()));
+                compact(mesh);
+            }
+            // The prepared FP32 streams are explicit test inputs, never an
+            // audited output of the parent or an implicit replacement for it.
+            const auto reference =
+                sources_directory /
+                (std::to_string(report["rows"].size() / rankings.size()) + ".bin");
+            std::ofstream stream(reference, std::ios::binary);
+            write_reference(stream, mesh);
+            stream.close();
+            if (!stream)
+                throw std::runtime_error("model audit source write failed");
+            prepared = {{"parent_triangles", parent_triangles},
+                        {"triangles", mesh.view().triangles()},
+                        {"sha256", file_sha256(reference)}};
+            report["prepared_sources"].push_back({{"asset", asset.at("id")},
+                                                  {"reference", reference.string()},
+                                                  {"source", prepared}});
+            write_json(output, report);
+            if (!mesh.view().triangles() || mesh.view().triangles() > source_limit)
+                throw std::runtime_error("pilot source did not reach its frozen size limit");
+        }
         for (auto ranking : rankings) {
             options.ranking = ranking;
             NeuralModel model(model_path.c_str(), options);
             NeuralStats stats;
-            json row, trace = json::array();
+            json row, trace = json::array(), support_trace = json::array();
+            std::optional<RankingSupport> support;
+            if (collector && ranking == NeuralRanking::Learned)
+                support.emplace(RankingSupport{
+                    *collector,
+                    [&](const SupportedRanking& value) {
+                        const auto action = [](Action a) { return json{a.from, a.to, a.revision}; };
+                        support_trace.push_back({{"global_top_action", action(value.global)},
+                                                 {"global_top_score", value.global_score},
+                                                 {"support_top_action", action(value.supported)},
+                                                 {"support_top_score", value.supported_score},
+                                                 {"global_top_in_support", value.global_in_support},
+                                                 {"pool", value.pool},
+                                                 {"seed", value.seed}});
+                    },
+                    support_seed});
             ExecutionObserver observe;
             if (trace_execution)
                 observe = [&](const ActionRequest& request, const ActionTrial& trial,
@@ -111,12 +204,19 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
             auto began = std::chrono::steady_clock::now();
             memory.budget.peak.store(memory.budget.live.load());
             try {
-                auto result =
-                    trace_execution
-                        ? generate_observed(mesh.view(), settings, load_weights(model_path),
-                                            options, {}, &stats, observe)
-                        : generate_neural(mesh.view(), settings, model, &stats);
+                auto result = trace_execution || support
+                                  ? generate_observed(mesh.view(), settings,
+                                                      load_weights(model_path), options, {}, &stats,
+                                                      observe, support ? &*support : nullptr)
+                                  : generate_neural(mesh.view(), settings, model, &stats);
                 row = result_json(result);
+                if (trace_execution)
+                    for (size_t i = 0; i < result.lods.size(); ++i) {
+                        std::ostringstream bytes(std::ios::out | std::ios::binary);
+                        write_reference(bytes, copy_mesh(result.lods[i].view(mesh.view())));
+                        const auto data = bytes.str();
+                        row["lods"][i]["mesh_sha256"] = sha256(std::as_bytes(std::span(data)));
+                    }
                 if (result.status != Status::Complete || stats.resource_failures ||
                     stats.confirmation_nonfinite || stats.confirmation_cancelled)
                     complete = false;
@@ -134,12 +234,16 @@ inline void audit_model(const fs::path& manifest_path, const fs::path& model_pat
             row["asset"] = asset.at("id");
             row["category"] = asset.at("category");
             row["ranking"] = ranking_name(ranking);
+            if (source_limit)
+                row["prepared_source"] = prepared;
             row["seconds"] =
                 std::chrono::duration<double>(std::chrono::steady_clock::now() - began).count();
             row["gpu_workspace_peak_bytes"] = memory.budget.peak.load();
             row["neural"] = neural_json(stats);
             if (trace_execution)
                 row["execution_trace"] = std::move(trace);
+            if (support)
+                row["supported_rankings"] = std::move(support_trace);
             report["rows"].push_back(row);
             write_json(output, report);
         }

@@ -11,6 +11,20 @@ struct ActionTrial {
     bool geometry_valid, accepted;
 };
 using ActionTrialObserver = std::function<void(const ActionTrial&)>;
+struct SupportedRanking {
+    Action global, supported;
+    float global_score{}, supported_score{};
+    uint32_t seed{};
+    uint8_t pool{};
+    bool global_in_support{};
+};
+// Diagnostic only: the frozen collector constructs the same mixed action pool
+// as teaching. It never supplies labels or a visual acceptance decision.
+struct RankingSupport {
+    ActionCuda& collector;
+    std::function<void(const SupportedRanking&)> observe;
+    uint32_t seed{101};
+};
 // CPU readback methods are reference-test/export boundaries. Mesh topology,
 // features, legality and all intermediate action records live on the device.
 class GpuActionState {
@@ -58,6 +72,6 @@ class GpuActionState {
                 const std::function<bool(DeviceMeshView)>& gate, ActionStats*,
                 const std::function<bool()>& cancelled = {},
                 const std::function<void(GpuActionState&)>& observe = {},
-                const ActionTrialObserver& trace = {});
+                const ActionTrialObserver& trace = {}, const RankingSupport* support = nullptr);
 };
 } // namespace blitz::neural

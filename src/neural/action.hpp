@@ -75,8 +75,9 @@ class ActionCuda {
     void predict_device(const float* input, float* output, uint32_t rows);
     // Borrowed contiguous CUDA weights, same layout as WeightsData. The copy is
     // queued on the owning worker stream; callers establish cross-stream events.
-    void refresh_device(const float* weights, size_t count);
+    void refresh_device(const float* weights, size_t count, ModelUse);
     uint32_t architecture() const;
+    ModelUse model_use() const;
     ActionCuda(const ActionCuda&) = delete;
     ActionCuda& operator=(const ActionCuda&) = delete;
 

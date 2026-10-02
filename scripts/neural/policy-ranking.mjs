@@ -22,6 +22,11 @@ export async function runPolicyRanking(configPath, directory) {
   if (fs.existsSync(directory)) throw Error('Choose a fresh policy-ranking experiment directory');
   if (config.version !== 1 || !config.training_assets.length || !config.seeds.length)
     throw Error('Invalid policy-ranking experiment configuration');
+  const objective = config.objective ?? 'policy-ranking';
+  if (!['policy-ranking', 'endpoint-ranking'].includes(objective))
+    throw Error('Invalid ranking objective');
+  if (objective === 'endpoint-ranking' && config.rank_fraction !== undefined)
+    throw Error('Endpoint scorer cannot use ranking-row blending');
   if (
     config.rank_fraction !== undefined &&
     (!Number.isFinite(config.rank_fraction) || config.rank_fraction < 0 || config.rank_fraction > 1)
@@ -288,6 +293,19 @@ export async function runPolicyRanking(configPath, directory) {
           index.geometry_rejected_sha256 !== hash(path.join(output, 'geometry-rejected.bin'))
         )
           throw Error('Unverified reused policy teacher data: ' + name);
+        if (
+          objective === 'endpoint-ranking' &&
+          (read(path.join(output, 'contract.json')).teacher_target !== 'runtime-endpoint-v3' ||
+            index.verification?.same_meshes_and_errors !== true ||
+            index.verification?.same_action_counts !== true ||
+            index.verification?.same_trajectory_iterations !== true ||
+            index.verification?.unknown_observation !== false ||
+            index.requests_sha256 !== hash(path.join(output, 'requests.json')) ||
+            index.trajectory_sha256 !== hash(path.join(output, 'trajectory.json')) ||
+            index.source_augmentation?.reference_sha256 !==
+              hash(path.join(output, 'source-reference.bin')))
+        )
+          throw Error('Unverified reused endpoint trajectory: ' + name);
         report.data.push({ name, index_sha256: hash(path.join(output, 'index.json')), index });
       }
       persist();
@@ -316,7 +334,7 @@ export async function runPolicyRanking(configPath, directory) {
           dataRoot,
           output,
           '--objective',
-          'policy-ranking',
+          objective,
           '--initialize',
           config.initial_model,
           '--steps',
@@ -335,7 +353,11 @@ export async function runPolicyRanking(configPath, directory) {
       const latest = read(path.join(output, 'latest.json'));
       if (
         !latest.complete ||
-        !latest.placement_policy_frozen ||
+        (objective === 'endpoint-ranking'
+          ? latest.placement_policy_frozen !== false ||
+            latest.trainable_scope !== 'endpoint-scorer' ||
+            latest.rebuild_compatible !== false
+          : !latest.placement_policy_frozen) ||
         !latest.optimizer_restored ||
         !latest.finite ||
         latest.model_sha256 !== hash(path.join(output, latest.model))

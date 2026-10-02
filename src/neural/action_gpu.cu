@@ -864,13 +864,13 @@ __global__ void shuffle_scores(State* state, float* scores, uint32_t seed) {
 }
 __global__ void select_batch(State* state, TopologyView t, const Edit* edits, const uint32_t* order,
                              uint32_t* selected, uint8_t* used, uint32_t vertices, uint32_t target,
-                             uint8_t maximum) {
+                             uint8_t maximum, uint32_t ranked_count) {
     state->selected = 0;
     state->accepted_trial = 0;
     for (uint32_t v = 0; v < vertices; ++v)
         used[v] = 0;
     uint32_t remaining = state->faces > target ? state->faces - target : 0;
-    for (uint32_t k = state->position; k < state->actions && remaining; ++k) {
+    for (uint32_t k = state->position; k < ranked_count && remaining; ++k) {
         auto i = order[k];
         auto e = edits[i];
         if (e.removed > remaining)
@@ -1268,6 +1268,38 @@ __global__ void teacher_records(const State* state, const Edit* edits, const uin
         return;
     auto id = selected[i];
     actions[i] = {edits[id].from, edits[id].to, state->revision};
+}
+// The sorted global scores are diagnostic; only collector-supported action IDs
+// remain selectable. Read the complete order before overwriting its prefix.
+__global__ void restrict_ranking(State* state, const Edit* edits, uint32_t* order,
+                                 const float* scores, const Action* support, uint32_t count,
+                                 uint32_t seed, SupportedRanking* result) {
+    uint32_t selected[16], used = 0;
+    const auto first = order[0];
+    result->global = {edits[first].from, edits[first].to, state->revision};
+    result->global_score = scores[0];
+    result->seed = seed;
+    result->pool = uint8_t(count);
+    result->global_in_support = false;
+    for (uint32_t i = 0; i < state->actions && used < count; ++i) {
+        const auto id = order[i];
+        for (uint32_t j = 0; j < count; ++j)
+            if (support[j].revision == state->revision && support[j].from == edits[id].from &&
+                support[j].to == edits[id].to) {
+                selected[used++] = id;
+                result->global_in_support |= i == 0;
+                if (used == 1) {
+                    result->supported = {edits[id].from, edits[id].to, state->revision};
+                    result->supported_score = scores[i];
+                }
+                break;
+            }
+    }
+    if (used != count)
+        state->error = 1;
+    else
+        for (uint32_t i = 0; i < count; ++i)
+            order[i] = selected[i];
 }
 __global__ void teacher_placements(DeviceMeshView m, TopologyView topology, const Edit* edits,
                                    const uint32_t* selected, GpuActionState::Proposal* proposals,
@@ -1917,12 +1949,21 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
                             uint8_t batch, const std::function<bool(DeviceMeshView)>& gate,
                             ActionStats* statistics, const std::function<bool()>& cancelled,
                             const std::function<void(GpuActionState&)>& observe,
-                            const ActionTrialObserver& trace) {
+                            const ActionTrialObserver& trace, const RankingSupport* support) {
     if (!batch || batch > 64 || !gate || ranking > NeuralRanking::CurrentPlane)
         throw std::invalid_argument("invalid GPU action executor configuration");
     auto& p = *impl_;
+    if (support && (p.placement || batch != 1 || ranking != NeuralRanking::Learned || !network ||
+                    network->architecture() != conditioned_placement_schema ||
+                    support->collector.architecture() != conditioned_placement_schema))
+        throw std::invalid_argument("ranking support requires sequential v4 learned endpoints");
+    if (p.placement && network && network->model_use() == ModelUse::EndpointReuseOnly)
+        throw std::invalid_argument("endpoint scorer cannot predict free placements");
     DeviceScope scope(p.id);
     Buffer<Action> trace_actions(p.device, trace ? batch : 0);
+    Buffer<Action> support_actions(p.device, support ? 16 : 0);
+    Buffer<SupportedRanking> support_result(p.device, support ? 1 : 0);
+    uint32_t support_iteration = 0;
     target = std::max<size_t>(1, target);
     p.read();
     bool stopped = false;
@@ -1930,7 +1971,7 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
     uint64_t inference_ns = 0;
     uint32_t accepted_batches = 0;
     while (p.host.faces > target && p.host.trials < budget && !stop()) {
-        if (observe) {
+        auto query = [&](const auto& callback) {
             // Entry read() synchronizes both copies of State. Teacher queries may
             // alter counters, selection and trial scratch, but must never commit.
             // The unconditional rank below rebuilds all consumed ranking scratch.
@@ -1949,7 +1990,7 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
                 // never alias subsequent runtime candidates in an audit cache.
             };
             try {
-                observe(*this);
+                callback(*this);
                 if (p.mesh.view.revision != revision || p.mesh.view.faces != faces)
                     throw std::logic_error("action observer committed or reset its state");
             } catch (...) {
@@ -1957,19 +1998,47 @@ Lod GpuActionState::execute(const std::array<float, conditions>& c, size_t targe
                 throw;
             }
             restore();
-        }
+        };
+        if (observe)
+            query(observe);
         auto start = std::chrono::steady_clock::now();
+        uint32_t ranked_count = 0;
+        const auto support_seed = support ? support->seed + support_iteration++ * 0x9e3779b9u : 0;
+        std::array<Action, 16> supported_actions{};
+        if (support) {
+            query([&](GpuActionState& state) {
+                const auto rows = state.teacher_actions(c, 16, support_seed, &support->collector,
+                                                        TeacherSelection::PolicyMixed);
+                ranked_count = uint32_t(rows.size());
+                for (size_t i = 0; i < rows.size(); ++i)
+                    supported_actions[i] = rows[i].action;
+            });
+            support_actions.upload(supported_actions);
+        }
         p.rank(c, network, ranking, seed);
+        if (!support)
+            ranked_count = p.host.actions;
+        if (support && ranked_count) {
+            restrict_ranking<<<1, 1, 0, gpu::stream()>>>(
+                p.state.p, p.edits.p, p.sorted_order.p, p.sorted_scores.p, support_actions.p,
+                ranked_count, support_seed, support_result.p);
+            p.read();
+            if (support->observe) {
+                SupportedRanking result;
+                check(gpu::copy(&result, support_result.p, sizeof(result), cudaMemcpyDeviceToHost));
+                support->observe(result);
+            }
+        }
         inference_ns += uint64_t(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                      std::chrono::steady_clock::now() - start)
                                      .count());
         if (!p.host.actions)
             break;
         bool accepted = false;
-        while (p.host.position < p.host.actions && p.host.trials < budget && !accepted && !stop()) {
-            select_batch<<<1, 1, 0, gpu::stream()>>>(p.state.p, p.geometric.view(), p.edits.p,
-                                                     p.sorted_order.p, p.selected.p, p.used.p,
-                                                     p.mesh.view.vertices, uint32_t(target), batch);
+        while (p.host.position < ranked_count && p.host.trials < budget && !accepted && !stop()) {
+            select_batch<<<1, 1, 0, gpu::stream()>>>(
+                p.state.p, p.geometric.view(), p.edits.p, p.sorted_order.p, p.selected.p, p.used.p,
+                p.mesh.view.vertices, uint32_t(target), batch, ranked_count);
             p.read();
             if (p.host.exhausted)
                 break;
@@ -2057,6 +2126,8 @@ GpuActionState::teacher_actions(const std::array<float, conditions>& c, uint32_t
                                 uint32_t seed, ActionCuda* policy, TeacherSelection selection,
                                 std::vector<Placement>* decoded_policy) {
     auto& p = *impl_;
+    if (p.placement && policy && policy->model_use() == ModelUse::EndpointReuseOnly)
+        throw std::invalid_argument("endpoint scorer cannot teach free placements");
     DeviceScope scope(p.id);
     if (!count || count > 16 || (policy && !is_placement_schema(policy->architecture())) ||
         selection > TeacherSelection::PolicyMixed ||

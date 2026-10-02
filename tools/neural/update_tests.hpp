@@ -1,5 +1,5 @@
 #pragma once
-#include "training/update.hpp"
+#include "training/checkpoint.hpp"
 #include <limits>
 #include <sstream>
 
@@ -10,6 +10,16 @@ inline void update_contracts() {
             throw std::runtime_error(reason);
     };
     auto gpu = torch::TensorOptions().device(torch::kCUDA).dtype(torch::kFloat32);
+    struct Temporary {
+        fs::path directory =
+            fs::temp_directory_path() / ("blitz-update-scope-" + std::to_string(::getpid()));
+        Temporary() {
+            fs::create_directory(directory);
+        }
+        ~Temporary() {
+            fs::remove_all(directory);
+        }
+    } temporary;
     torch::manual_seed(413);
     auto rejects = [&](auto&& call, const char* reason) {
         bool rejected = false;
@@ -20,83 +30,138 @@ inline void update_contracts() {
         }
         check(rejected, reason);
     };
-    for (bool captured : {false, true}) {
-        ActionNetwork ranker(conditioned_placement_schema);
-        ranker->to(torch::kCUDA);
-        auto features = torch::randn({2, action_pool, placement_features}, gpu);
-        auto labels = torch::zeros({2, action_pool}, gpu.dtype(torch::kUInt8));
-        labels.select(1, 0).fill_(31);
-        labels.select(1, 1).fill_(24);
-        labels.select(1, 2).fill_(27);
-        std::vector<std::array<std::vector<uint32_t>, 4>> bins(1);
-        bins[0][0] = {0, 1};
-        SamplingTables sampling({{0}}, bins, 2);
-        UpdateSettings settings;
-        settings.ranking_only = true;
-        settings.decay = .2f;
-        ActionUpdate update(ranker, features, labels, sampling, 7, 971, settings,
-                            torch::zeros({2, action_pool, 9}, gpu));
-        for (auto& moment : update.optimizer.mean)
-            moment.fill_(.13f);
-        for (auto& moment : update.optimizer.variance)
-            moment.fill_(.17f);
-        auto before = update.optimizer.snapshot();
-        auto original = ranker->forward(features).detach().clone();
-        if (captured)
-            update.capture();
-        update.run(9);
-        auto after = update.optimizer.snapshot();
-        check(update.optimizer.state().step == 9, "rank-only update failed");
-        check(!torch::equal(before[4].select(0, 0), after[4].select(0, 0)),
-              "ranking weight row did not change");
-        for (size_t i = 0; i + 1 < before.size(); ++i) {
-            auto a = before[i], b = after[i];
-            if (i % 6 >= 4) {
-                a = a.slice(0, 1);
-                b = b.slice(0, 1);
+    for (auto scope : {TrainableScope::RankingRow, TrainableScope::EndpointScorer})
+        for (uint32_t width : {64u, 128u})
+            for (bool captured : {false, true}) {
+                ActionNetwork ranker(conditioned_placement_schema, width);
+                ranker->to(torch::kCUDA);
+                auto features = torch::randn({2, action_pool, placement_features}, gpu);
+                auto labels = torch::zeros({2, action_pool}, gpu.dtype(torch::kUInt8));
+                labels.select(1, 0).fill_(31);
+                labels.select(1, 1).fill_(24);
+                labels.select(1, 2).fill_(27);
+                std::vector<std::array<std::vector<uint32_t>, 4>> bins(1);
+                bins[0][0] = {0, 1};
+                SamplingTables sampling({{0}}, bins, 2);
+                UpdateSettings settings;
+                settings.scope = scope;
+                settings.decay = .2f;
+                ActionUpdate update(ranker, features, labels, sampling, 7, 971, settings,
+                                    torch::zeros({2, action_pool, 9}, gpu));
+                const auto expected_use = scope == TrainableScope::EndpointScorer
+                                              ? ModelUse::EndpointReuseOnly
+                                              : ModelUse::Unrestricted;
+                check(export_actions(ranker, {}).use == expected_use,
+                      "training export lost its use scope");
+                for (auto& moment : update.optimizer.mean)
+                    moment.fill_(.13f);
+                for (auto& moment : update.optimizer.variance)
+                    moment.fill_(.17f);
+                auto before = update.optimizer.snapshot();
+                auto original = ranker->forward(features).detach().clone();
+                if (captured)
+                    update.capture();
+                update.run(9);
+                auto after = update.optimizer.snapshot();
+                check(update.optimizer.state().step == 9, "rank-only update failed");
+                check(!torch::equal(before[4].select(0, 0), after[4].select(0, 0)),
+                      "ranking weight row did not change");
+                for (size_t i = 0; i + 1 < before.size(); ++i) {
+                    if (scope == TrainableScope::EndpointScorer && i % 6 < 4)
+                        continue;
+                    auto a = before[i], b = after[i];
+                    if (i % 6 >= 4) {
+                        a = a.slice(0, 1);
+                        b = b.slice(0, 1);
+                    }
+                    check(torch::equal(a, b), "rank training changed frozen parameters or moments");
+                }
+                check(torch::equal(original.slice(2, 1), ranker->forward(features).slice(2, 1)) ==
+                          (scope == TrainableScope::RankingRow),
+                      "shared-trunk output compatibility was misrepresented");
+                uint32_t expected = width + 1;
+                if (scope == TrainableScope::EndpointScorer)
+                    for (size_t i = 0; i < 4; ++i)
+                        expected += uint32_t(ranker->parameters()[i].numel());
+                check(update.optimizer.total == expected,
+                      "optimizer trained the wrong parameter ranges");
+                check(torch::equal(before[0], after[0]) == (scope == TrainableScope::RankingRow),
+                      "endpoint feature extractor did not train or ranking-row trunk changed");
+                std::stringstream stream;
+                torch::serialize::OutputArchive output;
+                update.optimizer.save(output);
+                output.save_to(stream);
+                torch::serialize::InputArchive input;
+                input.load_from(stream);
+                ActionNetwork other(conditioned_placement_schema, width);
+                other->to(torch::kCUDA);
+                {
+                    torch::NoGradGuard guard;
+                    auto p = ranker->parameters(), q = other->parameters();
+                    for (size_t i = 0; i < p.size(); ++i)
+                        q[i].copy_(p[i]);
+                }
+                DeviceAdam wrong(other->parameters());
+                rejects([&] { wrong.load(input); }, "rank checkpoint resumed full-policy Adam");
+                auto mismatch = settings;
+                mismatch.scope = scope == TrainableScope::RankingRow
+                                     ? TrainableScope::EndpointScorer
+                                     : TrainableScope::RankingRow;
+                DeviceAdam wrong_scope(other->parameters(), mismatch);
+                rejects([&] { wrong_scope.load(input); },
+                        "row-only and endpoint optimizer checkpoints mixed");
+                std::stringstream legacy_bytes;
+                torch::serialize::OutputArchive legacy;
+                legacy.write("version", torch::tensor(int64_t(update_checkpoint_version)));
+                legacy.write("sampler", torch::tensor(int64_t(sampler_version)));
+                legacy.write("ranking_only", torch::tensor(int64_t(1)));
+                legacy.save_to(legacy_bytes);
+                torch::serialize::InputArchive legacy_input;
+                legacy_input.load_from(legacy_bytes);
+                DeviceAdam new_objective(other->parameters(), settings);
+                rejects([&] { new_objective.load(legacy_input); },
+                        "old pair-weighted optimizer silently resumed equal-state loss");
+                ActionUpdate restored(other, features, labels, sampling, 7, 971, settings,
+                                      torch::zeros({2, action_pool, 9}, gpu));
+                restored.optimizer.load(input);
+                if (captured)
+                    restored.capture();
+                update.run(2);
+                restored.run(2);
+                auto saved = update.optimizer.snapshot(), resumed = restored.optimizer.snapshot();
+                for (size_t i = 0; i < saved.size(); ++i)
+                    check(torch::equal(saved[i], resumed[i]),
+                          "rank-only checkpoint restore differs");
+                const auto file = temporary.directory / "checkpoint.pt";
+                save_state(file, ranker, update.optimizer, update.optimizer.state().step);
+                ActionNetwork loaded(conditioned_placement_schema, width);
+                loaded->to(torch::kCUDA);
+                load_checkpoint_model(file, loaded, torch::kCUDA);
+                check(loaded->use == expected_use && export_actions(loaded, {}).use == expected_use,
+                      "model-only checkpoint restore stripped endpoint scope");
+                if (scope == TrainableScope::EndpointScorer) {
+                    UpdateSettings row;
+                    row.scope = TrainableScope::RankingRow;
+                    ActionUpdate row_update(loaded, features, labels, sampling, 7, 971, row,
+                                            torch::zeros({2, action_pool, 9}, gpu));
+                    CheckpointWriter writer;
+                    writer.submit(temporary.directory / "row", loaded, row_update.optimizer, {});
+                    writer.join();
+                    check(load_weights(temporary.directory / "row/model.blzn").use == expected_use,
+                          "ranking-row writer widened an inherited endpoint model");
+                    fs::remove_all(temporary.directory / "row");
+                    rejects([&] { trained_model_use(loaded, TrainableScope::Joint); },
+                            "joint updates widened endpoint use");
+                    ActionNetwork legacy(placement_schema, width);
+                    legacy->to(torch::kCUDA);
+                    rejects(
+                        [&] {
+                            ActionUpdate invalid(legacy, features, labels, sampling, 7, 971,
+                                                 settings, torch::zeros({2, action_pool, 9}, gpu));
+                        },
+                        "endpoint update admitted legacy v3 feature semantics");
+                }
             }
-            check(torch::equal(a, b), "rank training changed frozen parameters or moments");
-        }
-        check(torch::equal(original.slice(2, 1), ranker->forward(features).slice(2, 1)),
-              "rank training changed frozen policy outputs");
-        std::stringstream stream;
-        torch::serialize::OutputArchive output;
-        update.optimizer.save(output);
-        output.save_to(stream);
-        torch::serialize::InputArchive input;
-        input.load_from(stream);
-        ActionNetwork other(conditioned_placement_schema);
-        other->to(torch::kCUDA);
-        {
-            torch::NoGradGuard guard;
-            auto p = ranker->parameters(), q = other->parameters();
-            for (size_t i = 0; i < p.size(); ++i)
-                q[i].copy_(p[i]);
-        }
-        DeviceAdam wrong(other->parameters());
-        rejects([&] { wrong.load(input); }, "rank checkpoint resumed full-policy Adam");
-        std::stringstream legacy_bytes;
-        torch::serialize::OutputArchive legacy;
-        legacy.write("version", torch::tensor(int64_t(update_checkpoint_version)));
-        legacy.write("sampler", torch::tensor(int64_t(sampler_version)));
-        legacy.write("ranking_only", torch::tensor(int64_t(1)));
-        legacy.save_to(legacy_bytes);
-        torch::serialize::InputArchive legacy_input;
-        legacy_input.load_from(legacy_bytes);
-        DeviceAdam new_objective(other->parameters(), settings);
-        rejects([&] { new_objective.load(legacy_input); },
-                "old pair-weighted optimizer silently resumed equal-state loss");
-        ActionUpdate restored(other, features, labels, sampling, 7, 971, settings,
-                              torch::zeros({2, action_pool, 9}, gpu));
-        restored.optimizer.load(input);
-        if (captured)
-            restored.capture();
-        update.run(2);
-        restored.run(2);
-        auto saved = update.optimizer.snapshot(), resumed = restored.optimizer.snapshot();
-        for (size_t i = 0; i < saved.size(); ++i)
-            check(torch::equal(saved[i], resumed[i]), "rank-only checkpoint restore differs");
-    }
     // Each public host entry must reject invalid scalar settings before any
     // device access. Null buffers deliberately make a missed launch guard fail.
     auto parameter = torch::ones({2}, gpu).requires_grad_();
@@ -274,7 +339,7 @@ inline void update_contracts() {
         auto control = torch::zeros({int64_t(sizeof(UpdateState))}, gpu.dtype(torch::kUInt8));
         auto gradient = torch::empty_like(scores), losses = torch::empty({2}, gpu);
         UpdateSettings config;
-        config.ranking_only = true;
+        config.scope = TrainableScope::RankingRow;
         config.penalty = 0;
         config.margin = positives == 1 ? .7f : 1.3f;
         placement_loss_update(scores.data_ptr<float>(), labels.data_ptr<uint8_t>(),

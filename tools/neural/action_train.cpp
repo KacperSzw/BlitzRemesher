@@ -1,4 +1,5 @@
 #include "tools/neural/update_tests.hpp"
+#include "training/action_dataset.hpp"
 #include "training/checkpoint.hpp"
 #include "training/policy_ranking.hpp"
 #include <c10/cuda/CUDACachingAllocator.h>
@@ -11,136 +12,6 @@ using namespace blitz::neural::training;
 static volatile std::sig_atomic_t stopped = 0;
 static void stop(int) {
     stopped = 1;
-}
-struct Dataset {
-    std::vector<float> x, targets;
-    std::vector<uint8_t> labels;
-    std::vector<std::array<std::vector<uint32_t>, 4>> asset_bins;
-    std::vector<std::vector<uint32_t>> categories;
-    json provenance = json::array();
-    std::string rank_target;
-    uint32_t states{}, architecture{}, observed_states{}, uninformative_states{};
-};
-Dataset dataset(const fs::path& directory, bool ranking_only, const std::string& policy_hash) {
-    Dataset out;
-    auto index = read_json(directory / "index.json");
-    std::vector<fs::path> paths{directory};
-    if (index.contains("datasets")) {
-        paths.clear();
-        for (auto& p : index.at("datasets")) {
-            fs::path relative = p.get<std::string>();
-            if (relative.is_absolute() || relative.string().find("..") != std::string::npos)
-                throw std::invalid_argument("invalid dataset path");
-            paths.push_back(directory / relative);
-        }
-    }
-    std::vector<std::string> names, asset_names, asset_categories;
-    for (auto& path : paths) {
-        auto j = read_json(path / "index.json");
-        if (!j.at("complete").get<bool>() ||
-            (j.at("schema") != action_schema &&
-             !is_placement_schema(j.at("schema").get<uint32_t>())) ||
-            j.at("path") != "actions.bin" || j.at("sha256") != file_sha256(path / "actions.bin") ||
-            j.at("contract_sha256") != file_sha256(path / "contract.json"))
-            throw std::invalid_argument("incomplete or changed action dataset");
-        auto data = load_actions(path / "actions.bin");
-        const auto contract = read_json(path / "contract.json");
-        const auto target = contract.value("teacher_target", "oracle");
-        const bool runtime_endpoint = target == "runtime-endpoint-v1" ||
-                                      target == "runtime-endpoint-v2" ||
-                                      target == "runtime-endpoint-v3";
-        if (ranking_only != (target == "policy-placement-v1" || runtime_endpoint))
-            throw std::invalid_argument("teacher labels do not match the training objective");
-        if (ranking_only) {
-            if (!out.rank_target.empty() && out.rank_target != target)
-                throw std::invalid_argument("v4 ranking cannot mix endpoint and placement targets");
-            out.rank_target = target;
-            if (contract.at("policy_payload_sha256") != policy_hash ||
-                contract.at("teacher_version") != (target == "runtime-endpoint-v3"   ? 10
-                                                   : target == "runtime-endpoint-v2" ? 9
-                                                   : runtime_endpoint                ? 8
-                                                                                     : 7) ||
-                contract.at("data_storage") != "fp32" ||
-                data.architecture != conditioned_placement_schema ||
-                j.at("geometry_rejected_sha256") != file_sha256(path / "geometry-rejected.bin"))
-                throw std::invalid_argument("frozen placement policy/data identity differs");
-            std::ifstream f(path / "geometry-rejected.bin", std::ios::binary);
-            char magic[8];
-            f.read(magic, 8);
-            if (!f || std::memcmp(magic, "BLZRANK1", 8))
-                throw std::invalid_argument("invalid geometry rejection bitmap");
-            auto bits = read_vector<uint8_t>(f, (data.labels.size() + 7) / 8);
-            if (f.peek() != EOF)
-                throw std::invalid_argument("geometry rejection bitmap tail");
-            apply_policy_rank_masks(data.labels, bits);
-        }
-        if (j.at("schema") != data.architecture ||
-            (out.architecture && out.architecture != data.architecture))
-            throw std::invalid_argument("mixed action policy datasets");
-        out.architecture = data.architecture;
-        auto width = policy_inputs(data.architecture);
-        if (!data.states() && !runtime_endpoint)
-            throw std::invalid_argument("action dataset has no states");
-        out.provenance.push_back({{"asset", j.at("asset")},
-                                  {"sha256", j.at("sha256")},
-                                  {"contract_sha256", j.at("contract_sha256")}});
-        if (ranking_only)
-            out.provenance.back()["geometry_rejected_sha256"] = j.at("geometry_rejected_sha256");
-        std::vector<uint32_t> eligible;
-        for (uint32_t s = 0; s < data.states(); ++s) {
-            ++out.observed_states;
-            if (ranking_only && !ranking_pairs(std::span(data.labels)
-                                                   .subspan(data.offsets[s],
-                                                            data.offsets[s + 1] - data.offsets[s])))
-                ++out.uninformative_states;
-            else
-                eligible.push_back(s);
-        }
-        if (eligible.empty())
-            continue;
-        if (uint64_t(out.states) + data.states() >
-            (8ull << 30) / (action_pool * width * sizeof(float)))
-            throw std::length_error("resident action dataset exceeds 8 GiB");
-        const auto category = j.at("category").get<std::string>();
-        auto found = std::find(names.begin(), names.end(), category);
-        if (found == names.end()) {
-            names.push_back(category);
-            out.categories.emplace_back();
-            found = std::prev(names.end());
-        }
-        auto asset = j.at("asset").get<std::string>();
-        auto asset_it = std::find(asset_names.begin(), asset_names.end(), asset);
-        size_t asset_id = size_t(asset_it - asset_names.begin());
-        if (asset_it == asset_names.end()) {
-            asset_names.push_back(asset);
-            asset_categories.push_back(category);
-            out.categories[size_t(found - names.begin())].push_back(uint32_t(asset_id));
-            out.asset_bins.emplace_back();
-        } else if (asset_categories[asset_id] != category)
-            throw std::invalid_argument("asset appears in multiple categories");
-        for (uint32_t s : eligible) {
-            auto count = data.offsets[s + 1] - data.offsets[s];
-            out.asset_bins[asset_id][std::min(3u, uint32_t(data.progress[s] * 4))].push_back(
-                out.states++);
-            out.x.insert(out.x.end(), data.x.begin() + size_t(data.offsets[s]) * width,
-                         data.x.begin() + size_t(data.offsets[s + 1]) * width);
-            out.x.resize(size_t(out.states) * action_pool * width);
-            out.labels.insert(out.labels.end(), data.labels.begin() + data.offsets[s],
-                              data.labels.begin() + data.offsets[s + 1]);
-            out.labels.resize(size_t(out.states) * action_pool);
-            if (is_placement_schema(data.architecture)) {
-                out.targets.insert(out.targets.end(),
-                                   data.targets.begin() + size_t(data.offsets[s]) * 9,
-                                   data.targets.begin() + size_t(data.offsets[s + 1]) * 9);
-                out.targets.resize(size_t(out.states) * action_pool * 9);
-            }
-        }
-    }
-    if (!out.states)
-        throw std::invalid_argument("action dataset collection is empty");
-    if (out.x.size() * sizeof(float) > 8ull * 1024 * 1024 * 1024)
-        throw std::length_error("resident action dataset exceeds 8 GiB");
-    return out;
 }
 void check_contracts(const fs::path& output = {}) {
     torch::manual_seed(771);
@@ -238,7 +109,7 @@ int main(int argc, char** argv) {
         uint32_t batch = 512, memory_mib = 0;
         double minutes = 5;
         std::string backend = "captured";
-        bool ranking_only = false;
+        TrainableScope scope = TrainableScope::Joint;
         fs::path initialize, warmstart;
         for (int i = 3; i < argc; i += 2) {
             if (i + 1 == argc)
@@ -265,12 +136,16 @@ int main(int argc, char** argv) {
                 warmstart = argv[i + 1];
             else if (k == "--objective") {
                 std::string_view value = argv[i + 1];
-                if (value != "joint" && value != "policy-ranking")
-                    throw std::invalid_argument("objective must be joint or policy-ranking");
-                ranking_only = value == "policy-ranking";
+                if (value != "joint" && value != "policy-ranking" && value != "endpoint-ranking")
+                    throw std::invalid_argument(
+                        "objective must be joint, policy-ranking or endpoint-ranking");
+                scope = value == "endpoint-ranking" ? TrainableScope::EndpointScorer
+                        : value == "policy-ranking" ? TrainableScope::RankingRow
+                                                    : TrainableScope::Joint;
             } else
                 throw std::invalid_argument("unknown action trainer option");
         }
+        const bool ranking_only = scope != TrainableScope::Joint;
         if (!initialize.empty() && !warmstart.empty())
             throw std::invalid_argument("choose model initialization or optimizer continuation");
         if (ranking_only && (initialize.empty() || !warmstart.empty()))
@@ -300,15 +175,20 @@ int main(int argc, char** argv) {
             const auto weights = load_weights(initialize);
             policy_hash = sha256(std::as_bytes(std::span(weights.values)));
         }
-        auto data = dataset(directory, ranking_only, policy_hash);
+        auto data = load_action_dataset(directory, scope, policy_hash);
         auto width = policy_inputs(data.architecture), outputs = policy_outputs(data.architecture);
         json contract = {{"schema", data.architecture},
                          {"initialize_sha256", initialize.empty() ? "" : file_sha256(initialize)},
                          {"warmstart_sha256", warmstart.empty() ? "" : file_sha256(warmstart)},
-                         {"optimizer_schema", update_checkpoint_version},
+                         {"optimizer_schema", scope == TrainableScope::EndpointScorer
+                                                  ? endpoint_checkpoint_version
+                                                  : update_checkpoint_version},
                          {"sampler", sampler_version},
                          {"backend", backend},
-                         {"objective", ranking_only ? "policy-ranking-v2" : "joint"},
+                         {"objective", scope == TrainableScope::EndpointScorer
+                                           ? "endpoint-ranking-v2"
+                                       : ranking_only ? "policy-ranking-v2"
+                                                      : "joint"},
                          {"teacher_target", data.rank_target},
                          {"data", data.provenance},
                          {"seed", seed},
@@ -350,8 +230,15 @@ int main(int argc, char** argv) {
                           .to(device);
         ActionNetwork model(data.architecture);
         model->to(device);
+        ModelUse model_use = scope == TrainableScope::EndpointScorer ? ModelUse::EndpointReuseOnly
+                                                                     : ModelUse::Unrestricted;
         if (!initialize.empty()) {
             auto w = load_weights(initialize);
+            if (w.use == ModelUse::EndpointReuseOnly) {
+                if (!ranking_only)
+                    throw std::invalid_argument("joint training cannot reuse an endpoint scorer");
+                model_use = w.use;
+            }
             if (w.architecture != data.architecture || w.hidden_width != model->hidden_width)
                 throw std::invalid_argument("initial policy architecture or width differs; use the "
                                             "resident cycle for wider policies");
@@ -364,11 +251,14 @@ int main(int argc, char** argv) {
             }
         }
         std::vector<torch::Tensor> frozen;
+        model->use = model_use;
         if (ranking_only)
             for (auto& p : model->parameters())
                 frozen.push_back(p.detach().clone());
         auto verify_frozen_policy = [&] {
             for (size_t i = 0; i < frozen.size(); ++i) {
+                if (scope == TrainableScope::EndpointScorer && i < 4)
+                    continue;
                 auto actual = model->parameters()[i], before = frozen[i];
                 if (i >= 4) {
                     actual = actual.slice(0, 1);
@@ -380,7 +270,7 @@ int main(int argc, char** argv) {
         };
         SamplingTables tables(data.categories, data.asset_bins, data.states);
         UpdateSettings update_settings;
-        update_settings.ranking_only = ranking_only;
+        update_settings.scope = scope;
         ActionUpdate update(model, x, labels, tables, batch, uint32_t(seed), update_settings,
                             targets, flags, conditions);
         auto& optimizer = update.optimizer;
@@ -407,7 +297,7 @@ int main(int argc, char** argv) {
         auto elapsed = [&] {
             return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
         };
-        const size_t changed_parameter = ranking_only ? 4 : 0;
+        const size_t changed_parameter = scope == TrainableScope::RankingRow ? 4 : 0;
         auto initial = model->parameters()[changed_parameter].detach().clone();
         uint64_t began = step;
         double last_loss = 0, first_loss = 0, gradient = 0, update_seconds = 0,
@@ -422,6 +312,7 @@ int main(int argc, char** argv) {
             auto w = export_actions(model, {{"schema", data.architecture},
                                             {"step", step},
                                             {"contract", file_sha256(run / "contract.json")}});
+            w.use = model_use;
             save_state(bundle / "checkpoint.pt", model, optimizer, step);
             save_weights(bundle / "model.blzn", w);
             auto probe_count = std::min<uint32_t>(data.states, 32);
@@ -505,7 +396,13 @@ int main(int argc, char** argv) {
                            {"states", data.states},
                            {"observed_states", data.observed_states},
                            {"uninformative_states", data.uninformative_states},
-                           {"placement_policy_frozen", ranking_only},
+                           {"placement_policy_frozen", scope == TrainableScope::RankingRow},
+                           {"trainable_scope", scope == TrainableScope::EndpointScorer
+                                                   ? "endpoint-scorer"
+                                               : scope == TrainableScope::RankingRow ? "ranking-row"
+                                                                                     : "joint"},
+                           {"trainable_parameters", optimizer.total},
+                           {"rebuild_compatible", model_use == ModelUse::Unrestricted},
                            {"first_loss", first_loss},
                            {"last_loss", last_loss},
                            {"gradient_norm", gradient},
@@ -556,8 +453,10 @@ int main(int argc, char** argv) {
                 } else
                     torch::save(update.target.bitwise_and(Queried).ne(0).cpu(),
                                 bundle / "valid.pt");
-                save_weights(bundle / "model.blzn",
-                             export_actions(model, {{"failure", reason}, {"step", state.step}}));
+                auto failed_weights =
+                    export_actions(model, {{"failure", reason}, {"step", state.step}});
+                failed_weights.use = model_use;
+                save_weights(bundle / "model.blzn", failed_weights);
                 write_json(bundle / "failure.json", {{"complete", true},
                                                      {"reason", reason},
                                                      {"step_before_update", state.step},

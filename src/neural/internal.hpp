@@ -40,11 +40,17 @@ Lod decode(MeshView, const Graph&, const Prediction&, size_t target, OutputMode,
            DecodeStats* = nullptr, const std::function<bool()>& = {},
            std::vector<uint32_t>* representatives = nullptr);
 // Shared portable float32 tensor layout: row-major [out,in], then bias.
+enum class ModelUse : uint8_t { Unrestricted, EndpointReuseOnly };
 struct WeightsData {
     std::vector<float> values;
     std::string provenance;
     uint32_t architecture{schema}, hidden_width{64};
+    ModelUse use{ModelUse::Unrestricted};
 };
+inline void validate_model_output(const WeightsData& weights, std::optional<OutputMode> output) {
+    if (weights.use == ModelUse::EndpointReuseOnly && output != OutputMode::Reuse)
+        throw std::invalid_argument("endpoint scorer requires explicit reuse output");
+}
 constexpr uint32_t layer_in[5] = {features * 2, hidden * 2, hidden * 2, hidden + conditions,
                                   hidden};
 constexpr uint32_t layer_out[5] = {hidden, hidden, hidden, hidden, outputs};

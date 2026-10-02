@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "initial_model": "runs/neural/v4-initialization/model.blzn",
+  "corpus": "research/neural/corpus-v2/corpus.json",
+  "training_selection": "research/neural/corpus-v2/training.json",
+  "training_assets": ["ph_bolt_cutters_01", "ph_yellow_onion"],
+  "pixels": [128, 64],
+  "retained": [1, 0.5],
+  "states": 32,
+  "teacher_seed": 101,
+  "seeds": [101, 211, 307],
+  "updates": 2048,
+  "batch": 128,
+  "gpu_memory_mib": 1024,
+  "audit_manifest": "research/neural/action-diagnostic.json",
+  "audit_settings": "research/neural/teacher-capability-quality.json",
+  "audit_minutes": 5
+}

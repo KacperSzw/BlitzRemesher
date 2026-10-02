@@ -1,4 +1,137 @@
-# Action learning handoff — 2026-09-29
+# Sequential endpoint learning handoff — 2026-10-02
+
+Worktree: `/home/kacper/Projects/BlitzRemesher-neural`. Branch: `main`;
+`origin/main` is the default. The user requested finishing this part and pushing
+so another agent can continue. No new rental was created in this part.
+
+## Result and next decision
+
+The full endpoint scorer learns the current labels (97.5–97.8% preferred
+membership across three seeds), but its ordinary UV-on rock rollout regressed
+about 18%. A concrete support diagnostic now recovers that regression:
+
+| UV-on moon rock, seed 101 | LOD1 | LOD2 | LOD3 |
+| --- | ---: | ---: | ---: |
+| Initializer, ordinary runtime | 1,638 | 820 | 410 |
+| Trained scorer, ordinary runtime | 1,936 | 968 | 484 |
+| Initializer, frozen collector pool | 1,638 | 820 | 410 |
+| Trained scorer, identical collector pool | 1,256 | 628 | 314 |
+
+Both supported runs completed with exact source and adjacent visual gates.
+They share source, binary, visual and execution hashes. The trained global top
+escaped the teacher's 16-action pool in 3,705/3,709 rescoring events (99.892%);
+the initializer had zero escapes. Within that support, the trained scorer uses
+about 23% fewer triangles at every rock LOD. This is a conditional local learning
+signal on one development rock, one seed and UV-on. Support construction also
+runs collector inference and geometric rankings; the result does not establish
+an independent neural deployment improvement or pass the remote gate.
+
+The next focused step is to teach the trained scorer's globally preferred
+unsupported actions, rather than repeat more optimizer steps on the same narrow
+pools. First inspect `training/runtime_teacher.hpp` and the `PolicyMixed`
+selector in `src/neural/action_gpu.cu`; preserve the actual trajectory actor,
+exact endpoint outcomes, all four gates, target eligibility and unknown outcomes.
+A distinct query policy would need its own model hash in the teacher contract,
+without silently relabeling the original collector or admitting inconsistent
+placement labels. This proposal is not implemented yet. A further support
+comparison on shelves and UV-off is also needed before extrapolating the signal.
+No architectural feature or objective change was made for the support diagnostic.
+
+Then train fresh local seeds, compare ordinary neural output against matched
+initializer/constant controls on the two smoke assets in both UV modes, and only
+escalate a promising result to the frozen 12-family small-source pilot. Keep the
+predeclared thresholds: every seed/mode must improve category-balanced retained
+triangles by at least 5%, with at most 2% increase at any LOD and complete visual
+and control checks. See [the gate](sequential-pilot-gate.json),
+[the runner](../../scripts/neural/sequential-pilot.mjs) and
+[the investigation](POLICY-ALIGNMENT.md). Do not revise the gate after seeing
+results. Shading and full-size source quality remain later checks.
+
+## Code and local artifacts
+
+- `--objective endpoint-ranking` trains the two hidden layers and score row
+  (12,481 parameters for width 64). It preserves the other output weights, but
+  their predictions change, so BLZNET03 requires explicit Reuse. Automatic and
+  Rebuild use reject the scorer. Checkpoints, asynchronous export, model-only
+  restoration and resident weight refresh preserve the restriction. Legacy
+  joint/ranking-row optimizer v2 and BLZNET01/02 meanings remain intact.
+- Dataset admission is extracted into `training/action_dataset.hpp` and binds
+  version-10 runtime teaching, original collector payload, shard-index categories,
+  requests, trajectory, geometry mask and exact source reference.
+- Runtime per-collapse gates use conservative sparse certificates. Final emitted
+  errors and teacher margins remain exact. Ordered traces, final FP32 meshes and
+  errors matched the old exact path on both smoke assets in both UV modes.
+- An interrupted source-only result now exports without attempting a selector
+  that requires at least two levels. The failing regression and repair are saved.
+- Support restriction is internal diagnostic plumbing, enabled only by
+  `ranking_support` in a native model-audit settings file; no public runtime flag.
+  The fixture proves that rejection of all supported actions cannot fall through
+  to unsupported global actions. The original observer parity test caught and
+  verified the repair of a stale host action count introduced during this work.
+
+The exact local artifacts remain in the shared ignored `runs/neural` directory:
+
+- `v4-initialization/model.blzn`: original v4 initializer; SHA-256
+  `306ec18cfeef36ef8af16ef2a9d008021e142d5bf114b4ca8ea243debf9d2fae`.
+- `sequential-dataset-01`: 16 verified copied shards, 2,173 observed/1,720
+  informative states, four parents, two source scales and both UV modes.
+- `endpoint-ranking-01/training/{101,211,307}/step-512.blzn` and matching
+  `step-512.pt`: fresh trained scorers and optimizer checkpoints. The first
+  complete UV-on comparison is negative; further audits were explicitly stopped.
+- `endpoint-support-01` and `endpoint-support-initial-01`: finished support
+  diagnostics, exact inputs, raw traces, hypotheses, execution logs and results.
+  `endpoint-support-01/control-comparison.json` contains the matched control.
+- `endpoint-plane-probe-01`: both UV-mode classical comparator diagnostics;
+  rock improves, some shelves levels regress. Not neural success.
+- `endpoint-diversity-01`: one new training-rock teaching shard and descriptive
+  label probe. Keep the invalid bitmap-parser result and explicit correction;
+  the corrected shard has no fully-passing same-removal margin pairs.
+- `next-step-reviews-01`: concrete Prophet reviews, including endpoint scope
+  repairs, support-mismatch diagnosis and a conditional remote runner proposal.
+
+Machine-readable reports, diagnostic scripts and logs are committed compressed
+under [the evidence manifest](evidence/policy-alignment/manifest.json), with
+uncompressed SHA-256 and byte counts. Model/checkpoint/data blobs remain local;
+a fresh clone needs those exact artifacts and corpus files. Do not treat missing
+blobs as permission to substitute a different model or teacher dataset.
+
+## Training and spending
+
+No long training or new remote rental was started in this part. The user permits
+at most $8–10 for the next remote run, conditional on successful local output
+validation. The current frozen pilot is not passed. Older rentals were collected,
+verified and terminated. Do not reuse an old run's remaining-budget calculation
+as the new grant ledger.
+
+The existing `policy-ranking.mjs` wrapper has a three-minute per-seed process
+allowance; its current experiment is not a remote hour-training job. Native
+`action_train` also caps one run at 1,000,000 updates and 50 minutes, and currently
+forbids `--warmstart` for ranking objectives. Longer orchestration therefore needs
+explicit collector identity and checkpoint-continuation contracts. Teacher
+generation still dominates useful experiment work; the short local full-scorer
+optimizer fits took roughly 1.2 seconds per seed, not an hour of useful learning.
+The earlier
+Prophet remote proposal is a design only: it still needs canonical
+`scripts/neural/runpod.mjs` integration, a fresh grant ledger, bounded setup and
+experiment phases, immutable artifact staging, hash-verified collection and the
+independent cutoff watchdog. Setup completing must not be reported as training
+starting. Verify actual learner updates and a healthy checkpoint on the rental.
+
+## Validation
+
+Final CPU CTests: 4/4 model scope, dataset, JS ranking/pilot admission and I/O;
+3/3 neural core/action/chain. ASan/UBSan: 3/3 model scope, dataset and I/O.
+Native CUDA CTests: 7/7 action executor, device update, resident cycle, schema,
+checkpoint, model scope and dataset; observer parity/support fixture 1/1.
+CUDA Compute Sanitizer memcheck passed the observer/support fixture with zero
+errors. The final evidence manifest retains all these logs.
+Raw failures, corrected checks, negative runs and stopped audits are retained.
+These are implementation checks; the single-rock support result is not the
+full-pilot quality gate.
+
+## Earlier historical handoff
+
+### Action learning handoff — 2026-09-29
 
 Worktree: `/home/kacper/Projects/BlitzRemesher-neural`.
 Branch: `research/neural-lod-gpu`. The primary worktree is separate.

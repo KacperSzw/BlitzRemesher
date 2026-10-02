@@ -19,6 +19,9 @@ small smoke budgets cannot establish full-pilot or release superiority.
 
 Current entry points:
 
+- [Current sequential learning handoff](HANDOFF.md) and
+  [policy-alignment investigation](POLICY-ALIGNMENT.md): endpoint scoring,
+  candidate-support diagnosis, local quality failures and the frozen remote gate.
 - [Teacher generation optimization](TEACHER-OPTIMIZATION.md): resident baseline,
   grouped raster reuse, experimental coverage search and bounded paired pilots.
 - [Architecture and contracts](../../docs/NEURAL.md): runtime, training, ownership,

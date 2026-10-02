@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "initial_model": "runs/neural/v4-initialization/model.blzn",
+  "corpus": "research/neural/corpus-v2/corpus.json",
+  "training_selection": "research/neural/corpus-v2/training.json",
+  "training_assets": [
+    "ph_bolt_cutters_01",
+    "ph_yellow_onion",
+    "ph_namaqualand_boulder_06",
+    "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7"
+  ],
+  "conditions": [
+    {
+      "pixels": 80.63494719327188,
+      "source_limit": 2,
+      "adjacent_limit": 2
+    },
+    {
+      "pixels": 50.79683366298239,
+      "source_limit": 3,
+      "adjacent_limit": 2.5
+    },
+    {
+      "pixels": 32,
+      "source_limit": 3,
+      "adjacent_limit": 3
+    }
+  ],
+  "retained": [1, 0.5, 0.25],
+  "states": 16,
+  "teacher_seed": 101,
+  "seeds": [101, 211, 307],
+  "updates": 8192,
+  "batch": 128,
+  "gpu_memory_mib": 1024,
+  "audit_manifest": "research/neural/action-diagnostic.json",
+  "audit_settings": "research/neural/teacher-capability-quality.json",
+  "audit_minutes": 5,
+  "maximum_minutes": 45,
+  "teacher_selection": "policy-mixed"
+}

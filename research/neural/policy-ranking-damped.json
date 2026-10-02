@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "initial_model": "runs/neural/v4-initialization/model.blzn",
+  "corpus": "research/neural/corpus-v2/corpus.json",
+  "training_selection": "research/neural/corpus-v2/training.json",
+  "training_assets": [
+    "ph_bolt_cutters_01",
+    "ph_yellow_onion",
+    "ph_mountainside",
+    "si_3d_package_b0bf6d44-af22-40dc-bd85-7d66255be4a7"
+  ],
+  "teacher_seed": 101,
+  "seeds": [101, 211, 307],
+  "updates": 8192,
+  "batch": 128,
+  "gpu_memory_mib": 1024,
+  "audit_manifest": "research/neural/action-diagnostic.json",
+  "audit_settings": "research/neural/teacher-capability-quality.json",
+  "audit_minutes": 5,
+  "maximum_minutes": 25,
+  "runtime_teacher": {
+    "states_per_proposal": 64,
+    "maximum_states": 384,
+    "rollout_rankings": ["learned"],
+    "source_triangles": [512, 2048],
+    "require_support": true,
+    "cache_rasters": true,
+    "source_merge_wedges": true
+  },
+  "reserved_evaluation_manifests": ["research/neural/prepared-pilot/selection.json"],
+  "teacher_minutes": 5,
+  "dataset_directory": "runs/neural/policy-ranking-09/data",
+  "rank_fraction": 0.125
+}

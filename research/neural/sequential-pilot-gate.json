@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "frozen_at": "2026-10-01T20:37:28.882Z",
+  "purpose": "Local learning feasibility on deterministic small derivatives of every frozen development pilot family; no full-size or parent-fidelity claim.",
+  "manifest": "research/neural/prepared-pilot/selection.json",
+  "manifest_sha256": "15369ac4cb8d4bebb56ba80bccab92850c31ba166d72008fa067a41df5f22c5d",
+  "settings": "research/neural/sequential-pilot-quality.json",
+  "settings_sha256": "9557859add910424d53524e378cd9d8958c314308ee3c042e24cb179af618e6c",
+  "seeds": [
+    101,
+    211,
+    307
+  ],
+  "uv_modes": [
+    true,
+    false
+  ],
+  "minimum_relative_retained_improvement": 0.05,
+  "maximum_relative_per_lod_increase": 0.02,
+  "require_complete_audits": true,
+  "require_unchanged_constant_controls": true,
+  "preserve_all_failures": true,
+  "full_resolution_pilot_deferred_to_scale_evaluation": true
+}

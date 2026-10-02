@@ -35,6 +35,14 @@ preservation requires v4, retains best-effort UV data, and removes UV-specific
 locks rather than weakening geometric legality or enabled visual constraints.
 UVs and chart safety do not constitute a texture-image audit.
 
+The endpoint-scoring experiment trains both hidden layers and the ranking output
+with single-collapse execution (`action_batch: 1`). Its shared representation
+also changes placement predictions, so its BLZNET03 export records an endpoint
+use restriction. It requires explicit `research.output: "reuse"`; automatic and
+Rebuild generation reject it before execution. BLZNET01/02 retain their existing
+meaning. Checkpoint restoration and resident weight refresh preserve this scope.
+Frozen placement output weights do not mean frozen placement predictions.
+
 ## Training and evaluation
 
 The teacher queries plane-ranked, policy-ranked and exploratory actions and audits
@@ -47,6 +55,15 @@ The next curriculum covers multiple screen sizes, real emitted predecessors,
 independent source/transition limits and preservation settings. The completed or
 stopped coverage-pretraining run is an initialization/control artifact, not proof
 of full LOD or shading quality. No final training is started by test scripts.
+
+The current [policy-alignment investigation](../research/neural/POLICY-ALIGNMENT.md)
+and [handoff](../research/neural/HANDOFF.md) separate label fit from emitted LOD
+quality. The endpoint experiment admits only verified version-10 runtime teaching
+bound to its original collector, source, requests, trajectory and rejection mask.
+The frozen small-source pilot requires every seed in both UV modes to improve
+retained triangles by at least 5%, with at most 2% regression at any LOD. A
+candidate-pool diagnostic is an internal audit control, not a public runtime
+policy or a replacement for that gate.
 
 `blitz-neural-cycle` runs learning orchestration. `blitz-neural-diagnostics` owns
 contract checks, model audits, replay and explicit policy migration. For a v3
